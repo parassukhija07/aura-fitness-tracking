@@ -1,0 +1,579 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		AA000001000000000000001B /* AuraFitnessApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000001000000000000001B /* AuraFitnessApp.swift */; };
+		AA000002000000000000002B /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000002000000000000002B /* ContentView.swift */; };
+		AA000003000000000000003B /* AuraColors.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000003000000000000003B /* AuraColors.swift */; };
+		AA000004000000000000004B /* AuraTypography.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000004000000000000004B /* AuraTypography.swift */; };
+		AA000005000000000000005B /* AuraSpacing.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000005000000000000005B /* AuraSpacing.swift */; };
+		AA000006000000000000006B /* AuraComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000006000000000000006B /* AuraComponents.swift */; };
+		AA000007000000000000007B /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000007000000000000007B /* AppState.swift */; };
+		AA000008000000000000008B /* WorkoutModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000008000000000000008B /* WorkoutModels.swift */; };
+		AA000009000000000000009B /* SeedData.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000009000000000000009B /* SeedData.swift */; };
+		AA00000A0000000000000010 /* ProgressModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB00000A0000000000000010 /* ProgressModels.swift */; };
+		AA00000B0000000000000011 /* LogTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB00000B0000000000000011 /* LogTabView.swift */; };
+		AA00000C0000000000000012 /* WeekBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB00000C0000000000000012 /* WeekBarView.swift */; };
+		AA00000D0000000000000013 /* PlannedWorkoutCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB00000D0000000000000013 /* PlannedWorkoutCardView.swift */; };
+		AA00000E0000000000000014 /* RestDayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB00000E0000000000000014 /* RestDayView.swift */; };
+		AA00000F0000000000000015 /* EmptyDayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB00000F0000000000000015 /* EmptyDayView.swift */; };
+		AA000010000000000000001C /* CalendarSheetView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000010000000000000001C /* CalendarSheetView.swift */; };
+		AA000011000000000000001D /* AddWorkoutSourceSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000011000000000000001D /* AddWorkoutSourceSheet.swift */; };
+		AA000012000000000000001E /* SwitchWorkoutSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000012000000000000001E /* SwitchWorkoutSheet.swift */; };
+		AA000013000000000000001F /* LogPastWorkoutSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000013000000000000001F /* LogPastWorkoutSheet.swift */; };
+		AA000014000000000000002C /* ActiveWorkoutView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000014000000000000002C /* ActiveWorkoutView.swift */; };
+		AA000015000000000000002D /* WorkoutOverviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000015000000000000002D /* WorkoutOverviewView.swift */; };
+		AA000016000000000000002E /* ExerciseLoggingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000016000000000000002E /* ExerciseLoggingView.swift */; };
+		AA000017000000000000002F /* SupersetView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000017000000000000002F /* SupersetView.swift */; };
+		AA000018000000000000003C /* WorkoutSummaryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000018000000000000003C /* WorkoutSummaryView.swift */; };
+		AA000019000000000000003D /* RestPillView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000019000000000000003D /* RestPillView.swift */; };
+		AA00001A000000000000003E /* CelebrationOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB00001A000000000000003E /* CelebrationOverlay.swift */; };
+		AA00001B000000000000003F /* SetRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB00001B000000000000003F /* SetRowView.swift */; };
+		AA00001C000000000000004C /* WorkoutSessionState.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB00001C000000000000004C /* WorkoutSessionState.swift */; };
+		AA00001D000000000000004D /* PlanTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB00001D000000000000004D /* PlanTabView.swift */; };
+		AA00001E000000000000004E /* MyPlansView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB00001E000000000000004E /* MyPlansView.swift */; };
+		AA00001F000000000000004F /* ProgramLibraryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB00001F000000000000004F /* ProgramLibraryView.swift */; };
+		AA000020000000000000005C /* ProgramDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000020000000000000005C /* ProgramDetailView.swift */; };
+		AA000021000000000000005D /* WorkoutLibraryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000021000000000000005D /* WorkoutLibraryView.swift */; };
+		AA000022000000000000005E /* WorkoutEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000022000000000000005E /* WorkoutEditorView.swift */; };
+		AA000023000000000000005F /* ExerciseLibraryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000023000000000000005F /* ExerciseLibraryView.swift */; };
+		AA000024000000000000006C /* ExerciseDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000024000000000000006C /* ExerciseDetailView.swift */; };
+		AA000025000000000000006D /* CreateExerciseView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000025000000000000006D /* CreateExerciseView.swift */; };
+		AA000026000000000000006E /* SaveEditScopeSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000026000000000000006E /* SaveEditScopeSheet.swift */; };
+		AA000027000000000000006F /* ProgressTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000027000000000000006F /* ProgressTabView.swift */; };
+		AA000028000000000000007C /* StatsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000028000000000000007C /* StatsView.swift */; };
+		AA000029000000000000007D /* ConsistencyHeatmapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000029000000000000007D /* ConsistencyHeatmapView.swift */; };
+		AA00002A000000000000007E /* PersonalRecordsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB00002A000000000000007E /* PersonalRecordsView.swift */; };
+		AA00002B000000000000007F /* BodyView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB00002B000000000000007F /* BodyView.swift */; };
+		AA00002C000000000000008C /* MeasurementsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB00002C000000000000008C /* MeasurementsView.swift */; };
+		AA00002D000000000000008D /* LogMeasurementSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB00002D000000000000008D /* LogMeasurementSheet.swift */; };
+		AA00002E000000000000008E /* ProgressPhotosView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB00002E000000000000008E /* ProgressPhotosView.swift */; };
+		AA00002F000000000000008F /* NutritionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB00002F000000000000008F /* NutritionView.swift */; };
+		AA000030000000000000009C /* ProfileTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000030000000000000009C /* ProfileTabView.swift */; };
+		AA000031000000000000009D /* WorkoutSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000031000000000000009D /* WorkoutSettingsView.swift */; };
+		AA000032000000000000009E /* AccountDetailsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000032000000000000009E /* AccountDetailsView.swift */; };
+		AA000033000000000000009F /* PreferencesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000033000000000000009F /* PreferencesView.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		AB000001000000000000001B /* AuraFitnessApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuraFitnessApp.swift; sourceTree = "<group>"; };
+		AB000002000000000000002B /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		AB000003000000000000003B /* AuraColors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuraColors.swift; sourceTree = "<group>"; };
+		AB000004000000000000004B /* AuraTypography.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuraTypography.swift; sourceTree = "<group>"; };
+		AB000005000000000000005B /* AuraSpacing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuraSpacing.swift; sourceTree = "<group>"; };
+		AB000006000000000000006B /* AuraComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuraComponents.swift; sourceTree = "<group>"; };
+		AB000007000000000000007B /* AppState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppState.swift; sourceTree = "<group>"; };
+		AB000008000000000000008B /* WorkoutModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutModels.swift; sourceTree = "<group>"; };
+		AB000009000000000000009B /* SeedData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SeedData.swift; sourceTree = "<group>"; };
+		AB00000A0000000000000010 /* ProgressModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressModels.swift; sourceTree = "<group>"; };
+		AB00000B0000000000000011 /* LogTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogTabView.swift; sourceTree = "<group>"; };
+		AB00000C0000000000000012 /* WeekBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeekBarView.swift; sourceTree = "<group>"; };
+		AB00000D0000000000000013 /* PlannedWorkoutCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlannedWorkoutCardView.swift; sourceTree = "<group>"; };
+		AB00000E0000000000000014 /* RestDayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RestDayView.swift; sourceTree = "<group>"; };
+		AB00000F0000000000000015 /* EmptyDayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmptyDayView.swift; sourceTree = "<group>"; };
+		AB000010000000000000001C /* CalendarSheetView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarSheetView.swift; sourceTree = "<group>"; };
+		AB000011000000000000001D /* AddWorkoutSourceSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddWorkoutSourceSheet.swift; sourceTree = "<group>"; };
+		AB000012000000000000001E /* SwitchWorkoutSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwitchWorkoutSheet.swift; sourceTree = "<group>"; };
+		AB000013000000000000001F /* LogPastWorkoutSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogPastWorkoutSheet.swift; sourceTree = "<group>"; };
+		AB000014000000000000002C /* ActiveWorkoutView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActiveWorkoutView.swift; sourceTree = "<group>"; };
+		AB000015000000000000002D /* WorkoutOverviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutOverviewView.swift; sourceTree = "<group>"; };
+		AB000016000000000000002E /* ExerciseLoggingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseLoggingView.swift; sourceTree = "<group>"; };
+		AB000017000000000000002F /* SupersetView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupersetView.swift; sourceTree = "<group>"; };
+		AB000018000000000000003C /* WorkoutSummaryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutSummaryView.swift; sourceTree = "<group>"; };
+		AB000019000000000000003D /* RestPillView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RestPillView.swift; sourceTree = "<group>"; };
+		AB00001A000000000000003E /* CelebrationOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CelebrationOverlay.swift; sourceTree = "<group>"; };
+		AB00001B000000000000003F /* SetRowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetRowView.swift; sourceTree = "<group>"; };
+		AB00001C000000000000004C /* WorkoutSessionState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutSessionState.swift; sourceTree = "<group>"; };
+		AB00001D000000000000004D /* PlanTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlanTabView.swift; sourceTree = "<group>"; };
+		AB00001E000000000000004E /* MyPlansView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyPlansView.swift; sourceTree = "<group>"; };
+		AB00001F000000000000004F /* ProgramLibraryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgramLibraryView.swift; sourceTree = "<group>"; };
+		AB000020000000000000005C /* ProgramDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgramDetailView.swift; sourceTree = "<group>"; };
+		AB000021000000000000005D /* WorkoutLibraryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutLibraryView.swift; sourceTree = "<group>"; };
+		AB000022000000000000005E /* WorkoutEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutEditorView.swift; sourceTree = "<group>"; };
+		AB000023000000000000005F /* ExerciseLibraryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseLibraryView.swift; sourceTree = "<group>"; };
+		AB000024000000000000006C /* ExerciseDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseDetailView.swift; sourceTree = "<group>"; };
+		AB000025000000000000006D /* CreateExerciseView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateExerciseView.swift; sourceTree = "<group>"; };
+		AB000026000000000000006E /* SaveEditScopeSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SaveEditScopeSheet.swift; sourceTree = "<group>"; };
+		AB000027000000000000006F /* ProgressTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressTabView.swift; sourceTree = "<group>"; };
+		AB000028000000000000007C /* StatsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatsView.swift; sourceTree = "<group>"; };
+		AB000029000000000000007D /* ConsistencyHeatmapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConsistencyHeatmapView.swift; sourceTree = "<group>"; };
+		AB00002A000000000000007E /* PersonalRecordsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersonalRecordsView.swift; sourceTree = "<group>"; };
+		AB00002B000000000000007F /* BodyView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BodyView.swift; sourceTree = "<group>"; };
+		AB00002C000000000000008C /* MeasurementsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeasurementsView.swift; sourceTree = "<group>"; };
+		AB00002D000000000000008D /* LogMeasurementSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogMeasurementSheet.swift; sourceTree = "<group>"; };
+		AB00002E000000000000008E /* ProgressPhotosView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressPhotosView.swift; sourceTree = "<group>"; };
+		AB00002F000000000000008F /* NutritionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NutritionView.swift; sourceTree = "<group>"; };
+		AB000030000000000000009C /* ProfileTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileTabView.swift; sourceTree = "<group>"; };
+		AB000031000000000000009D /* WorkoutSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutSettingsView.swift; sourceTree = "<group>"; };
+		AB000032000000000000009E /* AccountDetailsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountDetailsView.swift; sourceTree = "<group>"; };
+		AB000033000000000000009F /* PreferencesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreferencesView.swift; sourceTree = "<group>"; };
+		ACPROD00000000000000000A /* AuraFitness.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AuraFitness.app; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		ACBUILD0000000000000000A /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		ACROOT00000000000000000A /* AuraFitness */ = {
+			isa = PBXGroup;
+			children = (
+				ACGRP010000000000000000A /* AuraFitness */,
+				ACPROD00000000000000000A /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		ACPROD00000000000000010A /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				ACPROD00000000000000000A /* AuraFitness.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		ACGRP010000000000000000A /* AuraFitness */ = {
+			isa = PBXGroup;
+			children = (
+				AB000001000000000000001B /* AuraFitnessApp.swift */,
+				AB000002000000000000002B /* ContentView.swift */,
+				ACGRP020000000000000000A /* DesignSystem */,
+				ACGRP030000000000000000A /* Models */,
+				ACGRP040000000000000000A /* Log */,
+				ACGRP050000000000000000A /* ActiveWorkout */,
+				ACGRP060000000000000000A /* Plan */,
+				ACGRP070000000000000000A /* Progress */,
+				ACGRP080000000000000000A /* Profile */,
+			);
+			path = AuraFitness;
+			sourceTree = "<group>";
+		};
+		ACGRP020000000000000000A /* DesignSystem */ = {
+			isa = PBXGroup;
+			children = (
+				AB000003000000000000003B /* AuraColors.swift */,
+				AB000004000000000000004B /* AuraTypography.swift */,
+				AB000005000000000000005B /* AuraSpacing.swift */,
+				AB000006000000000000006B /* AuraComponents.swift */,
+			);
+			path = DesignSystem;
+			sourceTree = "<group>";
+		};
+		ACGRP030000000000000000A /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				AB000007000000000000007B /* AppState.swift */,
+				AB000008000000000000008B /* WorkoutModels.swift */,
+				AB000009000000000000009B /* SeedData.swift */,
+				AB00000A0000000000000010 /* ProgressModels.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		ACGRP040000000000000000A /* Log */ = {
+			isa = PBXGroup;
+			children = (
+				AB00000B0000000000000011 /* LogTabView.swift */,
+				AB00000C0000000000000012 /* WeekBarView.swift */,
+				AB00000D0000000000000013 /* PlannedWorkoutCardView.swift */,
+				AB00000E0000000000000014 /* RestDayView.swift */,
+				AB00000F0000000000000015 /* EmptyDayView.swift */,
+				AB000010000000000000001C /* CalendarSheetView.swift */,
+				AB000011000000000000001D /* AddWorkoutSourceSheet.swift */,
+				AB000012000000000000001E /* SwitchWorkoutSheet.swift */,
+				AB000013000000000000001F /* LogPastWorkoutSheet.swift */,
+			);
+			path = Log;
+			sourceTree = "<group>";
+		};
+		ACGRP050000000000000000A /* ActiveWorkout */ = {
+			isa = PBXGroup;
+			children = (
+				AB000014000000000000002C /* ActiveWorkoutView.swift */,
+				AB000015000000000000002D /* WorkoutOverviewView.swift */,
+				AB000016000000000000002E /* ExerciseLoggingView.swift */,
+				AB000017000000000000002F /* SupersetView.swift */,
+				AB000018000000000000003C /* WorkoutSummaryView.swift */,
+				AB000019000000000000003D /* RestPillView.swift */,
+				AB00001A000000000000003E /* CelebrationOverlay.swift */,
+				AB00001B000000000000003F /* SetRowView.swift */,
+				AB00001C000000000000004C /* WorkoutSessionState.swift */,
+			);
+			path = ActiveWorkout;
+			sourceTree = "<group>";
+		};
+		ACGRP060000000000000000A /* Plan */ = {
+			isa = PBXGroup;
+			children = (
+				AB00001D000000000000004D /* PlanTabView.swift */,
+				AB00001E000000000000004E /* MyPlansView.swift */,
+				AB00001F000000000000004F /* ProgramLibraryView.swift */,
+				AB000020000000000000005C /* ProgramDetailView.swift */,
+				AB000021000000000000005D /* WorkoutLibraryView.swift */,
+				AB000022000000000000005E /* WorkoutEditorView.swift */,
+				AB000023000000000000005F /* ExerciseLibraryView.swift */,
+				AB000024000000000000006C /* ExerciseDetailView.swift */,
+				AB000025000000000000006D /* CreateExerciseView.swift */,
+				AB000026000000000000006E /* SaveEditScopeSheet.swift */,
+			);
+			path = Plan;
+			sourceTree = "<group>";
+		};
+		ACGRP070000000000000000A /* Progress */ = {
+			isa = PBXGroup;
+			children = (
+				AB000027000000000000006F /* ProgressTabView.swift */,
+				AB000028000000000000007C /* StatsView.swift */,
+				AB000029000000000000007D /* ConsistencyHeatmapView.swift */,
+				AB00002A000000000000007E /* PersonalRecordsView.swift */,
+				AB00002B000000000000007F /* BodyView.swift */,
+				AB00002C000000000000008C /* MeasurementsView.swift */,
+				AB00002D000000000000008D /* LogMeasurementSheet.swift */,
+				AB00002E000000000000008E /* ProgressPhotosView.swift */,
+				AB00002F000000000000008F /* NutritionView.swift */,
+			);
+			path = Progress;
+			sourceTree = "<group>";
+		};
+		ACGRP080000000000000000A /* Profile */ = {
+			isa = PBXGroup;
+			children = (
+				AB000030000000000000009C /* ProfileTabView.swift */,
+				AB000031000000000000009D /* WorkoutSettingsView.swift */,
+				AB000032000000000000009E /* AccountDetailsView.swift */,
+				AB000033000000000000009F /* PreferencesView.swift */,
+			);
+			path = Profile;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		ACTGT00000000000000000A /* AuraFitness */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = ACBCL0000000000000000A /* Build configuration list for PBXNativeTarget "AuraFitness" */;
+			buildPhases = (
+				ACSRC00000000000000000A /* Sources */,
+				ACBUILD0000000000000000A /* Frameworks */,
+				ACRES00000000000000000A /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = AuraFitness;
+			productName = AuraFitness;
+			productReference = ACPROD00000000000000000A /* AuraFitness.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		ACPROJ00000000000000000A /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1500;
+				LastUpgradeCheck = 1500;
+				TargetAttributes = {
+					ACTGT00000000000000000A = {
+						CreatedOnToolsVersion = 15.0;
+					};
+				};
+			};
+			buildConfigurationList = ACBCL0000000000000000B /* Build configuration list for PBXProject "AuraFitness" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = ACROOT00000000000000000A;
+			productRefGroup = ACPROD00000000000000010A /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				ACTGT00000000000000000A /* AuraFitness */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		ACRES00000000000000000A /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		ACSRC00000000000000000A /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				AA000001000000000000001B /* AuraFitnessApp.swift in Sources */,
+				AA000002000000000000002B /* ContentView.swift in Sources */,
+				AA000003000000000000003B /* AuraColors.swift in Sources */,
+				AA000004000000000000004B /* AuraTypography.swift in Sources */,
+				AA000005000000000000005B /* AuraSpacing.swift in Sources */,
+				AA000006000000000000006B /* AuraComponents.swift in Sources */,
+				AA000007000000000000007B /* AppState.swift in Sources */,
+				AA000008000000000000008B /* WorkoutModels.swift in Sources */,
+				AA000009000000000000009B /* SeedData.swift in Sources */,
+				AA00000A0000000000000010 /* ProgressModels.swift in Sources */,
+				AA00000B0000000000000011 /* LogTabView.swift in Sources */,
+				AA00000C0000000000000012 /* WeekBarView.swift in Sources */,
+				AA00000D0000000000000013 /* PlannedWorkoutCardView.swift in Sources */,
+				AA00000E0000000000000014 /* RestDayView.swift in Sources */,
+				AA00000F0000000000000015 /* EmptyDayView.swift in Sources */,
+				AA000010000000000000001C /* CalendarSheetView.swift in Sources */,
+				AA000011000000000000001D /* AddWorkoutSourceSheet.swift in Sources */,
+				AA000012000000000000001E /* SwitchWorkoutSheet.swift in Sources */,
+				AA000013000000000000001F /* LogPastWorkoutSheet.swift in Sources */,
+				AA000014000000000000002C /* ActiveWorkoutView.swift in Sources */,
+				AA000015000000000000002D /* WorkoutOverviewView.swift in Sources */,
+				AA000016000000000000002E /* ExerciseLoggingView.swift in Sources */,
+				AA000017000000000000002F /* SupersetView.swift in Sources */,
+				AA000018000000000000003C /* WorkoutSummaryView.swift in Sources */,
+				AA000019000000000000003D /* RestPillView.swift in Sources */,
+				AA00001A000000000000003E /* CelebrationOverlay.swift in Sources */,
+				AA00001B000000000000003F /* SetRowView.swift in Sources */,
+				AA00001C000000000000004C /* WorkoutSessionState.swift in Sources */,
+				AA00001D000000000000004D /* PlanTabView.swift in Sources */,
+				AA00001E000000000000004E /* MyPlansView.swift in Sources */,
+				AA00001F000000000000004F /* ProgramLibraryView.swift in Sources */,
+				AA000020000000000000005C /* ProgramDetailView.swift in Sources */,
+				AA000021000000000000005D /* WorkoutLibraryView.swift in Sources */,
+				AA000022000000000000005E /* WorkoutEditorView.swift in Sources */,
+				AA000023000000000000005F /* ExerciseLibraryView.swift in Sources */,
+				AA000024000000000000006C /* ExerciseDetailView.swift in Sources */,
+				AA000025000000000000006D /* CreateExerciseView.swift in Sources */,
+				AA000026000000000000006E /* SaveEditScopeSheet.swift in Sources */,
+				AA000027000000000000006F /* ProgressTabView.swift in Sources */,
+				AA000028000000000000007C /* StatsView.swift in Sources */,
+				AA000029000000000000007D /* ConsistencyHeatmapView.swift in Sources */,
+				AA00002A000000000000007E /* PersonalRecordsView.swift in Sources */,
+				AA00002B000000000000007F /* BodyView.swift in Sources */,
+				AA00002C000000000000008C /* MeasurementsView.swift in Sources */,
+				AA00002D000000000000008D /* LogMeasurementSheet.swift in Sources */,
+				AA00002E000000000000008E /* ProgressPhotosView.swift in Sources */,
+				AA00002F000000000000008F /* NutritionView.swift in Sources */,
+				AA000030000000000000009C /* ProfileTabView.swift in Sources */,
+				AA000031000000000000009D /* WorkoutSettingsView.swift in Sources */,
+				AA000032000000000000009E /* AccountDetailsView.swift in Sources */,
+				AA000033000000000000009F /* PreferencesView.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		ACBC000000000000000000A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_CYCLE = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		ACBC000000000000000000B /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_CYCLE = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		ACBC000000000000000001A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "";
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = UIInterfaceOrientationPortrait;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.aurafitness.app;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
+		};
+		ACBC000000000000000001B /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "";
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = UIInterfaceOrientationPortrait;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.aurafitness.app;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		ACBCL0000000000000000B /* Build configuration list for PBXProject "AuraFitness" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				ACBC000000000000000000A /* Debug */,
+				ACBC000000000000000000B /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		ACBCL0000000000000000A /* Build configuration list for PBXNativeTarget "AuraFitness" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				ACBC000000000000000001A /* Debug */,
+				ACBC000000000000000001B /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = ACPROJ00000000000000000A /* Project object */;
+}

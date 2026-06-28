@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Aura · Exercise Detail</title>
+<link rel="stylesheet" href="../styles/aura.css">
+<link rel="stylesheet" href="../styles/gallery.css">
+</head>
+<body>
+<div class="vbar">
+  <div class="crumbs"><a href="../Aura Fitness.html">Aura</a> &nbsp;/&nbsp; <b>Exercise</b> detail</div>
+  <button class="theme-toggle" onclick="toggleTheme()"><i data-ic="moon" data-size="16"></i> <span id="tmode">Dark</span></button>
+</div>
+
+<div class="gallery">
+  <h2 class="sec">Shared surface · opens from Library, Plan & Workout</h2>
+  <h1 class="sec-title">Exercise detail</h1>
+  <p class="sec-desc">The canonical page for any exercise: a tappable demo video, the muscle activation breakdown with a body map, form cues, and the path to drop it into today's session or any saved workout.</p>
+
+  <div class="frames">
+
+  <!-- EX-01 · detail -->
+  <div class="frame-wrap">
+    <div class="frame-cap"><span class="num">EX-01</span> Exercise detail</div>
+    <div class="phone" data-theme="light">
+      <div class="dynamic-island"></div><div class="statusbar auto"></div>
+      <div class="navbar bordered"><div class="navbar-row"><button class="nav-btn"><i data-ic="chevron-left" data-size="22"></i>Library</button><button class="nav-icon-btn"><i data-ic="heart" data-size="18"></i></button></div></div>
+      <div class="screen-body pad pad-b">
+        <div class="ex-video" style="position:relative;margin-top:12px">
+          <div class="ph rounded" style="aspect-ratio:16/10;border-radius:var(--r-lg)">exercise demo</div>
+          <div class="play-btn" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%)"><i data-ic="play" data-size="22"></i></div>
+        </div>
+        <h2 style="font-size:24px;font-weight:800;letter-spacing:-.02em;margin:14px 0 10px">Cable Fly</h2>
+        <div class="flex" style="gap:0;border:1px solid var(--separator-2);border-radius:var(--r-md);overflow:hidden">
+          <div class="grow center" style="padding:11px 8px"><div class="tiny muted" style="font-weight:700">CATEGORY</div><div style="font-weight:700;font-size:14px;margin-top:2px">Chest</div></div>
+          <div style="width:1px;background:var(--separator-2)"></div>
+          <div class="grow center" style="padding:11px 8px"><div class="tiny muted" style="font-weight:700">EQUIPMENT</div><div style="font-weight:700;font-size:14px;margin-top:2px">Cable</div></div>
+          <div style="width:1px;background:var(--separator-2)"></div>
+          <div class="grow center" style="padding:11px 8px"><div class="tiny muted" style="font-weight:700">LEVEL</div><div style="font-weight:700;font-size:14px;margin-top:2px">Beginner</div></div>
+        </div>
+        <div class="hint-card" style="margin-top:14px"><i data-ic="bulb" data-size="18" color="var(--accent)" style="flex-shrink:0;margin-top:1px"></i><div><div style="font-weight:700;font-size:13px;margin-bottom:3px">Pro tip</div><div class="tiny" style="line-height:1.5;color:var(--text-2)">Lead with your pinkies and squeeze at the midline. Keep a soft, fixed bend in the elbows — think "hugging a tree".</div></div></div>
+
+        <div class="sec-label">Muscle activation</div>
+        <div class="card card-pad">
+          <div class="flex gap4">
+            <div class="grow">
+              <div class="mbar-row"><div class="mbar-lab">Mid Chest</div><div class="mbar"><i style="width:92%"></i></div><div class="mbar-pct">92%</div></div>
+              <div class="mbar-row"><div class="mbar-lab">Front Delts</div><div class="mbar"><i style="width:48%"></i></div><div class="mbar-pct">48%</div></div>
+              <div class="mbar-row"><div class="mbar-lab">Biceps</div><div class="mbar"><i style="width:22%"></i></div><div class="mbar-pct">22%</div></div>
+              <div class="mbar-row" style="margin-bottom:0"><div class="mbar-lab">Serratus</div><div class="mbar"><i style="width:15%"></i></div><div class="mbar-pct">15%</div></div>
+            </div>
+            <div class="ph rounded" style="width:96px;align-self:stretch;font-size:10px;line-height:1.3">body map<br>· chest<br>highlighted</div>
+          </div>
+        </div>
+
+        <div class="col" style="gap:10px;margin-top:18px">
+          <button class="btn btn-primary"><i data-ic="plus" data-size="18"></i> Add to Today's Workout</button>
+          <button class="btn btn-tinted"><i data-ic="dumbbell" data-size="17"></i> Add to a Plan</button>
+        </div>
+      </div>
+      <div class="home-indicator"></div>
+    </div>
+  </div>
+
+  <!-- EX-02 · choose workout -->
+  <div class="frame-wrap">
+    <div class="frame-cap"><span class="num">EX-02</span> Add to plan · choose workout</div>
+    <div class="phone" data-theme="light">
+      <div class="dynamic-island"></div><div class="statusbar auto"></div>
+      <div class="navbar bordered" style="opacity:.5;filter:blur(1px)"><div class="navbar-row"><button class="nav-btn"><i data-ic="chevron-left" data-size="22"></i>Library</button></div></div>
+      <div style="opacity:.4;filter:blur(1px)" class="pad"><div class="ph rounded" style="aspect-ratio:16/10;margin-top:12px"></div></div>
+      <div class="sheet">
+        <div class="scrim"></div>
+        <div class="sheet-card" style="max-height:62%">
+          <div class="grabber"></div>
+          <div class="between pad" style="padding-bottom:6px"><div class="nav-title">Add to which workout?</div><button class="nav-icon-btn"><i data-ic="x" data-size="18"></i></button></div>
+          <div class="pad" style="padding-bottom:24px"><div class="tiny muted" style="margin:2px 4px 12px">From your default plan · Push Pull Legs</div>
+            <div class="list">
+              <div class="row"><div class="ex-n" style="background:var(--accent-soft);color:var(--accent)">P</div><div class="row-main"><div class="row-title">Push Day A</div><div class="row-sub">6 exercises · today</div></div><i data-ic="chevron-right" data-size="18" class="chev"></i></div>
+              <div class="row"><div class="ex-n" style="background:var(--accent-soft);color:var(--accent)">P</div><div class="row-main"><div class="row-title">Push Day B</div><div class="row-sub">6 exercises</div></div><i data-ic="chevron-right" data-size="18" class="chev"></i></div>
+              <div class="row"><div class="ex-n" style="background:var(--fill);color:var(--text-2)">L</div><div class="row-main"><div class="row-title">Leg Day A</div><div class="row-sub">5 exercises</div></div><i data-ic="chevron-right" data-size="18" class="chev"></i></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- EX-03 · replace or add -->
+  <div class="frame-wrap">
+    <div class="frame-cap"><span class="num">EX-03</span> Replace existing or add new</div>
+    <div class="phone" data-theme="light">
+      <div class="dynamic-island"></div><div class="statusbar auto"></div>
+      <div class="navbar bordered" style="opacity:.5;filter:blur(1px)"><div class="navbar-row"><button class="nav-btn"><i data-ic="chevron-left" data-size="22"></i></button></div></div>
+      <div class="sheet">
+        <div class="scrim"></div>
+        <div class="sheet-card" style="max-height:74%">
+          <div class="grabber"></div>
+          <div class="between pad" style="padding-bottom:6px"><div class="nav-title">Cable Fly → Push Day A</div><button class="nav-icon-btn"><i data-ic="x" data-size="18"></i></button></div>
+          <div class="pad" style="overflow:auto;padding-bottom:24px">
+            <button class="btn btn-primary" style="margin:8px 0 14px"><i data-ic="plus" data-size="18"></i> Add as new exercise</button>
+            <div class="sec-label" style="margin-top:4px">Or replace one</div>
+            <div class="col" style="gap:9px">
+              <div class="lib-card" style="padding:12px 14px"><div class="grow"><div class="lib-title" style="font-size:15px">Barbell Bench Press</div><div class="lib-meta">4 sets · 6–8 reps</div></div><span class="badge badge-gray"><i data-ic="swap" data-size="13"></i> Replace</span></div>
+              <div class="lib-card" style="padding:12px 14px"><div class="grow"><div class="lib-title" style="font-size:15px">Incline Dumbbell Press</div><div class="lib-meta">3 sets · 8–10 reps</div></div><span class="badge badge-gray"><i data-ic="swap" data-size="13"></i> Replace</span></div>
+              <div class="lib-card" style="padding:12px 14px"><div class="grow"><div class="lib-title" style="font-size:15px">Pec Deck</div><div class="lib-meta">3 sets · 12–15 reps</div></div><span class="badge badge-gray"><i data-ic="swap" data-size="13"></i> Replace</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  </div>
+</div>
+
+<script src="../styles/gallery.js"></script>
+<script src="../styles/icons.js"></script>
+</body>
+</html>
