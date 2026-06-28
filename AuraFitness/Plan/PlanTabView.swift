@@ -37,6 +37,9 @@ struct PlanTabView: View {
             .background(Color.aura.bgGrouped)
             .navigationTitle("Plan")
             .navigationBarTitleDisplayMode(.large)
+            .safeAreaInset(edge: .bottom) {
+                Color.clear.frame(height: AuraSpacing.tabBarClearance - 34)
+            }
         }
     }
 }

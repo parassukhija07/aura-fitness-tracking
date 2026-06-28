@@ -2,39 +2,29 @@ import SwiftUI
 
 struct ContentView: View {
     @EnvironmentObject var appState: AppState
-    @State private var selectedTab: Int = 0
+
+    @State private var selection: AuraTab = .log
+    @State private var collapsed = false
+    @State private var showMeasurementSheet = false
 
     var body: some View {
         ZStack {
-            TabView(selection: $selectedTab) {
-                LogTabView()
-                    .tabItem {
-                        Label("Log", systemImage: "calendar")
-                    }
-                    .tag(0)
+            Color.aura.bg.ignoresSafeArea()
 
-                PlanTabView()
-                    .tabItem {
-                        Label("Plan", systemImage: "dumbbell")
-                    }
-                    .tag(1)
+            // Active tab content fills the screen; the glass bar floats over it.
+            tabContent
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
 
-                ProgressTabView()
-                    .tabItem {
-                        Label("Progress", systemImage: "chart.bar")
-                    }
-                    .tag(2)
-
-                ProfileTabView()
-                    .tabItem {
-                        Label("Profile", systemImage: "person")
-                    }
-                    .tag(3)
+            // Floating glass tab bar + FAB
+            VStack {
+                Spacer()
+                AuraTabBar(selection: $selection, collapsed: collapsed) { action in
+                    handleQuickAction(action)
+                }
             }
-            .accentColor(.aura.accent)
-            .preferredColorScheme(appState.darkModePreference.colorScheme)
+            .ignoresSafeArea(.keyboard)
 
-            // Active workout overlay
+            // Active workout overlay takes over the whole screen.
             if let session = appState.activeWorkoutSession {
                 ActiveWorkoutView()
                     .environmentObject(session)
@@ -42,6 +32,42 @@ struct ContentView: View {
                     .zIndex(100)
             }
         }
+        .preferredColorScheme(appState.darkModePreference.colorScheme)
         .animation(.easeInOut(duration: 0.3), value: appState.activeWorkoutSession != nil)
+        .onReceive(NotificationCenter.default.publisher(for: .auraScroll)) { note in
+            if let dir = note.userInfo?["dir"] as? String {
+                withAnimation(.easeInOut(duration: 0.22)) { collapsed = (dir == "down") }
+            }
+        }
+        .sheet(isPresented: $showMeasurementSheet) {
+            LogMeasurementSheet()
+                .environmentObject(appState)
+        }
+    }
+
+    @ViewBuilder
+    private var tabContent: some View {
+        switch selection {
+        case .log:      LogTabView()
+        case .plan:     PlanTabView()
+        case .progress: ProgressTabView()
+        case .profile:  ProfileTabView()
+        }
+    }
+
+    private func handleQuickAction(_ action: AuraQuickAction) {
+        switch action {
+        case .startWorkout:
+            if let today = appState.todayWorkout() {
+                appState.startWorkout(today)
+            } else {
+                appState.startWorkout(SeedData.emptyWorkout())
+            }
+        case .logMeasurement:
+            selection = .progress
+            showMeasurementSheet = true
+        case .progressPhoto:
+            selection = .progress
+        }
     }
 }

@@ -114,6 +114,9 @@ struct ProfileTabView: View {
             }
             .listStyle(.insetGrouped)
             .background(Color.aura.bgGrouped)
+            .safeAreaInset(edge: .bottom) {
+                Color.clear.frame(height: AuraSpacing.tabBarClearance - 34)
+            }
             .navigationTitle("Profile")
             .navigationBarTitleDisplayMode(.large)
             .navigationDestination(isPresented: $showWorkoutSettings) {

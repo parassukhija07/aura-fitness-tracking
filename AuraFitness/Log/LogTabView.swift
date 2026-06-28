@@ -25,7 +25,7 @@ struct LogTabView: View {
 
     var body: some View {
         NavigationStack {
-            ScrollView {
+            AuraScreenScroll {
                 VStack(alignment: .leading, spacing: 0) {
                     // Week bar
                     WeekBarView(selectedDate: $selectedDate)
@@ -59,7 +59,6 @@ struct LogTabView: View {
                         }
                     }
                 }
-                .padding(.bottom, 40)
             }
             .background(Color.aura.bgGrouped)
             .navigationTitle("Today")

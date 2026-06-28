@@ -545,4 +545,15 @@ enum SeedData {
             customWorkouts: []
         )
     }
+
+    // MARK: - Empty workout (FAB quick-action "Start Workout" with no plan)
+    static func emptyWorkout() -> Workout {
+        Workout(
+            name: "Empty Workout",
+            primaryMuscles: "—",
+            estimatedMinutes: 0,
+            exercises: [],
+            program: nil
+        )
+    }
 }

@@ -30,6 +30,9 @@ struct ProgressTabView: View {
             .background(Color.aura.bgGrouped)
             .navigationTitle("Progress")
             .navigationBarTitleDisplayMode(.large)
+            .safeAreaInset(edge: .bottom) {
+                Color.clear.frame(height: AuraSpacing.tabBarClearance - 34)
+            }
         }
     }
 }

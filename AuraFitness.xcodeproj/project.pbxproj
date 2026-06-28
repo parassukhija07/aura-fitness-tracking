@@ -13,6 +13,8 @@
 		AA000004000000000000004B /* AuraTypography.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000004000000000000004B /* AuraTypography.swift */; };
 		AA000005000000000000005B /* AuraSpacing.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000005000000000000005B /* AuraSpacing.swift */; };
 		AA000006000000000000006B /* AuraComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000006000000000000006B /* AuraComponents.swift */; };
+		AAEE0001000000000000001B /* AuraTabBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABEE0001000000000000001B /* AuraTabBar.swift */; };
+		AAEE0002000000000000002B /* AuraScreenScroll.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABEE0002000000000000002B /* AuraScreenScroll.swift */; };
 		AA000007000000000000007B /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000007000000000000007B /* AppState.swift */; };
 		AA000008000000000000008B /* WorkoutModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000008000000000000008B /* WorkoutModels.swift */; };
 		AA000009000000000000009B /* SeedData.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000009000000000000009B /* SeedData.swift */; };
@@ -67,6 +69,8 @@
 		AB000004000000000000004B /* AuraTypography.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuraTypography.swift; sourceTree = "<group>"; };
 		AB000005000000000000005B /* AuraSpacing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuraSpacing.swift; sourceTree = "<group>"; };
 		AB000006000000000000006B /* AuraComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuraComponents.swift; sourceTree = "<group>"; };
+		ABEE0001000000000000001B /* AuraTabBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuraTabBar.swift; sourceTree = "<group>"; };
+		ABEE0002000000000000002B /* AuraScreenScroll.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuraScreenScroll.swift; sourceTree = "<group>"; };
 		AB000007000000000000007B /* AppState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppState.swift; sourceTree = "<group>"; };
 		AB000008000000000000008B /* WorkoutModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutModels.swift; sourceTree = "<group>"; };
 		AB000009000000000000009B /* SeedData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SeedData.swift; sourceTree = "<group>"; };
@@ -165,6 +169,8 @@
 				AB000004000000000000004B /* AuraTypography.swift */,
 				AB000005000000000000005B /* AuraSpacing.swift */,
 				AB000006000000000000006B /* AuraComponents.swift */,
+				ABEE0001000000000000001B /* AuraTabBar.swift */,
+				ABEE0002000000000000002B /* AuraScreenScroll.swift */,
 			);
 			path = DesignSystem;
 			sourceTree = "<group>";
@@ -330,6 +336,8 @@
 				AA000004000000000000004B /* AuraTypography.swift in Sources */,
 				AA000005000000000000005B /* AuraSpacing.swift in Sources */,
 				AA000006000000000000006B /* AuraComponents.swift in Sources */,
+				AAEE0001000000000000001B /* AuraTabBar.swift in Sources */,
+				AAEE0002000000000000002B /* AuraScreenScroll.swift in Sources */,
 				AA000007000000000000007B /* AppState.swift in Sources */,
 				AA000008000000000000008B /* WorkoutModels.swift in Sources */,
 				AA000009000000000000009B /* SeedData.swift in Sources */,
