@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Aura · Developer Handoff</title>
+<link rel="stylesheet" href="../styles/aura.css">
+<style>
+  body{background:var(--bg-grouped);}
+  .wrap{max-width:860px;margin:0 auto;padding:0 28px 120px;}
+  .top{position:sticky;top:0;z-index:10;display:flex;align-items:center;justify-content:space-between;padding:16px 0;background:color-mix(in oklab,var(--bg-grouped) 80%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--separator-2);}
+  .top a{color:var(--accent);text-decoration:none;font-weight:600;font-size:14px;}
+  h1{font-size:42px;font-weight:800;letter-spacing:-.03em;margin:40px 0 6px;}
+  .lead{font-size:17px;color:var(--text-2);line-height:1.55;max-width:640px;}
+  h2{font-size:13px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);margin:48px 0 16px;padding-bottom:8px;border-bottom:1px solid var(--separator-2);}
+  h3{font-size:18px;font-weight:800;letter-spacing:-.01em;margin:26px 0 8px;}
+  p{line-height:1.6;color:var(--text);}
+  .note{background:var(--surface);border:1px solid var(--separator-2);border-left:3px solid var(--accent);border-radius:var(--r-sm);padding:14px 16px;font-size:14.5px;line-height:1.55;color:var(--text-2);}
+  .tok-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;}
+  .tok{background:var(--surface);border:1px solid var(--separator-2);border-radius:var(--r-md);overflow:hidden;}
+  .tok .sw{height:58px;}
+  .tok .tk{padding:9px 11px;}
+  .tok .tk b{font-size:13px;font-weight:700;}
+  .tok .tk span{display:block;font-family:var(--mono);font-size:10.5px;color:var(--text-3);margin-top:2px;}
+  table{width:100%;border-collapse:collapse;font-size:14px;margin-top:8px;}
+  th,td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--separator-2);vertical-align:top;}
+  th{font-size:12px;text-transform:uppercase;letter-spacing:.04em;color:var(--text-3);font-weight:700;}
+  td code{font-family:var(--mono);font-size:12px;background:var(--fill-2);padding:1px 5px;border-radius:5px;}
+  .scr{display:flex;gap:12px;padding:12px 0;border-bottom:1px solid var(--separator-2);}
+  .scr .id{font-family:var(--mono);font-size:11px;font-weight:600;color:var(--accent);background:var(--accent-soft);padding:3px 8px;border-radius:999px;height:fit-content;white-space:nowrap;}
+  .scr .d b{font-size:15px;} .scr .d p{font-size:13.5px;color:var(--text-2);margin:3px 0 0;line-height:1.5;}
+  ul{line-height:1.7;color:var(--text);padding-left:20px;} ul code{font-family:var(--mono);font-size:12.5px;background:var(--fill-2);padding:1px 5px;border-radius:5px;}
+  .dl{display:inline-flex;align-items:center;gap:8px;background:var(--accent);color:#fff;text-decoration:none;font-weight:700;font-size:15px;padding:13px 20px;border-radius:var(--r-md);margin-top:14px;}
+  .file{font-family:var(--mono);font-size:13px;color:var(--text);background:var(--surface);border:1px solid var(--separator-2);border-radius:8px;padding:8px 11px;margin:6px 0;display:flex;justify-content:space-between;}
+  .file span{color:var(--text-2);}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top"><a href="../Aura Fitness.html">← Aura overview</a><span class="tiny muted" style="font-weight:600">Developer Handoff</span></div>
+
+  <h1>Developer Handoff</h1>
+  <p class="lead">Everything needed to implement Aura Fitness natively. The HTML files are <b>design references</b> — recreate them in the target codebase (SwiftUI recommended for iOS) using its own patterns, not by shipping the HTML.</p>
+  <div class="note" style="margin-top:18px"><b>Fidelity: high.</b> Final colors, type, spacing & interactions are specified. <code>styles/aura.css</code> is the single source of truth for tokens. The full written spec is in <b>README.md</b> in this folder.</div>
+
+  <h2>Colors</h2>
+  <div class="tok-grid">
+    <div class="tok"><div class="sw" style="background:oklch(0.70 0.17 60)"></div><div class="tk"><b>Accent</b><span>oklch(.70 .17 60) · #E07A1F</span></div></div>
+    <div class="tok"><div class="sw" style="background:oklch(0.70 0.15 150)"></div><div class="tk"><b>Green · done</b><span>oklch(.70 .15 150)</span></div></div>
+    <div class="tok"><div class="sw" style="background:oklch(0.64 0.19 25)"></div><div class="tk"><b>Red · destroy</b><span>oklch(.64 .19 25)</span></div></div>
+    <div class="tok"><div class="sw" style="background:oklch(0.66 0.14 250)"></div><div class="tk"><b>Blue · info</b><span>oklch(.66 .14 250)</span></div></div>
+    <div class="tok"><div class="sw" style="background:oklch(0.62 0.15 300)"></div><div class="tk"><b>Purple</b><span>oklch(.62 .15 300)</span></div></div>
+    <div class="tok"><div class="sw" style="background:#fff;border-bottom:1px solid var(--separator-2)"></div><div class="tk"><b>Surface</b><span>#FFFFFF / #2A2724</span></div></div>
+    <div class="tok"><div class="sw" style="background:oklch(0.20 0.012 70)"></div><div class="tk"><b>Text</b><span>oklch(.20 .012 70)</span></div></div>
+    <div class="tok"><div class="sw" style="background:oklch(0.52 0.012 70)"></div><div class="tk"><b>Text 2</b><span>oklch(.52 .012 70)</span></div></div>
+  </div>
+  <div class="note" style="margin-top:14px">Semantic accents share chroma & lightness, varying only hue — they read as one family. Authored in OKLCH; full light + dark table in README.</div>
+
+  <h2>Typography & scale</h2>
+  <table>
+    <tr><th>Token</th><th>Spec</th><th>Use</th></tr>
+    <tr><td>Display / UI</td><td><code>Plus Jakarta Sans</code> 400–800</td><td>Everything (sub SF Pro on native)</td></tr>
+    <tr><td>Numerals</td><td>tabular-nums · −.03em</td><td>Weights, timers, stats</td></tr>
+    <tr><td>Large title</td><td>30 / 800 / −.02em</td><td>Tab titles</td></tr>
+    <tr><td>Card title</td><td>22–24 / 800</td><td>Workout / exercise name</td></tr>
+    <tr><td>Body</td><td>15–16 / 500–600</td><td>Rows, items</td></tr>
+    <tr><td>Section label</td><td>13 / 700 / UPPER / +.02em</td><td>Group headers</td></tr>
+  </table>
+  <p style="margin-top:14px"><b>Spacing</b> base-4: 4·8·12·16·20·24·32·40. Screen padding 20px. <b>Radius</b> 8/12/16/22/28/pill. <b>Frame</b> iPhone 393×852, status 54px, tab bar 84px.</p>
+
+  <h2>Screen index · 26 screens</h2>
+  <div class="scr"><span class="id">LOG 01–06</span><div class="d"><b>Log</b><p>Today (planned), rest day, unplanned/empty, calendar sheet, add-workout source picker, manage-today sheet.</p></div></div>
+  <div class="scr"><span class="id">PLAN 01–08</span><div class="d"><b>Plan</b><p>My Plans, Program Library + detail, Workout Library + editor, Exercise Library, Create exercise, save-scope dialog.</p></div></div>
+  <div class="scr"><span class="id">EX 01–03</span><div class="d"><b>Exercise detail</b><p>Detail w/ muscle activation chart, choose-workout sheet, replace-or-add sheet.</p></div></div>
+  <div class="scr"><span class="id">PROG 01–03</span><div class="d"><b>Progress · Stats</b><p>Heatmap + lifetime overview, weekly trend chart, personal records.</p></div></div>
+  <div class="scr"><span class="id">BODY 01–04</span><div class="d"><b>Progress · Body</b><p>Measurements, log measurement, progress photo compare, nutrition targets.</p></div></div>
+  <div class="scr"><span class="id">PROF 01–05</span><div class="d"><b>Profile</b><p>Home, Workout settings, Account, Preferences (notifications/units/general), Connected apps & Support.</p></div></div>
+  <div class="scr"><span class="id">★ ACTIVE</span><div class="d"><b>Active Workout — interactive</b><p>Overview · set-logging · summary. Built in React, full behavior — recreate natively.</p></div></div>
+
+  <h2>Active Workout · behavior rules</h2>
+  <ul>
+    <li><b>Auto-finish:</b> both <code>kg</code> + <code>reps</code> filled and field blurs → set marks done.</li>
+    <li><b>Auto rest:</b> completing a set → <b>60s</b> rest, <i>unless final set</i>. Completing exercise → <b>90s</b>. Adding an empty set also starts it.</li>
+    <li><b>Rest pill:</b> draggable anywhere (position persists), ring countdown, +15s, pause, dismiss.</li>
+    <li><b>Complete Exercise:</b> drops empty sets, marks filled done, celebration, 90s rest, back to overview.</li>
+    <li><b>Celebrations:</b> weight &gt; PR → "New PR!"; reps &gt; target → "Extra reps!"; finish → summary.</li>
+    <li><b>No commit until Save:</b> edits held live; scope dialog = today-only vs permanent (My Plans copy, never predefined program).</li>
+    <li><b>⋯ menu:</b> substitute / add / remove / create superset. End sheet: Finish & Save · Discard · Continue.</li>
+  </ul>
+
+  <h2>Files in this package</h2>
+  <div class="file">README.md <span>full written spec — start here</span></div>
+  <div class="file">styles/aura.css <span>design tokens + components (source of truth)</span></div>
+  <div class="file">Active Workout.html + workout/*.jsx <span>interactive prototype</span></div>
+  <div class="file">screens/*.html <span>static screen galleries (light/dark toggle)</span></div>
+  <p style="margin-top:20px;color:var(--text-2);font-size:14px">Download the whole project to get every file with working relative paths, then point Claude Code at <code>README.md</code>.</p>
+</div>
+<script src="../styles/icons.js"></script>
+</body>
+</html>
