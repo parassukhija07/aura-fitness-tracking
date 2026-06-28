@@ -10,6 +10,7 @@ enum ExerciseLibrary {
            repRange: "4–8", planned: 4, sets: 4,
            pr: PRRecord(weight: 100, reps: 5, date: "Jan 15"),
            target: TargetRecord(weight: 102.5, reps: 5, note: "+2.5 kg"),
+           history: [SetHistory(weight: "80", reps: "6"), SetHistory(weight: "80", reps: "5"), SetHistory(weight: "77.5", reps: "6")],
            warmup: [WarmupSet(reps: 12, label: "Empty bar"), WarmupSet(reps: 8, label: "40%"),
                     WarmupSet(reps: 5, label: "60%"), WarmupSet(reps: 3, label: "80%")],
            hint: "Drive your feet into the floor and keep your shoulder blades pinned back and down. Lower the bar to your lower chest."),
@@ -17,12 +18,14 @@ enum ExerciseLibrary {
            repRange: "8–12", planned: 3, sets: 3,
            pr: PRRecord(weight: 36, reps: 10, date: "Jan 10"),
            target: TargetRecord(weight: 36, reps: 10, note: "Match best"),
+           history: [SetHistory(weight: "30", reps: "10"), SetHistory(weight: "30", reps: "9"), SetHistory(weight: "28", reps: "10"), SetHistory(weight: "28", reps: "8")],
            warmup: [WarmupSet(reps: 10, label: "50%"), WarmupSet(reps: 6, label: "75%")],
            hint: "Set the bench to ~30°. Keep dumbbells stacked over your elbows."),
         ex("Cable Fly", muscle: "Chest", groups: ["Chest"], equip: "Cable", diff: "Beginner",
            isCable: true, pulley: "double", repRange: "12–15", planned: 3, sets: 3,
            pr: PRRecord(weight: 15, reps: 15, date: "Jan 12"),
            target: TargetRecord(weight: 15, reps: 15, note: "Focus on stretch"),
+           history: [SetHistory(weight: "14", reps: "14"), SetHistory(weight: "14", reps: "13"), SetHistory(weight: "12.5", reps: "15")],
            hint: "Lead with your pinkies and squeeze at the midline. Keep a soft bend in the elbows."),
         ex("Dumbbell Bench Press", muscle: "Chest", groups: ["Chest","Front Delts","Triceps"], equip: "Dumbbell", diff: "Beginner",
            repRange: "8–12", planned: 3, sets: 3, hint: "Control the descent. Touch elbows to 90° at the bottom."),
@@ -310,13 +313,14 @@ enum ExerciseLibrary {
         isCable: Bool = false, pulley: String = "single",
         repRange: String = "8–12", planned: Int = 3, sets: Int = 3,
         pr: PRRecord? = nil, target: TargetRecord? = nil,
+        history: [SetHistory] = [],
         warmup: [WarmupSet] = [], hint: String = ""
     ) -> Exercise {
         var e = Exercise(
             name: name, primaryMuscle: muscle, muscleGroups: groups,
             equipment: equip, difficulty: diff, isCable: isCable, pulley: pulley,
             repRange: repRange, plannedSets: planned,
-            lastPR: pr, target: target, warmup: warmup, hint: hint
+            lastPR: pr, target: target, history: history, warmup: warmup, hint: hint
         )
         e.sets = (0..<sets).map { _ in WorkoutSet() }
         return e

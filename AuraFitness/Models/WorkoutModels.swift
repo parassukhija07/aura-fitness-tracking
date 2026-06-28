@@ -48,7 +48,13 @@ struct WorkoutSet: Identifiable, Codable, Hashable {
 // MARK: - WarmupSet
 struct WarmupSet: Codable, Hashable {
     var reps: Int
-    var label: String
+    var label: String   // percentage / cue, e.g. "40%" or "Empty bar" (design's `pct`)
+}
+
+// MARK: - SetHistory (last session's value for a given set index)
+struct SetHistory: Codable, Hashable {
+    var weight: String
+    var reps: String
 }
 
 // MARK: - PRRecord
@@ -79,6 +85,7 @@ struct Exercise: Identifiable, Codable, Hashable {
     var plannedSets: Int = 3
     var lastPR: PRRecord? = nil
     var target: TargetRecord? = nil
+    var history: [SetHistory] = []   // last session's per-set values (design `history`)
     var warmup: [WarmupSet] = []
     var hint: String = ""
     var imageURL: String? = nil
