@@ -5,6 +5,7 @@ struct ExerciseLoggingView: View {
     let exerciseIndex: Int
     @State private var showWarmup = true
     @State private var showMenu = false
+    @State private var modal: WorkoutModal? = nil
 
     var exercise: Exercise? {
         session.workout.exercises.indices.contains(exerciseIndex)
@@ -44,10 +45,17 @@ struct ExerciseLoggingView: View {
         }
         .background(Color.aura.bg)
         .sheet(isPresented: $showMenu) {
-            ExerciseMenuSheet(exerciseIndex: exerciseIndex)
+            ExerciseMenuSheet(exerciseIndex: exerciseIndex, onModal: { m in
+                showMenu = false
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) { modal = m }
+            })
                 .environmentObject(session)
                 .presentationDetents([.fraction(0.6)])
                 .presentationDragIndicator(.visible)
+        }
+        .sheet(item: $modal) { m in
+            WorkoutModalsView(modal: m, presented: $modal)
+                .environmentObject(session)
         }
     }
 

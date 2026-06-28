@@ -7,6 +7,7 @@ struct SupersetView: View {
     @EnvironmentObject var session: WorkoutSessionState
     let supersetIndex: Int
     @State private var showMenu = false
+    @State private var modal: WorkoutModal? = nil
 
     private var idxA: Int { supersetIndex }
     private var idxB: Int { supersetIndex + 1 }
@@ -97,10 +98,17 @@ struct SupersetView: View {
         }
         .background(Color.aura.bg)
         .sheet(isPresented: $showMenu) {
-            ExerciseMenuSheet(exerciseIndex: idxA)
+            ExerciseMenuSheet(exerciseIndex: idxA, onModal: { m in
+                showMenu = false
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) { modal = m }
+            })
                 .environmentObject(session)
                 .presentationDetents([.fraction(0.6)])
                 .presentationDragIndicator(.visible)
+        }
+        .sheet(item: $modal) { m in
+            WorkoutModalsView(modal: m, presented: $modal)
+                .environmentObject(session)
         }
     }
 

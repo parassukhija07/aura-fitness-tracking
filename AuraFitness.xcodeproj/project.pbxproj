@@ -31,6 +31,9 @@
 		AA000012000000000000001E /* SwitchWorkoutSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000012000000000000001E /* SwitchWorkoutSheet.swift */; };
 		AA000013000000000000001F /* LogPastWorkoutSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000013000000000000001F /* LogPastWorkoutSheet.swift */; };
 		AA000014000000000000002C /* ActiveWorkoutView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000014000000000000002C /* ActiveWorkoutView.swift */; };
+		AAEE0005000000000000005B /* ActiveWorkoutData.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABEE0005000000000000005B /* ActiveWorkoutData.swift */; };
+		AAEE0006000000000000006B /* EmptyOverviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABEE0006000000000000006B /* EmptyOverviewView.swift */; };
+		AAEE0007000000000000007B /* WorkoutModalsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABEE0007000000000000007B /* WorkoutModalsView.swift */; };
 		AA000015000000000000002D /* WorkoutOverviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000015000000000000002D /* WorkoutOverviewView.swift */; };
 		AA000016000000000000002E /* ExerciseLoggingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000016000000000000002E /* ExerciseLoggingView.swift */; };
 		AA000017000000000000002F /* SupersetView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000017000000000000002F /* SupersetView.swift */; };
@@ -89,6 +92,9 @@
 		AB000012000000000000001E /* SwitchWorkoutSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwitchWorkoutSheet.swift; sourceTree = "<group>"; };
 		AB000013000000000000001F /* LogPastWorkoutSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogPastWorkoutSheet.swift; sourceTree = "<group>"; };
 		AB000014000000000000002C /* ActiveWorkoutView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActiveWorkoutView.swift; sourceTree = "<group>"; };
+		ABEE0005000000000000005B /* ActiveWorkoutData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActiveWorkoutData.swift; sourceTree = "<group>"; };
+		ABEE0006000000000000006B /* EmptyOverviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmptyOverviewView.swift; sourceTree = "<group>"; };
+		ABEE0007000000000000007B /* WorkoutModalsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutModalsView.swift; sourceTree = "<group>"; };
 		AB000015000000000000002D /* WorkoutOverviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutOverviewView.swift; sourceTree = "<group>"; };
 		AB000016000000000000002E /* ExerciseLoggingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseLoggingView.swift; sourceTree = "<group>"; };
 		AB000017000000000000002F /* SupersetView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupersetView.swift; sourceTree = "<group>"; };
@@ -220,6 +226,9 @@
 				AB00001A000000000000003E /* CelebrationOverlay.swift */,
 				AB00001B000000000000003F /* SetRowView.swift */,
 				AB00001C000000000000004C /* WorkoutSessionState.swift */,
+				ABEE0005000000000000005B /* ActiveWorkoutData.swift */,
+				ABEE0006000000000000006B /* EmptyOverviewView.swift */,
+				ABEE0007000000000000007B /* WorkoutModalsView.swift */,
 			);
 			path = ActiveWorkout;
 			sourceTree = "<group>";
@@ -360,6 +369,9 @@
 				AA000012000000000000001E /* SwitchWorkoutSheet.swift in Sources */,
 				AA000013000000000000001F /* LogPastWorkoutSheet.swift in Sources */,
 				AA000014000000000000002C /* ActiveWorkoutView.swift in Sources */,
+				AAEE0005000000000000005B /* ActiveWorkoutData.swift in Sources */,
+				AAEE0006000000000000006B /* EmptyOverviewView.swift in Sources */,
+				AAEE0007000000000000007B /* WorkoutModalsView.swift in Sources */,
 				AA000015000000000000002D /* WorkoutOverviewView.swift in Sources */,
 				AA000016000000000000002E /* ExerciseLoggingView.swift in Sources */,
 				AA000017000000000000002F /* SupersetView.swift in Sources */,
