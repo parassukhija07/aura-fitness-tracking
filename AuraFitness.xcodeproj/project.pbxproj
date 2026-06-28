@@ -19,7 +19,9 @@
 		AA000008000000000000008B /* WorkoutModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000008000000000000008B /* WorkoutModels.swift */; };
 		AA000009000000000000009B /* SeedData.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000009000000000000009B /* SeedData.swift */; };
 		AA00000A0000000000000010 /* ProgressModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB00000A0000000000000010 /* ProgressModels.swift */; };
+		AAEE0003000000000000003B /* LogDayModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABEE0003000000000000003B /* LogDayModel.swift */; };
 		AA00000B0000000000000011 /* LogTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB00000B0000000000000011 /* LogTabView.swift */; };
+		AAEE0004000000000000004B /* LogSheetsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABEE0004000000000000004B /* LogSheetsView.swift */; };
 		AA00000C0000000000000012 /* WeekBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB00000C0000000000000012 /* WeekBarView.swift */; };
 		AA00000D0000000000000013 /* PlannedWorkoutCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB00000D0000000000000013 /* PlannedWorkoutCardView.swift */; };
 		AA00000E0000000000000014 /* RestDayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB00000E0000000000000014 /* RestDayView.swift */; };
@@ -75,7 +77,9 @@
 		AB000008000000000000008B /* WorkoutModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutModels.swift; sourceTree = "<group>"; };
 		AB000009000000000000009B /* SeedData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SeedData.swift; sourceTree = "<group>"; };
 		AB00000A0000000000000010 /* ProgressModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressModels.swift; sourceTree = "<group>"; };
+		ABEE0003000000000000003B /* LogDayModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogDayModel.swift; sourceTree = "<group>"; };
 		AB00000B0000000000000011 /* LogTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogTabView.swift; sourceTree = "<group>"; };
+		ABEE0004000000000000004B /* LogSheetsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogSheetsView.swift; sourceTree = "<group>"; };
 		AB00000C0000000000000012 /* WeekBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeekBarView.swift; sourceTree = "<group>"; };
 		AB00000D0000000000000013 /* PlannedWorkoutCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlannedWorkoutCardView.swift; sourceTree = "<group>"; };
 		AB00000E0000000000000014 /* RestDayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RestDayView.swift; sourceTree = "<group>"; };
@@ -182,6 +186,7 @@
 				AB000008000000000000008B /* WorkoutModels.swift */,
 				AB000009000000000000009B /* SeedData.swift */,
 				AB00000A0000000000000010 /* ProgressModels.swift */,
+				ABEE0003000000000000003B /* LogDayModel.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -190,6 +195,7 @@
 			isa = PBXGroup;
 			children = (
 				AB00000B0000000000000011 /* LogTabView.swift */,
+				ABEE0004000000000000004B /* LogSheetsView.swift */,
 				AB00000C0000000000000012 /* WeekBarView.swift */,
 				AB00000D0000000000000013 /* PlannedWorkoutCardView.swift */,
 				AB00000E0000000000000014 /* RestDayView.swift */,
@@ -342,7 +348,9 @@
 				AA000008000000000000008B /* WorkoutModels.swift in Sources */,
 				AA000009000000000000009B /* SeedData.swift in Sources */,
 				AA00000A0000000000000010 /* ProgressModels.swift in Sources */,
+				AAEE0003000000000000003B /* LogDayModel.swift in Sources */,
 				AA00000B0000000000000011 /* LogTabView.swift in Sources */,
+				AAEE0004000000000000004B /* LogSheetsView.swift in Sources */,
 				AA00000C0000000000000012 /* WeekBarView.swift in Sources */,
 				AA00000D0000000000000013 /* PlannedWorkoutCardView.swift in Sources */,
 				AA00000E0000000000000014 /* RestDayView.swift in Sources */,

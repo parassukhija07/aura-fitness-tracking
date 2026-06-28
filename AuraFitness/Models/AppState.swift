@@ -36,6 +36,14 @@ class AppState: ObservableObject {
     // MARK: - User data
     @Published var userPlans: [UserPlan] = []
     @Published var workoutLogs: [WorkoutLog] = []
+
+    // MARK: - Log tab per-day state (mirrors combined/log.jsx)
+    /// Day overrides keyed by ISO date string (yyyy-MM-dd).
+    @Published var dayOverrides: [String: DayOverride] = [:]
+    /// Per-day quick logs keyed by ISO date string.
+    @Published var quickLogs: [String: QuickLog] = [:]
+    /// Past days seeded as "missed" for the demo (no log exists).
+    @Published var seededMissed: Set<String> = []
     @Published var measurements: [Measurement] = []
     @Published var bodyStats: BodyStats = BodyStats()
     @Published var personalRecords: [PersonalRecord] = []
@@ -130,5 +138,97 @@ class AppState: ObservableObject {
     func logs(for date: Date) -> [WorkoutLog] {
         let cal = Calendar.current
         return workoutLogs.filter { cal.isDate($0.date, inSameDayAs: date) }
+    }
+
+    // MARK: - Log day engine (mirrors combined/log.jsx dayInfo)
+
+    /// Resolved info for a single calendar day in the Log tab.
+    struct DayInfo {
+        var iso: String
+        var dowIndex: Int          // 0=Sun … 6=Sat
+        var date: Date
+        var relation: DayState.Relation
+        var workout: Workout?
+        var state: DayState
+        var override: DayOverride?
+    }
+
+    static func iso(_ date: Date) -> String {
+        let cal = Calendar.current
+        let c = cal.dateComponents([.year, .month, .day], from: date)
+        return String(format: "%04d-%02d-%02d", c.year ?? 0, c.month ?? 0, c.day ?? 0)
+    }
+
+    /// Compute the full state for a given date, applying program schedule + overrides.
+    func dayInfo(for date: Date) -> DayInfo {
+        let cal = Calendar.current
+        let iso = AppState.iso(date)
+        let dow = cal.component(.weekday, from: date) - 1
+        let startOfDay = cal.startOfDay(for: date)
+        let startOfToday = cal.startOfDay(for: Date())
+        let ov = dayOverrides[iso]
+
+        // Resolve the workout for this day (program schedule, then overrides).
+        var workout: Workout? = {
+            guard let plan = defaultPlan else { return nil }
+            return plan.workout(for: dow, programs: SeedData.programs)
+        }()
+
+        if let ov {
+            switch ov.kind {
+            case .switched, .added, .logged:
+                if let wid = ov.workoutId {
+                    workout = SeedData.programs.flatMap { $0.workouts }
+                        .first { $0.id == wid }
+                        ?? defaultPlan?.customWorkouts.first { $0.id == wid }
+                        ?? workout
+                }
+            case .rest, .removed:
+                workout = nil
+            case .edited:
+                break
+            }
+            if let edited = ov.editedExercises, var w = workout {
+                w.exercises = edited
+                workout = w
+            }
+        }
+
+        // Relation to today.
+        let relation: DayState.Relation =
+            startOfDay < startOfToday ? .past :
+            startOfDay > startOfToday ? .future : .today
+
+        // State machine.
+        let state: DayState
+        if workout == nil {
+            switch relation {
+            case .today:
+                state = (ov?.kind == .removed) ? .emptyToday : .restToday
+            default:
+                state = .rest
+            }
+        } else if ov?.kind == .logged {
+            state = .done
+        } else if relation == .today {
+            state = .today
+        } else if relation == .future {
+            state = .future
+        } else {
+            // Past planned day: done unless seeded as missed.
+            if ov?.kind == .added { state = .done }
+            else if seededMissed.contains(iso) { state = .missed }
+            else { state = .done }
+        }
+
+        return DayInfo(iso: iso, dowIndex: dow, date: date,
+                       relation: relation, workout: workout, state: state, override: ov)
+    }
+
+    func setOverride(_ ov: DayOverride, for iso: String) {
+        dayOverrides[iso] = ov
+    }
+    func clearOverride(for iso: String) {
+        dayOverrides.removeValue(forKey: iso)
     }
 }
