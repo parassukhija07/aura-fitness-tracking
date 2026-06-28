@@ -159,9 +159,9 @@ struct AuraSegmentedPicker: View {
                         .frame(height: 32)
                         .background(
                             selection == opt
-                                ? Color.aura.surface
-                                    .shadow(.drop(color: .black.opacity(0.08), radius: 1, y: 1))
-                                : Color.clear
+                                ? AnyShapeStyle(Color.aura.surface
+                                    .shadow(.drop(color: .black.opacity(0.08), radius: 1, y: 1)))
+                                : AnyShapeStyle(Color.clear)
                         )
                         .clipShape(RoundedRectangle(cornerRadius: AuraRadius.sm - 2))
                 }

@@ -72,7 +72,7 @@ struct PersonalRecordsView: View {
             }
             Spacer()
             VStack(alignment: .trailing, spacing: 2) {
-                Text("\(pr.weight, specifier: "%.1f") kg × \(pr.reps)")
+                Text("\(String(format: "%.1f", pr.weight)) kg × \(pr.reps)")
                     .font(.system(size: 14, weight: .bold))
                     .foregroundColor(.aura.text)
                 Text("1RM ≈ \(Int(pr.estimated1RM)) kg")

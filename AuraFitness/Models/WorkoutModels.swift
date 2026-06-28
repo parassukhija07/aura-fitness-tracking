@@ -1,7 +1,7 @@
 import SwiftUI
 
 // MARK: - SetType
-enum SetType: String, CaseIterable, Codable {
+enum SetType: String, CaseIterable, Codable, Hashable {
     case normal, drop, restPause, failure, partials
 
     var label: String {
@@ -36,7 +36,7 @@ enum SetType: String, CaseIterable, Codable {
 }
 
 // MARK: - WorkoutSet
-struct WorkoutSet: Identifiable, Codable {
+struct WorkoutSet: Identifiable, Codable, Hashable {
     var id = UUID()
     var weight: Double? = nil
     var reps: Int? = nil
@@ -46,27 +46,27 @@ struct WorkoutSet: Identifiable, Codable {
 }
 
 // MARK: - WarmupSet
-struct WarmupSet: Codable {
+struct WarmupSet: Codable, Hashable {
     var reps: Int
     var label: String
 }
 
 // MARK: - PRRecord
-struct PRRecord: Codable {
+struct PRRecord: Codable, Hashable {
     var weight: Double
     var reps: Int
     var date: String
 }
 
 // MARK: - TargetRecord
-struct TargetRecord: Codable {
+struct TargetRecord: Codable, Hashable {
     var weight: Double
     var reps: Int
     var note: String
 }
 
 // MARK: - Exercise
-struct Exercise: Identifiable, Codable {
+struct Exercise: Identifiable, Codable, Hashable {
     var id = UUID()
     var name: String
     var primaryMuscle: String
@@ -101,7 +101,7 @@ struct Exercise: Identifiable, Codable {
 }
 
 // MARK: - Workout
-struct Workout: Identifiable, Codable {
+struct Workout: Identifiable, Codable, Hashable {
     var id = UUID()
     var name: String
     var primaryMuscles: String

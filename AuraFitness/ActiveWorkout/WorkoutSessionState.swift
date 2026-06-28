@@ -1,7 +1,7 @@
 import SwiftUI
 import Combine
 
-enum ActiveWorkoutView {
+enum ActiveWorkoutScreen {
     case overview
     case exercise(index: Int)
     case superset(index: Int)
@@ -19,7 +19,7 @@ struct CelebrationData: Identifiable {
 class WorkoutSessionState: ObservableObject {
     // MARK: - Workout state (draft — not committed until Save)
     @Published var workout: Workout
-    @Published var activeView: ActiveWorkoutView = .overview
+    @Published var activeView: ActiveWorkoutScreen = .overview
 
     // MARK: - Timer
     @Published var elapsedSeconds: Int = 0

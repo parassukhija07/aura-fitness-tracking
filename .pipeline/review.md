@@ -1,37 +1,17 @@
-# FINAL ARCHITECTURE REVIEW
+## VERDICT: SHIP
 
-## ⚖️ VERDICT
-SHIP
+### Summary
+All nine source-file modifications match the Coder's claims exactly under `git diff` — no unauthorized files were touched (the only other changes are pipeline/CI metadata). Every fix is correct, type-safe, and free of regressions: the enum rename is fully member-inferred at all call sites, all `Hashable` conformances synthesize cleanly, every `String(format:)` argument is verified `Double`, and `AnyShapeStyle` preserves the picker's visual behavior. This is ready to merge.
 
-## 🔍 DIFF ANALYSIS
-This is the third and final pass. `git status` reports the entire project staged as `new file` (greenfield commit), with three paths carrying unstaged working-tree modifications from the latest fix round:
+### Findings
+- ✅ DIFF INTEGRITY: The working-tree diff for the 9 `AuraFitness/` files is identical to `changes.md`. No hidden side-effects, no out-of-spec source edits, no force-unwraps introduced. The two files added beyond the original 7-file spec (`ProfileTabView.swift`, `PersonalRecordsView.swift`) are legitimate `specifier:` sweeps and are correct.
+- ✅ ENUM RENAME (correctness): `ActiveWorkoutView` -> `ActiveWorkoutScreen` is confined to its declaration (line 4) and the property annotation (line 22). Every external reference (`ActiveWorkoutView.swift:12,60`, `ExerciseLoggingView.swift:28`, `SupersetView.swift:30,179`, `WorkoutSummaryView.swift:120`, `WorkoutOverviewView.swift:79,138,140`, plus internal `WorkoutSessionState.swift:68,196`) is member-inferred (`.overview`, `.exercise(index:)`, `switch session.activeView`, `if case .summary`) and resolves through the property type — no by-name reference to the old enum survives. The `struct ActiveWorkoutView: View` and `ContentView.swift:39 ActiveWorkoutView()` are correctly left intact.
+- ✅ HASHABLE GRAPH (regression risk): `, Hashable` added to all 7 graph types (`SetType`, `WorkoutSet`, `WarmupSet`, `PRRecord`, `TargetRecord`, `Exercise`, `Workout`). All stored properties are already `Hashable` (`UUID`, `String`, `Int`, `Bool`, `Double`, `Double?`, and arrays thereof), so conformance synthesizes. No manual `==`/`hash(into:)` was added. `Codable` + `Hashable` coexist without conflict, and synthesized `Hashable` brings synthesized `Equatable` — no pre-existing `Equatable` conformance exists to collide with. `navigationDestination(item: $selectedWorkout)` in `WorkoutLibraryView.swift:50` is now satisfied.
+- ✅ STRING(FORMAT:) TYPE SAFETY (security/safety): Every `%.1f`/`%.0f` argument is confirmed `Double` — `bodyStats.height`/`weight` (Double), `Measurement.weight`/`bodyFatPct`/circumferences (Double?, safely unwrapped before formatting), `weightTrend`/lean-mass expression (Double), `stats.weight`/`bmi` (Double), `pr.weight`/`t.weight` (Double). No `Int`-into-`%f` mismatch (which would crash/garble). The `"%.1f%%"` escape in the Body Fat tile is correct C-format. Zero `specifier:` occurrences remain in the entire source tree.
+- ✅ DATA-LOSS CHECK: `%.0f` truncation (height/weight on Profile, weight on Nutrition) is intentional display rounding consistent with the surrounding UI; underlying model values are untouched. No persistence path is affected.
+- ✅ ANYSHAPESTYLE (correctness): Both ternary branches in `AuraSegmentedPicker` now erase to `AnyShapeStyle`, resolving the `some ShapeStyle` vs `Color` mismatch. `.background(some ShapeStyle)` accepts it. Visual behavior preserved: selected = surface + drop shadow, unselected = clear.
+- ✅ ONCHANGE MIGRATION (correctness): Both `SetRowView.swift` closures (lines 43, 64) updated to the iOS-17 two-parameter form `{ _, newVal in }`. `newVal` remains the binding driver inside each body (`set.weight = Double(newVal)` / `set.reps = Int(newVal)`); the discarded first param is the old value, correctly ignored. Deprecation warnings eliminated.
+- ✅ TEST INTEGRITY: `test-results.md` is a static-verification sweep (declaration presence, grep counts, call-site existence) rather than behavioral assertions — appropriate for a build-error fix batch whose Definition of Done is "zero build errors," but worth noting it proves the edits exist, not that the app runs. My independent re-verification of the actual diff, the format-argument types, and every enum call site confirms the deeper correctness the static checks alone do not guarantee. Caveat: no `xcodebuild` ran in this environment (Windows host); final compile confirmation rests with the macOS CI runner, but every documented compiler error class is provably resolved by the verified diff.
 
-```
-Changes not staged for commit:
-  modified:   .pipeline/review.md
-    modified:   .pipeline/test-results.md
-      modified:   AuraFitness/Models/SeedData.swift
-      ```
-
-      The only source file touched in this final round is `SeedData.swift` — exactly the file the pass-2 action item targeted. No unauthorized source files were modified. I did not trust `changes.md` or `test-results.md`; I read the actual source for both load-bearing locations.
-
-      **Verified fixed line — `SeedData.swift:536` (inside `makeDefaultPlan()`):**
-      ```swift
-      schedule[4] = .some(nil)          // Thu = rest (explicit)
-      ```
-      This is the corrected form. It is `.some(nil)` — NOT the bare `nil` that pass-2 flagged as a silent key removal, and NOT `nil as UUID?` (same removal behavior). On a `[Int: UUID?]` dictionary, assigning `.some(nil)` stores `Optional<UUID?>.some(.none)` at key 4, so the key is genuinely present with an inner-nil value. Key removal only occurs when the assigned value is the outer `.none` (bare `nil`). The pass-2 regression is closed.
-
-      ## 🛡️ QUALITY & SECURITY AUDIT
-
-      - **Strengths:**
-        - The seed-writer / reader contract is now internally consistent end to end. Writer `SeedData.swift:536` stores `.some(nil)`; reader `AppState.isRestDay` (lines 121-122) gates on `keys.contains(dayIndex)` then compares `== .some(nil)`. For the default plan's Thursday (`dayIndex == 4`) the key now exists, so the guard passes and the equality returns true — `isRestDay(Thursday)` correctly returns `true`.
-          - The `.some(nil)` idiom is applied consistently across every consumer: `LogTabView.swift:20` and `WeekBarView.swift:49` use the equivalent `if let entry = plan.weekSchedule[idx] { return entry == nil }` form, and `WorkoutModels.workout(for:)` (line 138) unwraps `guard let entry = ..., let wid = entry` so a rest entry resolves to "no workout" rather than a phantom session. `ProgramDetailView.swift:126` uses the same `.some(nil)` writer convention. No divergent reader paths.
-            - Draft isolation remains sound: `WorkoutSessionState` carries no references to `appState.workoutLogs`/`personalRecords`; the only commit path is `saveWorkout()`. `SeedData.programs` is a `static let` constant, so predefined programs cannot be mutated at runtime.
-
-            - **Vulnerabilities/Flaws:** None found. The single blocking defect from pass 2 (bare `nil` key removal on the default-plan Thursday) is resolved, and the fix introduced no new issues — the change is a one-token correction confined to line 536 with no collateral edits elsewhere in the tree.
-
-            - **Test Integrity:** The report now includes a genuine behavioral seed-writer/reader interaction trace, not just abstract predicate reading. CHECK A steps A1-A4 instantiate the seed (`makeDefaultPlan()`), then walk `isRestDay(for: Thursday)` step by step: `defaultPlan` non-nil → `dayIndex == 4` → `keys.contains(4) == true` (because `.some(nil)` stored a real entry) → `weekSchedule[4] == .some(nil) == true`. This is exactly the cross-component assertion whose absence let the earlier defect through, and it now ties the writer's stored value to the reader's returned boolean. The supporting static checks (shortLabel `""`, unkeyed-day guard, empty-set strip, `programs` immutability) match source as quoted.
-
-            ## 🛠️ ACTION ITEMS
-            None — ready to merge.
-            
+### Recommended actions (if NEEDS WORK or BLOCK)
+None. Ship it. (Optional, non-blocking: confirm the green checkmark on the macOS CI `xcodebuild` step before merging to `main`, since the compile itself was not executed on this Windows host.)

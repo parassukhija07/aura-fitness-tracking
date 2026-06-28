@@ -40,7 +40,7 @@ struct SetRowView: View {
                     .background(Color.aura.surface2)
                     .clipShape(RoundedRectangle(cornerRadius: AuraRadius.sm))
                     .onAppear { weightText = set.weight.map { String($0) } ?? "" }
-                    .onChange(of: weightText) { newVal in
+                    .onChange(of: weightText) { _, newVal in
                         set.weight = Double(newVal)
                         autoFinishIfReady()
                     }
@@ -61,7 +61,7 @@ struct SetRowView: View {
                     .background(Color.aura.surface2)
                     .clipShape(RoundedRectangle(cornerRadius: AuraRadius.sm))
                     .onAppear { repsText = set.reps.map { String($0) } ?? "" }
-                    .onChange(of: repsText) { newVal in
+                    .onChange(of: repsText) { _, newVal in
                         set.reps = Int(newVal)
                         autoFinishIfReady()
                     }

@@ -54,7 +54,7 @@ struct NutritionView: View {
                         }
                         Divider()
                         VStack(spacing: 4) {
-                            Text("\(stats.weight, specifier: "%.0f") kg")
+                            Text("\(String(format: "%.0f", stats.weight)) kg")
                                 .font(AuraFont.statNum(size: 16))
                                 .foregroundColor(.aura.text)
                             Text("Weight")
@@ -86,7 +86,7 @@ struct NutritionView: View {
 
                 // BMI & TDEE
                 HStack(spacing: AuraSpacing.s3) {
-                    StatTile(value: "\(stats.bmi, specifier: "%.1f")", label: "BMI", color: bmiColor)
+                    StatTile(value: String(format: "%.1f", stats.bmi), label: "BMI", color: bmiColor)
                     StatTile(value: "\(Int(stats.tdee))", label: "TDEE (kcal)", color: .aura.accent)
                 }
 

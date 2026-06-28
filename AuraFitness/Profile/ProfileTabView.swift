@@ -40,9 +40,9 @@ struct ProfileTabView: View {
                             HStack(spacing: AuraSpacing.s2) {
                                 Text("\(appState.bodyStats.age) yrs")
                                 Text("·")
-                                Text("\(appState.bodyStats.height, specifier: "%.0f") cm")
+                                Text("\(String(format: "%.0f", appState.bodyStats.height)) cm")
                                 Text("·")
-                                Text("\(appState.bodyStats.weight, specifier: "%.0f") kg")
+                                Text("\(String(format: "%.0f", appState.bodyStats.weight)) kg")
                             }
                             .font(AuraFont.secondary())
                             .foregroundColor(.aura.text2)

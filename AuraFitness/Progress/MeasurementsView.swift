@@ -29,7 +29,7 @@ struct MeasurementsView: View {
                                 let isDown = trend < 0
                                 HStack(spacing: 2) {
                                     Image(systemName: isDown ? "arrow.down" : "arrow.up")
-                                    Text("\(abs(trend), specifier: "%.1f") \(appState.weightUnit)")
+                                    Text("\(String(format: "%.1f", abs(trend))) \(appState.weightUnit)")
                                 }
                                 .font(AuraFont.badge())
                                 .foregroundColor(isDown ? .aura.green : .aura.red)
@@ -42,7 +42,7 @@ struct MeasurementsView: View {
 
                         if let w = latestMeasurement?.weight {
                             HStack(alignment: .firstTextBaseline, spacing: 4) {
-                                Text("\(w, specifier: "%.1f")")
+                                Text(String(format: "%.1f", w))
                                     .font(AuraFont.statNum(size: 36))
                                     .foregroundColor(.aura.text)
                                 Text(appState.weightUnit)
@@ -70,11 +70,11 @@ struct MeasurementsView: View {
 
                 // Body composition tiles
                 HStack(spacing: AuraSpacing.s3) {
-                    measureTile("Body Fat", value: latestMeasurement?.bodyFatPct.map { "\($0, specifier: "%.1f")%" })
+                    measureTile("Body Fat", value: latestMeasurement?.bodyFatPct.map { String(format: "%.1f%%", $0) })
                     measureTile("Lean Mass", value: {
                         guard let w = latestMeasurement?.weight,
                               let bf = latestMeasurement?.bodyFatPct else { return nil }
-                        return "\(w * (1 - bf/100), specifier: "%.1f") kg"
+                        return "\(String(format: "%.1f", w * (1 - bf/100))) kg"
                     }())
                 }
 
@@ -100,7 +100,7 @@ struct MeasurementsView: View {
                                     .foregroundColor(.aura.text)
                                 Spacer()
                                 if let v = val {
-                                    Text("\(v, specifier: "%.1f") \(appState.lengthUnit)")
+                                    Text("\(String(format: "%.1f", v)) \(appState.lengthUnit)")
                                         .font(.system(size: 15, weight: .semibold))
                                         .foregroundColor(.aura.text)
                                 } else {
