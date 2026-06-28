@@ -118,15 +118,19 @@ struct NutritionView: View {
                 AuraSectionLabel(title: "Daily Targets")
                 AuraCard {
                     VStack(spacing: AuraSpacing.s3) {
-                        macroRow("Calories", value: "\(Int(dailyCalories)) kcal", color: .aura.accent)
+                        macroRow("Calories", value: "\(Int(dailyCalories)) kcal", color: .aura.accent, fraction: 1.0)
                         Divider()
-                        macroRow("Protein", value: "\(Int(dailyProtein)) g", color: .aura.red)
+                        macroRow("Protein", value: "\(Int(dailyProtein)) g", color: .aura.red,
+                                 fraction: macroCalorieFraction(grams: dailyProtein, perGram: 4))
                         Divider()
-                        macroRow("Carbs", value: "\(Int(dailyCarbs)) g", color: .aura.accent)
+                        macroRow("Carbs", value: "\(Int(dailyCarbs)) g", color: .aura.accent,
+                                 fraction: macroCalorieFraction(grams: dailyCarbs, perGram: 4))
                         Divider()
-                        macroRow("Fats", value: "\(Int(dailyFats)) g", color: .aura.blue)
+                        macroRow("Fats", value: "\(Int(dailyFats)) g", color: .aura.blue,
+                                 fraction: macroCalorieFraction(grams: dailyFats, perGram: 9))
                         Divider()
-                        macroRow("Fiber", value: "\(Int(dailyFiber)) g", color: .aura.green)
+                        macroRow("Fiber", value: "\(Int(dailyFiber)) g", color: .aura.green,
+                                 fraction: min(1, dailyFiber / 50))
                     }
                     .padding(AuraSpacing.s4)
                 }
@@ -146,21 +150,30 @@ struct NutritionView: View {
         return .aura.red
     }
 
+    /// Share of total daily calories this macro contributes (0–1).
+    private func macroCalorieFraction(grams: Double, perGram: Double) -> Double {
+        guard dailyCalories > 0 else { return 0 }
+        return min(1, (grams * perGram) / dailyCalories)
+    }
+
     @ViewBuilder
-    private func macroRow(_ label: String, value: String, color: Color) -> some View {
-        HStack {
-            HStack(spacing: AuraSpacing.s2) {
-                Circle()
-                    .fill(color)
-                    .frame(width: 8, height: 8)
-                Text(label)
-                    .font(AuraFont.body())
-                    .foregroundColor(.aura.text)
+    private func macroRow(_ label: String, value: String, color: Color, fraction: Double) -> some View {
+        VStack(spacing: 6) {
+            HStack {
+                HStack(spacing: AuraSpacing.s2) {
+                    Circle()
+                        .fill(color)
+                        .frame(width: 8, height: 8)
+                    Text(label)
+                        .font(AuraFont.body())
+                        .foregroundColor(.aura.text)
+                }
+                Spacer()
+                Text(value)
+                    .font(.system(size: 15, weight: .bold))
+                    .foregroundColor(color)
             }
-            Spacer()
-            Text(value)
-                .font(.system(size: 15, weight: .bold))
-                .foregroundColor(color)
+            AuraProgressBar(value: fraction, color: color, height: 5)
         }
     }
 }

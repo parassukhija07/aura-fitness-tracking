@@ -13,8 +13,8 @@ struct MyPlansView: View {
                 // Plan cards horizontal scroll
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: AuraSpacing.s3) {
-                        ForEach(appState.userPlans) { plan in
-                            planCard(plan: plan)
+                        ForEach(Array(appState.userPlans.enumerated()), id: \.element.id) { idx, plan in
+                            planCard(plan: plan, variant: idx % 3)
                         }
 
                         // Add plan card (dashed)
@@ -69,12 +69,24 @@ struct MyPlansView: View {
         }
     }
 
+    /// Three gradient variants cycling per card, mirroring the design's
+    /// `.plan-card` / `.plan-card.alt` / `.plan-card.alt2`.
+    private func planGradient(_ variant: Int) -> LinearGradient {
+        let pair: [Color]
+        switch variant {
+        case 1:  // .alt — blue → purple
+            pair = [Color(hex: "#4A6FB5"), Color(hex: "#3D3A78")]
+        case 2:  // .alt2 — green → teal
+            pair = [Color(hex: "#3E8C6E"), Color(hex: "#2E6359")]
+        default: // base — accent → warm orange
+            pair = [.aura.accent, Color(hex: "#C85A2C")]
+        }
+        return LinearGradient(colors: pair, startPoint: .topLeading, endPoint: .bottomTrailing)
+    }
+
     @ViewBuilder
-    private func planCard(plan: UserPlan) -> some View {
-        let gradient = LinearGradient(
-            colors: [.aura.accent.opacity(0.8), .aura.accent.opacity(0.4)],
-            startPoint: .topLeading, endPoint: .bottomTrailing
-        )
+    private func planCard(plan: UserPlan, variant: Int) -> some View {
+        let gradient = planGradient(variant)
         ZStack(alignment: .topLeading) {
             RoundedRectangle(cornerRadius: AuraRadius.xl)
                 .fill(gradient)

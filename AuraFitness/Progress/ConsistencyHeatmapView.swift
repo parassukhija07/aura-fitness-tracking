@@ -68,16 +68,20 @@ struct ConsistencyHeatmapView: View {
         let isRest = appState.isRestDay(for: date)
         let isToday = calendar.isDateInToday(date)
 
-        let bg: Color = {
-            if hasLog { return .aura.green }
-            if isRest { return .aura.fill }
-            return .aura.fill
-        }()
+        let bg: Color = hasLog ? .aura.green : .aura.fill
         let opacity: Double = hasLog ? 1.0 : 0.4
 
         RoundedRectangle(cornerRadius: 3)
             .fill(bg.opacity(opacity))
             .frame(height: 20)
+            .overlay {
+                // Rest days are hatched (per design), distinguishing them from empty days.
+                if isRest && !hasLog {
+                    HatchPattern()
+                        .stroke(Color.aura.text3.opacity(0.35), lineWidth: 1)
+                        .clipShape(RoundedRectangle(cornerRadius: 3))
+                }
+            }
             .overlay(
                 isToday ? RoundedRectangle(cornerRadius: 3).stroke(Color.aura.accent, lineWidth: 1.5) : nil
             )
@@ -97,5 +101,20 @@ struct ConsistencyHeatmapView: View {
         }
         while days.count % 7 != 0 { days.append(nil) }
         return days
+    }
+}
+
+// MARK: - Diagonal hatch fill for rest-day heatmap cells
+private struct HatchPattern: Shape {
+    var spacing: CGFloat = 4
+    func path(in rect: CGRect) -> Path {
+        var path = Path()
+        var x = -rect.height
+        while x < rect.width {
+            path.move(to: CGPoint(x: x, y: rect.height))
+            path.addLine(to: CGPoint(x: x + rect.height, y: 0))
+            x += spacing
+        }
+        return path
     }
 }
