@@ -1,0 +1,68 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, master, develop ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch: {}
+
+jobs:
+  build:
+    runs-on: macos-14
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Select Xcode 15.4
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: '~15.4'
+
+      - name: Install xcpretty
+        run: gem install xcpretty --no-document || true
+
+      - name: Verify scheme
+        run: xcodebuild -list -project AuraFitness.xcodeproj
+
+      - name: Build
+        run: |
+          set -o pipefail
+          if command -v xcpretty >/dev/null 2>&1; then
+            xcodebuild build \
+              -project AuraFitness.xcodeproj \
+              -scheme AuraFitness \
+              -configuration Release \
+              -destination 'generic/platform=iOS' \
+              -derivedDataPath $RUNNER_TEMP/DerivedData \
+              CODE_SIGNING_ALLOWED=NO \
+              CODE_SIGN_IDENTITY="" \
+              CODE_SIGNING_REQUIRED=NO \
+              | xcpretty
+          else
+            xcodebuild build \
+              -project AuraFitness.xcodeproj \
+              -scheme AuraFitness \
+              -configuration Release \
+              -destination 'generic/platform=iOS' \
+              -derivedDataPath $RUNNER_TEMP/DerivedData \
+              CODE_SIGNING_ALLOWED=NO \
+              CODE_SIGN_IDENTITY="" \
+              CODE_SIGNING_REQUIRED=NO
+          fi
+
+      - name: Package .ipa
+        run: |
+          APP_PATH=$(find $RUNNER_TEMP/DerivedData/Build/Products/Release-iphoneos -maxdepth 1 -name "AuraFitness.app" 2>/dev/null | head -1)
+          if [ -z "$APP_PATH" ]; then echo "ERROR: AuraFitness.app not found in Release-iphoneos products"; exit 1; fi
+          mkdir -p $RUNNER_TEMP/ipa-staging/Payload
+          cp -R "$APP_PATH" $RUNNER_TEMP/ipa-staging/Payload/
+          cd $RUNNER_TEMP/ipa-staging
+          zip -r $RUNNER_TEMP/AuraFitness.ipa Payload
+
+      - name: Upload IPA artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: AuraFitness-unsigned-${{ github.run_number }}
+          path: ${{ runner.temp }}/AuraFitness.ipa
+          retention-days: 30
