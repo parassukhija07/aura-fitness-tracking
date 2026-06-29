@@ -149,7 +149,7 @@ struct StatsView: View {
                     .font(AuraFont.sectionLabel())
                     .foregroundColor(.aura.text3)
 
-                HStack(alignment: .baseline, spacing: 4) {
+                HStack(alignment: .firstTextBaseline, spacing: 4) {
                     Text("\(strengthBalance)")
                         .font(AuraFont.statNum(size: 32))
                         .foregroundColor(.aura.text)
