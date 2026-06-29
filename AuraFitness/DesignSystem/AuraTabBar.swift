@@ -73,7 +73,11 @@ struct AuraTabBar: View {
     let onQuickAction: (AuraQuickAction) -> Void
 
     @State private var fabOpen = false
-    @State private var dragOffset: CGFloat = 0
+    /// Live horizontal drag distance on the bar (points). Reset on release.
+    @State private var dragTranslation: CGFloat = 0
+    /// True while a swipe drag is active → disables the indicator's settle animation
+    /// so the pill tracks the finger 1:1 (mirrors `dragging` in ui.jsx).
+    @State private var dragging = false
 
     private let actions: [AuraQuickAction] = [.startWorkout, .logMeasurement, .progressPhoto]
 
@@ -92,8 +96,9 @@ struct AuraTabBar: View {
                     ForEach(Array(actions.enumerated()), id: \.element.id) { idx, action in
                         quickActionButton(action)
                             .transition(.move(edge: .bottom).combined(with: .opacity))
+                            // Cascade in, staggered (0.06 + i*0.05)s per ui.jsx fabItemIn.
                             .animation(.spring(response: 0.3, dampingFraction: 0.7)
-                                .delay(Double(idx) * 0.05), value: fabOpen)
+                                .delay(0.06 + Double(idx) * 0.05), value: fabOpen)
                     }
                 }
                 .frame(maxWidth: .infinity, alignment: .trailing)
@@ -106,7 +111,7 @@ struct AuraTabBar: View {
                 fab
             }
             .padding(.horizontal, collapsed ? 8 : 10)
-            .padding(.bottom, collapsed ? 30 : 38)
+            .padding(.bottom, collapsed ? 8 : 12)
         }
         .animation(.easeInOut(duration: 0.25), value: collapsed)
     }
@@ -118,23 +123,38 @@ struct AuraTabBar: View {
             let count = CGFloat(AuraTab.allCases.count)
             let inset: CGFloat = 4
             let slot = (geo.size.width - inset * 2) / count
-            let indicatorX = inset + CGFloat(selection.rawValue) * slot + dragOffset
+            let tabIdx = CGFloat(selection.rawValue)
+
+            // Live swipe preview (mirrors ui.jsx): prog = clamp(dx / (pillW/4), -1, 1).
+            // Drag left (dx<0) previews the NEXT tab; drag right (dx>0) the PREVIOUS.
+            // Guard so we never preview past the first/last tab.
+            let prog = max(-1, min(1, dragTranslation / (geo.size.width / 4)))
+            let canPreview = (prog < 0 && tabIdx < count - 1) || (prog > 0 && tabIdx > 0)
+            let swipeProg = canPreview ? -prog : 0
+            // targetIdx = clamp(tabIdx + swipeProg, 0, 3); indicator left = inset + targetIdx*slot.
+            let targetIdx = max(0, min(count - 1, tabIdx + swipeProg))
+            let indicatorX = inset + targetIdx * slot
 
             ZStack(alignment: .leading) {
-                // Sliding accent indicator
+                // Sliding accent indicator — exactly one slot wide, inset symmetrically top/bottom.
                 RoundedRectangle(cornerRadius: AuraRadius.pill)
                     .fill(Color.aura.accent)
                     .frame(width: slot, height: geo.size.height - inset * 2)
-                    .offset(x: max(inset, min(indicatorX, inset + (count - 1) * slot)),
-                            y: inset)
+                    .offset(x: indicatorX, y: inset)
                     .shadow(color: Color.aura.accent.opacity(0.5), radius: 7, x: 0, y: 2)
-                    .animation(.spring(response: 0.32, dampingFraction: 0.8), value: selection)
+                    // dragging → no settle (1:1 follow); committed → .32s settle.
+                    .animation(dragging ? nil : .timingCurve(0.4, 0, 0.2, 1, duration: 0.32),
+                               value: selection)
+                    .animation(dragging ? nil : .timingCurve(0.4, 0, 0.2, 1, duration: 0.32),
+                               value: dragTranslation)
 
                 HStack(spacing: 0) {
                     ForEach(AuraTab.allCases) { tab in
                         Button {
-                            withAnimation { selection = tab }
-                            if fabOpen { withAnimation { fabOpen = false } }
+                            // Close the FAB first (per spec), then switch — the
+                            // indicator's own .32s animation drives the settle.
+                            if fabOpen { withAnimation(.easeOut(duration: 0.2)) { fabOpen = false } }
+                            selection = tab
                         } label: {
                             VStack(spacing: 2) {
                                 Image(systemName: tab.icon)
@@ -152,6 +172,7 @@ struct AuraTabBar: View {
                         .buttonStyle(.plain)
                     }
                 }
+                .padding(.horizontal, inset)
             }
         }
         .frame(height: collapsed ? 50 : 62)
@@ -219,20 +240,26 @@ struct AuraTabBar: View {
     // MARK: Swipe-between-tabs
 
     private var swipeGesture: some Gesture {
-        DragGesture(minimumDistance: 20)
+        DragGesture(minimumDistance: 10)
             .onChanged { value in
-                // Light rubber-band follow of the indicator while dragging.
-                dragOffset = value.translation.width / 8
+                // Indicator follows the finger 1:1 (no settle animation while dragging).
+                dragging = true
+                dragTranslation = value.translation.width
             }
             .onEnded { value in
-                dragOffset = 0
                 let dx = value.translation.width
-                guard abs(dx) > 35 else { return }
+                dragging = false
+                // Settle the indicator back/forward over .32s.
+                withAnimation(.timingCurve(0.4, 0, 0.2, 1, duration: 0.32)) {
+                    dragTranslation = 0
+                }
+                // Commit only past the 35px threshold, toward an existing neighbour.
+                guard abs(dx) >= 35 else { return }
                 let idx = selection.rawValue
                 if dx < 0, idx < AuraTab.allCases.count - 1 {
-                    withAnimation { selection = AuraTab(rawValue: idx + 1)! }
+                    selection = AuraTab(rawValue: idx + 1)!
                 } else if dx > 0, idx > 0 {
-                    withAnimation { selection = AuraTab(rawValue: idx - 1)! }
+                    selection = AuraTab(rawValue: idx - 1)!
                 }
             }
     }

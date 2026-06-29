@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>8 · Data models — Aura Handover</title>
+<link rel="stylesheet" href="../styles/aura.css">
+<link rel="stylesheet" href="handoff.css">
+</head>
+<body>
+<div class="docbar">
+  <div class="crumbs"><a href="Handoff.html">Aura Handover</a><span>/</span><b>8 · Data models</b></div>
+  <span class="pill">Phase 8</span>
+</div>
+
+<div class="shell">
+  <nav class="rail">
+    <h4>Chapter 8</h4>
+    <a href="#storage">localStorage keys</a>
+    <a href="#shell">Shell / cross-tab</a>
+    <a href="#log">Log model</a>
+    <a href="#plan">Plan seeds</a>
+    <a href="#workout">Workout model</a>
+    <a href="#progress">Progress data</a>
+    <a href="#profile">Profile cfg</a>
+    <h4>Formulas</h4>
+    <a href="#formulas">Computed values</a>
+    <h4>Jump to</h4>
+    <a href="07-profile.html">← 7 · Profile</a>
+    <a href="Handoff.html">Overview</a>
+  </nav>
+
+  <main class="content">
+    <div class="kicker">Phase 8</div>
+    <h1 class="doc">Data models &amp; seed reference</h1>
+    <p class="lead">Every state shape, seed dataset and computed-value formula in one place. The per-tab chapters reference these; this is the single sheet to keep open while wiring real data into the native models.</p>
+
+    <div class="note warn"><span class="lbl">Reminder</span>All shapes below are the prototype's in-memory React state. Only the keys in <a class="link" href="#storage">localStorage</a> persist; everything else resets on reload. The native build must back these with a real store (and persist far more than the prototype does — workout logs, overrides, all of <code>cfg</code>).</div>
+
+    <!-- ============================================================ -->
+    <h2 class="doc first" id="storage">localStorage keys</h2>
+    <table class="doc">
+      <tr><th>Key</th><th>Written by</th><th>Shape</th></tr>
+      <tr><td><code>aura_dark</code></td><td>Profile → shell</td><td><code>'1'</code> / <code>'0'</code></td></tr>
+      <tr><td><code>aura_calstart</code></td><td>Profile → shell</td><td><code>'Sun'</code> / <code>'Mon'</code></td></tr>
+      <tr><td><code>aura_logstat</code></td><td>Profile → shell</td><td><code>'Score'</code> / <code>'Balance'</code> / <code>'Both'</code></td></tr>
+      <tr><td><code>aura_wk</code></td><td>Active Workout</td><td>full <code>workout</code> object (version-gated restore)</td></tr>
+      <tr><td><code>aura_elapsed</code></td><td>Active Workout</td><td>seconds (number)</td></tr>
+      <tr><td><code>aura_pill</code></td><td>Active Workout</td><td><code>{ x, y }</code> rest-pill position</td></tr>
+    </table>
+    <div class="note info"><span class="lbl">Robustness</span>Every read is wrapped in <code>try/catch</code> with a default fallback; <code>aura_wk</code> additionally checks <code>version === WORKOUT.version</code> (5) and clears on mismatch. Replicate the version gate so a model change can't crash restore.</div>
+
+    <!-- ============================================================ -->
+    <h2 class="doc" id="shell">Shell / cross-tab state (<code>AuraRoot</code>)</h2>
+    <table class="doc">
+      <tr><th>Field</th><th>Type / default</th></tr>
+      <tr><td><code>tab</code></td><td><code>'log'|'plan'|'progress'|'profile'</code> · <code>'log'</code></td></tr>
+      <tr><td><code>workoutOpen</code> · <code>inProgress</code></td><td>bool · false</td></tr>
+      <tr><td><code>dark</code></td><td>bool (from storage)</td></tr>
+      <tr><td><code>calStart</code> · <code>logStat</code></td><td><code>'Sun'</code> · <code>'Both'</code> (from storage)</td></tr>
+      <tr><td><code>workoutCfg</code></td><td><code>{ name:'', empty:false }</code></td></tr>
+    </table>
+
+    <!-- ============================================================ -->
+    <h2 class="doc" id="log">Log model (<code>combined/log.jsx</code>)</h2>
+    <ul class="spec">
+      <li><b>State:</b> <code>selected</code> (Date), <code>overrides</code> ({iso → override}), <code>sheet</code>, <code>calMonth</code>, <code>toast</code>, <code>workoutLogs</code> ({iso → {time, exercises[]}}).</li>
+      <li><b>Override</b> = <code>{ type, workoutId?, exercises? }</code> — type ∈ <code>rest · removed · added · logged · edit · switch</code>.</li>
+      <li><b>Seed:</b> <code>PLAN_BY_DOW</code> {Sun null, Mon pull-a, Tue leg-a, Wed null, Thu push-a, Fri pull-b, Sat null}; <code>SEED_MISSED</code> {2026-06-23, -06-17, -06-11}; <code>WK_DETAIL</code> (workout → {name, muscles, duration, ex:[[name,sets,reps]]}); <code>OTHER_PLANS</code> (HIIT, 5×5).</li>
+      <li><code>workoutLog</code> set = <code>{ weight, reps }</code> (strings).</li>
+    </ul>
+    <p class="doc">The derived <code>kind</code> (today · done · missed · future · rest · empty-today) is computed by <code>dayInfo()</code> — full table in <a class="link" href="03-log.html#dayinfo">Ch.3</a>.</p>
+
+    <!-- ============================================================ -->
+    <h2 class="doc" id="plan">Plan seeds (<code>plan/data.jsx</code>)</h2>
+    <ul class="spec">
+      <li><b><code>PLAN_WORKOUTS</code></b> (5): <code>{ id, name, exCount, muscles, duration }</code>.</li>
+      <li><b><code>PLAN_PROGRAMS</code></b> (6): <code>{ id, name, days, level, tag, active }</code> — ppl active.</li>
+      <li><b><code>PLAN_EXERCISES_LIB</code></b> (47): <code>{ id, name, muscle, equip }</code> — 7 muscles × 6 equipment.</li>
+      <li><b><code>DEFAULT_SCHEDULE</code></b>: {Mon push-a, Tue pull-a, Wed null, Thu leg-a, Fri push-b, Sat/Sun null}.</li>
+      <li><b>Editor shape</b> (<code>WK_SEEDS</code>): exercise = <code>{ id, name, sets, reps, superset }</code> — superset flag on the leader; partner = next item.</li>
+    </ul>
+
+    <!-- ============================================================ -->
+    <h2 class="doc" id="workout">Active Workout model (<code>workout/data.jsx</code>)</h2>
+    <table class="doc">
+      <tr><th>Object</th><th>Shape</th></tr>
+      <tr><td><b>workout</b></td><td><code>{ version, name, program, exercises[] }</code></td></tr>
+      <tr><td><b>exercise</b></td><td><code>{ id, name, muscle, groups[], equipment, isCable, repRange, planned, lastPR{weight,reps,date}, target{weight,reps,note}, history[{weight,reps}], warmup[{reps,pct}], hint, pulley, sets[], superset?, completed?, note? }</code></td></tr>
+      <tr><td><b>set</b></td><td><code>{ weight, reps, done, type, note? }</code> (weight/reps strings)</td></tr>
+    </table>
+    <ul class="spec">
+      <li><b><code>SET_TYPES</code></b>: normal · warmup(W) · drop(D, purple) · restpause(R, blue) · failure(F, red) · partials(P, green).</li>
+      <li><b>Controller state:</b> <code>view</code>, <code>idx</code>, <code>ssIdx</code>, <code>elapsed</code> (seed 1487), <code>rest{active,total,left,running}</code>, <code>pos{x:96,y:690}</code>, <code>modal</code>, <code>celeb</code>, <code>dragIdx</code>, <code>exDetail</code>.</li>
+      <li>Tweaks: <code>startView</code>, <code>darkMode</code>, <code>showHistory</code>, <code>restDuration:90</code>.</li>
+    </ul>
+
+    <!-- ============================================================ -->
+    <h2 class="doc" id="progress">Progress data (<code>combined/progress.jsx</code>)</h2>
+    <ul class="spec">
+      <li><b>measure</b> = 9 keys {weight, bodyFat, chest, waist, arms, thighs, shoulders, neck, hips}; <b>series</b> = {key → 8-pt array} (capped 8 on log).</li>
+      <li><b>nut</b> = <code>{ height:178, weight:78.4, age:28, sex:'Male', activity:'Moderate', target:80, goal:'Lean gain', macro:'Balanced' }</code>.</li>
+      <li>Seeds: <code>PR_DATA</code> (per-category records), <code>EX_DATA</code> (generated 12-pt trend series), <code>SPLIT</code>, <code>WEEKLY_VOL/SETS</code>, heatmap via seeded PRNG <code>genMonth</code>.</li>
+      <li>Constants: <code>ACT</code> (activity multipliers), <code>GOAL_ADJ</code> (calorie deltas), <code>MACRO_SPLIT</code> (%[P,C,F]).</li>
+    </ul>
+
+    <!-- ============================================================ -->
+    <h2 class="doc" id="profile">Profile cfg (<code>combined/profile.jsx</code>)</h2>
+    <ul class="spec">
+      <li><b>cfg</b>: calStart, logStat, showFirst, showWeightFirst, showPR, defSets:3, defRepsLo:6, defRepsHi:10, restSet:60, restEx:90, autoRest, autoVideo, notif, restSound:'Ding', weightUnit:'kg', lengthUnit:'cm', apple:true, google:false.</li>
+      <li><b>acct</b>: first, last, email, phone, bday, gender, height:178, country, city, state.</li>
+      <li>Only <code>calStart</code>/<code>logStat</code>/theme propagate to the shell &amp; persist; the rest is local (should persist + drive behaviour natively).</li>
+    </ul>
+
+    <!-- ============================================================ -->
+    <h2 class="doc" id="formulas">Computed-value formulas</h2>
+    <table class="doc">
+      <tr><th>Value</th><th>Formula</th><th>Where</th></tr>
+      <tr><td><b>Est. 1RM</b></td><td>Epley: <code>w × (1 + reps/30)</code>, round 0.25; reps≤1 → w</td><td>Plan exercise detail (Ch.4)</td></tr>
+      <tr><td><b>Level from equipment</b></td><td>BW/Machine/Smith→Beginner · DB/Cable→Intermediate · Barbell→Advanced</td><td>Plan exercise detail</td></tr>
+      <tr><td><b>Workout volume</b></td><td>Σ (weight×reps) of <code>done</code> sets</td><td>Active Workout summary (Ch.5)</td></tr>
+      <tr><td><b>New PRs</b></td><td>count of exercises with a set weight &gt; <code>lastPR.weight</code></td><td>Active Workout summary</td></tr>
+      <tr><td><b>BMR</b></td><td>Mifflin-St Jeor: <code>10·wt + 6.25·h − 5·age + (Male?+5:−161)</code></td><td>Progress nutrition (Ch.6)</td></tr>
+      <tr><td><b>TDEE</b></td><td><code>round(BMR × ACT[activity])</code></td><td>Progress nutrition</td></tr>
+      <tr><td><b>Target kcal</b></td><td><code>max(1200, TDEE + GOAL_ADJ[goal])</code></td><td>Progress nutrition</td></tr>
+      <tr><td><b>BMI</b></td><td><code>wt / (h/100)²</code> → &lt;18.5/&lt;25/&lt;30/else</td><td>Progress nutrition</td></tr>
+      <tr><td><b>Macros (g)</b></td><td>P,C = split%·kcal ÷4 · F = split%·kcal ÷9 · fiber = kcal/1000 ×14</td><td>Progress nutrition</td></tr>
+    </table>
+
+    <div class="note info"><span class="lbl">Auto-rest constants</span>Set done (non-final) / add set → <code>restDuration</code> tweak (90) · Complete Exercise → 90s · Superset set → 60s · Complete Superset → <code>restDuration</code>. (Full table in <a class="link" href="05-active-workout.html#r-rest">Ch.5</a>.)</div>
+
+    <div class="chapnav">
+      <a href="07-profile.html"><div class="dir">← Prev</div><div class="ttl">7 · Profile tab</div></a>
+      <a class="next" href="Handoff.html"><div class="dir">Back to</div><div class="ttl">Overview</div></a>
+    </div>
+  </main>
+</div>
+</body>
+</html>

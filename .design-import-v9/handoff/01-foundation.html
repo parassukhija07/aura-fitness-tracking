@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>1 · Foundation — Aura Handover</title>
+<link rel="stylesheet" href="../styles/aura.css">
+<link rel="stylesheet" href="handoff.css">
+</head>
+<body>
+<div class="docbar">
+  <div class="crumbs"><a href="Handoff.html">Aura Handover</a><span>/</span><b>1 · Foundation</b></div>
+  <span class="pill">Phase 1</span>
+</div>
+
+<div class="shell">
+  <nav class="rail">
+    <h4>Chapter 1</h4>
+    <a href="#colour">Colour tokens</a>
+    <a href="#type">Typography &amp; scale</a>
+    <a href="#metrics">Spacing · radius · shadow</a>
+    <a href="#frame">Device frame</a>
+    <a href="#icons">Icon set</a>
+    <a href="#components">Shared components</a>
+    <a href="#theming">Theming</a>
+    <a href="#state">State &amp; persistence</a>
+    <h4>Jump to</h4>
+    <a href="Handoff.html">← Overview</a>
+    <a href="02-shell-nav.html">2 · Shell &amp; nav →</a>
+  </nav>
+
+  <main class="content">
+    <div class="kicker">Phase 1</div>
+    <h1 class="doc">Foundation</h1>
+    <p class="lead">The design system, shared component primitives and the global state model. Everything else in the app is assembled from these pieces — build this layer first and the tabs go quickly.</p>
+
+    <h2 class="doc first" id="colour">Colour tokens</h2>
+    <p class="doc">Authored in <b class="k">OKLCH</b>. The semantic accents (green / red / blue / purple) intentionally share chroma &amp; lightness and vary only hue, so they read as one family. Convert to your platform's colour space or use the hex approximations. All tokens live in <code>styles/aura.css</code> under <code>:root</code> (light) and <code>[data-theme="dark"]</code>.</p>
+    <div class="tok-grid">
+      <div class="tok"><div class="sw" style="background:oklch(0.70 0.17 60)"></div><div class="tk"><b>accent</b><span>amber · #E07A1F</span></div></div>
+      <div class="tok"><div class="sw" style="background:oklch(0.70 0.15 150)"></div><div class="tk"><b>green · done</b><span>oklch(.70 .15 150)</span></div></div>
+      <div class="tok"><div class="sw" style="background:oklch(0.64 0.19 25)"></div><div class="tk"><b>red · destroy</b><span>oklch(.64 .19 25)</span></div></div>
+      <div class="tok"><div class="sw" style="background:oklch(0.66 0.14 250)"></div><div class="tk"><b>blue · info</b><span>oklch(.66 .14 250)</span></div></div>
+      <div class="tok"><div class="sw" style="background:oklch(0.62 0.15 300)"></div><div class="tk"><b>purple · drop</b><span>oklch(.62 .15 300)</span></div></div>
+      <div class="tok"><div class="sw" style="background:#fff;border-bottom:1px solid var(--separator-2)"></div><div class="tk"><b>surface</b><span>#FFF / #2A2724</span></div></div>
+      <div class="tok"><div class="sw" style="background:oklch(0.20 0.012 70)"></div><div class="tk"><b>text</b><span>oklch(.20 .012 70)</span></div></div>
+      <div class="tok"><div class="sw" style="background:oklch(0.52 0.012 70)"></div><div class="tk"><b>text-2</b><span>oklch(.52 .012 70)</span></div></div>
+    </div>
+    <table class="doc">
+      <tr><th>Token</th><th>Role</th><th>Light</th><th>Dark</th></tr>
+      <tr><td><code>--accent</code></td><td>Primary (amber)</td><td>oklch(.70 .17 60)</td><td>oklch(.76 .17 65)</td></tr>
+      <tr><td><code>--accent-soft</code></td><td>Tinted bg / chips</td><td>accent @ 12%</td><td>accent @ 18%</td></tr>
+      <tr><td><code>--green / red / blue / purple</code></td><td>Semantic accents</td><td colspan="2">same in both themes (done · destroy · info · drop-set/special)</td></tr>
+      <tr><td><code>--bg</code></td><td>Screen bg</td><td>#FCFBFA</td><td>#1E1C1A</td></tr>
+      <tr><td><code>--bg-grouped</code></td><td>Grouped/list bg</td><td>#F5F3F1</td><td>#181614</td></tr>
+      <tr><td><code>--surface</code> / <code>--surface-2</code></td><td>Cards / inset fields</td><td>#FFF / #FAF9F8</td><td>#2A2724 / #2E2B28</td></tr>
+      <tr><td><code>--text / -2 / -3</code></td><td>Primary / secondary / tertiary</td><td>#2E2A26 · #7C746C · #A39A91</td><td>inverted ramp</td></tr>
+      <tr><td><code>--separator / -2</code></td><td>Dividers (strong / hairline)</td><td>oklch(.90 / .93)</td><td>oklch(.32 / .27)</td></tr>
+      <tr><td><code>--fill / -2</code></td><td>Neutral fills (chips, icon bg)</td><td>~12% / ~8%</td><td>~16% / ~10%</td></tr>
+      <tr><td><code>--track</code></td><td>Progress/timer track</td><td>oklch(.88 .006 70)</td><td>oklch(.30 .006 70)</td></tr>
+    </table>
+
+    <h2 class="doc" id="type">Typography &amp; scale</h2>
+    <ul class="doc">
+      <li><b>UI / display:</b> <code>Plus Jakarta Sans</code> 400–800. Geometric, clean. On native you may substitute SF Pro.</li>
+      <li><b>Mono / captions:</b> <code>JetBrains Mono</code> — used only for placeholder captions &amp; code-like tags.</li>
+      <li><b>Numeric data</b> (weights, timers, stats): display font with <code>font-variant-numeric: tabular-nums</code> and <code>letter-spacing:-0.03em</code> — class <code>.stat-num</code>. Keep this on native; it stops digits jittering as timers count.</li>
+    </ul>
+    <table class="doc">
+      <tr><th>Style</th><th>Size / weight</th><th>Use</th></tr>
+      <tr><td>Large title</td><td>30 / 800 / −.02em</td><td>Tab top titles ("Today", "Plan", "Progress", "Profile")</td></tr>
+      <tr><td>Nav title</td><td>17 / 700</td><td>Pushed-screen &amp; sheet titles</td></tr>
+      <tr><td>Card title</td><td>22–24 / 800 / −.02em</td><td>Workout name, exercise name</td></tr>
+      <tr><td>Body</td><td>15–16 / 500–600</td><td>List rows, items</td></tr>
+      <tr><td>Secondary</td><td>12.5–13 / 500</td><td>Meta, subtitles (<code>--text-2</code>)</td></tr>
+      <tr><td>Section label</td><td>13 / 700 / UPPER / +.02em</td><td><code>.sec-label</code> (<code>--text-3</code>)</td></tr>
+      <tr><td>Stat number</td><td>18–32 / 800 / tabular</td><td>Timers, weights, totals</td></tr>
+    </table>
+
+    <h2 class="doc" id="metrics">Spacing · radius · shadow</h2>
+    <ul class="doc">
+      <li><b>Spacing</b> base-4: <code>4 · 8 · 12 · 16 · 20 · 24 · 32 · 40</code> (<code>--s1…--s10</code>). Screen horizontal padding = <b>20px</b> (<code>.pad</code>); list/scroll content reserves <b>110px</b> bottom for the floating tab bar (<code>.pad-b</code>).</li>
+      <li><b>Radius</b>: <code>xs 8 · sm 12 · md 16 · lg 22 · xl 28 · pill 999</code>. Cards use lg/xl; lists &amp; fields md/sm; chips/toggles pill.</li>
+      <li><b>Shadow</b>: <code>--shadow-sm</code> (cards, rows) and <code>--shadow</code> (elevated/hover). Sheets use a strong upward shadow.</li>
+    </ul>
+
+    <h2 class="doc" id="frame">Device frame</h2>
+    <p class="doc">Everything renders inside <code>.phone</code> — a fixed <b class="k">393 × 852</b> iPhone with 44px corner radius, clipped overflow. The whole frame is scaled to fit the viewport by a small fit() routine in <code>Aura App.html</code> (never resized).</p>
+    <ul class="doc">
+      <li><b>Status bar</b> 54px: time left, signal/wifi/battery right, Dynamic Island (124×36) centred. Auto-rendered by <code>styles/icons.js</code>.</li>
+      <li><b>Nav bar</b> (<code>.navbar</code>, optionally <code>.bordered</code>): large title or back-button row.</li>
+      <li><b>Home indicator</b> pill 134×5 at the bottom; the tab bar floats above it.</li>
+    </ul>
+    <div class="note info"><span class="lbl">Native</span>This frame is a prototype device; on a real build it maps to the OS safe-area insets. The 54/84px values translate to the system status bar &amp; home-indicator safe areas.</div>
+
+    <h2 class="doc" id="icons">Icon set</h2>
+    <p class="doc">A single <code>Icon</code> component renders ~50 named glyphs from a path table (<code>workout/icons.jsx</code>, shared set in <code>styles/icons.js</code>). All are 24px viewBox, stroke ~1.7, round caps/joins, <code>currentColor</code>. Map each to its SF Symbol on iOS.</p>
+    <table class="doc">
+      <tr><th>Names</th><th>Used for</th></tr>
+      <tr><td><code>check check-c x x-c plus plus-c minus minus-c</code></td><td>Confirm / dismiss / steppers</td></tr>
+      <tr><td><code>play play-c pause timer clock</code></td><td>Video, rest timer, time pickers</td></tr>
+      <tr><td><code>chevron-left/right/down ellipsis grip swap</code></td><td>Nav, menus, drag handle, substitute</td></tr>
+      <tr><td><code>dumbbell log chart person</code></td><td>Tab bar (Plan/Log/Progress/Profile)</td></tr>
+      <tr><td><code>bolt flame trophy medal target sparkle bulb</code></td><td>Superset, push/streak, PR, goal, suggestion, tip</td></tr>
+      <tr><td><code>calendar-day moon note edit trash search info cable arrow-up heart</code></td><td>Calendar, rest day, logs, edit, delete, search, info, cable setup, trend, favourite</td></tr>
+    </table>
+
+    <h2 class="doc" id="components">Shared components</h2>
+    <p class="doc">Defined in <code>combined/ui.jsx</code> (and small local copies in tab files). Build these as reusable primitives — they appear on nearly every screen.</p>
+
+    <div class="screen">
+      <div class="screen-head"><span class="id">CMP · Sheet</span><h3>Bottom sheet</h3></div>
+      <p class="screen-purpose">Modal that slides up from the bottom over a dimmed scrim. The workhorse container for every picker, menu and form in the app.</p>
+      <h5>Anatomy</h5>
+      <ul class="spec">
+        <li>Tap-dismissable <b>scrim</b> (<code>--scrim</code>) + a card pinned to the bottom, radius 28 top corners, max-height passed per sheet (48–93%).</li>
+        <li><b>Grabber</b> pill (38×5) at top; optional title + subtitle row with an <code>x</code> close button.</li>
+        <li>Body scrolls internally; 28px bottom padding. Content never pushes the device frame.</li>
+      </ul>
+    </div>
+
+    <div class="screen">
+      <div class="screen-head"><span class="id">CMP · Row</span><h3>Grouped list row</h3></div>
+      <p class="screen-purpose">iOS settings-style row inside a <code>.list</code> card: 30px coloured icon tile, title + optional subtitle, trailing value / chevron / control. Hairline separator inset 16px from the left.</p>
+    </div>
+
+    <div class="screen">
+      <div class="screen-head"><span class="id">CMP · Controls</span><h3>Seg · Toggle · Stepper · Chips</h3></div>
+      <ul class="spec">
+        <li><b>Seg</b> (segmented control): equal pills in a fill track; active pill = surface + shadow. Options can be string or <code>{v,l}</code>.</li>
+        <li><b>Toggle</b>: 51×31 iOS switch; ON = green track, knob slides 20px.</li>
+        <li><b>Stepper</b>: − / value / + with an optional <code>fmt</code> formatter (e.g. <code>fmtRest</code> renders seconds as "1 min 30 s"). The + button is accent-tinted.</li>
+        <li><b>Chip / filter</b>: pill, fill bg; active = accent (or muscle-coloured in libraries). Filter rows scroll horizontally with hidden scrollbars.</li>
+      </ul>
+    </div>
+
+    <div class="screen">
+      <div class="screen-head"><span class="id">CMP · LineChart / AxisChart</span><h3>Charts</h3></div>
+      <ul class="spec">
+        <li><b>LineChart</b>: lightweight SVG area+line, gradient fill, dot on the last point. Used in nutrition &amp; small trends.</li>
+        <li><b>AxisChart</b> (Progress): adds 4 "nice" Y gridlines/labels (auto-stepped to 1/2/5 multiples) and X labels. Used for measurement &amp; exercise trends.</li>
+      </ul>
+      <div class="note"><span class="lbl">Asset</span>The <code>.ph</code> placeholder (striped box + mono caption) marks every spot needing a real image/video — exercise demos, body map, progress photos, program cover art.</div>
+    </div>
+
+    <h2 class="doc" id="theming">Theming</h2>
+    <p class="doc">Dark mode is a single boolean held in <code>AuraRoot</code> and persisted to <code>localStorage["aura_dark"]</code>. The root sets <code>data-theme</code> on every <code>.phone</code> element. Because some sub-views (Plan, Active Workout) hard-code <code>data-theme="light"</code>, the shell runs a <b class="k">MutationObserver</b> that re-applies the chosen theme whenever new phone surfaces mount.</p>
+    <div class="note warn"><span class="lbl">Edge</span>On native this is trivial (one environment value), but note the intent: dark mode must apply <b>globally and immediately</b>, including to the Active Workout overlay and any pushed sub-screen — not just the tab that toggled it.</div>
+
+    <h2 class="doc" id="state">State &amp; persistence model</h2>
+    <p class="doc">The prototype keeps state in component memory and mirrors a few keys to <code>localStorage</code>. On native, map these to your store / user-defaults / DB. Keys used:</p>
+    <table class="doc">
+      <tr><th>Key</th><th>Holds</th><th>Owner</th></tr>
+      <tr><td><code>aura_dark</code></td><td>"1"/"0" dark mode</td><td>shell.jsx</td></tr>
+      <tr><td><code>aura_calstart</code></td><td>"Sun"/"Mon" week start</td><td>shell.jsx (set in Profile)</td></tr>
+      <tr><td><code>aura_logstat</code></td><td>"Score"/"Balance"/"Both" — which card shows on Progress</td><td>shell.jsx (set in Profile)</td></tr>
+      <tr><td><code>aura_wk</code></td><td>Active workout object (versioned, schema v5)</td><td>workout/app.jsx</td></tr>
+      <tr><td><code>aura_elapsed</code></td><td>Workout timer seconds</td><td>workout/app.jsx</td></tr>
+      <tr><td><code>aura_pill</code></td><td>Rest-pill {x,y} position</td><td>workout/app.jsx</td></tr>
+    </table>
+    <ul class="doc">
+      <li><b>Cross-tab settings</b> flow <b>down</b> as props from <code>AuraRoot</code> and changes flow <b>up</b> via callbacks (e.g. Profile's week-start updates the Log calendar live).</li>
+      <li><b>Schema versioning:</b> the active workout is tagged <code>version</code>. On load, if the saved version ≠ current, the stored copy is discarded and fresh seed used — so a model change never crashes a restored session. Preserve this guard on native (migration or discard).</li>
+      <li><b>In-tab state</b> (Log overrides, Progress measurements, Plan schedule) is local to each tab in the prototype and resets on reload. On native these become persisted records.</li>
+    </ul>
+    <div class="note info"><span class="lbl">Principle</span>Edits to a workout are held live and only committed on an explicit <b>Save</b> — see the Active Workout and Log chapters for the "today-only vs permanent" scope rule that governs what a save touches.</div>
+
+    <div class="chapnav">
+      <a href="Handoff.html"><div class="dir">← Prev</div><div class="ttl">Overview</div></a>
+      <a class="next" href="02-shell-nav.html"><div class="dir">Next →</div><div class="ttl">2 · Shell &amp; navigation</div></a>
+    </div>
+  </main>
+</div>
+</body>
+</html>

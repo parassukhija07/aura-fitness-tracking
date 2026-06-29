@@ -56,7 +56,7 @@ struct EmptyOverviewView: View {
                     .font(AuraFont.statNum(size: 19)).foregroundColor(.aura.accent).monospacedDigit()
             }
             Spacer()
-            Button { appState.activeWorkoutSession = nil } label: {
+            Button { appState.minimizeWorkout() } label: {
                 Image(systemName: "minus").font(.system(size: 22, weight: .medium)).foregroundColor(.aura.text)
             }
         }

@@ -30,7 +30,7 @@ struct ExerciseLoggingView: View {
                     nameAndChips(ex: ex)
                     if ex.isCable { pulleyCard }
                     prTargetCards(ex: ex)
-                    if !ex.warmup.isEmpty && exerciseIndex < 2 { warmupCard(ex: ex) }
+                    if !ex.warmup.isEmpty { warmupCard(ex: ex) }
                     if !ex.hint.isEmpty { formTip(ex.hint) }
                     workingSetsHeader(ex: ex)
                     setRows(ex: ex)

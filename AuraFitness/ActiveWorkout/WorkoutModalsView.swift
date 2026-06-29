@@ -54,10 +54,7 @@ struct WorkoutModalsView: View {
                 VStack(spacing: 0) {
                     ForEach(Array(ActiveWorkoutData.substituteOptions.enumerated()), id: \.element.id) { idx, o in
                         optionRow(o, trailing: "chevron") {
-                            var repl = o.makeExercise()
-                            // keep current sets
-                            if let c = cur { repl.sets = c.sets }
-                            session.substituteExercise(at: ei, with: repl)
+                            session.substituteExercise(at: ei, name: o.name, equipment: o.equipment)
                             presented = nil
                         }
                         if idx < ActiveWorkoutData.substituteOptions.count - 1 { Divider().padding(.leading, 56) }

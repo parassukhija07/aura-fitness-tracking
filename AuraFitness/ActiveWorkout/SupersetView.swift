@@ -4,6 +4,7 @@ import SwiftUI
 /// progress header, A/B meta strips, per-round cards (A row + B row),
 /// add round, per-exercise notes, complete.
 struct SupersetView: View {
+    @EnvironmentObject var appState: AppState
     @EnvironmentObject var session: WorkoutSessionState
     let supersetIndex: Int
     @State private var showMenu = false
@@ -297,7 +298,9 @@ struct SupersetView: View {
             session.workout.exercises[idx].completed = true
         }
         session.triggerCelebration(emoji: "💪", title: "Superset done", message: "Both exercises logged. Keep going.")
-        session.startRest(duration: 60)
+        // Complete Superset rest = the default-rest tweak (Profile "Rest Between Sets"),
+        // not the hard 60s used for per-side set completion.
+        session.startRest(duration: appState.defaultRestBetweenSets)
         session.activeView = .overview
     }
 
@@ -380,11 +383,11 @@ struct SupersetSetRow: View {
 
     private func finish() {
         guard !set.done, filled else { return }
-        session.onSetCompleted(exerciseIndex: exerciseIndex, setIndex: setIndex)
+        session.onSupersetSetDone(exerciseIndex: exerciseIndex, setIndex: setIndex)
     }
     private func toggle() {
         if set.done { set.done = false }
         else { set.weight = Double(weightText); set.reps = Int(repsText)
-            session.onSetCompleted(exerciseIndex: exerciseIndex, setIndex: setIndex) }
+            session.onSupersetSetDone(exerciseIndex: exerciseIndex, setIndex: setIndex) }
     }
 }

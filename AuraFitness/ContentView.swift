@@ -5,7 +5,6 @@ struct ContentView: View {
 
     @State private var selection: AuraTab = .log
     @State private var collapsed = false
-    @State private var showMeasurementSheet = false
 
     var body: some View {
         ZStack {
@@ -15,7 +14,8 @@ struct ContentView: View {
             tabContent
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
 
-            // Floating glass tab bar + FAB
+            // Floating glass tab bar + FAB. The resume banner is rendered inside
+            // LogTabView (mirrors combined/log.jsx), so it only shows on Log.
             VStack {
                 Spacer()
                 AuraTabBar(selection: $selection, collapsed: collapsed) { action in
@@ -24,8 +24,8 @@ struct ContentView: View {
             }
             .ignoresSafeArea(.keyboard)
 
-            // Active workout overlay takes over the whole screen.
-            if let session = appState.activeWorkoutSession {
+            // Active workout overlay takes over the whole screen (only while open).
+            if appState.workoutOverlayOpen, let session = appState.activeWorkoutSession {
                 ActiveWorkoutView()
                     .environmentObject(session)
                     .transition(.move(edge: .bottom))
@@ -33,15 +33,12 @@ struct ContentView: View {
             }
         }
         .preferredColorScheme(appState.darkModePreference.colorScheme)
-        .animation(.easeInOut(duration: 0.3), value: appState.activeWorkoutSession != nil)
+        .animation(.easeInOut(duration: 0.3), value: appState.workoutOverlayOpen)
+        .animation(.spring(response: 0.35, dampingFraction: 0.8), value: appState.workoutInProgress)
         .onReceive(NotificationCenter.default.publisher(for: .auraScroll)) { note in
             if let dir = note.userInfo?["dir"] as? String {
                 withAnimation(.easeInOut(duration: 0.22)) { collapsed = (dir == "down") }
             }
-        }
-        .sheet(isPresented: $showMeasurementSheet) {
-            LogMeasurementSheet()
-                .environmentObject(appState)
         }
     }
 
@@ -55,18 +52,22 @@ struct ContentView: View {
         }
     }
 
+    /// FAB quick actions route to their *intended* destination regardless of the
+    /// active tab (per 02-shell-nav "Build to the intent column").
     private func handleQuickAction(_ action: AuraQuickAction) {
         switch action {
         case .startWorkout:
-            if let today = appState.todayWorkout() {
-                appState.startWorkout(today)
-            } else {
-                appState.startWorkout(SeedData.emptyWorkout())
-            }
+            // Open the Log add-workout source sheet (03-log §misc). Route to Log
+            // first if we're elsewhere; LogTabView raises the sheet on appear.
+            selection = .log
+            appState.requestLogAddSheet = true
         case .logMeasurement:
+            // Progress → Body → log-measurement entry.
+            appState.progressDeepLink = .measurements
             selection = .progress
-            showMeasurementSheet = true
         case .progressPhoto:
+            // Progress → progress-photo comparison.
+            appState.progressDeepLink = .photos
             selection = .progress
         }
     }

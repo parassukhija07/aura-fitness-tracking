@@ -27,22 +27,21 @@ enum AuraSpacing {
 }
 
 // MARK: - Shadow tokens (mirrors aura.css --shadow / --shadow-sm)
-struct AuraShadow {
-    let color: Color
-    let radius: CGFloat
-    let x: CGFloat
-    let y: CGFloat
+// Source: `--shadow*` use base oklch(0.4 0.02 70) ≈ #4F463C.
+// CSS blur radius is roughly 2× SwiftUI's, so SwiftUI radii are ~half the CSS px.
+enum AuraShadowToken {
+    static let base = Color(hex: "#4F463C")
 }
 
 extension View {
-    /// --shadow-sm: subtle card/row elevation.
+    /// `--shadow-sm`: subtle card/row elevation · `0 1px 2px base/8%`.
     func auraShadowSm() -> some View {
-        shadow(color: Color(red: 0.25, green: 0.16, blue: 0.08).opacity(0.08), radius: 2, x: 0, y: 1)
+        shadow(color: AuraShadowToken.base.opacity(0.08), radius: 1, x: 0, y: 1)
     }
 
-    /// --shadow: elevated / hover surfaces.
+    /// `--shadow`: elevated / hover surfaces · `0 1px 3px base/6%, 0 8px 24px base/6%`.
     func auraShadow() -> some View {
-        shadow(color: Color(red: 0.25, green: 0.13, blue: 0.05).opacity(0.06), radius: 3, x: 0, y: 1)
-            .shadow(color: Color(red: 0.25, green: 0.13, blue: 0.05).opacity(0.06), radius: 12, x: 0, y: 8)
+        shadow(color: AuraShadowToken.base.opacity(0.06), radius: 1.5, x: 0, y: 1)
+            .shadow(color: AuraShadowToken.base.opacity(0.06), radius: 12, x: 0, y: 8)
     }
 }

@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>6 · Progress tab — Aura Handover</title>
+<link rel="stylesheet" href="../styles/aura.css">
+<link rel="stylesheet" href="handoff.css">
+</head>
+<body>
+<div class="docbar">
+  <div class="crumbs"><a href="Handoff.html">Aura Handover</a><span>/</span><b>6 · Progress tab</b></div>
+  <span class="pill">Phase 6</span>
+</div>
+
+<div class="shell">
+  <nav class="rail">
+    <h4>Chapter 6</h4>
+    <a href="#overview">Structure</a>
+    <a href="#state">State</a>
+    <h4>Stats</h4>
+    <a href="#heatmap">Consistency heatmap</a>
+    <a href="#lifetime">Lifetime tiles</a>
+    <a href="#performance">Strength score / balance</a>
+    <a href="#split">Volume by muscle</a>
+    <a href="#trends">Exercise trends + chart</a>
+    <a href="#prs">Personal records</a>
+    <h4>Body</h4>
+    <a href="#measurements">Measurements</a>
+    <a href="#photos">Photo progress</a>
+    <a href="#nutrition">Nutrition compute</a>
+    <h4>Sheets</h4>
+    <a href="#sheets">how-to · log · details</a>
+    <a href="#checklist">Scenario checklist</a>
+    <h4>Jump to</h4>
+    <a href="05-active-workout.html">← 5 · Active Workout</a>
+    <a href="07-profile.html">7 · Profile →</a>
+  </nav>
+
+  <main class="content">
+    <div class="kicker">Phase 6</div>
+    <h1 class="doc">Progress tab</h1>
+    <p class="lead">The analytics surface. Two sub-tabs — <b class="k">Stats</b> (consistency, strength, exercise trends, PRs) and <b class="k">Body</b> (measurements, photos, and a live nutrition calculator). Several pieces are genuinely computed, not static — the trend charts, the measurement series, and the entire TDEE/macro engine recalculate from inputs.</p>
+
+    <div class="note"><span class="lbl">Source</span><code>combined/progress.jsx</code> (748 lines — <code>window.ProgressTab</code>). Reuses <code>AuraSeg</code>, <code>LineChart</code>, <code>Stepper</code> from <code>ui.jsx</code> and defines a local <code>AxisChart</code> (labelled SVG). Receives <code>tab</code>, <code>onTab</code>, <code>dark</code>, <code>onDark</code>, <code>logStat</code> from <code>AuraRoot</code>.</div>
+
+    <!-- ============================================================ -->
+    <h2 class="doc first" id="overview">Structure</h2>
+    <p class="doc">Header = "Progress" large title + a sub-tab pill row (<b>Stats · Body</b>). Body has a second segmented control (<b>Measurements · Nutrition</b>). One component holds everything; sub-views are functions returning the body.</p>
+    <div class="flow">
+      <span class="step">Stats</span><span class="arr">|</span>
+      <span class="step">Body → Measurements</span><span class="arr">·</span>
+      <span class="step">Body → Nutrition</span>
+    </div>
+
+    <h3 class="doc" id="state">State (key pieces)</h3>
+    <table class="doc">
+      <tr><th>State</th><th>Init</th><th>Drives</th></tr>
+      <tr><td><code>sub</code> / <code>bodySub</code></td><td><code>'stats'</code> / <code>'measurements'</code></td><td>Sub-tab + Body inner tab.</td></tr>
+      <tr><td><code>heat</code></td><td><code>5</code> (Jun)</td><td>Heatmap month index 0–5 (Jan–Jun 2026).</td></tr>
+      <tr><td><code>exName · exMetric · exRange</code></td><td>Bench · 1rm · 6m</td><td>Exercise-trend chart selection.</td></tr>
+      <tr><td><code>prCat</code></td><td><code>'Chest'</code></td><td>PR category filter.</td></tr>
+      <tr><td><code>metric · mRange</code></td><td>weight · 6m</td><td>Active measurement + its chart range.</td></tr>
+      <tr><td><code>measure · series</code></td><td>seed snapshot + 8-pt series</td><td>Current values + their trend lines (mutated on log).</td></tr>
+      <tr><td><code>nut</code></td><td>height 178, wt 78.4, age 28, Male, Moderate, target 80, Lean gain, Balanced</td><td>Nutrition inputs → all derived numbers.</td></tr>
+      <tr><td><code>sheet · toast</code></td><td><code>null</code></td><td>how-to / logm / details sheets; flash toast (1800ms).</td></tr>
+    </table>
+    <div class="note info"><span class="lbl">logStat coupling</span>The <b>Performance</b> row honours the Profile setting <code>logStat</code>: <code>'Score'</code> shows only Strength Score, <code>'Balance'</code> only Strength Balance, <code>'Both'</code> (or unset) shows both side-by-side. See <a class="link" href="07-profile.html">Chapter 7</a>.</div>
+
+    <!-- ============================================================ -->
+    <h2 class="doc">Stats sub-tab</h2>
+
+    <div class="screen" id="heatmap">
+      <div class="screen-head"><span class="id">PROG · heatmap</span><h3>Consistency heatmap</h3></div>
+      <ul class="spec">
+        <li>GitHub-style month grid with <b>‹ / ›</b> month nav (clamped to Jan–Jun 2026). Days are generated deterministically per month via a seeded PRNG (<code>genMonth</code>) so the demo is stable.</li>
+        <li>5 intensity levels (<code>HEAT_BG</code> / <code>HEAT_LABEL</code>): <span class="el">Rest · Partial · Swapped · Completed · PR day</span>; a legend sits below. In the native build, map these to real session outcomes.</li>
+      </ul>
+    </div>
+
+    <div class="screen" id="lifetime">
+      <div class="screen-head"><span class="id">PROG · lifetime</span><h3>Lifetime tiles</h3></div>
+      <p class="screen-purpose">A 3-col grid of six stat tiles: Sessions 142 · Sets 3,480 · Volume 418k · PRs 37 · Hours 184 · Week streak 18. Static seed.</p>
+    </div>
+
+    <div class="screen" id="performance">
+      <div class="screen-head"><span class="id">PROG · performance</span><h3>Strength Score / Strength Balance</h3></div>
+      <ul class="spec">
+        <li><b>Strength Score</b> (265): a level band (Beginner→Elite by 100-pt ranges) with "% to next" and per-muscle score bars (Legs/Chest/Back/Arms/Shoulders, hue-coded).</li>
+        <li><b>Strength Balance</b> (70%): flags the weakest muscle ("Shoulders weakest") with per-muscle balance bars.</li>
+        <li>Which card(s) render is gated by <code>logStat</code> (see note above).</li>
+      </ul>
+    </div>
+
+    <div class="screen" id="split">
+      <div class="screen-head"><span class="id">PROG · split</span><h3>This week · volume by muscle</h3></div>
+      <p class="screen-purpose">Horizontal % bars for Chest/Back/Legs/Shoulders/Arms/Core (<code>SPLIT</code> seed).</p>
+    </div>
+
+    <div class="screen" id="trends">
+      <div class="screen-head"><span class="id">PROG · trends</span><h3>Exercise Trends (computed chart)</h3></div>
+      <ul class="spec">
+        <li>Pick an exercise (swap button → search sheet with muscle + equipment filters over 12 exercises), a <b>metric</b> (1RM / Max Weight / Max Reps / Max Volume), and a <b>range</b> (1M/3M/6M/1Y).</li>
+        <li>Data comes from <code>EX_DATA</code> (12-point generated series per exercise via <code>_genEx</code>); <code>sliceEx</code> slices to the range — and for <b>1M</b> it <i>interpolates</i> the last month into 4 weekly points. The big number + delta badge compare last vs first of the visible window.</li>
+        <li><b><code>AxisChart</code></b> is a from-scratch labelled SVG: "nice" Y-ticks (1/2/5×10ⁿ snapping, exactly 4 intervals), X labels from <code>EX_XLABELS</code>, gradient area + line + end dot. Reuse the tick algorithm to keep axes clean at any scale.</li>
+      </ul>
+    </div>
+
+    <div class="screen" id="prs">
+      <div class="screen-head"><span class="id">PROG · prs</span><h3>Personal records</h3></div>
+      <p class="screen-purpose">Category chips (Chest/Back/Legs/Shoulders/Arms) filter a PR list (trophy, name, date, weight × reps). <code>PR_DATA</code> seed.</p>
+    </div>
+
+    <!-- ============================================================ -->
+    <h2 class="doc">Body · Measurements</h2>
+    <div class="screen" id="measurements">
+      <div class="screen-head"><span class="id">BODY · measurements</span><h3>Measurement tracking</h3></div>
+      <ul class="spec">
+        <li><b>Metric chips</b> (first 7 of 9 defs) select the active measurement; a hero card shows current value, delta-from-first badge, an <b>info</b> button (→ how-to sheet), an <code>AxisChart</code> trend, and a 1M/3M/6M/1Y range toggle.</li>
+        <li><b>Current measurements</b> grid (all 9: weight, body fat, chest, waist, arms, thighs, shoulders, neck, hips) — tapping any switches the active metric; unset values show "—" dimmed.</li>
+        <li><b>Log Measurements</b> → the <a class="link" href="#sheets">logm sheet</a>. <b>History</b> list below.</li>
+      </ul>
+      <div class="note info"><span class="lbl">Partial logging is real</span>The log sheet accepts <b>only the fields you fill</b>. On save, each provided value updates <code>measure[k]</code>, pushes onto that key's <code>series[k]</code> (capped at 8 points), and prepends a History entry summarising the changed metrics. Empty fields are untouched. Preserve this partial-save behaviour.</div>
+    </div>
+
+    <div class="screen" id="photos">
+      <div class="screen-head"><span class="id">BODY · photos</span><h3>Photo progress</h3></div>
+      <ul class="spec">
+        <li>A segmented <b>Side by side / Up · down</b> layout toggle over two placeholder photos (date · weight). "Add comparison photo" flashes a toast. Replace placeholders with the user's real progress photos.</li>
+      </ul>
+    </div>
+
+    <!-- ============================================================ -->
+    <h2 class="doc" id="nutrition">Body · Nutrition (the calculator)</h2>
+    <div class="screen">
+      <div class="screen-head"><span class="id">BODY · nutrition</span><h3>Live TDEE + macro engine</h3></div>
+      <p class="screen-purpose">Everything recomputes from <code>nut</code>. This is the most formula-heavy screen — implement the math exactly.</p>
+      <table class="doc">
+        <tr><th>Value</th><th>Formula</th></tr>
+        <tr><td><b>BMR</b></td><td>Mifflin-St Jeor: <code>10·wt + 6.25·height − 5·age + (Male ? +5 : −161)</code></td></tr>
+        <tr><td><b>TDEE</b></td><td><code>round(BMR × ACT[activity])</code> — Sedentary 1.2 · Light 1.375 · Moderate 1.55 · Active 1.725 · Athlete 1.9</td></tr>
+        <tr><td><b>Target calories</b></td><td><code>max(1200, TDEE + GOAL_ADJ[goal])</code> — Lose fat −500 · Maintain 0 · Lean gain +200 · Gain muscle +400</td></tr>
+        <tr><td><b>BMI</b></td><td><code>wt / (height/100)²</code> → category &lt;18.5 / &lt;25 / &lt;30 / else</td></tr>
+        <tr><td><b>Macros</b></td><td>split % (<code>MACRO_SPLIT</code>) of calories: protein/carbs ÷4 kcal·g, fats ÷9; fiber = <code>cal/1000 × 14</code></td></tr>
+      </table>
+      <ul class="spec">
+        <li>Inputs: a weight-trend mini chart + target badge; a <b>Your details</b> card (Edit → details sheet with Steppers + Sex/Activity); BMI &amp; TDEE tiles; a <b>Goal</b> segmented; a <b>Macro split</b> chip row (Balanced / High carb / High protein / Keto).</li>
+        <li>The accent <b>Daily target</b> card shows total kcal, a proportional protein/carbs/fats bar, and the four macro gram values — all live.</li>
+      </ul>
+    </div>
+
+    <!-- ============================================================ -->
+    <h2 class="doc" id="sheets">The three sheets</h2>
+    <table class="doc">
+      <tr><th>kind</th><th>What</th></tr>
+      <tr><td><code>howto</code></td><td>"How to measure" — six body-part instructions.</td></tr>
+      <tr><td><code>logm</code></td><td>Log Measurements — 9 optional decimal fields; partial save updates value + series + history.</td></tr>
+      <tr><td><code>details</code></td><td>Your Details — Steppers (height/weight/age/target) + Sex + Activity; recomputes nutrition on close.</td></tr>
+    </table>
+    <div class="note info"><span class="lbl">FAB</span>On Progress, all three FAB actions route to Log (see <a class="link" href="02-shell-nav.html#fab-routing">Ch.2</a> for intended destinations: measure → this measurement log, photo → these progress photos).</div>
+
+    <!-- ============================================================ -->
+    <h2 class="doc" id="checklist">Scenario checklist</h2>
+    <ul class="doc">
+      <li>Heatmap nav clamps Jan–Jun; cells render stable per-month intensities with a legend.</li>
+      <li>Performance cards obey <code>logStat</code> (Score / Balance / Both).</li>
+      <li>Exercise trends: swap exercise (filterable sheet), switch metric + range; 1M interpolates 4 weekly points; delta badge + nice Y-axis correct.</li>
+      <li>PR category chips filter the list.</li>
+      <li>Measurements: metric chips + grid switch the active metric; chart + delta update; range toggle works.</li>
+      <li>Log Measurements saves only filled fields, updates the value, extends the series (max 8), and adds a history row.</li>
+      <li>Photo layout toggles side/stack.</li>
+      <li>Nutrition: editing any detail (height/weight/age/sex/activity/goal/macro) recomputes BMR→TDEE→calories→macros + BMI category live, with the 1200-kcal floor.</li>
+    </ul>
+
+    <div class="chapnav">
+      <a href="05-active-workout.html"><div class="dir">← Prev</div><div class="ttl">5 · Active Workout</div></a>
+      <a class="next" href="07-profile.html"><div class="dir">Next →</div><div class="ttl">7 · Profile tab</div></a>
+    </div>
+  </main>
+</div>
+</body>
+</html>

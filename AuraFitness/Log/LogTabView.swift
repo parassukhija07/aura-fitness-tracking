@@ -4,7 +4,9 @@ import SwiftUI
 
 enum LogSheet: Identifiable {
     case menu
-    case switchWorkout
+    /// Switch today's workout. `planId == nil` = level 1 (active program + other
+    /// plans + library); non-nil = level 2 (drilled into that program's workouts).
+    case switchWorkout(planId: UUID? = nil)
     case move
     case edit
     case add
@@ -20,7 +22,7 @@ enum LogSheet: Identifiable {
     var id: String {
         switch self {
         case .menu: return "menu"
-        case .switchWorkout: return "switch"
+        case .switchWorkout(let planId): return "switch-\(planId?.uuidString ?? "root")"
         case .move: return "move"
         case .edit: return "edit"
         case .add: return "add"
@@ -101,14 +103,25 @@ struct LogTabView: View {
             }
             .background(Color.aura.bg)
 
-            if appState.activeWorkoutSession != nil {
-                resumeBanner
+            // Resume banner: only while a session is minimized (overlay closed).
+            if appState.workoutInProgress {
+                ResumeBanner { appState.resumeWorkout() }
+                    .padding(.horizontal, 14)
+                    .padding(.bottom, AuraSpacing.tabBarClearance)
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
             }
             if let toast {
                 toastView(toast)
             }
         }
         .sheet(item: $sheet) { logSheet($0) }
+        // FAB "Start Workout" deep link → open the add-workout source sheet.
+        .onChange(of: appState.requestLogAddSheet) { _, want in
+            if want { sheet = .add; appState.requestLogAddSheet = false }
+        }
+        .onAppear {
+            if appState.requestLogAddSheet { sheet = .add; appState.requestLogAddSheet = false }
+        }
     }
 
     // MARK: Navbar
@@ -210,6 +223,11 @@ struct LogTabView: View {
             .padding(.vertical, 9)
             .background(sel ? Color.aura.accent : Color.clear)
             .clipShape(RoundedRectangle(cornerRadius: AuraRadius.md))
+            .overlay(
+                RoundedRectangle(cornerRadius: AuraRadius.md)
+                    .strokeBorder(Color.aura.separator.opacity(0.5), lineWidth: 1)
+                    .opacity(sel ? 0 : 1)
+            )
         }
         .buttonStyle(.plain)
     }
@@ -393,7 +411,7 @@ struct LogTabView: View {
                         sheet = .logPast(date: AppState.iso(cal.date(byAdding: .day, value: -1, to: today)!), showToday: true)
                     }
                     AuraGrayButton(label: "Switch", icon: "arrow.left.arrow.right") {
-                        sheet = .switchWorkout
+                        sheet = .switchWorkout()
                     }
                 }
             }
@@ -460,27 +478,36 @@ struct LogTabView: View {
 
     @ViewBuilder
     private func exerciseRows(_ exercises: [Exercise], dim: Bool) -> some View {
-        VStack(spacing: 11) {
-            ForEach(Array(exercises.enumerated()), id: \.offset) { i, e in
-                HStack(spacing: 12) {
-                    Text("\(i + 1)")
-                        .font(.system(size: 12, weight: .bold))
-                        .foregroundColor(.aura.text2)
-                        .frame(width: 22, height: 22)
-                        .background(Color.aura.fill)
-                        .clipShape(RoundedRectangle(cornerRadius: 7))
-                    VStack(alignment: .leading, spacing: 1) {
-                        Text(e.name)
-                            .font(.system(size: 15, weight: .semibold))
-                            .foregroundColor(.aura.text)
-                        Text("\(e.plannedSets) sets · \(e.repRange) reps")
-                            .font(.system(size: 12.5))
+        // Show ~3 rows; scroll for the rest (mirrors log.jsx ExRows maxHeight: 168).
+        let capHeight: CGFloat = 168
+        let scrollable = exercises.count > 3
+
+        ScrollView(.vertical, showsIndicators: scrollable) {
+            VStack(spacing: 11) {
+                ForEach(Array(exercises.enumerated()), id: \.offset) { i, e in
+                    HStack(spacing: 12) {
+                        Text("\(i + 1)")
+                            .font(.system(size: 12, weight: .bold))
                             .foregroundColor(.aura.text2)
+                            .frame(width: 22, height: 22)
+                            .background(Color.aura.fill)
+                            .clipShape(RoundedRectangle(cornerRadius: 7))
+                        VStack(alignment: .leading, spacing: 1) {
+                            Text(e.name)
+                                .font(.system(size: 15, weight: .semibold))
+                                .foregroundColor(.aura.text)
+                            Text("\(e.plannedSets) sets · \(e.repRange) reps")
+                                .font(.system(size: 12.5))
+                                .foregroundColor(.aura.text2)
+                        }
+                        Spacer()
                     }
-                    Spacer()
                 }
             }
+            .padding(.trailing, 2) // matches paddingRight: 2 in ExRows so the scrollbar doesn't overlap text
         }
+        .frame(maxHeight: scrollable ? capHeight : nil)
+        .scrollBounceBehavior(.basedOnSize)
         .opacity(dim ? 0.55 : 1)
     }
 
@@ -503,30 +530,7 @@ struct LogTabView: View {
         )
     }
 
-    // MARK: Resume banner + toast
-
-    private var resumeBanner: some View {
-        HStack(spacing: AuraSpacing.s3) {
-            Image(systemName: "bolt.fill").font(.system(size: 20))
-            VStack(alignment: .leading, spacing: 1) {
-                Text("Workout in progress").font(.system(size: 15, weight: .heavy))
-                Text("Tap to resume your session").font(.system(size: 13)).opacity(0.85)
-            }
-            Spacer()
-            Text("Resume")
-                .font(.system(size: 14, weight: .bold))
-                .padding(.horizontal, 14).padding(.vertical, 7)
-                .background(Color.white.opacity(0.2))
-                .clipShape(RoundedRectangle(cornerRadius: AuraRadius.sm))
-        }
-        .foregroundColor(.white)
-        .padding(.horizontal, 14).padding(.vertical, 12)
-        .background(Color.aura.accent)
-        .clipShape(RoundedRectangle(cornerRadius: AuraRadius.lg))
-        .shadow(color: .black.opacity(0.2), radius: 16, x: 0, y: 8)
-        .padding(.horizontal, 14)
-        .padding(.bottom, AuraSpacing.tabBarClearance)
-    }
+    // MARK: Toast
 
     private func toastView(_ msg: String) -> some View {
         Text(msg)

@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Aura · Log Tab — Design Updates Handoff</title>
+<link rel="stylesheet" href="../styles/aura.css">
+<style>
+  body{background:var(--bg-grouped);}
+  .wrap{max-width:860px;margin:0 auto;padding:0 28px 120px;}
+  .top{position:sticky;top:0;z-index:10;display:flex;align-items:center;justify-content:space-between;padding:16px 0;background:color-mix(in oklab,var(--bg-grouped) 80%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--separator-2);}
+  .top a{color:var(--accent);text-decoration:none;font-weight:600;font-size:14px;}
+  h1{font-size:42px;font-weight:800;letter-spacing:-.03em;margin:40px 0 6px;}
+  .lead{font-size:17px;color:var(--text-2);line-height:1.55;max-width:640px;}
+  h2{font-size:13px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);margin:48px 0 16px;padding-bottom:8px;border-bottom:1px solid var(--separator-2);}
+  h3{font-size:18px;font-weight:800;letter-spacing:-.01em;margin:26px 0 8px;}
+  h4{font-size:14px;font-weight:700;letter-spacing:-.01em;margin:18px 0 6px;color:var(--text);}
+  p{line-height:1.6;color:var(--text);}
+  .note{background:var(--surface);border:1px solid var(--separator-2);border-left:3px solid var(--accent);border-radius:var(--r-sm);padding:14px 16px;font-size:14.5px;line-height:1.55;color:var(--text-2);}
+  .note.red{border-left-color:var(--red);}
+  .note.green{border-left-color:var(--green);}
+  table{width:100%;border-collapse:collapse;font-size:14px;margin-top:8px;}
+  th,td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--separator-2);vertical-align:top;}
+  th{font-size:12px;text-transform:uppercase;letter-spacing:.04em;color:var(--text-3);font-weight:700;}
+  td code,th code{font-family:var(--mono);font-size:12px;background:var(--fill-2);padding:1px 5px;border-radius:5px;}
+  .scr{display:flex;gap:12px;padding:16px 0;border-bottom:1px solid var(--separator-2);}
+  .scr .id{font-family:var(--mono);font-size:11px;font-weight:600;color:var(--accent);background:var(--accent-soft);padding:3px 8px;border-radius:999px;height:fit-content;white-space:nowrap;}
+  .scr .id.new{color:var(--green);background:color-mix(in oklab,var(--green) 12%,transparent);}
+  .scr .id.upd{color:var(--blue);background:color-mix(in oklab,var(--blue) 12%,transparent);}
+  .scr .id.fix{color:var(--purple);background:color-mix(in oklab,var(--purple) 12%,transparent);}
+  .scr .d b{font-size:15px;} .scr .d p{font-size:13.5px;color:var(--text-2);margin:3px 0 0;line-height:1.5;}
+  .spec{background:var(--surface);border:1px solid var(--separator-2);border-radius:var(--r-md);padding:16px 18px;margin-top:10px;}
+  .spec h4{margin:0 0 10px;font-size:13px;letter-spacing:.04em;text-transform:uppercase;color:var(--text-3);}
+  ul{line-height:1.75;color:var(--text);padding-left:20px;margin:8px 0;}
+  ul li{font-size:14.5px;}
+  ul code{font-family:var(--mono);font-size:12px;background:var(--fill-2);padding:1px 5px;border-radius:5px;}
+  .pill{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:700;padding:3px 9px;border-radius:999px;border:1px solid var(--separator-2);color:var(--text-2);margin:2px;}
+  .row-rule{display:flex;gap:10px;padding:11px 0;border-bottom:1px solid var(--separator-2);font-size:14px;align-items:flex-start;}
+  .row-rule .label{font-weight:700;min-width:160px;flex:0 0 auto;}
+  .row-rule .val{color:var(--text-2);line-height:1.55;}
+  .file{font-family:var(--mono);font-size:13px;color:var(--text);background:var(--surface);border:1px solid var(--separator-2);border-radius:8px;padding:8px 11px;margin:6px 0;display:flex;justify-content:space-between;}
+  .file span{color:var(--text-2);}
+  .tag{display:inline-block;font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;padding:2px 7px;border-radius:5px;margin-right:5px;}
+  .tag.new{background:color-mix(in oklab,var(--green) 14%,transparent);color:var(--green);}
+  .tag.upd{background:color-mix(in oklab,var(--blue) 14%,transparent);color:var(--blue);}
+  .tag.fix{background:color-mix(in oklab,var(--purple) 14%,transparent);color:var(--purple);}
+  .divider{height:1px;background:var(--separator-2);margin:28px 0;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <a href="../Aura Fitness.html">← Aura overview</a>
+    <span class="tiny muted" style="font-weight:600">Log Tab · Design Updates</span>
+  </div>
+
+  <h1>Log Tab<br>Design Updates</h1>
+  <p class="lead">This document covers all design changes to the Log tab — new screens, updated behavior rules, and UX fixes. Hand this to Claude Code alongside the reference HTML to implement natively in SwiftUI.</p>
+  <div class="note" style="margin-top:18px"><b>The HTML files are design references, not production code.</b> Recreate these screens in the existing SwiftUI codebase using its established patterns, components, and navigation primitives. Do not ship the HTML directly.</div>
+
+  <h2>Change summary</h2>
+
+  <div class="scr">
+    <span class="id upd">LOG-01</span>
+    <div class="d"><b>Exercise list — scrollable, all exercises visible</b><p>The static "+ N more exercises" truncation is replaced with a fixed-height scrollable list showing every exercise in the workout card.</p></div>
+  </div>
+  <div class="scr">
+    <span class="id new">LOG-01b</span>
+    <div class="d"><b>⋯ menu sheet — new screen</b><p>Bottom sheet triggered by the ellipsis button on today's planned workout card. Five action rows, each with a subtitle clarifying scope (today only).</p></div>
+  </div>
+  <div class="scr">
+    <span class="id new">LOG-01c</span>
+    <div class="d"><b>Log a Past Workout sheet — new screen</b><p>Two-section bottom sheet: pick a date (quick options + calendar), then pick a workout source.</p></div>
+  </div>
+  <div class="scr">
+    <span class="id new">LOG-01d</span>
+    <div class="d"><b>Past date · two states — new screens</b><p><b>Completed:</b> green badge + checkmark, View Log + Edit Log CTAs. <b>Missed:</b> red badge + X, dimmed exercises, Log This Workout + Mark as Rest Day CTAs.</p></div>
+  </div>
+  <div class="scr">
+    <span class="id new">LOG-01e</span>
+    <div class="d"><b>Future date · locked — new screen</b><p>Program-assigned workout shown read-only. "View only" badge replaces ⋯. Single View Workout CTA. Info banner: "Future workouts are read-only — edit in Plans."</p></div>
+  </div>
+  <div class="scr">
+    <span class="id fix">LOG-02</span>
+    <div class="d"><b>Rest day — removed duplicate CTA</b><p>"Convert to training day" row removed. The single "Add a Workout" button is sufficient — converting the plan structure belongs in the Plan tab.</p></div>
+  </div>
+  <div class="scr">
+    <span class="id upd">LOG-01b + LOG-06</span>
+    <div class="d"><b>Today-only scope clarification</b><p>All scheduling action rows in the ⋯ menu and the Manage Today sheet now carry subtitles confirming actions affect today only and don't modify the underlying program.</p></div>
+  </div>
+
+  <h2>Detailed specs</h2>
+
+  <!-- LOG-01 -->
+  <h3><span class="tag upd">Updated</span> LOG-01 — Exercise list</h3>
+  <p>The exercise list inside the planned workout card is now a fixed-height scrollable container.</p>
+  <div class="spec">
+    <h4>Implementation</h4>
+    <ul>
+      <li>Container: <code>max-height: 162pt</code>, <code>overflow-y: scroll</code>, <code>clipped</code></li>
+      <li>Show <b>all exercises</b> — no truncation, no "+ N more" label</li>
+      <li>Each row: number badge · exercise name · sets + reps sub-label · chevron</li>
+      <li>Card outer dimensions are unchanged — only the internal list is now scrollable</li>
+      <li>Use native <code>ScrollView</code> (SwiftUI) with <code>.frame(maxHeight: 162)</code></li>
+    </ul>
+  </div>
+
+  <!-- LOG-01b -->
+  <h3><span class="tag new">New</span> LOG-01b — ⋯ menu sheet</h3>
+  <p>Tapping the ellipsis button on the planned workout card presents a detent sheet. Background content blurs behind the sheet.</p>
+  <div class="spec">
+    <h4>Sheet header</h4>
+    <ul>
+      <li>Workout name centered, bold 15pt</li>
+      <li>Subtitle: "Planned for today" — muted, 13pt</li>
+    </ul>
+    <h4>Action rows (in order)</h4>
+    <table>
+      <tr><th>Icon</th><th>Title</th><th>Subtitle</th><th>Color</th><th>Chevron</th></tr>
+      <tr><td>pencil</td><td>Edit Workout</td><td>Today's session only · won't change your program</td><td>Accent</td><td>Yes</td></tr>
+      <tr><td>calendar</td><td>Move to Another Day</td><td>Today only · your program stays unchanged</td><td>Purple</td><td>Yes</td></tr>
+      <tr><td>swap</td><td>Switch Workout</td><td>For today only · your program stays unchanged</td><td>Blue</td><td>Yes</td></tr>
+      <tr><td>moon</td><td>Make it a Rest Day</td><td>—</td><td>Fill / text-2</td><td>No</td></tr>
+      <tr><td>trash</td><td>Remove from Today</td><td>—</td><td>Red (destructive)</td><td>No</td></tr>
+    </table>
+    <h4>Footer</h4>
+    <ul>
+      <li>Full-width "Cancel" gray button</li>
+      <li>No sheet dismiss on row tap — navigate or dismiss after action completes</li>
+    </ul>
+  </div>
+
+  <!-- LOG-01c -->
+  <h3><span class="tag new">New</span> LOG-01c — Log a Past Workout</h3>
+  <p>Triggered by the "Log past" secondary button on LOG-01. A two-section bottom sheet.</p>
+  <div class="spec">
+    <h4>Section 1 — When did you train?</h4>
+    <ul>
+      <li>Three grouped rows in a rounded list card:</li>
+      <li><b>Yesterday</b> with sub-label showing the actual date (e.g. "Sun, Jun 21") — default selected (filled accent radio)</li>
+      <li><b>2 days ago</b> with sub-label date — unselected (empty circle)</li>
+      <li><b>Pick a date</b> — navigates to system date picker, chevron</li>
+    </ul>
+    <h4>Section 2 — Which workout?</h4>
+    <ul>
+      <li>Three source cards identical in style to LOG-05 source picker:</li>
+      <li><b>From a Program</b> — accent icon, "Your active PPL plan &amp; saved programs"</li>
+      <li><b>A Saved Workout</b> — blue icon, "Custom &amp; predefined workouts"</li>
+      <li><b>Build from Library</b> — green icon, "Pick exercises from scratch"</li>
+      <li><b>No "Empty Workout" option</b> — logging a past session implies a known workout</li>
+    </ul>
+    <h4>State</h4>
+    <ul>
+      <li>Store selected date in local sheet state; pass to workout source flow on selection</li>
+    </ul>
+  </div>
+
+  <!-- LOG-01d -->
+  <h3><span class="tag new">New</span> LOG-01d — Past date · two states</h3>
+  <p>Shown when the user navigates to any past date in the week bar. The workout was assigned by the active program. Two distinct states depending on completion.</p>
+
+  <h4>State A — Completed</h4>
+  <div class="spec">
+    <ul>
+      <li>Week bar: selected day shows a <b>green done dot</b>. "‹ Prev week" button visible.</li>
+      <li>Badges row: Program name badge (accent) + "Completed" badge (green fill, check icon)</li>
+      <li>Card header: workout name + muscle groups sub-label + <b>green circle with check-circle icon</b> (right side, replacing ⋯)</li>
+      <li>Exercise list: scrollable, full opacity, chevrons visible</li>
+      <li>CTAs:
+        <ul>
+          <li><b>View Log</b> — primary button — opens the logged set data for that session</li>
+          <li><b>Edit Log</b> — secondary gray button — allows editing logged weights/reps/sets retroactively</li>
+        </ul>
+      </li>
+      <li><b>No Start Workout button. No Switch button. No ellipsis menu.</b></li>
+    </ul>
+  </div>
+
+  <h4>State B — Missed</h4>
+  <div class="spec">
+    <ul>
+      <li>Week bar: selected day shows a <b>red/muted dot</b> (distinct from done/plan/rest)</li>
+      <li>Badges row: Program name badge (accent) + "Missed" badge (red fill, X icon)</li>
+      <li>Card header: workout name + muscle groups sub-label + <b>red circle with X-circle icon</b> (right side)</li>
+      <li>Exercise list: scrollable, <code>opacity: 0.55</code>, no chevrons</li>
+      <li>CTAs:
+        <ul>
+          <li><b>Log This Workout</b> — primary button — opens LOG-01c (log past) pre-filled with this date</li>
+          <li><b>Mark as Rest Day</b> — secondary gray button — reclassifies this day and clears the missed state</li>
+        </ul>
+      </li>
+      <li><b>No Edit Log button.</b> User must first log, then they can edit.</li>
+    </ul>
+  </div>
+
+  <!-- LOG-01e -->
+  <h3><span class="tag new">New</span> LOG-01e — Future date · locked</h3>
+  <p>Shown when the user navigates to any future date in the week bar that has a program-assigned workout.</p>
+  <div class="spec">
+    <ul>
+      <li>Week bar: selected day shows a <b>plan dot</b> (orange). "Today ›" button visible to jump back.</li>
+      <li>Badge: Program name badge (accent) only — no status badge</li>
+      <li>Card header: workout name + muscle groups sub-label + <b>"View only" text badge</b> (muted fill, text-3 color) replacing ⋯</li>
+      <li>Exercise list: scrollable, <code>opacity: 0.55</code>, no chevrons (read-only feel)</li>
+      <li>CTAs:
+        <ul>
+          <li><b>View Workout</b> — gray (not primary) button — opens a read-only detail view of the planned exercises</li>
+          <li><b>No Start, No Log past, No Edit, No Switch buttons.</b></li>
+        </ul>
+      </li>
+      <li>Info banner below CTA:
+        <ul>
+          <li>Accent-tinted background, accent border, info icon</li>
+          <li>Title: <b>"Future workouts are read-only"</b> — 14pt bold</li>
+          <li>Body: "To change this workout, edit your program in the Plans tab." — 13pt muted</li>
+          <li>Ghost link: <b>"Go to Plans →"</b> — accent color, navigates to Plan tab</li>
+        </ul>
+      </li>
+    </ul>
+  </div>
+
+  <!-- LOG-02 -->
+  <h3><span class="tag fix">Fix</span> LOG-02 — Rest day</h3>
+  <div class="spec">
+    <ul>
+      <li>Remove the "Convert to training day" list row entirely</li>
+      <li>Keep only: section header "Did you train anyway?" + full-width <b>"Add a Workout"</b> tinted button</li>
+      <li>Rationale: both CTAs led to the same outcome; converting plan structure belongs in Plan tab</li>
+    </ul>
+  </div>
+
+  <!-- Scope rules -->
+  <h3><span class="tag upd">Updated</span> LOG-01b + LOG-06 — Today-only scope subtitles</h3>
+  <div class="spec">
+    <ul>
+      <li>Any action that changes the day's workout (switch, edit, move, remove) must carry a subtitle: <b>"Today only · your program stays unchanged"</b> or equivalent phrasing</li>
+      <li>LOG-06 bottom of sheet: add a small muted caption — <b>"All changes apply to today only and won't affect your program."</b></li>
+      <li>This rule applies everywhere in the Log tab. Never expose a program-editing action from the Log tab.</li>
+    </ul>
+  </div>
+
+  <div class="divider"></div>
+
+  <h2>Behavior rules — date navigation</h2>
+  <div class="note" style="margin-bottom:16px">These rules govern what the user can do at any date in the Log tab week bar. Enforce them at the view-model level, not just in the UI.</div>
+
+  <table>
+    <tr><th>Date type</th><th>Workout state</th><th>Allowed actions</th><th>Blocked actions</th></tr>
+    <tr><td><b>Today</b></td><td>Program assigned</td><td>Start, Log past, ⋯ menu (today-scoped)</td><td>Edit program, reschedule permanently</td></tr>
+    <tr><td><b>Past</b></td><td>Completed</td><td>View Log, Edit Log</td><td>Start, Switch, all scheduling</td></tr>
+    <tr><td><b>Past</b></td><td>Missed</td><td>Log This Workout, Mark as Rest</td><td>Start, Switch, Edit Log (nothing to edit yet)</td></tr>
+    <tr><td><b>Future</b></td><td>Program assigned</td><td>View Workout</td><td>Everything else — edit only via Plan tab</td></tr>
+    <tr><td><b>Any</b></td><td>Rest day</td><td>Add a Workout (one-off)</td><td>Convert rest → training (Plan tab only)</td></tr>
+    <tr><td><b>Any</b></td><td>No program</td><td>Add a Workout, Log a Past Workout</td><td>—</td></tr>
+  </table>
+
+  <h2>State model additions</h2>
+  <div class="row-rule"><span class="label">DayState enum</span><span class="val">Add cases: <code>.completedWorkout</code>, <code>.missedWorkout</code>, <code>.futureWorkout</code>. Derive from date comparison + workout log existence.</span></div>
+  <div class="row-rule"><span class="label">isEditable</span><span class="val"><code>Bool</code> — <code>true</code> only for past completed days. Gates "Edit Log" button visibility.</span></div>
+  <div class="row-rule"><span class="label">isFuture</span><span class="val"><code>Bool</code> — derived from <code>date > Calendar.current.startOfDay(for: .now)</code>. Gates all write actions from Log tab.</span></div>
+  <div class="row-rule"><span class="label">selectedLogDate</span><span class="val">Carried from LOG-01c date picker into the workout source picker flow so the session is stamped with the correct past date.</span></div>
+  <div class="row-rule"><span class="label">todayOnlyActions</span><span class="val">Switch, Move, Edit from the ⋯ menu must operate on a copy of today's scheduled workout, not mutate the program's recurring template.</span></div>
+
+  <h2>Reference files</h2>
+  <div class="file"><span>screens/Log.html</span><span>All Log screens — LOG-01 through LOG-06 + new 01b/c/d/e</span></div>
+  <div class="file"><span>styles/aura.css</span><span>Design tokens — colors, spacing, radius, typography</span></div>
+  <div class="file"><span>styles/gallery.css</span><span>Phone frame shell + gallery layout</span></div>
+  <div class="file"><span>handoff/README.md</span><span>Full design token table + original screen index</span></div>
+</div>
+<script src="../styles/icons.js"></script>
+</body>
+</html>

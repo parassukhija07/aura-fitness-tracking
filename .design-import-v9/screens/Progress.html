@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Aura · Progress Tab</title>
+<link rel="stylesheet" href="../styles/aura.css">
+<link rel="stylesheet" href="../styles/gallery.css">
+<style>
+  .heat-cal{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;}
+  .heat-cal .c{aspect-ratio:1;border-radius:4px;background:var(--fill);}
+  .heat-cal .c.l1{background:color-mix(in oklab,var(--accent) 30%,var(--fill));}
+  .heat-cal .c.l2{background:color-mix(in oklab,var(--accent) 55%,var(--fill));}
+  .heat-cal .c.l3{background:color-mix(in oklab,var(--accent) 78%,transparent);}
+  .heat-cal .c.l4{background:var(--accent);}
+  .heat-cal .c.rest{background:repeating-linear-gradient(45deg,var(--track) 0 3px,transparent 3px 6px),var(--fill);}
+  .heat-cal .c.off{opacity:0;}
+  .chart-grid line{stroke:var(--separator-2);stroke-width:1;}
+  .pr-row{display:flex;align-items:center;gap:12px;padding:12px 0;border-top:1px solid var(--separator-2);}
+  .pr-row:first-child{border-top:0;}
+</style>
+</head>
+<body>
+<div class="vbar">
+  <div class="crumbs"><a href="../Aura Fitness.html">Aura</a> &nbsp;/&nbsp; <b>Progress</b> tab</div>
+  <button class="theme-toggle" onclick="toggleTheme()"><i data-ic="moon" data-size="16"></i> <span id="tmode">Dark</span></button>
+</div>
+
+<div class="gallery">
+  <h2 class="sec">Tab 03 · See it pay off</h2>
+  <h1 class="sec-title">Progress</h1>
+  <p class="sec-desc">Two halves: <b>Stats</b> (consistency heatmap, weekly & lifetime totals, personal records) and <b>Body</b> (measurements, progress photos, nutrition targets).</p>
+
+  <div class="frames">
+
+  <!-- PROG-01 · Stats overview -->
+  <div class="frame-wrap">
+    <div class="frame-cap"><span class="num">PROG-01</span> Stats · overview</div>
+    <div class="phone" data-theme="light">
+      <div class="dynamic-island"></div><div class="statusbar auto"></div>
+      <div class="navbar"><div class="navbar-row"><div class="nav-title-lg">Progress</div></div>
+        <div class="segmented" style="margin-top:4px"><button class="active">Stats</button><button>Body</button></div></div>
+      <div class="screen-body pad pad-b" style="padding-top:8px">
+        <div class="between" style="margin:8px 2px 10px"><div style="font-weight:800;font-size:16px">Consistency</div><div class="flex gap2" style="align-items:center"><button class="nav-icon-btn" style="width:28px;height:28px"><i data-ic="chevron-left" data-size="16"></i></button><span class="tiny" style="font-weight:700">June 2026</span><button class="nav-icon-btn" style="width:28px;height:28px"><i data-ic="chevron-right" data-size="16"></i></button></div></div>
+        <div class="card card-pad">
+          <div class="heat-cal" data-heat="r4434r0 r3424r1 r4434r0 r43"></div>
+          <div class="between" style="margin-top:12px"><div class="tiny muted">22 active days</div><div class="flex gap2" style="align-items:center"><span class="tiny muted">Less</span><span class="c-leg l0"></span><span class="c-leg l1"></span><span class="c-leg l2"></span><span class="c-leg l3"></span><span class="c-leg l4"></span><span class="tiny muted">More</span></div></div>
+        </div>
+        <div class="sec-label">This week · muscle focus</div>
+        <div class="card card-pad">
+          <div class="mbar-row"><div class="mbar-lab">Chest</div><div class="mbar"><i style="width:88%"></i></div><div class="mbar-pct">24</div></div>
+          <div class="mbar-row"><div class="mbar-lab">Back</div><div class="mbar"><i style="width:74%"></i></div><div class="mbar-pct">20</div></div>
+          <div class="mbar-row"><div class="mbar-lab">Legs</div><div class="mbar"><i style="width:62%"></i></div><div class="mbar-pct">17</div></div>
+          <div class="mbar-row" style="margin-bottom:0"><div class="mbar-lab">Shoulders</div><div class="mbar"><i style="width:44%"></i></div><div class="mbar-pct">12</div></div>
+          <div class="tiny muted center" style="margin-top:4px">sets per muscle group</div>
+        </div>
+        <div class="sec-label">Lifetime</div>
+        <div class="tiles">
+          <div class="tile"><div class="tnum">214</div><div class="tlab">Sessions</div></div>
+          <div class="tile"><div class="tnum">6,180</div><div class="tlab">Sets logged</div></div>
+          <div class="tile"><div class="tnum">1.2M</div><div class="tlab">Volume (kg)</div></div>
+          <div class="tile"><div class="tnum">47</div><div class="tlab">Personal records</div></div>
+        </div>
+      </div>
+      <div class="tabbar"><button class="tab"><i data-ic="log" data-size="25"></i><span>Log</span></button><button class="tab"><i data-ic="dumbbell" data-size="25"></i><span>Plan</span></button><button class="tab active"><i data-ic="chart" data-size="25"></i><span>Progress</span></button><button class="tab"><i data-ic="person" data-size="25"></i><span>Profile</span></button></div>
+      <div class="home-indicator"></div>
+    </div>
+  </div>
+
+  <!-- PROG-02 · Weekly trend -->
+  <div class="frame-wrap">
+    <div class="frame-cap"><span class="num">PROG-02</span> Weekly stats · trend</div>
+    <div class="phone" data-theme="light">
+      <div class="dynamic-island"></div><div class="statusbar auto"></div>
+      <div class="navbar bordered"><div class="navbar-row"><button class="nav-btn"><i data-ic="chevron-left" data-size="22"></i>Stats</button><div class="nav-title">Weekly Volume</div><button class="nav-icon-btn"><i data-ic="ellipsis" data-size="20"></i></button></div></div>
+      <div class="screen-body pad pad-b">
+        <div class="between" style="margin:16px 2px 6px"><div><div class="stat-num" style="font-size:30px">42,180</div><div class="tiny muted">kg this week · <span style="color:var(--green);font-weight:700">▲ 8%</span></div></div><div class="segmented" style="width:150px"><button class="active">Volume</button><button>Sets</button></div></div>
+        <div class="card card-pad" style="margin-top:10px">
+          <svg viewBox="0 0 320 150" style="width:100%;height:auto">
+            <g class="chart-grid"><line x1="0" y1="20" x2="320" y2="20"/><line x1="0" y1="60" x2="320" y2="60"/><line x1="0" y1="100" x2="320" y2="100"/><line x1="0" y1="140" x2="320" y2="140"/></g>
+            <polyline points="10,110 60,90 110,98 160,60 210,72 260,40 310,30" fill="none" stroke="var(--accent)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+            <polygon points="10,110 60,90 110,98 160,60 210,72 260,40 310,30 310,150 10,150" fill="var(--accent-soft)"/>
+            <circle cx="310" cy="30" r="4" fill="var(--accent)"/>
+          </svg>
+          <div class="flex" style="justify-content:space-between;margin-top:6px"><span class="tiny muted">W21</span><span class="tiny muted">W22</span><span class="tiny muted">W23</span><span class="tiny muted">W24</span><span class="tiny muted">W25</span><span class="tiny muted">W26</span></div>
+        </div>
+        <div class="sec-label">Top muscle this week</div>
+        <div class="card card-pad between"><div class="flex gap3" style="align-items:center"><div class="row-ic" style="background:var(--accent);width:38px;height:38px"><i data-ic="target" data-size="20"></i></div><div><div style="font-weight:700;font-size:16px">Chest</div><div class="tiny muted">24 sets · 12,400 kg</div></div></div><span class="badge badge-green">Most trained</span></div>
+        <div class="sec-label">Sessions this week</div>
+        <div class="tiles"><div class="tile"><div class="tnum">5</div><div class="tlab">Workouts</div></div><div class="tile"><div class="tnum">4h 52m</div><div class="tlab">Time under bar</div></div></div>
+      </div>
+      <div class="home-indicator"></div>
+    </div>
+  </div>
+
+  <!-- PROG-03 · Personal records -->
+  <div class="frame-wrap">
+    <div class="frame-cap"><span class="num">PROG-03</span> Personal records</div>
+    <div class="phone" data-theme="light">
+      <div class="dynamic-island"></div><div class="statusbar auto"></div>
+      <div class="navbar bordered"><div class="navbar-row"><button class="nav-btn"><i data-ic="chevron-left" data-size="22"></i>Stats</button><div class="nav-title">Personal Records</div></div></div>
+      <div class="pad" style="padding-top:8px"><div class="filters"><span class="chip active">Chest</span><span class="chip">Back</span><span class="chip">Legs</span><span class="chip">Shoulders</span><span class="chip">Arms</span></div></div>
+      <div class="screen-body pad pad-b" style="padding-top:14px">
+        <div class="card card-pad">
+          <div class="pr-row"><div class="row-ic" style="background:var(--accent)"><i data-ic="trophy" data-size="17"></i></div><div class="grow"><div style="font-weight:700;font-size:15px">Barbell Bench Press</div><div class="tiny muted">Set May 28 · 1RM est. 96 kg</div></div><div class="stat-num" style="font-size:18px">82.5<span class="tiny muted" style="font-weight:600">×6</span></div></div>
+          <div class="pr-row"><div class="row-ic" style="background:var(--fill);color:var(--text-2)"><i data-ic="medal" data-size="17"></i></div><div class="grow"><div style="font-weight:700;font-size:15px">Incline DB Press</div><div class="tiny muted">Set May 21</div></div><div class="stat-num" style="font-size:18px">34<span class="tiny muted" style="font-weight:600">×9</span></div></div>
+          <div class="pr-row"><div class="row-ic" style="background:var(--fill);color:var(--text-2)"><i data-ic="medal" data-size="17"></i></div><div class="grow"><div style="font-weight:700;font-size:15px">Cable Fly</div><div class="tiny muted">Set Jun 4</div></div><div class="stat-num" style="font-size:18px">17.5<span class="tiny muted" style="font-weight:600">×14</span></div></div>
+          <div class="pr-row"><div class="row-ic" style="background:var(--fill);color:var(--text-2)"><i data-ic="medal" data-size="17"></i></div><div class="grow"><div style="font-weight:700;font-size:15px">Pec Deck</div><div class="tiny muted">Set Jun 11</div></div><div class="stat-num" style="font-size:18px">68<span class="tiny muted" style="font-weight:600">×12</span></div></div>
+          <div class="pr-row"><div class="row-ic" style="background:var(--fill);color:var(--text-2)"><i data-ic="medal" data-size="17"></i></div><div class="grow"><div style="font-weight:700;font-size:15px">Weighted Dips</div><div class="tiny muted">Set Jun 18</div></div><div class="stat-num" style="font-size:18px">25<span class="tiny muted" style="font-weight:600">×10</span></div></div>
+        </div>
+        <div class="hint-card" style="margin-top:14px"><i data-ic="info" data-size="17" color="var(--text-3)"></i><div class="tiny muted" style="line-height:1.5">New PRs are detected automatically while you log and celebrated mid-workout.</div></div>
+      </div>
+      <div class="home-indicator"></div>
+    </div>
+  </div>
+
+  <!-- BODY-01 · Measurements -->
+  <div class="frame-wrap">
+    <div class="frame-cap"><span class="num">BODY-01</span> Body · Measurements</div>
+    <div class="phone" data-theme="light">
+      <div class="dynamic-island"></div><div class="statusbar auto"></div>
+      <div class="navbar"><div class="navbar-row"><div class="nav-title-lg">Progress</div></div>
+        <div class="segmented" style="margin-top:4px"><button>Stats</button><button class="active">Body</button></div></div>
+      <div class="pad" style="padding-top:8px"><div class="segmented" style="background:var(--accent-soft)"><button class="active">Measurements</button><button>Nutrition</button></div></div>
+      <div class="screen-body pad pad-b" style="padding-top:12px">
+        <div class="card card-pad">
+          <div class="between"><div><div class="tiny muted" style="font-weight:700">WEIGHT</div><div class="stat-num" style="font-size:26px">78.4 <span class="tiny muted" style="font-weight:600">kg</span></div></div><span class="badge badge-green">▼ 1.6 kg / 30d</span></div>
+          <svg viewBox="0 0 320 90" style="width:100%;height:auto;margin-top:8px">
+            <polyline points="10,30 55,28 100,40 145,38 190,52 235,50 280,62 310,60" fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <polygon points="10,30 55,28 100,40 145,38 190,52 235,50 280,62 310,60 310,90 10,90" fill="var(--accent-soft)"/>
+          </svg>
+        </div>
+        <div class="tiles" style="margin-top:12px">
+          <div class="tile"><div class="tiny muted" style="font-weight:700">BODY FAT</div><div class="tnum" style="margin-top:4px">16.2<span class="tiny muted">%</span></div><div class="tlab" style="color:var(--green)">▼ 0.8% / 30d</div></div>
+          <div class="tile"><div class="tiny muted" style="font-weight:700">LEAN MASS</div><div class="tnum" style="margin-top:4px">65.7<span class="tiny muted">kg</span></div><div class="tlab" style="color:var(--green)">▲ 0.4 kg</div></div>
+        </div>
+        <div class="between" style="margin:22px 2px 8px"><div style="font-weight:800;font-size:16px">Measurements</div><button class="nav-icon-btn" style="width:30px;height:30px"><i data-ic="question" data-size="17"></i></button></div>
+        <div class="list">
+          <div class="row"><div class="row-main"><div class="row-title">Chest</div></div><div class="row-val">104 cm</div></div>
+          <div class="row"><div class="row-main"><div class="row-title">Waist</div></div><div class="row-val">82 cm</div></div>
+          <div class="row"><div class="row-main"><div class="row-title">Arms</div></div><div class="row-val">38.5 cm</div></div>
+          <div class="row"><div class="row-main"><div class="row-title">Thighs</div></div><div class="row-val">59 cm</div></div>
+          <div class="row"><div class="row-main"><div class="row-title">Shoulders</div></div><div class="row-val">122 cm</div></div>
+        </div>
+        <div class="flex gap3" style="margin-top:14px"><button class="btn btn-primary grow" style="width:auto"><i data-ic="plus" data-size="18"></i> Log</button><button class="btn btn-gray grow" style="width:auto"><i data-ic="history" data-size="17"></i> History</button></div>
+        <button class="btn btn-tinted" style="margin-top:10px"><i data-ic="photo" data-size="18"></i> Progress Photos</button>
+      </div>
+      <div class="tabbar"><button class="tab"><i data-ic="log" data-size="25"></i><span>Log</span></button><button class="tab"><i data-ic="dumbbell" data-size="25"></i><span>Plan</span></button><button class="tab active"><i data-ic="chart" data-size="25"></i><span>Progress</span></button><button class="tab"><i data-ic="person" data-size="25"></i><span>Profile</span></button></div>
+      <div class="home-indicator"></div>
+    </div>
+  </div>
+
+  <!-- BODY-02 · Log measurement -->
+  <div class="frame-wrap">
+    <div class="frame-cap"><span class="num">BODY-02</span> Log measurement</div>
+    <div class="phone" data-theme="light">
+      <div class="dynamic-island"></div><div class="statusbar auto"></div>
+      <div class="navbar bordered"><div class="navbar-row"><button class="nav-btn">Cancel</button><div class="nav-title">Log Measurement</div><button class="nav-btn" style="font-weight:700">Save</button></div></div>
+      <div class="screen-body pad pad-b">
+        <div class="hint-card" style="margin-top:14px"><i data-ic="info" data-size="17" color="var(--text-3)"></i><div class="tiny muted" style="line-height:1.5">Fill only what you measured today — blanks keep their last value.</div></div>
+        <div class="flex gap3" style="margin-top:14px"><div class="field grow" style="margin-bottom:0"><label>Weight</label><input value="78.4" inputmode="decimal"></div><div class="field grow" style="margin-bottom:0"><label>Body fat %</label><input placeholder="16.2"></div></div>
+        <div class="sec-label">Circumferences (cm)</div>
+        <div class="flex gap3"><div class="field grow"><label>Neck</label><input placeholder="–"></div><div class="field grow"><label>Chest</label><input value="104"></div></div>
+        <div class="flex gap3"><div class="field grow"><label>Waist</label><input value="82"></div><div class="field grow"><label>Hips</label><input placeholder="–"></div></div>
+        <div class="flex gap3"><div class="field grow"><label>Arms</label><input value="38.5"></div><div class="field grow"><label>Thighs</label><input value="59"></div></div>
+        <button class="btn btn-primary">Save Measurement</button>
+      </div>
+      <div class="home-indicator"></div>
+    </div>
+  </div>
+
+  <!-- BODY-03 · Photo compare -->
+  <div class="frame-wrap">
+    <div class="frame-cap"><span class="num">BODY-03</span> Progress photos · compare</div>
+    <div class="phone" data-theme="light">
+      <div class="dynamic-island"></div><div class="statusbar auto"></div>
+      <div class="navbar bordered"><div class="navbar-row"><button class="nav-btn"><i data-ic="chevron-left" data-size="22"></i>Body</button><div class="nav-title">Progress Photos</div><button class="nav-icon-btn"><i data-ic="camera" data-size="19"></i></button></div></div>
+      <div class="pad" style="padding-top:8px"><div class="segmented" style="width:200px"><button class="active">Side by side</button><button>Up / down</button></div></div>
+      <div class="screen-body pad pad-b" style="padding-top:14px">
+        <div class="flex gap3">
+          <div class="grow"><div class="ph rounded" style="aspect-ratio:3/4">photo · drop in</div><div class="center tiny muted" style="margin-top:6px;font-weight:700">Mar 1 · 80 kg</div></div>
+          <div class="grow"><div class="ph rounded" style="aspect-ratio:3/4">photo · drop in</div><div class="center tiny muted" style="margin-top:6px;font-weight:700">Jun 22 · 78.4 kg</div></div>
+        </div>
+        <div class="card card-pad between" style="margin-top:16px"><div><div style="font-weight:700;font-size:15px">16 weeks apart</div><div class="tiny muted">−1.6 kg · −2.4% body fat</div></div><button class="btn btn-tinted btn-sm" style="width:auto"><i data-ic="export" data-size="16"></i> Share</button></div>
+        <div class="sec-label">Library</div>
+        <div class="catalog">
+          <div class="cat-item"><div class="ph cat-thumb" style="aspect-ratio:3/4"></div><div class="cat-meta center">Jun 22</div></div>
+          <div class="cat-item"><div class="ph cat-thumb" style="aspect-ratio:3/4"></div><div class="cat-meta center">May 25</div></div>
+        </div>
+      </div>
+      <div class="home-indicator"></div>
+    </div>
+  </div>
+
+  <!-- BODY-04 · Nutrition -->
+  <div class="frame-wrap">
+    <div class="frame-cap"><span class="num">BODY-04</span> Body · Nutrition</div>
+    <div class="phone" data-theme="light">
+      <div class="dynamic-island"></div><div class="statusbar auto"></div>
+      <div class="navbar"><div class="navbar-row"><div class="nav-title-lg">Progress</div></div>
+        <div class="segmented" style="margin-top:4px"><button>Stats</button><button class="active">Body</button></div></div>
+      <div class="pad" style="padding-top:8px"><div class="segmented" style="background:var(--accent-soft)"><button>Measurements</button><button class="active">Nutrition</button></div></div>
+      <div class="screen-body pad pad-b" style="padding-top:12px">
+        <div class="card card-pad">
+          <div class="between"><div><div style="font-weight:700;font-size:15px">Profile</div><div class="tiny muted">178 cm · 78.4 kg · 28y · Male · Active</div></div><div class="ph" style="width:46px;height:46px;border-radius:50%"></div></div>
+          <div class="flex gap3" style="margin-top:14px"><div class="tile grow"><div class="tlab">BMI</div><div class="tnum" style="font-size:22px">24.7</div><div class="tiny" style="color:var(--green);font-weight:700">Healthy</div></div><div class="tile grow"><div class="tlab">TDEE</div><div class="tnum" style="font-size:22px">2,640</div><div class="tiny muted">kcal/day</div></div></div>
+        </div>
+        <div class="sec-label">Goal</div>
+        <div class="filters"><span class="chip">Lose fat</span><span class="chip active">Lean gain</span><span class="chip">Gain muscle</span><span class="chip">Maintain</span></div>
+        <div class="sec-label">Macro split</div>
+        <div class="filters"><span class="chip active">Balanced</span><span class="chip">High protein</span><span class="chip">High carb</span><span class="chip">Keto</span></div>
+        <div class="sec-label">Daily targets</div>
+        <div class="card card-pad">
+          <div class="between" style="margin-bottom:14px"><div class="stat-num" style="font-size:26px">2,840 <span class="tiny muted" style="font-weight:600">kcal</span></div><span class="badge badge-accent">+200 surplus</span></div>
+          <div class="mbar-row"><div class="mbar-lab"><i data-ic="egg" data-size="14" color="var(--accent)"></i> Protein</div><div class="mbar"><i style="width:90%;background:var(--accent)"></i></div><div class="mbar-pct">180g</div></div>
+          <div class="mbar-row"><div class="mbar-lab"><i data-ic="wheat" data-size="14" color="var(--blue)"></i> Carbs</div><div class="mbar"><i style="width:75%;background:var(--blue)"></i></div><div class="mbar-pct">320g</div></div>
+          <div class="mbar-row"><div class="mbar-lab"><i data-ic="water" data-size="14" color="var(--purple)"></i> Fats</div><div class="mbar"><i style="width:42%;background:var(--purple)"></i></div><div class="mbar-pct">78g</div></div>
+          <div class="mbar-row" style="margin-bottom:0"><div class="mbar-lab"><i data-ic="rest" data-size="14" color="var(--green)"></i> Fiber</div><div class="mbar"><i style="width:35%;background:var(--green)"></i></div><div class="mbar-pct">38g</div></div>
+        </div>
+      </div>
+      <div class="tabbar"><button class="tab"><i data-ic="log" data-size="25"></i><span>Log</span></button><button class="tab"><i data-ic="dumbbell" data-size="25"></i><span>Plan</span></button><button class="tab active"><i data-ic="chart" data-size="25"></i><span>Progress</span></button><button class="tab"><i data-ic="person" data-size="25"></i><span>Profile</span></button></div>
+      <div class="home-indicator"></div>
+    </div>
+  </div>
+
+  </div>
+</div>
+
+<style>.c-leg{width:11px;height:11px;border-radius:3px;display:inline-block;background:var(--fill);}.c-leg.l1{background:color-mix(in oklab,var(--accent) 30%,var(--fill));}.c-leg.l2{background:color-mix(in oklab,var(--accent) 55%,var(--fill));}.c-leg.l3{background:color-mix(in oklab,var(--accent) 78%,transparent);}.c-leg.l4{background:var(--accent);}</style>
+<script src="../styles/gallery.js"></script>
+<script src="../styles/icons.js"></script>
+<script>
+  // build heatmap calendars from data-heat string (digits 0-4, r=rest, space ignored)
+  document.querySelectorAll('[data-heat]').forEach(el=>{
+    const raw = el.dataset.heat.replace(/\s/g,'');
+    // pad to a full grid starting offset (3 blanks for month start)
+    let html = '<div class="c off"></div><div class="c off"></div><div class="c off"></div>';
+    for(const ch of raw){
+      if(ch==='r') html += '<div class="c rest"></div>';
+      else html += `<div class="c l${ch}"></div>`;
+    }
+    // fill remainder of last week
+    el.innerHTML = html;
+  });
+</script>
+</body>
+</html>

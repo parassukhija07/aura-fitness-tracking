@@ -29,7 +29,7 @@ struct LogSheetsView: View {
         Group {
             switch sheet {
             case .menu:                          menuSheet
-            case .switchWorkout:                 switchSheet
+            case .switchWorkout(let planId):     switchSheet(planId: planId)
             case .move:                          moveSheet
             case .edit:                          editSheet
             case .add:                           addSheet
@@ -41,7 +41,26 @@ struct LogSheetsView: View {
             case .logQuick(let iso):             logQuickSheet(iso: iso)
             }
         }
-        .presentationDetents([.large])
+        .id(sheet.id)
+        .transition(.asymmetric(
+            insertion: .move(edge: .trailing).combined(with: .opacity),
+            removal: .move(edge: .leading).combined(with: .opacity)
+        ))
+        .animation(.easeInOut(duration: 0.28), value: sheet.id)
+        .presentationDetents(detents)
+    }
+
+    /// Per-sheet detents: compact sheets fit their content; tall/scrolling sheets get full height.
+    private var detents: Set<PresentationDetent> {
+        switch sheet {
+        case .menu:
+            // Compact bottom sheet — sized to the 5-row menu, not full screen.
+            return [.fraction(0.55)]
+        case .move, .add:
+            return [.medium, .large]
+        default:
+            return [.large]
+        }
     }
 
     // MARK: Reusable chrome
@@ -164,13 +183,14 @@ struct LogSheetsView: View {
                             sub: "Today only · your program stays unchanged") { parentSheet = .move }
                     Divider().padding(.leading, 58)
                     menuRow(icon: "arrow.left.arrow.right", bg: .aura.blue, label: "Switch Workout",
-                            sub: "For today only · your program stays unchanged") { parentSheet = .switchWorkout }
+                            sub: "For today only · your program stays unchanged") { parentSheet = .switchWorkout() }
                     Divider().padding(.leading, 58)
                     menuRow(icon: "moon.fill", bg: Color(hex: "#5A6B8C"), label: "Make it a Rest Day") {
                         appState.setOverride(DayOverride(kind: .rest), for: info.iso); parentSheet = nil; flash("Marked as rest day")
                     }
                     Divider().padding(.leading, 58)
                     menuRow(icon: "trash", bg: .aura.red, label: "Remove from Today", danger: true) {
+                        // → empty-today ("Nothing planned" dashed card), per 03-log §sh-menu.
                         appState.setOverride(DayOverride(kind: .removed), for: info.iso); parentSheet = nil; flash("Removed from today")
                     }
                 }
@@ -188,17 +208,108 @@ struct LogSheetsView: View {
         .background(Color.aura.bg)
     }
 
-    // MARK: Switch sheet
+    // MARK: Switch sheet (two levels — mirrors log.jsx switch-v2)
 
-    private var switchSheet: some View {
+    /// The program the active plan is built from (level-1 "Active" section).
+    private var activeProgram: Program? {
+        guard let pid = appState.defaultPlan?.sourceProgramID else { return SeedData.programs.first }
+        return SeedData.programs.first { $0.id == pid }
+    }
+    /// Every other predefined program, surfaced as drill-in "Other Plans" rows.
+    private var otherPrograms: [Program] {
+        SeedData.programs.filter { $0.id != activeProgram?.id }
+    }
+
+    @ViewBuilder
+    private func switchSheet(planId: UUID?) -> some View {
+        if let planId, let plan = SeedData.programs.first(where: { $0.id == planId }) {
+            switchLevel2(plan)
+        } else {
+            switchLevel1
+        }
+    }
+
+    private var switchLevel1: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: AuraSpacing.s3) {
                 grabber().frame(maxWidth: .infinity)
                 sheetHeader("Switch Workout", sub: "For today only · your program stays unchanged")
-                AuraSectionLabel(title: (appState.defaultPlan?.name ?? "Program") + " (Active)")
+
+                // Active program workouts
+                AuraSectionLabel(title: (activeProgram?.name ?? "Program") + " (Active)")
                     .padding(.horizontal, AuraSpacing.screenPad)
                 VStack(spacing: 10) {
                     ForEach(programWorkouts) { w in
+                        workoutRow(w) { assign(w.id, mode: .switchMode, dateIso: info.iso) }
+                    }
+                }
+                .padding(.horizontal, AuraSpacing.screenPad)
+
+                // Other plans → drill into level 2
+                if !otherPrograms.isEmpty {
+                    AuraSectionLabel(title: "Other Plans")
+                        .padding(.horizontal, AuraSpacing.screenPad)
+                    VStack(spacing: 0) {
+                        ForEach(Array(otherPrograms.enumerated()), id: \.element.id) { idx, prog in
+                            Button { parentSheet = .switchWorkout(planId: prog.id) } label: {
+                                HStack(spacing: 12) {
+                                    ZStack {
+                                        RoundedRectangle(cornerRadius: AuraRadius.md).fill(Color.aura.surface2).frame(width: 40, height: 40)
+                                        Image(systemName: "square.stack.3d.up.fill").foregroundColor(.aura.text3).font(.system(size: 16))
+                                    }
+                                    VStack(alignment: .leading, spacing: 1) {
+                                        Text(prog.name).font(.system(size: 15, weight: .bold)).foregroundColor(.aura.text)
+                                        Text("\(prog.workouts.count) workouts · \(prog.style)").font(.system(size: 13)).foregroundColor(.aura.text2)
+                                    }
+                                    Spacer()
+                                    Image(systemName: "chevron.right").font(.system(size: 14)).foregroundColor(.aura.text3)
+                                }
+                                .padding(.horizontal, 16).padding(.vertical, 11)
+                            }
+                            .buttonStyle(.plain)
+                            if idx < otherPrograms.count - 1 { Divider().padding(.leading, 68) }
+                        }
+                    }
+                    .background(Color.aura.surface)
+                    .clipShape(RoundedRectangle(cornerRadius: AuraRadius.md))
+                    .overlay(RoundedRectangle(cornerRadius: AuraRadius.md).stroke(Color.aura.separator.opacity(0.5), lineWidth: 1))
+                    .padding(.horizontal, AuraSpacing.screenPad)
+                }
+
+                // Workout Library (stub)
+                srcCard(icon: "magnifyingglass", bg: .aura.green.opacity(0.16), color: .aura.green,
+                        title: "Workout Library", sub: "Browse all saved & predefined workouts") {
+                    flash("Opening workout library…")
+                }
+                .padding(.horizontal, AuraSpacing.screenPad)
+            }
+            .padding(.bottom, AuraSpacing.s6)
+        }
+        .background(Color.aura.bg)
+    }
+
+    private func switchLevel2(_ plan: Program) -> some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: AuraSpacing.s3) {
+                grabber().frame(maxWidth: .infinity)
+                // Back header
+                HStack(spacing: 10) {
+                    Button { parentSheet = .switchWorkout() } label: {
+                        Image(systemName: "chevron.left").font(.system(size: 16, weight: .semibold))
+                            .foregroundColor(.aura.text)
+                            .frame(width: 34, height: 34)
+                            .background(Color.aura.fill.opacity(0.5)).clipShape(Circle())
+                    }.buttonStyle(.plain)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(plan.name).font(AuraFont.navTitle()).foregroundColor(.aura.text)
+                        Text("Pick a workout to use today").font(.system(size: 12)).foregroundColor(.aura.text2)
+                    }
+                    Spacer()
+                }
+                .padding(.horizontal, AuraSpacing.screenPad)
+
+                VStack(spacing: 10) {
+                    ForEach(plan.workouts) { w in
                         workoutRow(w) { assign(w.id, mode: .switchMode, dateIso: info.iso) }
                     }
                 }
@@ -298,7 +409,12 @@ struct LogSheetsView: View {
                 .padding(.horizontal, AuraSpacing.screenPad)
 
                 AuraPrimaryButton(label: "Save for Today") {
-                    appState.setOverride(DayOverride(kind: .edited, workoutId: info.workout?.id, editedExercises: editExercises), for: info.iso)
+                    // Reuse the day's existing override type when present (editing a
+                    // logged day stays logged; a fresh planned day becomes `edited`),
+                    // per 03-log §sh-edit edge. Don't collapse to one type.
+                    let existing = appState.dayOverrides[info.iso]?.kind
+                    let kind: DayOverride.Kind = (existing == .logged || existing == .added) ? existing! : .edited
+                    appState.setOverride(DayOverride(kind: kind, workoutId: info.workout?.id, editedExercises: editExercises), for: info.iso)
                     parentSheet = nil; flash("Workout updated for today")
                 }
                 .padding(.horizontal, AuraSpacing.screenPad)
@@ -343,7 +459,7 @@ struct LogSheetsView: View {
                     srcCard(icon: "plus", bg: .aura.fill, color: .aura.text2,
                             title: "Empty Workout", sub: "Start blank, add as you go") {
                         parentSheet = nil
-                        appState.startWorkout(SeedData.emptyWorkout())
+                        appState.startWorkout(SeedData.emptyWorkout(), emptyMode: true)
                     }
                 }
                 .padding(.horizontal, AuraSpacing.screenPad)
@@ -617,7 +733,9 @@ struct LogSheetsView: View {
                         logExerciseCard(ex, editable: false)
                     }
                 }.padding(.horizontal, AuraSpacing.screenPad)
-                AuraGrayButton(label: "Edit Log", icon: "pencil") { parentSheet = .editLog }
+                AuraGrayButton(label: "Edit Log", icon: "pencil") {
+                    withAnimation(.easeInOut(duration: 0.28)) { parentSheet = .editLog }
+                }
                     .padding(.horizontal, AuraSpacing.screenPad)
             }
             .padding(.bottom, AuraSpacing.s6)

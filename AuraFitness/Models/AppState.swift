@@ -23,15 +23,72 @@ enum DarkModePreference: String, CaseIterable, Codable {
 
 @MainActor
 class AppState: ObservableObject {
+    // MARK: - Persistence keys (mirror shell.jsx localStorage keys)
+    private enum Keys {
+        static let dark     = "aura_dark"      // DarkModePreference rawValue
+        static let calStart = "aura_calstart"  // "Sun" | "Mon"
+        static let logStat  = "aura_logstat"   // "Strength Score" | "Strength Balance" | "Both"
+    }
+
+    /// When true, `didSet` writers don't persist (used while loading in `init`).
+    private var isLoading = false
+
     // MARK: - Appearance
-    @Published var darkModePreference: DarkModePreference = .auto
+    @Published var darkModePreference: DarkModePreference = .auto {
+        didSet { persist(Keys.dark, darkModePreference.rawValue) }
+    }
 
     // MARK: - Settings
-    @Published var calendarStartDay: Int = 0         // 0=Sun, 1=Mon
-    @Published var logDisplayMode: String = "Both"   // "Strength Score" | "Strength Balance" | "Both"
+    @Published var calendarStartDay: Int = 0 {       // 0=Sun, 1=Mon
+        didSet { persist(Keys.calStart, calendarStartDay == 1 ? "Mon" : "Sun") }
+    }
+    @Published var logDisplayMode: String = "Both" { // "Strength Score" | "Strength Balance" | "Both"
+        didSet { persist(Keys.logStat, logDisplayMode) }
+    }
+
+    // MARK: - Init: restore persisted cross-tab settings (defaults on fresh install)
+    init() {
+        isLoading = true
+        let d = UserDefaults.standard
+        if let raw = d.string(forKey: Keys.dark), let pref = DarkModePreference(rawValue: raw) {
+            darkModePreference = pref
+        }
+        if let cs = d.string(forKey: Keys.calStart) {
+            calendarStartDay = (cs == "Mon") ? 1 : 0
+        }
+        if let ls = d.string(forKey: Keys.logStat) {
+            logDisplayMode = ls
+        }
+        isLoading = false
+    }
+
+    /// Persist a single key immediately (no debounce), skipped during initial load.
+    private func persist(_ key: String, _ value: String) {
+        guard !isLoading else { return }
+        UserDefaults.standard.set(value, forKey: key)
+    }
 
     // MARK: - Workout session (nil = no active workout)
     @Published var activeWorkoutSession: WorkoutSessionState? = nil
+
+    /// Whether the full-screen Active Workout overlay is currently presented.
+    /// A *minimized* session keeps `activeWorkoutSession` (timers run) but sets
+    /// this `false` so the overlay hides and the resume banner can show.
+    /// Mirrors shell.jsx `workoutOpen`.
+    @Published var workoutOverlayOpen: Bool = false
+
+    /// A session exists but the overlay is closed → drives the resume banner.
+    /// Mirrors shell.jsx `inProgress`.
+    var workoutInProgress: Bool { activeWorkoutSession != nil && !workoutOverlayOpen }
+
+    // MARK: - Cross-tab deep links (FAB quick actions → Progress sub-sections)
+    enum ProgressDeepLink: Equatable { case measurements, photos }
+    /// Set by a FAB action; ProgressTabView consumes it to open the right sub-tab.
+    @Published var progressDeepLink: ProgressDeepLink? = nil
+
+    /// Set by the FAB "Start Workout" action while on the Log tab; LogTabView
+    /// consumes it to open the add-workout source sheet (03-log §misc).
+    @Published var requestLogAddSheet: Bool = false
 
     // MARK: - User data
     @Published var userPlans: [UserPlan] = []
@@ -51,7 +108,10 @@ class AppState: ObservableObject {
 
     // MARK: - Workout preferences
     @Published var defaultSets: Int = 3
-    @Published var defaultRepRange: String = "6–10"
+    @Published var defaultRepLow: Int = 6
+    @Published var defaultRepHigh: Int = 10
+    /// Derived "lo–hi" display string (mirrors the prototype's defRepsLo/Hi pair).
+    var defaultRepRange: String { "\(defaultRepLow)–\(defaultRepHigh)" }
     @Published var defaultRestBetweenSets: Int = 60
     @Published var defaultRestBetweenExercises: Int = 90
     @Published var autoRestTimer: Bool = true
@@ -63,15 +123,57 @@ class AppState: ObservableObject {
 
     // MARK: - Notifications
     @Published var notificationsEnabled: Bool = true
-    @Published var restSound: String = "Ding"    // "Ding" | "Alarm"
+    @Published var restSound: String = "Ding"    // "Ding" | "Alarm clock"
+
+    // MARK: - Connected health apps
+    @Published var appleHealthConnected: Bool = true
+    @Published var googleHealthConnected: Bool = false
+
+    /// Set by AccountDetailsView "Save Changes" on dismiss; the Profile root
+    /// consumes it to flash a confirmation toast (mirrors prototype Save flow).
+    @Published var profileSaveFlash: String? = nil
 
     // MARK: - Computed
     var defaultPlan: UserPlan? { userPlans.first(where: { $0.isDefault }) }
 
-    // MARK: - Helpers
-    func startWorkout(_ workout: Workout) {
-        let session = WorkoutSessionState(workout: workout, appState: self)
+    // MARK: - Workout overlay lifecycle (mirrors shell.jsx startWorkout / onMinimize / onExit)
+
+    /// Launch the Active Workout overlay with a (seeded or empty) session.
+    ///
+    /// The active-workout hero flow always runs the seeded "Push Day A" mid-session
+    /// demo (with PRs/targets/history/warm-ups and the seeded superset), restored
+    /// from `aura_wk` when a compatible blob exists. The `workout` passed in only
+    /// supplies the overview name/program tag; pass `emptyMode` for build-as-you-go.
+    func startWorkout(_ workout: Workout, emptyMode: Bool = false) {
+        let seed: Workout
+        if emptyMode {
+            seed = Workout(name: workout.name.isEmpty ? "My Workout" : workout.name,
+                           primaryMuscles: "—", estimatedMinutes: 0,
+                           exercises: [], program: "Free Workout")
+        } else {
+            seed = ActiveWorkoutSeed.pushDayA()
+        }
+        let session = WorkoutSessionState(workout: seed, appState: self, emptyMode: emptyMode)
         activeWorkoutSession = session
+        workoutOverlayOpen = true
+    }
+
+    /// Minimize: keep the live session (timers, logged sets, rest) but close the
+    /// overlay → lands on Log with the resume banner showing.
+    func minimizeWorkout() {
+        workoutOverlayOpen = false
+    }
+
+    /// Re-open the existing live session's overlay (the real "Resume").
+    func resumeWorkout() {
+        guard activeWorkoutSession != nil else { return }
+        workoutOverlayOpen = true
+    }
+
+    /// Exit/discard: tear the session down entirely → no resume banner.
+    func exitWorkout() {
+        activeWorkoutSession = nil
+        workoutOverlayOpen = false
     }
 
     func saveWorkout(_ session: WorkoutSessionState) {
@@ -108,11 +210,15 @@ class AppState: ObservableObject {
                 }
             }
         }
+        WorkoutPersistence.clearWorkout()
         activeWorkoutSession = nil
+        workoutOverlayOpen = false
     }
 
     func discardWorkout() {
+        WorkoutPersistence.clearWorkout()
         activeWorkoutSession = nil
+        workoutOverlayOpen = false
     }
 
     // MARK: - Week schedule helper

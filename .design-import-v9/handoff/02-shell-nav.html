@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>2 · Shell &amp; navigation — Aura Handover</title>
+<link rel="stylesheet" href="../styles/aura.css">
+<link rel="stylesheet" href="handoff.css">
+</head>
+<body>
+<div class="docbar">
+  <div class="crumbs"><a href="Handoff.html">Aura Handover</a><span>/</span><b>2 · Shell &amp; navigation</b></div>
+  <span class="pill">Phase 2</span>
+</div>
+
+<div class="shell">
+  <nav class="rail">
+    <h4>Chapter 2</h4>
+    <a href="#root">Root routing</a>
+    <a href="#root" class="sub">AuraRoot state</a>
+    <a href="#props" class="sub">What each tab receives</a>
+    <a href="#theme" class="sub">Theme enforcement</a>
+    <a href="#overlay">Workout overlay</a>
+    <a href="#overlay" class="sub">Three exits</a>
+    <a href="#entry" class="sub">Entry points</a>
+    <a href="#resume">Resume banner</a>
+    <a href="#tabbar">The tab bar</a>
+    <a href="#tabbar" class="sub">Anatomy &amp; glass</a>
+    <a href="#indicator">Sliding indicator</a>
+    <a href="#hover" class="sub">Hover preview</a>
+    <a href="#collapse">Collapse on scroll</a>
+    <a href="#swipe">Swipe between tabs</a>
+    <a href="#fab">FAB quick actions</a>
+    <a href="#fab-routing" class="sub">Per-tab routing</a>
+    <a href="#layering">Z-index map</a>
+    <a href="#checklist">Scenario checklist</a>
+    <h4>Jump to</h4>
+    <a href="01-foundation.html">← 1 · Foundation</a>
+    <a href="03-log.html">3 · Log tab →</a>
+  </nav>
+
+  <main class="content">
+    <div class="kicker">Phase 2</div>
+    <h1 class="doc">Shell &amp; navigation</h1>
+    <p class="lead">The frame that holds the four tabs together. This chapter covers the root component that owns routing and cross-tab settings, the full-screen overlay the Active Workout flow lives in, the resume banner, and the single most intricate piece of chrome in the app — the floating glass tab bar with its sliding indicator, scroll-collapse, swipe gestures and quick-action FAB. Every value, guard and edge case is spelled out; nothing here should be inferred.</p>
+
+    <div class="note"><span class="lbl">Source</span>Routing &amp; overlay live in <code>combined/shell.jsx</code> (<code>AuraRoot</code>, 46 lines). The tab bar + FAB live in <code>combined/ui.jsx</code> as <code>TabBarEl</code> (exported as <code>window.AuraTabBar</code>). The resume banner is rendered by <code>combined/log.jsx</code>. The scroll event that drives collapse is wired in <code>Aura App.html</code> itself.</div>
+
+    <!-- ============================================================ -->
+    <h2 class="doc first" id="root">Root routing — <code>AuraRoot</code></h2>
+    <p class="doc"><code>AuraRoot</code> is the single owner of <b class="k">which tab is showing</b> and of every <b class="k">cross-tab setting</b>. It is the only stateful component above the tab level; each tab is otherwise self-contained. It renders into <code>#root</code> and never unmounts.</p>
+
+    <h4 class="doc">State it holds</h4>
+    <table class="doc">
+      <tr><th>State</th><th>Init</th><th>Owner / writers</th><th>Purpose</th></tr>
+      <tr><td><code>tab</code></td><td><code>'log'</code></td><td>set by tab bar / FAB / overlay exits</td><td>Which of the four tabs renders. One of <code>log · plan · progress · profile</code>.</td></tr>
+      <tr><td><code>workoutOpen</code></td><td><code>false</code></td><td><code>startWorkout</code> / overlay exits</td><td>When true the Active Workout overlay replaces all tabs.</td></tr>
+      <tr><td><code>inProgress</code></td><td><code>false</code></td><td><code>startWorkout</code> / <code>onMinimize</code> / <code>onExit</code></td><td>A session exists but the overlay is closed → drives the resume banner.</td></tr>
+      <tr><td><code>dark</code></td><td><code>localStorage 'aura_dark' === '1'</code></td><td>Profile (<code>onDark</code>)</td><td>Theme. Read once on init, persisted on every change.</td></tr>
+      <tr><td><code>calStart</code></td><td><code>localStorage 'aura_calstart'</code> ?? <code>'Sun'</code></td><td>Profile (<code>onCalStart</code>)</td><td>Week-start day. Consumed by Log &amp; Plan calendars.</td></tr>
+      <tr><td><code>logStat</code></td><td><code>localStorage 'aura_logstat'</code> ?? <code>'Both'</code></td><td>Profile (<code>onLogStat</code>)</td><td>Which stat the Log/Progress views surface.</td></tr>
+      <tr><td><code>workoutCfg</code></td><td><code>{ name:'', empty:false }</code></td><td><code>startWorkout</code></td><td>Config passed into the overlay on launch (workout name + blank-mode flag).</td></tr>
+    </table>
+    <div class="note info"><span class="lbl">Persistence</span>All three settings are read inside the <code>useState</code> initializer with a <code>try/catch</code> that falls back to the default if storage is unavailable. Writes happen in the <code>onDark</code>/<code>onCalStart</code>/<code>onLogStat</code> callbacks <b>immediately</b> on change, also wrapped in <code>try/catch</code>. There is no debounce and no batch write — set state then write the key. Keys are defined in <a class="link" href="01-foundation.html">Chapter 1</a>.</div>
+    <div class="note warn"><span class="lbl">Edge</span>Profile is the <b>only</b> writer of <code>calStart</code> and <code>logStat</code>; Log and Plan/Progress only ever <b>read</b> them. Keep that one-way flow — don't let a tab mutate a setting it merely consumes.</div>
+
+    <h3 class="doc" id="props">What each tab receives</h3>
+    <p class="doc">Routing is a flat <code>if</code> ladder at the bottom of <code>AuraRoot</code>. Each tab gets <b class="k">only</b> the props it needs — the prop surface is deliberately narrow and differs per tab. Match it exactly.</p>
+    <table class="doc">
+      <tr><th>Tab</th><th>Component</th><th>Props passed</th></tr>
+      <tr><td><b>log</b></td><td><code>window.LogTab</code></td><td><code>tab</code>, <code>onTab</code>, <code>onStartWorkout</code>, <code>inProgress</code>, <code>dark</code>, <code>calStart</code></td></tr>
+      <tr><td><b>plan</b></td><td><code>window.PlanApp</code></td><td><code>tab</code>, <code>onTab</code>, <code>calStart</code></td></tr>
+      <tr><td><b>progress</b></td><td><code>window.ProgressTab</code></td><td><code>tab</code>, <code>onTab</code>, <code>dark</code>, <code>onDark</code>, <code>logStat</code></td></tr>
+      <tr><td><b>profile</b></td><td><code>window.ProfileTab</code></td><td><code>tab</code>, <code>onTab</code>, <code>dark</code>, <code>onDark</code>, <code>calStart</code>, <code>onCalStart</code>, <code>logStat</code>, <code>onLogStat</code></td></tr>
+    </table>
+    <ul class="doc">
+      <li><code>onTab</code> is the same <code>setTab</code> everywhere — it's how the tab bar, FAB and any in-tab deep-link switch tabs.</li>
+      <li>Only <b>Log</b> receives <code>onStartWorkout</code> (it's the only tab with a real "Start" button + resume banner). Plan/Progress/Profile launch workouts only via the FAB, which routes through <code>onTab</code>, not directly.</li>
+      <li><b>Profile</b> is the settings hub, so it alone gets every setter (<code>onDark</code>, <code>onCalStart</code>, <code>onLogStat</code>). <b>Progress</b> gets <code>onDark</code> too because it has an inline theme affordance.</li>
+    </ul>
+    <div class="flow">
+      <span class="step">tab='log' → LogTab</span><span class="arr">·</span>
+      <span class="step">'plan' → PlanApp</span><span class="arr">·</span>
+      <span class="step">'progress' → ProgressTab</span><span class="arr">·</span>
+      <span class="step">'profile' → ProfileTab</span><span class="arr">⤷</span>
+      <span class="step">workoutOpen ⇒ WorkoutApp (overrides all)</span>
+    </div>
+
+    <h3 class="doc" id="theme">Theme enforcement — the MutationObserver</h3>
+    <div class="note warn"><span class="lbl">Easy to miss</span>This has no on-screen UI but it is load-bearing. Without it, dark mode visibly breaks on the Plan and Active Workout sub-views.</div>
+    <p class="doc">Some sub-views (Plan internals, Workout sub-views) <b class="k">hard-code <code>data-theme="light"</code></b> on their <code>.phone</code> wrapper. To stop those from punching a light hole in a dark app, <code>AuraRoot</code> runs an effect that force-syncs the theme:</p>
+    <ul class="spec">
+      <li>On <code>[dark, tab, workoutOpen]</code> change it computes <code>want = dark ? 'dark' : 'light'</code> and writes that attribute to <b>every</b> <code>.phone</code> element whose current value differs.</li>
+      <li>It then attaches a <code>MutationObserver</code> on <code>document.body</code> watching <span class="el">subtree · attributes (filter: data-theme) · childList</span>. Any time a sub-view re-asserts its own theme or a new <code>.phone</code> mounts, the observer re-applies <code>want</code>.</li>
+      <li>The observer is disconnected on cleanup so it doesn't leak across re-runs.</li>
+    </ul>
+    <div class="note info"><span class="lbl">Native</span>You almost certainly won't need this — it's a workaround for sub-views that hardcode a theme in the prototype. In the target codebase, drive theme from <b>one</b> environment/appearance value and let every screen read it. Just don't replicate the hardcoded-light sub-views and you can drop the observer entirely.</div>
+
+    <!-- ============================================================ -->
+    <h2 class="doc" id="overlay">Active Workout overlay</h2>
+    <p class="doc">A running session is <b class="k">not a tab</b> — it's a full-screen takeover. While <code>workoutOpen</code> is true, <code>AuraRoot</code> returns <code>WorkoutApp</code> early and <b>no tab bar exists</b>. The tab the user came from is remembered only implicitly (every exit returns to Log).</p>
+
+    <h3 class="doc">Launch — <code>startWorkout(name, empty)</code></h3>
+    <p class="doc">A single function opens the overlay. It sets <code>workoutCfg = { name: name||'', empty: !!empty }</code>, flips <code>inProgress = true</code>, then <code>workoutOpen = true</code> — in that order. <code>WorkoutApp</code> receives <code>workoutName={cfg.name}</code> and <code>emptyMode={cfg.empty}</code>.</p>
+    <div class="state-grid">
+      <div class="state"><span class="tag a">empty = false</span><p>Seeded session (the day's planned "Push Day A" template loads with its exercises). Default path.</p></div>
+      <div class="state"><span class="tag n">empty = true</span><p>Blank "build as you go" session — no exercises, user adds them live. See Chapter 5.</p></div>
+    </div>
+
+    <h3 class="doc">Three exits</h3>
+    <p class="doc"><code>WorkoutApp</code> is handed three callbacks. The difference between <b>Exit</b> and <b>Minimize</b> is the whole point of the resume banner — get it exactly right.</p>
+    <table class="doc">
+      <tr><th>Callback</th><th>Sets</th><th>Lands on</th><th>Resume banner after?</th></tr>
+      <tr><td><b>onExit</b><br><span class="muted">discard, or finish &amp; save</span></td><td><code>workoutOpen=false</code> · <code>inProgress=false</code> · <code>tab='log'</code></td><td>Log tab</td><td><b class="k">No</b> — session is over.</td></tr>
+      <tr><td><b>onMinimize</b></td><td><code>workoutOpen=false</code> · <code>inProgress=true</code> (kept) · <code>tab='log'</code></td><td>Log tab</td><td><b class="k">Yes</b> — banner shows.</td></tr>
+    </table>
+    <div class="note warn"><span class="lbl">The distinction</span>Both close the overlay and land on Log. The <b>only</b> difference is <code>inProgress</code>: Exit clears it (no banner), Minimize keeps it (banner visible). Finishing <i>and</i> discarding both go through <code>onExit</code> — neither leaves a resumable session.</div>
+
+    <h3 class="doc" id="entry">Entry points</h3>
+    <p class="doc">Every way to start a workout funnels through <code>startWorkout</code>. There are three:</p>
+    <ul class="spec">
+      <li><b>Log → "Start Workout"</b> (today's planned card) → <code>onStartWorkout(meta.name || 'Workout', false)</code> — seeded.</li>
+      <li><b>Log → Add-workout sheet → "Empty Workout"</b> → <code>onStartWorkout('…', true)</code> — blank mode.</li>
+      <li><b>FAB → "Start Workout"</b> → on the Log tab this opens the <i>add-workout source sheet</i> (<code>kind:'add'</code>); on other tabs it routes to Log first (see <a class="link" href="#fab-routing">per-tab routing</a>).</li>
+    </ul>
+
+    <!-- ============================================================ -->
+    <h2 class="doc" id="resume">In-progress resume banner</h2>
+    <div class="screen">
+      <div class="screen-head"><span class="id">SHELL · resume</span><h3>"Workout in progress" pill</h3></div>
+      <p class="screen-purpose">When a session was minimised (not finished), an accent banner floats just above the tab bar — <b>only on the Log tab</b> — so the user can jump back in.</p>
+      <h5>Layout &amp; copy</h5>
+      <ul class="spec">
+        <li>Rendered by <code>combined/log.jsx</code>, gated on <code>props.inProgress</code>. Absolutely positioned: <span class="el">bottom: 96 · left: 14 · right: 14</span>, sitting in the gap above the tab bar.</li>
+        <li>Solid <code>--accent</code> background, <code>--r-lg</code> radius. A <code>bolt</code> icon (20px), then a two-line block — <b>"Workout in progress"</b> (15px / 800) over <b>"Tap to resume your session"</b> (13px / 85% opacity) — then a translucent <b>"Resume"</b> chip (white 20% fill) pinned right.</li>
+        <li>The whole banner is one <code>&lt;button&gt;</code>; tapping anywhere on it resumes.</li>
+      </ul>
+      <div class="state-grid">
+        <div class="state"><span class="tag a">Visible</span><p><code>inProgress === true</code> on the Log tab — a workout was minimised and not yet finished/discarded.</p></div>
+        <div class="state"><span class="tag n">Hidden</span><p><code>inProgress === false</code>, OR the user is on any tab other than Log, OR the overlay is currently open.</p></div>
+      </div>
+      <div class="note warn"><span class="lbl">Prototype nuance → native intent</span>In the prototype, tapping the banner calls <code>onStartWorkout(meta.name||'Workout', false)</code> — it re-launches the seeded overview rather than restoring the exact live set-by-set state (the prototype doesn't snapshot in-progress reps). <b>In the native build, "Resume" must restore the actual in-progress session</b> — same exercises, logged sets, elapsed timer and rest state — not start a fresh one. Treat the prototype's re-launch as a stand-in for "re-open the live session."</div>
+    </div>
+
+    <!-- ============================================================ -->
+    <h2 class="doc" id="tabbar">The tab bar — <code>TabBarEl</code></h2>
+    <p class="doc">Defined in <code>combined/ui.jsx</code>, exported as <code>window.AuraTabBar</code>, and rendered by <b class="k">every tab</b> (Log, Plan, Progress, Profile each drop one in at the bottom of their tree). It is a <b class="k">floating glass pill</b> holding four tab buttons, with a separate circular FAB to its right, absolutely positioned over the screen above the home indicator.</p>
+
+    <h4 class="doc">Local state</h4>
+    <table class="doc">
+      <tr><th>State</th><th>Init</th><th>Drives</th></tr>
+      <tr><td><code>fabOpen</code></td><td><code>false</code></td><td>FAB menu open/closed.</td></tr>
+      <tr><td><code>collapsed</code></td><td><code>false</code></td><td>Compact vs full height (scroll-driven).</td></tr>
+      <tr><td><code>hoverIdx</code></td><td><code>null</code></td><td>Pointer-hovered tab index (desktop preview).</td></tr>
+      <tr><td><code>swipeProg</code></td><td><code>0</code></td><td>Live swipe offset, −1…1, scaled to a quarter pill-width.</td></tr>
+      <tr><td><code>dragging</code></td><td><code>false</code></td><td>True during a touch drag → disables indicator transition.</td></tr>
+    </table>
+    <p class="doc">Two static config arrays:</p>
+    <ul class="spec">
+      <li><code>ALL_TABS</code> = <span class="el">[log, Log, log] · [plan, Plan, dumbbell] · [progress, Progress, chart] · [profile, Profile, person]</span> — each is <code>[key, label, icon]</code>. Order is fixed and defines swipe order + indicator index.</li>
+      <li><code>ACTIONS</code> (FAB) = <span class="el">play-c / Start Workout / accent / workout</span>, <span class="el">log / Log Measurements / blue / measure</span>, <span class="el">medal / Progress Photo / green / photo</span>.</li>
+    </ul>
+
+    <h4 class="doc">Glass &amp; structure</h4>
+    <ul class="spec">
+      <li><b>Outer bar:</b> <code>position:absolute; bottom:0</code>, full width, flex-centered, <code>height: 96px</code> (66 collapsed), <code>z-index:20</code>, bottom padding <code>38px</code> (30 collapsed) for the home-indicator safe area. Background transparent — the glass is on the pill, not the bar.</li>
+      <li><b>Glass pill:</b> <code>flex:1</code>, <code>border-radius:999px</code>, background <code>color-mix(in oklab, var(--text) 5%, transparent)</code>, <code>backdrop-filter: blur(40px) saturate(2.5)</code>, hairline border <code>color-mix(--text 11%)</code>, shadow <code>0 4px 32px rgba(0,0,0,.14)</code> + inner top highlight <code>inset 0 1px 0 rgba(255,255,255,.07)</code>, <code>overflow:hidden</code>. Max-width <code>calc(100% − 62px)</code> (leaves room for the FAB), shrinking to <code>72%</code> collapsed.</li>
+      <li><b>Four tab buttons:</b> each <code>flex:1</code>, column layout, 22px icon over a 10px label. Colors: active = <code>#fff</code> (over the indicator) · hovered-inactive = <code>rgba(255,255,255,.7)</code> · idle = <code>var(--text-3)</code>. <code>transition: color .2s</code>. Clicking closes the FAB then calls <code>onTab</code>.</li>
+      <li><b>FAB circle:</b> separate from the pill, to its right. 46×46 (34 collapsed), <code>border-radius:50%</code>, <code>blur(40px)</code>. See the <a class="link" href="#fab">FAB section</a> for open/closed styling.</li>
+    </ul>
+    <div class="note warn"><span class="lbl">Edge</span>Each tab renders its <b>own</b> copy of <code>TabBarEl</code> — there is no single persistent bar. Local state (<code>collapsed</code>, <code>fabOpen</code>, swipe) therefore resets when you switch tabs. In the native build, prefer one persistent tab bar with shared collapse state, but preserve the per-tab <code>onAction</code> routing differences documented below.</div>
+
+    <!-- ============================================================ -->
+    <h2 class="doc" id="indicator">Single sliding indicator</h2>
+    <div class="screen">
+      <div class="screen-head"><span class="id">TAB · indicator</span><h3>One accent pill that slides</h3></div>
+      <p class="screen-purpose">There is exactly <b>one</b> accent pill behind the icons. It translates horizontally to sit under the active tab — it never fades in/out per-tab.</p>
+      <h5>Geometry</h5>
+      <ul class="spec">
+        <li>Absolutely positioned inside the glass pill: <span class="el">top:4 · bottom:4</span>, <code>background: var(--accent)</code>, <code>border-radius:999px</code>, glow shadow <code>0 2px 14px color-mix(--accent 50%)</code>, <code>pointer-events:none</code>.</li>
+        <li><b>Left</b> = <code>calc(4px + targetIdx × (100% − 8px) / 4)</code>; <b>width</b> = <code>calc((100% − 8px) / 4)</code> — i.e. exactly one quarter of the inner track, inset 4px each side.</li>
+        <li><b><code>targetIdx</code></b> = <code>hoverIdx</code> if hovering, else <code>clamp(tabIdx + swipeProg, 0, 3)</code>. So the pill <b class="k">previews</b> where you're heading — it follows the finger mid-swipe and the cursor on hover, not just the committed tab.</li>
+      </ul>
+      <h5>Transition (depends on interaction)</h5>
+      <table class="doc">
+        <tr><th>State</th><th><code>transition</code></th><th>Why</th></tr>
+        <tr><td><code>dragging === true</code></td><td><code>none</code></td><td>Pill tracks the finger 1:1, no lag.</td></tr>
+        <tr><td><code>hoverIdx !== null</code></td><td><code>left .18s</code></td><td>Snappy desktop hover preview.</td></tr>
+        <tr><td>committed (tap / swipe release)</td><td><code>left .32s</code></td><td>Smooth settle to the new tab.</td></tr>
+      </table>
+      <p class="doc muted" style="font-size:13px">All three use the same cubic-bezier <code>(.4, 0, .2, 1)</code>.</p>
+    </div>
+
+    <h3 class="doc" id="hover">Hover preview (desktop / pointer)</h3>
+    <p class="doc">Each tab button sets <code>hoverIdx</code> on <code>mouseenter</code> and clears it on <code>mouseleave</code>. While hovering, the indicator slides under the hovered tab and that tab's label brightens to 70% white — a pointer affordance only. On touch devices this never fires, so it's purely additive; safe to drop on a native build if the platform has no hover state.</p>
+
+    <!-- ============================================================ -->
+    <h2 class="doc" id="collapse">Collapse on scroll</h2>
+    <div class="screen">
+      <div class="screen-head"><span class="id">TAB · collapse</span><h3>Shrinks when you scroll down</h3></div>
+      <p class="screen-purpose">To stay out of the way while reading, the bar collapses on downward scroll and re-expands on upward scroll.</p>
+      <h5>The signal</h5>
+      <ul class="spec">
+        <li>A global listener in <code>Aura App.html</code> captures <code>scroll</code> events on any element with class <code>.screen-body</code> (capture phase, so it catches every scroll container).</li>
+        <li>It assigns each scroller a <code>data-scrollId</code>, tracks last <code>scrollTop</code> per id, and — debounced via <code>requestAnimationFrame</code> with a <b>4px threshold</b> — dispatches a <code>window</code> <code>CustomEvent('aura:scroll', { detail:{ dir } })</code> where <code>dir</code> is <code>'up'</code> or <code>'down'</code>. Movements under 4px emit nothing.</li>
+        <li>Every <code>TabBarEl</code> subscribes on mount and sets <code>collapsed = (dir === 'down')</code>. (Subscribes in a <code>useEffect</code>, unsubscribes on unmount.)</li>
+      </ul>
+      <h5>What collapses (96 → 66px)</h5>
+      <table class="doc">
+        <tr><th>Element</th><th>Expanded</th><th>Collapsed</th></tr>
+        <tr><td>Bar height</td><td>96px</td><td>66px</td></tr>
+        <tr><td>Bottom padding</td><td>38px</td><td>30px</td></tr>
+        <tr><td>Labels</td><td>10px, visible</td><td><code>font-size:0</code>, <code>height:0</code> — icon-only</td></tr>
+        <tr><td>Pill max-width</td><td><code>calc(100% − 62px)</code></td><td><code>72%</code></td></tr>
+        <tr><td>Pill padding</td><td>6px</td><td>3px</td></tr>
+        <tr><td>FAB</td><td>46px, 22px glyph</td><td>34px, 15px glyph</td></tr>
+        <tr><td>Bar gap (pill↔FAB)</td><td>10px</td><td>6px</td></tr>
+      </table>
+      <p class="doc muted" style="font-size:13px">Label transition <code>all .22s</code>; bar/pill/FAB transitions <code>.22–.25s</code>, all cubic-bezier <code>(.4, 0, .2, 1)</code>.</p>
+      <div class="state-grid">
+        <div class="state"><span class="tag n">Expanded</span><p>Default &amp; after any upward scroll. Full height, icons + labels, full FAB.</p></div>
+        <div class="state"><span class="tag a">Collapsed</span><p>After a &gt;4px downward scroll. Icon-only, compact FAB. Re-expands on the first upward scroll.</p></div>
+      </div>
+      <div class="note info"><span class="lbl">Native</span>Map to the platform's "hide/shrink on scroll" tab-bar behaviour. The key feel to preserve: it reacts to <b>direction</b>, not absolute position — scrolling up even one notch re-expands immediately.</div>
+    </div>
+
+    <!-- ============================================================ -->
+    <h2 class="doc" id="swipe">Swipe between tabs</h2>
+    <div class="screen">
+      <div class="screen-head"><span class="id">TAB · swipe</span><h3>Horizontal drag on the bar switches tab</h3></div>
+      <p class="screen-purpose">A horizontal touch-drag <b>on the tab bar itself</b> moves between adjacent tabs, with the indicator previewing the destination live under the finger.</p>
+      <h5>Gesture math (exact)</h5>
+      <ul class="spec">
+        <li><b>touchStart:</b> store <code>touchX = clientX</code>, set <code>dragging=true</code>, <code>swipeProg=0</code>.</li>
+        <li><b>touchMove:</b> <code>dx = clientX − touchX</code>. Compute <code>prog = clamp(dx / (pillWidth/4), −1, 1)</code> (pillWidth from the live <code>offsetWidth</code>, fallback 280). Apply <code>swipeProg = −prog</code> <b>only if</b> the move is toward a tab that exists: <code>(prog&lt;0 &amp;&amp; tabIdx&lt;3) || (prog&gt;0 &amp;&amp; tabIdx&gt;0)</code>. At the ends, the indicator won't preview past the boundary.</li>
+        <li><b>touchEnd:</b> <code>dx = changedTouches[0].clientX − touchX</code>; reset <code>dragging</code>/<code>swipeProg</code>. If <code>|dx| &lt; 35px</code> → snap back, no change. Else: <code>dx&lt;0 &amp;&amp; tabIdx&lt;3</code> → next tab; <code>dx&gt;0 &amp;&amp; tabIdx&gt;0</code> → previous tab.</li>
+      </ul>
+      <div class="state-grid">
+        <div class="state"><span class="tag a">Commit</span><p>|dx| ≥ 35px toward an existing neighbour → <code>onTab</code> to it, indicator settles (.32s).</p></div>
+        <div class="state"><span class="tag n">Snap-back</span><p>|dx| &lt; 35px, or drag toward a boundary (already on first/last) → <code>swipeProg</code> resets to 0, indicator returns.</p></div>
+      </div>
+      <div class="note warn"><span class="lbl">Boundary guard</span>Both the live preview and the commit are guarded so you can <b>never</b> swipe past the ends — left of Log or right of Profile does nothing and shows no preview drift.</div>
+      <div class="note"><span class="lbl">Native</span>Map to a standard paged/swipe tab container. Two details worth keeping for the same tactile feel: the 35px commit threshold, and the indicator-follows-finger preview (driven by <code>swipeProg</code>) during the drag.</div>
+    </div>
+
+    <!-- ============================================================ -->
+    <h2 class="doc" id="fab">FAB quick-action menu</h2>
+    <div class="screen">
+      <div class="screen-head"><span class="id">SHELL · FAB</span><h3>Plus button → three quick actions</h3></div>
+      <p class="screen-purpose">The circular accent <code>+</code> to the right of the pill toggles a stack of frosted-glass action chips above the bar.</p>
+      <h5>The three actions</h5>
+      <table class="doc">
+        <tr><th>Icon</th><th>Label</th><th>Key</th><th>Chip colour</th></tr>
+        <tr><td><code>play-c</code></td><td>Start Workout</td><td><code>workout</code></td><td><code>--accent</code></td></tr>
+        <tr><td><code>log</code></td><td>Log Measurements</td><td><code>measure</code></td><td><code>--blue</code></td></tr>
+        <tr><td><code>medal</code></td><td>Progress Photo</td><td><code>photo</code></td><td><code>--green</code></td></tr>
+      </table>
+      <h5>Open / close behaviour</h5>
+      <ul class="spec">
+        <li>Tapping the FAB toggles <code>fabOpen</code>. The glyph rotates <b>0° → 45°</b> (<code>+</code> becomes <code>×</code>) over <code>.2s</code>, and the circle swaps from solid accent (with accent glow shadow) to a frosted neutral <code>color-mix(--bg 55%)</code> with a soft shadow.</li>
+        <li>Open renders a full-screen <b>invisible catcher</b> (<code>position:absolute; inset:0; z-index:80</code>) that closes the menu on any outside tap.</li>
+        <li>Chips stack bottom-up at <span class="el">bottom: barH + 10</span>, right-aligned, 10px gap, <code>z-index:90</code>. Each is a glass pill (same blur/saturate as the bar) with a coloured 32px icon circle + label, animating in with <code>fabItemIn</code> (rise + fade) on a <b>staggered delay</b> <code>(0.06 + i × 0.05)s</code> so they cascade.</li>
+        <li>Selecting a chip closes the menu (<code>setFabOpen(false)</code>) then fires <code>onAction(key)</code>. Tapping any tab button also closes the menu first.</li>
+      </ul>
+      <div class="state-grid">
+        <div class="state"><span class="tag n">Closed</span><p>Accent circle, <code>+</code> glyph, accent glow shadow. No chips, no catcher.</p></div>
+        <div class="state"><span class="tag a">Open</span><p>Frosted circle, rotated <code>×</code>, three cascading chips above, scrim catcher active.</p></div>
+      </div>
+    </div>
+
+    <h3 class="doc" id="fab-routing">Per-tab FAB routing (don't paper over this)</h3>
+    <div class="note warn"><span class="lbl">Inconsistency in the prototype</span>Each tab passes its own <code>onAction</code> handler, and they are <b>not consistent</b> — on Plan and Progress, all three actions just go to Log. The table below is the literal prototype wiring <i>and</i> the destination each action <b>should</b> reach. Build to the intent column.</div>
+    <table class="doc">
+      <tr><th>Active tab</th><th><code>workout</code></th><th><code>measure</code></th><th><code>photo</code></th></tr>
+      <tr><td><b>Log</b></td><td>opens add-workout source sheet (<code>kind:'add'</code>)</td><td>→ Progress</td><td>→ Progress</td></tr>
+      <tr><td><b>Plan</b></td><td>→ Log</td><td>→ Log</td><td>→ Log</td></tr>
+      <tr><td><b>Progress</b></td><td>→ Log</td><td>→ Log</td><td>→ Log</td></tr>
+      <tr><td><b>Profile</b></td><td>→ Log</td><td>→ Progress</td><td>→ Progress</td></tr>
+      <tr><td class="muted"><b>Intended</b></td><td class="muted">start / add a workout</td><td class="muted">Progress → Body → log measurement</td><td class="muted">Progress → progress photos</td></tr>
+    </table>
+    <p class="doc">In a native build, wire all three actions to their <b>intended</b> destination regardless of the active tab: <b>Start Workout</b> → the start/add-workout flow, <b>Log Measurements</b> → Progress Body measurement entry, <b>Progress Photo</b> → Progress photo comparison. The prototype's tab-to-Log fallbacks are shortcuts, not the spec.</p>
+
+    <!-- ============================================================ -->
+    <h2 class="doc" id="layering">Z-index map</h2>
+    <p class="doc">The shell stacks several absolutely-positioned layers over each screen body. Keep this order so the catcher, chips and bar interact correctly:</p>
+    <table class="doc">
+      <tr><th>z-index</th><th>Layer</th><th>Notes</th></tr>
+      <tr><td><code>20</code></td><td>Tab bar (pill + FAB)</td><td>Always above the scrolling screen body.</td></tr>
+      <tr><td><code>80</code></td><td>FAB scrim catcher</td><td>Full-screen invisible; only present while <code>fabOpen</code>. Sits below the chips so chips stay tappable.</td></tr>
+      <tr><td><code>90</code></td><td>FAB chip stack</td><td>Above the catcher and the bar.</td></tr>
+    </table>
+    <p class="doc muted" style="font-size:13.5px">The resume banner sits in normal flow above the bar at <code>bottom:96</code> (no special z-index — it's just below the bar's layer). The Active Workout overlay isn't layered at all — it <i>replaces</i> the entire tab tree, so nothing here applies while it's open.</p>
+
+    <!-- ============================================================ -->
+    <h2 class="doc" id="checklist">Scenario checklist</h2>
+    <p class="doc">Your QA pass for this chapter. Each line is a discrete behaviour to verify.</p>
+    <ul class="doc">
+      <li>App boots on <b>Log</b>; theme/week-start/log-stat restored from storage (or defaults on a fresh install).</li>
+      <li>Tapping each tab switches content; indicator slides smoothly (.32s) under the new tab.</li>
+      <li>Swiping the bar &gt;35px moves one tab over; &lt;35px snaps back; swiping past Log/Profile does nothing.</li>
+      <li>During a swipe, the indicator follows the finger and previews the destination; it stops at the boundaries.</li>
+      <li>Scrolling a screen down collapses the bar (icon-only, smaller FAB); scrolling up re-expands it.</li>
+      <li>FAB opens with cascading chips + scrim; outside tap or tab tap closes it; glyph rotates to ×.</li>
+      <li>Each FAB action reaches its <b>intended</b> destination from every tab (see routing table).</li>
+      <li>Starting a workout (any of the 3 entry points) opens the full-screen overlay with no tab bar.</li>
+      <li><b>Minimise</b> → lands on Log <b>with</b> the resume banner; <b>Exit/Finish/Discard</b> → lands on Log with <b>no</b> banner.</li>
+      <li>Resume banner appears only on Log, only while a session is minimised; tapping it re-opens the live session.</li>
+      <li>Dark mode applies everywhere — including Plan/Workout sub-views that would otherwise force light.</li>
+      <li>Changing week-start or log-stat in Profile is reflected in Log/Progress and survives a reload.</li>
+    </ul>
+
+    <div class="chapnav">
+      <a href="01-foundation.html"><div class="dir">← Prev</div><div class="ttl">1 · Foundation</div></a>
+      <a class="next" href="03-log.html"><div class="dir">Next →</div><div class="ttl">3 · Log tab</div></a>
+    </div>
+  </main>
+</div>
+</body>
+</html>

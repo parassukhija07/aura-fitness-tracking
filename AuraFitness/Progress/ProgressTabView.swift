@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct ProgressTabView: View {
+    @EnvironmentObject var appState: AppState
     @State private var topTab = "Stats"
     @State private var bodyTab = "Measurements"
 
@@ -32,6 +33,18 @@ struct ProgressTabView: View {
             .navigationBarTitleDisplayMode(.large)
             .safeAreaInset(edge: .bottom) {
                 Color.clear.frame(height: AuraSpacing.tabBarClearance - 34)
+            }
+            // FAB deep links (Log Measurements / Progress Photo) open the Body
+            // tab; MeasurementsView then raises the matching sheet.
+            .onChange(of: appState.progressDeepLink) { _, link in
+                guard link != nil else { return }
+                topTab = "Body"
+                bodyTab = "Measurements"
+            }
+            .onAppear {
+                if appState.progressDeepLink != nil {
+                    topTab = "Body"; bodyTab = "Measurements"
+                }
             }
         }
     }
