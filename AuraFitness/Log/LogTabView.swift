@@ -88,7 +88,7 @@ struct LogTabView: View {
         return "\(dow), \(mon) \(cal.component(.day, from: selected))"
     }
 
-    // MARK: Body
+    //MARK: Body
 
     var body: some View {
         ZStack(alignment: .bottom) {
@@ -103,12 +103,44 @@ struct LogTabView: View {
             }
             .background(Color.aura.bg)
 
-            // Resume banner: only while a session is minimized (overlay closed).
+            // Resume banner: inlined component with matching layout modifiers
             if appState.workoutInProgress {
-                ResumeBanner { appState.resumeWorkout() }
-                    .padding(.horizontal, 14)
-                    .padding(.bottom, AuraSpacing.tabBarClearance)
-                    .transition(.move(edge: .bottom).combined(with: .opacity))
+                Button(action: {
+                    withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
+                        appState.resumeWorkout()
+                    }
+                }) {
+                    HStack(spacing: AuraSpacing.s2) {
+                        Image(systemName: "play.circle.fill")
+                            .font(.title3)
+                            .fontWeight(.semibold)
+                        
+                        Text("Resume Active Workout")
+                            .font(.body)
+                            .fontWeight(.medium)
+                        
+                        Spacer()
+                        
+                        Image(systemName: "chevron.right")
+                            .font(.subheadline)
+                            .opacity(0.7)
+                    }
+                    .padding(.vertical, AuraSpacing.s3)
+                    .padding(.horizontal, AuraSpacing.s4)
+                    .background(
+                        RoundedRectangle(cornerRadius: 14, style: .continuous)
+                            .fill(Color.blue.opacity(0.15))
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                                    .stroke(Color.blue.opacity(0.3), lineWidth: 1)
+                            )
+                    )
+                    .foregroundColor(.blue)
+                }
+                .buttonStyle(PlainButtonStyle()) // Avoid flash styling issues
+                .padding(.horizontal, 14)
+                .padding(.bottom, AuraSpacing.tabBarClearance)
+                .transition(.move(edge: .bottom).combined(with: .opacity))
             }
             if let toast {
                 toastView(toast)
