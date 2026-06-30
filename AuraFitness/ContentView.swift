@@ -2,7 +2,6 @@ import SwiftUI
 
 struct ContentView: View {
     @EnvironmentObject var appState: AppState
-<<<<<<< HEAD
     @State private var selectedTab: AuraTab = .log
     @State private var tabBarCollapsed: Bool = false
     @State private var workoutMinimised: Bool = false
@@ -16,7 +15,6 @@ struct ContentView: View {
 
             // Active workout full-screen overlay
             if showActiveWorkout, let session = appState.activeWorkoutSession {
-=======
 
     @State private var selection: AuraTab = .log
     @State private var collapsed = false
@@ -41,7 +39,6 @@ struct ContentView: View {
 
             // Active workout overlay takes over the whole screen (only while open).
             if appState.workoutOverlayOpen, let session = appState.activeWorkoutSession {
->>>>>>> 91e379ec4685afd991790ab0373badd82d02b753
                 ActiveWorkoutView()
                     .environmentObject(session)
                     .ignoresSafeArea()
@@ -132,7 +129,6 @@ struct ContentView: View {
         case .photo:
             selectedTab = .progress
         }
-<<<<<<< HEAD
     }
 }
 
@@ -162,7 +158,6 @@ struct CollapseOnScrollModifier: ViewModifier {
 extension View {
     func collapseTabBarOnScroll() -> some View {
         modifier(CollapseOnScrollModifier())
-=======
         .preferredColorScheme(appState.darkModePreference.colorScheme)
         .animation(.easeInOut(duration: 0.3), value: appState.workoutOverlayOpen)
         .animation(.spring(response: 0.35, dampingFraction: 0.8), value: appState.workoutInProgress)
@@ -201,6 +196,5 @@ extension View {
             appState.progressDeepLink = .photos
             selection = .progress
         }
->>>>>>> 91e379ec4685afd991790ab0373badd82d02b753
     }
 }
