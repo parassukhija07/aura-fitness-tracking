@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>7 · Profile tab — Aura Handover</title>
+<link rel="stylesheet" href="../styles/aura.css">
+<link rel="stylesheet" href="handoff.css">
+</head>
+<body>
+<div class="docbar">
+  <div class="crumbs"><a href="Handoff.html">Aura Handover</a><span>/</span><b>7 · Profile tab</b></div>
+  <span class="pill">Phase 7</span>
+</div>
+
+<div class="shell">
+  <nav class="rail">
+    <h4>Chapter 7</h4>
+    <a href="#overview">Structure &amp; root</a>
+    <a href="#state">State &amp; sync</a>
+    <h4>Settings screens</h4>
+    <a href="#general">General</a>
+    <a href="#workout">Workout</a>
+    <a href="#account">Account Details</a>
+    <a href="#notifications">Notifications</a>
+    <a href="#units">Units</a>
+    <a href="#connected">Connected Apps</a>
+    <a href="#support">Support</a>
+    <h4>Sheets</h4>
+    <a href="#sheets">export · reset · delete · logout</a>
+    <a href="#checklist">Scenario checklist</a>
+    <h4>Jump to</h4>
+    <a href="06-progress.html">← 6 · Progress</a>
+    <a href="08-data-models.html">8 · Data models →</a>
+  </nav>
+
+  <main class="content">
+    <div class="kicker">Phase 7</div>
+    <h1 class="doc">Profile tab</h1>
+    <p class="lead">Identity card + the full settings tree — a root hub and <b class="k">seven push-in sub-screens</b>, plus four confirm sheets. Three settings here are the canonical writers of cross-tab state (theme, week-start, log-stat) that the rest of the app reads.</p>
+
+    <div class="note"><span class="lbl">Source</span><code>combined/profile.jsx</code> (315 lines — <code>window.ProfileTab</code>). Reuses <code>Toggle</code>, <code>Seg</code>, <code>SetRow</code>, <code>Stepper</code> from <code>ui.jsx</code>. Receives <code>tab</code>, <code>onTab</code>, <code>dark</code>, <code>onDark</code>, <code>calStart</code>, <code>onCalStart</code>, <code>logStat</code>, <code>onLogStat</code> from <code>AuraRoot</code> — it gets <b>every</b> setter (see <a class="link" href="02-shell-nav.html#props">Ch.2</a>).</div>
+
+    <!-- ============================================================ -->
+    <h2 class="doc first" id="overview">Structure &amp; root</h2>
+    <p class="doc">A <code>screen</code> string acts as a mini-router: <code>null</code> shows the root hub; any of the seven names pushes a full-screen settings page (each with a back-to-Profile header). This is the same early-return pattern as the Plan tab.</p>
+    <h3 class="doc">Root hub</h3>
+    <ul class="spec">
+      <li><b>Identity card</b> (tap → Account): gradient initials avatar, "{first} {last}", "28 · {height} cm · 78.4 kg · {gender}".</li>
+      <li><b>Three stat tiles:</b> Sessions 142 · PRs 37 · Week streak 18.</li>
+      <li><b>Three setting groups</b> of rows → push screens: <span class="el">General · Workout · Notifications</span> / <span class="el">Account Details · Units &amp; Measurements · Connected Apps</span> / <span class="el">Support</span>. The Units &amp; Connected rows show live sub-text (current units / "Apple Health connected").</li>
+      <li><b>Log Out</b> (red) → logout confirm sheet.</li>
+    </ul>
+
+    <h3 class="doc" id="state">State &amp; cross-tab sync</h3>
+    <ul class="spec">
+      <li><b><code>cfg</code></b> holds every setting (calStart, logStat, showFirst, showPR, defSets, defRepsLo/Hi, restSet, restEx, autoRest, autoVideo, notif, restSound, weightUnit, lengthUnit, apple, google). <b><code>acct</code></b> holds the account fields.</li>
+      <li><b class="k">The sync bridge:</b> <code>set(k,v)</code> updates <code>cfg</code> and — for <code>calStart</code> and <code>logStat</code> — also calls <code>onCalStart</code>/<code>onLogStat</code> up to the shell, which persists them and feeds Log/Progress. Theme is handled directly via <code>onDark</code>. These three are the only settings that escape Profile; everything else is local <code>cfg</code> in the prototype.</li>
+    </ul>
+    <div class="note warn"><span class="lbl">Native</span>In the prototype only theme / week-start / log-stat are wired through to other tabs and persisted; the rest of <code>cfg</code> (rest defaults, units, etc.) is in-memory. In the real build, <b>all</b> of these should persist and actually drive behaviour — e.g. <code>defSets</code>/<code>restSet</code> should seed the Active Workout, <code>weightUnit</code> should convert displays.</div>
+
+    <!-- ============================================================ -->
+    <h2 class="doc">The seven settings screens</h2>
+
+    <div class="screen" id="general">
+      <div class="screen-head"><span class="id">SET · general</span><h3>General</h3></div>
+      <ul class="spec">
+        <li><b>Dark Mode</b> toggle → <code>onDark</code> ("Applies across the app").</li>
+        <li><b>Start week on</b> — Sun/Mon segmented → <code>onCalStart</code> (drives Log + Plan week strips).</li>
+        <li><b>Show on progress</b> — Strength score / Balance / Both segmented → <code>onLogStat</code> (gates the Progress Performance cards, <a class="link" href="06-progress.html#performance">Ch.6</a>).</li>
+      </ul>
+    </div>
+
+    <div class="screen" id="workout">
+      <div class="screen-head"><span class="id">SET · workout</span><h3>Workout</h3></div>
+      <ul class="spec">
+        <li><b>Display:</b> "Show first" Reps·time / Weight segmented; "Show PRs during workout" toggle.</li>
+        <li><b>Exercise targets:</b> Default sets stepper (1–10); Default rep range — two interlocked steppers (lo max-capped by hi, hi min-capped by lo); Rest between sets &amp; Rest between exercises steppers (15–300s, step 15, formatted "1 min 30 s").</li>
+        <li><b>Automation:</b> Auto rest timer, Auto-play video toggles.</li>
+      </ul>
+    </div>
+
+    <div class="screen" id="account">
+      <div class="screen-head"><span class="id">SET · account</span><h3>Account Details</h3></div>
+      <ul class="spec">
+        <li>Avatar + Change photo (stub toast). Editable fields: First/Last, Email, Phone, Birthday (date), Gender (select), Height, Country/City/State.</li>
+        <li><b>Data:</b> Export Data → export sheet; Reset Data → reset sheet. <b>Delete Account</b> (red) → delete sheet. <b>Save Changes</b> returns to root + flashes.</li>
+      </ul>
+    </div>
+
+    <div class="screen" id="notifications">
+      <div class="screen-head"><span class="id">SET · notifications</span><h3>Notifications</h3></div>
+      <ul class="spec">
+        <li><b>Enable notifications</b> toggle. <b>Rest timer sound</b> list (Ding / Alarm clock, check-marked) — the whole sound list is <b>dimmed + non-interactive</b> when notifications are off.</li>
+      </ul>
+    </div>
+
+    <div class="screen" id="units">
+      <div class="screen-head"><span class="id">SET · units</span><h3>Units &amp; Measurements</h3></div>
+      <ul class="spec">
+        <li>Weight unit (Kilograms / Pounds) and Length unit (Centimeters / Inches) segmented. The root hub's Units row reflects the choice live.</li>
+      </ul>
+    </div>
+
+    <div class="screen" id="connected">
+      <div class="screen-head"><span class="id">SET · connected</span><h3>Connected Apps</h3></div>
+      <ul class="spec">
+        <li>Apple Health + Google Health toggles with "Connected / Not connected" sub-text. Info card notes two-way sync of workouts + body weight.</li>
+      </ul>
+    </div>
+
+    <div class="screen" id="support">
+      <div class="screen-head"><span class="id">SET · support</span><h3>Support</h3></div>
+      <ul class="spec">
+        <li>User Guides &amp; FAQ · Contact Us · Feature Request (all stub toasts). Version footer "Aura Fitness · v2.4.0".</li>
+      </ul>
+    </div>
+
+    <!-- ============================================================ -->
+    <h2 class="doc" id="sheets">The four confirm sheets</h2>
+    <table class="doc">
+      <tr><th>kind</th><th>What</th></tr>
+      <tr><td><code>export</code></td><td>Export Data — CSV + JSON archive; "Export Archive" flashes.</td></tr>
+      <tr><td><code>reset</code></td><td>Reset Data — "workout data only" (keeps profile) or "reset everything" (red).</td></tr>
+      <tr><td><code>delete</code></td><td>Delete account? — red destructive confirm ("cannot be undone").</td></tr>
+      <tr><td><code>logout</code></td><td>Log out? — primary confirm ("log back in anytime"). Shares the sheet renderer with delete.</td></tr>
+    </table>
+    <div class="note info"><span class="lbl">FAB</span>On Profile, <code>workout</code> → Log; <code>measure</code>/<code>photo</code> → Progress (see <a class="link" href="02-shell-nav.html#fab-routing">Ch.2 routing</a>).</div>
+
+    <!-- ============================================================ -->
+    <h2 class="doc" id="checklist">Scenario checklist</h2>
+    <ul class="doc">
+      <li>Identity card + Account row both open Account Details; Save returns to root.</li>
+      <li>Dark Mode, Start week, Show-on-progress in General immediately affect the rest of the app and persist (they route through the shell setters).</li>
+      <li>Workout: rep-range steppers stay valid (lo ≤ hi); rest steppers format as "min/s".</li>
+      <li>Notifications: turning off notifications dims + disables the sound list; sound selection check-marks.</li>
+      <li>Units row sub-text on the hub matches the chosen weight/length units.</li>
+      <li>Connected toggles flip the "Connected/Not connected" sub-text; hub Connected row reflects Apple state.</li>
+      <li>Export / Reset (two options) / Delete / Log Out confirm sheets open and flash their outcomes.</li>
+      <li>Every sub-screen has a working back-to-Profile header.</li>
+    </ul>
+
+    <div class="chapnav">
+      <a href="06-progress.html"><div class="dir">← Prev</div><div class="ttl">6 · Progress tab</div></a>
+      <a class="next" href="08-data-models.html"><div class="dir">Next →</div><div class="ttl">8 · Data models</div></a>
+    </div>
+  </main>
+</div>
+</body>
+</html>

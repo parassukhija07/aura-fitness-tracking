@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>3 · Log tab — Aura Handover</title>
+<link rel="stylesheet" href="../styles/aura.css">
+<link rel="stylesheet" href="handoff.css">
+</head>
+<body>
+<div class="docbar">
+  <div class="crumbs"><a href="Handoff.html">Aura Handover</a><span>/</span><b>3 · Log tab</b></div>
+  <span class="pill">Phase 3</span>
+</div>
+
+<div class="shell">
+  <nav class="rail">
+    <h4>Chapter 3</h4>
+    <a href="#overview">Overview</a>
+    <a href="#state">Component state</a>
+    <a href="#seed">Program &amp; seed data</a>
+    <a href="#dayinfo">How a day's state is derived</a>
+    <a href="#overrides">Override types</a>
+    <a href="#header">Header &amp; week bar</a>
+    <h4>Day-states</h4>
+    <a href="#day-today">Today · planned</a>
+    <a href="#day-done">Completed</a>
+    <a href="#day-missed">Missed</a>
+    <a href="#day-future">Future · read-only</a>
+    <a href="#day-rest">Rest day</a>
+    <a href="#day-empty">Empty / unplanned</a>
+    <h4>Sheets (11)</h4>
+    <a href="#sh-menu">Manage menu</a>
+    <a href="#sh-edit">Edit workout</a>
+    <a href="#sh-move">Move to day</a>
+    <a href="#sh-switch">Switch workout</a>
+    <a href="#sh-add">Add a workout</a>
+    <a href="#sh-logpast">Log past</a>
+    <a href="#sh-pick">Workout picker</a>
+    <a href="#sh-cal">Calendar</a>
+    <a href="#sh-viewlog">View log</a>
+    <a href="#sh-editlog">Edit log</a>
+    <a href="#sh-quick">Quick log (+time)</a>
+    <h4>Wrap-up</h4>
+    <a href="#misc">Toast · banner · FAB</a>
+    <a href="#checklist">Scenario checklist</a>
+    <h4>Jump to</h4>
+    <a href="02-shell-nav.html">← 2 · Shell</a>
+    <a href="04-plan.html">4 · Plan tab →</a>
+  </nav>
+
+  <main class="content">
+    <div class="kicker">Phase 3</div>
+    <h1 class="doc">Log tab</h1>
+    <p class="lead">The home screen and the most state-heavy surface in the app. A single component (<code>LogTab</code>) renders any of <b class="k">six day-states</b> for the selected date and hosts <b class="k">eleven sheets</b>. Everything keys off one derived value — <code>dayInfo(date).kind</code> — computed from the program template plus per-day overrides. Get the derivation right and the rest falls out.</p>
+
+    <div class="note"><span class="lbl">Source</span>Entire tab lives in <code>combined/log.jsx</code> (771 lines). It is handed <code>tab</code>, <code>onTab</code>, <code>onStartWorkout</code>, <code>inProgress</code>, <code>dark</code>, <code>calStart</code> from <code>AuraRoot</code> (see <a class="link" href="02-shell-nav.html">Chapter 2</a>). All state is in-memory React state — nothing here persists to storage in the prototype; in the native build, workout logs and overrides must be durable.</div>
+
+    <!-- ============================================================ -->
+    <h2 class="doc first" id="overview">Overview</h2>
+    <p class="doc">Top to bottom the screen is: a <b>nav bar</b> (date + large title + calendar button), a <b>week strip</b> (7 day cells with status dots + week navigation), and a <b>body</b> that switches on the selected day's <code>kind</code>. Sheets slide up over everything; a toast and the resume banner float above the tab bar.</p>
+    <div class="flow">
+      <span class="step">nav bar</span><span class="arr">→</span>
+      <span class="step">week strip</span><span class="arr">→</span>
+      <span class="step">body(kind)</span><span class="arr">+</span>
+      <span class="step">sheet overlay</span><span class="arr">+</span>
+      <span class="step">toast</span><span class="arr">+</span>
+      <span class="step">resume banner</span><span class="arr">+</span>
+      <span class="step">tab bar</span>
+    </div>
+
+    <h3 class="doc" id="state">Component state</h3>
+    <table class="doc">
+      <tr><th>State</th><th>Init</th><th>Purpose</th></tr>
+      <tr><td><code>selected</code></td><td><code>LOG_TODAY</code></td><td>The day being viewed (a <code>Date</code> at midnight). Drives the whole body.</td></tr>
+      <tr><td><code>overrides</code></td><td><code>{}</code></td><td>Per-day mutations, keyed by ISO date (<code>'2026-06-25'</code>). The heart of the tab — see <a class="link" href="#overrides">Override types</a>.</td></tr>
+      <tr><td><code>sheet</code></td><td><code>null</code></td><td>Which bottom-sheet is open + its payload (<code>{ kind, …}</code>). One sheet at a time.</td></tr>
+      <tr><td><code>calMonth</code></td><td><code>June 2026</code></td><td>The month the calendar sheet is showing. Independent of <code>selected</code>.</td></tr>
+      <tr><td><code>toast</code></td><td><code>null</code></td><td>Transient confirmation string; auto-clears after <b>1900ms</b> via <code>flash()</code>.</td></tr>
+      <tr><td><code>workoutLogs</code></td><td><code>{}</code></td><td>Saved set-by-set data, keyed by ISO date: <code>{ time, exercises:[{name, sets:[{weight,reps}]}] }</code>.</td></tr>
+    </table>
+
+    <h3 class="doc" id="seed">Program &amp; seed data</h3>
+    <p class="doc">The default schedule is a Push·Pull·Legs program. Days with no entry are rest days.</p>
+    <table class="doc">
+      <tr><th>Day</th><th>Sun</th><th>Mon</th><th>Tue</th><th>Wed</th><th>Thu</th><th>Fri</th><th>Sat</th></tr>
+      <tr><td><b>PLAN_BY_DOW</b></td><td>rest</td><td>Pull A</td><td>Leg A</td><td>rest</td><td>Push A</td><td>Pull B</td><td>rest</td></tr>
+    </table>
+    <ul class="spec">
+      <li><code>PROGRAM_NAME</code> = <b>"Push · Pull · Legs"</b> — shown as the accent badge on every card state.</li>
+      <li><code>WK_DETAIL</code> holds the five PPL workouts (<code>push-a · pull-a · leg-a · push-b · pull-b</code>) plus four library workouts for the other plans, each with <code>{ name, muscles, duration, ex:[[name, sets, repRange]…] }</code>.</li>
+      <li><code>SEED_MISSED</code> = <span class="el">2026-06-23 · 2026-06-17 · 2026-06-11</span> — past <i>planned</i> days pre-marked as missed (so the timeline isn't a perfect streak).</li>
+      <li><code>OTHER_PLANS</code> = <b>HIIT Cardio</b> (hiit-full, hiit-upper) and <b>5×5 Strength</b> (5x5-a, 5x5-b) — surfaced inside the Switch sheet.</li>
+    </ul>
+    <div class="note info"><span class="lbl">Native</span>These are prototype seeds. Replace <code>PLAN_BY_DOW</code> with the user's actual active plan from the Plan tab, <code>SEED_MISSED</code>/logged days with real history, and the workout details with the program's real exercise lists. The <i>shape</i> is the contract; the values are placeholders.</div>
+
+    <!-- ============================================================ -->
+    <h2 class="doc" id="dayinfo">How a day's state is derived — <code>dayInfo(date)</code></h2>
+    <p class="doc">This pure function is the brain of the tab. Given a date it returns <code>{ iso, dow, rel, workoutId, kind, ov }</code>. The body, the week-dot, and the calendar dot all read <code>kind</code>. Evaluate in this exact order:</p>
+    <table class="doc">
+      <tr><th>#</th><th>Step</th><th>Result</th></tr>
+      <tr><td>1</td><td>Look up <code>ov = overrides[iso]</code> and base <code>workoutId = PLAN_BY_DOW[dow]</code>.</td><td>—</td></tr>
+      <tr><td>2</td><td>If <code>ov.type</code> ∈ {switch, added, logged} → <code>workoutId = ov.workoutId</code>.</td><td>workout swapped in</td></tr>
+      <tr><td>3</td><td>If <code>ov.type</code> ∈ {rest, removed} → <code>workoutId = null</code>.</td><td>workout cleared</td></tr>
+      <tr><td>4</td><td>Compute <code>rel</code> = <code>past</code> / <code>today</code> / <code>future</code> by comparing to <code>LOG_TODAY</code>.</td><td>—</td></tr>
+      <tr><td>5</td><td><b>No workoutId</b> → <code>today ? 'rest-today'</code> · <code>(removed &amp;&amp; today) ? 'empty-today'</code> · else <code>'rest'</code>.</td><td>rest/empty</td></tr>
+      <tr><td>6</td><td><code>ov.type === 'logged'</code> → <code>'done'</code>.</td><td>completed</td></tr>
+      <tr><td>7</td><td><code>rel === 'today'</code> → <code>'today'</code>; <code>rel === 'future'</code> → <code>'future'</code>.</td><td>planned</td></tr>
+      <tr><td>8</td><td>Else (past): <code>ov.type==='added' ? 'done'</code> · <code>SEED_MISSED.has(iso) ? 'missed'</code> · else <code>'done'</code>.</td><td>history</td></tr>
+    </table>
+    <div class="note warn"><span class="lbl">Subtle</span>Step 5 runs <b>before</b> the logged/today checks — so once a day has no workout (rest or removed) it can never be 'today'/'done' until a workout is re-assigned. And step 8 means a past planned day defaults to <b>'done'</b> unless it's in <code>SEED_MISSED</code> — i.e. the app optimistically assumes past planned sessions happened. Preserve both quirks.</div>
+    <p class="doc">The seven internal kinds collapse to <b>six rendered day-states</b> (<code>rest</code> + <code>rest-today</code> share one renderer):</p>
+    <div class="flow">
+      <span class="step">today</span><span class="arr">·</span>
+      <span class="step">done</span><span class="arr">·</span>
+      <span class="step">missed</span><span class="arr">·</span>
+      <span class="step">future</span><span class="arr">·</span>
+      <span class="step">rest / rest-today</span><span class="arr">·</span>
+      <span class="step">empty-today</span>
+    </div>
+
+    <h3 class="doc" id="overrides">Override types (what gets written to <code>overrides[iso]</code>)</h3>
+    <table class="doc">
+      <tr><th>type</th><th>Shape</th><th>Written by</th><th>Effect on kind</th></tr>
+      <tr><td><code>rest</code></td><td><code>{type:'rest'}</code></td><td>menu "Make Rest Day", missed "Mark as Rest"</td><td>→ rest / rest-today</td></tr>
+      <tr><td><code>removed</code></td><td><code>{type:'removed'}</code></td><td>menu "Remove from Today"; move-source</td><td>today → empty-today; else rest</td></tr>
+      <tr><td><code>added</code></td><td><code>{type:'added', workoutId}</code></td><td><code>assignWorkout</code> (non-past), move-target</td><td>assigns workout; past → done</td></tr>
+      <tr><td><code>logged</code></td><td><code>{type:'logged', workoutId}</code></td><td><code>assignWorkout</code> (logpast/past), edit-log &amp; quick-log save</td><td>→ done (+ <code>workoutLogs[iso]</code>)</td></tr>
+      <tr><td><code>edit</code></td><td><code>{type:'edit', workoutId, exercises[]}</code></td><td>Edit-workout sheet save</td><td>keeps today; <code>exList</code> uses custom <code>exercises</code></td></tr>
+      <tr><td><code>switch</code></td><td><code>{type:'switch', workoutId}</code></td><td>handled defensively in <code>dayInfo</code></td><td>swaps workout (assignWorkout normalizes to added/logged)</td></tr>
+    </table>
+    <div class="note info"><span class="lbl">exList(info)</span>The exercise list shown is: if <code>ov.type==='edit'</code> use <code>ov.exercises</code>; else the workout's seed <code>ex[]</code> mapped to <code>{name, sets, reps}</code>. Edits are <b>today-only</b> and never touch the program.</div>
+
+    <!-- ============================================================ -->
+    <h2 class="doc" id="header">Header &amp; week bar</h2>
+    <div class="screen">
+      <div class="screen-head"><span class="id">LOG · header</span><h3>Nav bar + week strip</h3></div>
+      <h5>Nav bar</h5>
+      <ul class="spec">
+        <li><b>Title</b> = <code>"Today"</code> if <code>selected</code> is today, else the full weekday (e.g. "Thursday"). <b>Sub</b> = uppercase <code>"THURSDAY, JUN 25"</code>.</li>
+        <li><b>Calendar button</b> (top-right) sets <code>calMonth</code> to the selected month and opens the <a class="link" href="#sh-cal">calendar sheet</a>.</li>
+      </ul>
+      <h5>Week strip</h5>
+      <ul class="spec">
+        <li><b>Range label</b> e.g. <code>"Jun 22 – 28"</code> (collapses the second month name when the week doesn't cross a boundary). Week starts on <b><code>calStart</code></b> (Sun or Mon, from Profile).</li>
+        <li><b>‹ / ›</b> step the selection by ±7 days. The <b>›</b> (next week) is disabled + dimmed when already on the current week (no future-week browsing past the live week start).</li>
+        <li><b>"Today ›"</b> ghost button appears whenever the user isn't on the current week <i>or</i> isn't on today; tapping it jumps <code>selected</code> back to today.</li>
+        <li><b>7 day cells:</b> weekday letter + date; selected cell fills with <code>--accent</code> + white text. Status dot below: <span class="el">done=green · planned(today/future)=accent · rest=gray · missed=red · empty=transparent</span>. On the selected cell the dot turns white.</li>
+      </ul>
+      <div class="note warn"><span class="lbl">Edge</span>Tapping a week cell only changes <code>selected</code> — it does <b>not</b> change the week shown unless you cross into a new week via the arrows. The missed dot uses a softened red (<code>color-mix --red 75%</code>), distinct from the calendar legend's solid red.</div>
+    </div>
+
+    <!-- ============================================================ -->
+    <h2 class="doc">The six day-states</h2>
+
+    <div class="screen" id="day-today">
+      <div class="screen-head"><span class="id">LOG · today</span><h3>Today — planned workout</h3></div>
+      <p class="screen-purpose">The default live state. Accent <b>PPL</b> badge, a card with the workout name + "{n} exercises · {muscles}", a scrollable numbered exercise list, and the action stack.</p>
+      <h5>Card header</h5>
+      <ul class="spec">
+        <li>Workout name (22px/800) + meta line. A <code>⋯</code> button (top-right of card) opens the <a class="link" href="#sh-menu">manage menu</a>.</li>
+        <li>Exercise rows (<code>ExRows</code>): numbered chip, name, "{sets} sets · {reps} reps". Max-height 168px, scrolls internally.</li>
+      </ul>
+      <h5>Actions</h5>
+      <table class="doc">
+        <tr><th>Button</th><th>Does</th></tr>
+        <tr><td><b>Start Workout</b> (primary)</td><td><code>onStartWorkout(meta.name||'Workout', false)</code> → opens Active Workout overlay (Chapter 5).</td></tr>
+        <tr><td><b>Log past</b> (gray, half)</td><td>Opens <a class="link" href="#sh-logpast">Log-past sheet</a> with <code>showToday:true</code> (so "Log Today's Workout" appears).</td></tr>
+        <tr><td><b>Switch</b> (gray, half)</td><td>Opens <a class="link" href="#sh-switch">Switch sheet</a>.</td></tr>
+      </table>
+    </div>
+
+    <div class="screen" id="day-done">
+      <div class="screen-head"><span class="id">LOG · done</span><h3>Completed</h3></div>
+      <p class="screen-purpose">A logged or past-assumed-done session. Adds a green <b>"Completed"</b> badge + green check disc on the card.</p>
+      <ul class="spec">
+        <li>Exercise list shows at full opacity (not dimmed).</li>
+        <li><b>View Log</b> (primary) → <a class="link" href="#sh-viewlog">View-log sheet</a>. <b>Edit Log</b> (gray) → <a class="link" href="#sh-editlog">Edit-log sheet</a>, pre-filled from <code>workoutLogs[iso]</code> if present, else blank rows sized to the plan.</li>
+      </ul>
+      <div class="note"><span class="lbl">Note</span>A past planned day with no explicit log still renders as <b>done</b> (step 8). Its View Log shows the planned set count with em-dash weights until the user edits real numbers in.</div>
+    </div>
+
+    <div class="screen" id="day-missed">
+      <div class="screen-head"><span class="id">LOG · missed</span><h3>Missed</h3></div>
+      <p class="screen-purpose">A past planned day in <code>SEED_MISSED</code> with no logged override. Red <b>"Missed"</b> badge + red ✕ disc; the exercise list is <b>dimmed to 55%</b>.</p>
+      <ul class="spec">
+        <li><b>Log Workout</b> (primary) → <a class="link" href="#sh-pick">picker</a> in <code>logpast</code> mode for that date (records the session retroactively → flips to done).</li>
+        <li><b>Mark as Rest Day</b> (gray) → writes <code>{type:'rest'}</code> and flashes — clears the missed flag.</li>
+      </ul>
+    </div>
+
+    <div class="screen" id="day-future">
+      <div class="screen-head"><span class="id">LOG · future</span><h3>Future — read-only</h3></div>
+      <p class="screen-purpose">A planned day after today. Same card but with a gray <b>"View only"</b> chip; the exercise list is <b>dimmed</b>.</p>
+      <ul class="spec">
+        <li>Only action is <b>View Workout</b> (gray) → flashes "Read-only preview" (no editing of future days from Log).</li>
+        <li>An accent info card explains <b>"Future workouts are read-only"</b> with a <b>"Go to Plans →"</b> link that calls <code>onTab('plan')</code>.</li>
+      </ul>
+      <div class="note warn"><span class="lbl">Rule</span>Future days cannot be edited, switched, or logged from the Log tab — the only path to change them is the Plan tab. Don't add shortcuts that bypass this.</div>
+    </div>
+
+    <div class="screen" id="day-rest">
+      <div class="screen-head"><span class="id">LOG · rest</span><h3>Rest day</h3></div>
+      <p class="screen-purpose">No workout scheduled (program rest, or user marked rest). Centered <b>moon</b> glyph card, "Rest Day", recovery copy.</p>
+      <ul class="spec">
+        <li><b>Past/today rest:</b> a "Did you train anyway?" section with <b>Add a Workout</b> (today → <a class="link" href="#sh-add">add sheet</a>; past → picker in logpast mode) and, on today only, <b>Log a Past Workout</b>.</li>
+        <li><b>Future rest:</b> no actions — just an info card ("Scheduled rest day. Enjoy the recovery…").</li>
+      </ul>
+    </div>
+
+    <div class="screen" id="day-empty">
+      <div class="screen-head"><span class="id">LOG · empty-today</span><h3>Empty / unplanned (today)</h3></div>
+      <p class="screen-purpose">Today after the planned workout was <b>removed</b> (<code>{type:'removed'}</code>). Dashed-border card, accent <b>+</b> glyph, "Nothing planned".</p>
+      <ul class="spec">
+        <li>Same action pair as today-rest: <b>Add a Workout</b> → add sheet, and <b>Log a Past Workout</b> → log-past sheet.</li>
+        <li>Distinguished from rest by the dashed border + plus glyph (vs solid border + moon).</li>
+      </ul>
+    </div>
+
+    <!-- ============================================================ -->
+    <h2 class="doc">The eleven sheets</h2>
+    <p class="doc">All sheets are the shared <code>Sheet</code> bottom-sheet (scrim + grabber + optional title/sub + scrolling body). Only one is open at a time via <code>sheet={kind,…}</code>. Tapping the scrim or ✕ closes (<code>setSheet(null)</code>).</p>
+
+    <div class="screen" id="sh-menu">
+      <div class="screen-head"><span class="id">SHEET · menu</span><h3>Manage today's workout</h3></div>
+      <p class="screen-purpose">Opened from the today-card <code>⋯</code>. Five rows, all <b>today-only</b> (a footnote reinforces "won't affect your program").</p>
+      <table class="doc">
+        <tr><th>Row</th><th>Action</th></tr>
+        <tr><td><b>Edit Workout</b></td><td>→ <a class="link" href="#sh-edit">edit sheet</a> seeded with a copy of today's exercises.</td></tr>
+        <tr><td><b>Move to Another Day</b></td><td>→ <a class="link" href="#sh-move">move sheet</a>.</td></tr>
+        <tr><td><b>Switch Workout</b></td><td>→ <a class="link" href="#sh-switch">switch sheet</a>.</td></tr>
+        <tr><td><b>Make it a Rest Day</b></td><td>writes <code>{type:'rest'}</code>, closes, flashes "Marked as rest day".</td></tr>
+        <tr><td><b>Remove from Today</b> (red)</td><td>writes <code>{type:'removed'}</code> → empty-today, flashes "Removed from today".</td></tr>
+      </table>
+    </div>
+
+    <div class="screen" id="sh-edit">
+      <div class="screen-head"><span class="id">SHEET · edit</span><h3>Edit Workout (today only)</h3></div>
+      <ul class="spec">
+        <li>Each exercise row: name, rep-range, a <b>stepper</b> for set count (min 1), and a red trash to remove the exercise. Edits mutate a working copy held in <code>sheet.exercises</code>.</li>
+        <li><b>Save for Today</b> writes an override carrying the custom <code>exercises</code> (type <code>edit</code>, or preserves <code>logged</code>/existing type if one was set), flashes "Workout updated for today".</li>
+      </ul>
+      <div class="note warn"><span class="lbl">Edge</span>The save reuses the day's existing override type when present — editing a logged day stays logged, editing a fresh planned day becomes <code>edit</code>. Don't collapse this to a single type or you'll lose the completed flag.</div>
+    </div>
+
+    <div class="screen" id="sh-move">
+      <div class="screen-head"><span class="id">SHEET · move</span><h3>Move to Another Day</h3></div>
+      <ul class="spec">
+        <li>Lists the 7 days of the current week with each day's current workout/rest. The selected (source) day is disabled + dimmed and tagged "(today)".</li>
+        <li>Tapping a target: writes <code>{type:'removed'}</code> to the source iso and <code>{type:'added', workoutId}</code> to the target, closes, flashes "Moved to {Day}".</li>
+      </ul>
+    </div>
+
+    <div class="screen" id="sh-switch">
+      <div class="screen-head"><span class="id">SHEET · switch-v2</span><h3>Switch Workout (two levels)</h3></div>
+      <p class="screen-purpose">Replace today's workout with another, for today only.</p>
+      <ul class="spec">
+        <li><b>Level 1:</b> the active PPL program's 5 workouts (section "Push · Pull · Legs (Active)"), then <b>Other Plans</b> (HIIT, 5×5) as drill-in rows, then a <b>Workout Library</b> "Browse Library" card.</li>
+        <li>Picking a program workout → <code>assignWorkout(id,'switch')</code> (resolves to an <code>added</code> override on today).</li>
+        <li><b>Level 2 (<code>sheet.planId</code> set):</b> a back-header + that plan's workouts; picking one assigns it. "Browse Library" only flashes "Opening workout library…" (stub).</li>
+      </ul>
+    </div>
+
+    <div class="screen" id="sh-add">
+      <div class="screen-head"><span class="id">SHEET · add</span><h3>Add a Workout (source picker)</h3></div>
+      <ul class="spec">
+        <li>Three source cards: <b>From your programs</b> and <b>From Workout Library</b> both open the <a class="link" href="#sh-pick">picker</a> in <code>add</code> mode; <b>Empty Workout</b> calls <code>onStartWorkout('My Workout', true)</code> → blank Active Workout.</li>
+        <li>Reachable from: today-rest/empty "Add a Workout", and the <b>FAB → Start Workout</b> on the Log tab.</li>
+      </ul>
+    </div>
+
+    <div class="screen" id="sh-logpast">
+      <div class="screen-head"><span class="id">SHEET · logpast</span><h3>Log a Past Workout</h3></div>
+      <p class="screen-purpose">Two questions: <b>when</b> and <b>which</b>.</p>
+      <ul class="spec">
+        <li><b>When:</b> an optional "Log Today's Workout" row (only if <code>showToday</code>, → opens <a class="link" href="#sh-quick">quick-log</a>), then radio rows for <b>Yesterday</b> and <b>2 days ago</b> (selected state stored in <code>sheet.date</code>), then <b>"Pick a date"</b> → calendar in <code>forLogPast</code> mode.</li>
+        <li><b>Which workout:</b> three source cards (From a Program / A Saved Workout / Build from Library) → all open the <a class="link" href="#sh-pick">picker</a> in <code>logpast</code> mode for the chosen date.</li>
+      </ul>
+    </div>
+
+    <div class="screen" id="sh-pick">
+      <div class="screen-head"><span class="id">SHEET · pick</span><h3>Workout picker</h3></div>
+      <ul class="spec">
+        <li>Lists the 5 PPL workouts (thumb, name, "{n} exercises · {muscles}"). Sub-title reflects the mode: <i>"Logging to {date}"</i> for logpast, <i>"Added to today/{day}"</i> for add.</li>
+        <li>Selecting runs <code>assignWorkout(id, mode, date)</code>: mode <code>logpast</code> → <code>logged</code>; otherwise past dates → <code>logged</code>, present/future → <code>added</code>. It also moves <code>selected</code> to that date, closes, and flashes.</li>
+      </ul>
+    </div>
+
+    <div class="screen" id="sh-cal">
+      <div class="screen-head"><span class="id">SHEET · cal</span><h3>Calendar (month)</h3></div>
+      <ul class="spec">
+        <li>Month grid with status dots per day (done/planned/rest, hidden for future days). Today is the accent disc; the selected non-today day gets an accent ring.</li>
+        <li><b>‹ / ›</b> change month; <b>›</b> is disabled when it would pass the current month (no browsing into the future). ✕ closes.</li>
+        <li><b>Default mode:</b> tapping a non-future day sets <code>selected</code> + closes; a <b>"Go to Today"</b> button jumps to today. <b>forLogPast mode:</b> tapping a day routes back to the <a class="link" href="#sh-logpast">log-past sheet</a> with that date instead, and the "Go to Today" button is hidden.</li>
+        <li>Future days are dimmed and non-interactive. A legend (Completed / Planned / Rest) sits under the grid.</li>
+      </ul>
+    </div>
+
+    <div class="screen" id="sh-viewlog">
+      <div class="screen-head"><span class="id">SHEET · view-log</span><h3>View Log (read-only)</h3></div>
+      <ul class="spec">
+        <li>Per exercise: a Set / Weight / Reps table. Uses <code>workoutLogs[iso]</code> if present, else synthesizes rows from the plan with em-dash weights and planned reps.</li>
+        <li>Footer: <b>Edit Log</b> → <a class="link" href="#sh-editlog">edit-log</a> (deep-copies the data first); <b>Close</b>.</li>
+      </ul>
+    </div>
+
+    <div class="screen" id="sh-editlog">
+      <div class="screen-head"><span class="id">SHEET · edit-log</span><h3>Edit Log</h3></div>
+      <ul class="spec">
+        <li>Editable Set/Weight/Reps inputs per set, a per-row remove (minus-circle), and an <b>Add Set</b> button per exercise. All mutations run on a deep-copied working array in <code>sheet.exercises</code>.</li>
+        <li><b>Save Log</b> writes <code>workoutLogs[iso] = {…, exercises}</code> and sets the day's override to <code>logged</code>, flashes "Log saved".</li>
+      </ul>
+    </div>
+
+    <div class="screen" id="sh-quick">
+      <div class="screen-head"><span class="id">SHEET · log-quick</span><h3>Quick log (with time)</h3></div>
+      <ul class="spec">
+        <li>Like edit-log but with a <b>time picker</b> card up top ("When did you train?", defaults to now). Inputs are placeholdered <code>kg</code> / <code>reps</code>.</li>
+        <li><b>Save Workout</b> resolves the day's workoutId (override or <code>PLAN_BY_DOW</code>), writes <code>workoutLogs[iso] = {time, exercises}</code> + a <code>logged</code> override, flashes "Workout logged!".</li>
+        <li>Entered from the "Log Today's Workout" row inside the log-past sheet.</li>
+      </ul>
+    </div>
+
+    <!-- ============================================================ -->
+    <h2 class="doc" id="misc">Toast · resume banner · FAB</h2>
+    <ul class="spec">
+      <li><b>Toast:</b> <code>flash(msg)</code> sets <code>toast</code> and auto-clears after 1900ms (guarded so a newer toast isn't wiped by an older timer). Pill centered above the tab bar, <code>z-index:90</code>.</li>
+      <li><b>Resume banner:</b> rendered here when <code>props.inProgress</code> — full spec in <a class="link" href="02-shell-nav.html#resume">Chapter 2</a>. Tapping calls the same <code>startWorkout</code>.</li>
+      <li><b>FAB routing (Log):</b> <code>onAction('workout')</code> opens the <a class="link" href="#sh-add">add sheet</a>; <code>measure</code>/<code>photo</code> → <code>onTab('progress')</code>. (Per-tab routing table in <a class="link" href="02-shell-nav.html#fab-routing">Chapter 2</a>.)</li>
+    </ul>
+
+    <!-- ============================================================ -->
+    <h2 class="doc" id="checklist">Scenario checklist</h2>
+    <ul class="doc">
+      <li>Each weekday shows the correct seed: Mon Pull A · Tue Leg A · Thu Push A · Fri Pull B; Sun/Wed/Sat rest.</li>
+      <li>Past planned days read as <b>done</b> except the three <code>SEED_MISSED</code> dates, which read <b>missed</b>.</li>
+      <li>Today → Start Workout opens the overlay; Log past / Switch open their sheets.</li>
+      <li>Menu: Edit (today-only, preserves logged), Move (source→removed, target→added), Switch (2 levels), Rest, Remove (→ empty-today).</li>
+      <li>Removing today's workout shows the dashed "Nothing planned" card; marking rest shows the moon card.</li>
+      <li>Missed day → Log Workout flips it to done; Mark as Rest clears the missed flag.</li>
+      <li>Future day is read-only — only View Workout + the "Go to Plans" link; no edit/switch/log paths.</li>
+      <li>Log-past: pick a date (yesterday / 2 days ago / calendar), pick a workout → day becomes done at that date.</li>
+      <li>Quick-log captures a time; View Log / Edit Log round-trip the set data and keep the day done.</li>
+      <li>Calendar respects <code>forLogPast</code> (routes back to log-past) vs default (selects the day); never lets you go past the current month.</li>
+      <li>Week strip: next-week arrow disabled on the current week; "Today ›" appears whenever off-today; dots match each day's kind.</li>
+      <li>Week starts on Sunday or Monday per <code>calStart</code> from Profile.</li>
+      <li>Every mutating action fires a toast that auto-clears.</li>
+    </ul>
+
+    <div class="chapnav">
+      <a href="02-shell-nav.html"><div class="dir">← Prev</div><div class="ttl">2 · Shell &amp; navigation</div></a>
+      <a class="next" href="04-plan.html"><div class="dir">Next →</div><div class="ttl">4 · Plan tab</div></a>
+    </div>
+  </main>
+</div>
+</body>
+</html>

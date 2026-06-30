@@ -1,11 +1,29 @@
 import SwiftUI
 
+/// Which settings sub-screen the Profile mini-router is pushing (nil = root hub).
+enum ProfileScreen: Hashable {
+    case general, workout, account, notifications, units, connected, support
+}
+
+/// Which confirm sheet is open on Profile.
+enum ProfileSheet: Identifiable {
+    case export, reset, delete, logout
+    var id: Int { hashValue }
+}
+
+/// Format a rest interval like the prototype's `fmtRest`: "45 s", "1 min", "1 min 30 s".
+func fmtRest(_ s: Int) -> String {
+    if s < 60 { return "\(s) s" }
+    if s % 60 == 0 { return "\(s / 60) min" }
+    return "\(s / 60) min \(s % 60) s"
+}
+
 struct ProfileTabView: View {
     @EnvironmentObject var appState: AppState
-    @State private var showWorkoutSettings = false
-    @State private var showAccount = false
-    @State private var showPreferences = false
+    @StateObject private var toast = ToastCenter()
+    @State private var sheet: ProfileSheet? = nil
 
+    // MARK: Derived stats
     var totalSessions: Int { appState.workoutLogs.count }
     var totalPRs: Int { appState.personalRecords.count }
     var streak: Int {
@@ -19,125 +37,269 @@ struct ProfileTabView: View {
         return count
     }
 
+    private var profile: UserProfile { appState.userProfile }
+    private var initials: String {
+        "\(profile.firstName.prefix(1))\(profile.lastName.prefix(1))"
+    }
+    private var identitySubtitle: String {
+        let age = appState.bodyStats.age
+        let h = String(format: "%.0f", appState.bodyStats.height)
+        let w = String(format: "%.1f", appState.bodyStats.weight)
+        return "\(age) · \(h) cm · \(w) kg · \(profile.gender)"
+    }
+    private var unitsSubtitle: String { "\(appState.weightUnit) · \(appState.lengthUnit)" }
+    private var connectedSubtitle: String {
+        appState.appleHealthConnected ? "Apple Health connected" : "None connected"
+    }
+
     var body: some View {
         NavigationStack {
-            List {
-                // Identity card
-                Section {
-                    HStack(spacing: AuraSpacing.s4) {
-                        ZStack {
-                            Circle()
-                                .fill(Color.aura.accentSoft)
-                                .frame(width: 64, height: 64)
-                            Text("\(appState.userProfile.firstName.prefix(1))\(appState.userProfile.lastName.prefix(1))")
-                                .font(.system(size: 22, weight: .heavy))
-                                .foregroundColor(.aura.accent)
-                        }
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text("\(appState.userProfile.firstName) \(appState.userProfile.lastName)")
-                                .font(.system(size: 18, weight: .bold))
-                                .foregroundColor(.aura.text)
-                            HStack(spacing: AuraSpacing.s2) {
-                                Text("\(appState.bodyStats.age) yrs")
-                                Text("·")
-                                Text("\(String(format: "%.0f", appState.bodyStats.height)) cm")
-                                Text("·")
-                                Text("\(String(format: "%.0f", appState.bodyStats.weight)) kg")
-                            }
-                            .font(AuraFont.secondary())
-                            .foregroundColor(.aura.text2)
-                        }
+            ScrollView {
+                VStack(spacing: AuraSpacing.s4) {
+                    identityCard
+                    statTiles
+                    groupGeneral
+                    groupAccount
+                    groupSupport
+                    AuraDangerButton(label: "Log Out", icon: "rectangle.portrait.and.arrow.right") {
+                        sheet = .logout
                     }
-                    .padding(.vertical, 8)
-
-                    // Stats row
-                    HStack {
-                        profileStat("\(totalSessions)", label: "Sessions")
-                        Divider()
-                        profileStat("\(totalPRs)", label: "PRs")
-                        Divider()
-                        profileStat("\(streak)", label: "Streak")
-                    }
-                    .frame(height: 56)
+                    versionFooter
                 }
-                .listRowBackground(Color.aura.surface)
-
-                // Settings groups
-                Section("Training") {
-                    AuraListRow(iconName: "dumbbell.fill", iconColor: .aura.accent,
-                                title: "Workout Settings",
-                                subtitle: "Sets, rest times, display") { showWorkoutSettings = true }
-                }
-                .listRowBackground(Color.aura.surface)
-
-                Section("Account") {
-                    AuraListRow(iconName: "person.fill", iconColor: .aura.blue,
-                                title: "Account Details") { showAccount = true }
-                    AuraListRow(iconName: "gear", iconColor: .aura.text2,
-                                title: "Preferences",
-                                subtitle: "Dark mode, units, notifications") { showPreferences = true }
-                    AuraListRow(iconName: "heart.fill", iconColor: .aura.red,
-                                title: "Health Integrations") {}
-                }
-                .listRowBackground(Color.aura.surface)
-
-                Section("Support") {
-                    AuraListRow(iconName: "book.fill", iconColor: .aura.green,
-                                title: "User Guides & FAQ") {}
-                    AuraListRow(iconName: "envelope.fill", iconColor: .aura.blue,
-                                title: "Contact Us") {}
-                    AuraListRow(iconName: "lightbulb.fill", iconColor: .aura.accent,
-                                title: "Request a Feature") {}
-                }
-                .listRowBackground(Color.aura.surface)
-
-                Section {
-                    Button {
-                        // Log out
-                    } label: {
-                        Text("Log Out")
-                            .font(AuraFont.body())
-                            .foregroundColor(.aura.red)
-                            .frame(maxWidth: .infinity)
-                    }
-                }
-                .listRowBackground(Color.aura.surface)
-
-                Section {
-                    Text("Aura Fitness · v1.0.0")
-                        .font(AuraFont.secondary())
-                        .foregroundColor(.aura.text3)
-                        .frame(maxWidth: .infinity)
-                        .multilineTextAlignment(.center)
-                }
-                .listRowBackground(Color.clear)
+                .padding(.horizontal, AuraSpacing.s4)
+                .padding(.top, AuraSpacing.s3)
+                .padding(.bottom, AuraSpacing.tabBarClearance)
             }
-            .listStyle(.insetGrouped)
-            .background(Color.aura.bgGrouped)
+            .background(Color.aura.bgGrouped.ignoresSafeArea())
             .navigationTitle("Profile")
             .navigationBarTitleDisplayMode(.large)
-            .navigationDestination(isPresented: $showWorkoutSettings) {
-                WorkoutSettingsView()
+            .navigationDestination(for: ProfileScreen.self) { screen in
+                switch screen {
+                case .general:       GeneralSettingsView()
+                case .workout:       WorkoutSettingsView()
+                case .account:       AccountDetailsView()
+                case .notifications: NotificationsSettingsView()
+                case .units:         UnitsSettingsView()
+                case .connected:     ConnectedAppsView()
+                case .support:       SupportView()
+                }
             }
-            .navigationDestination(isPresented: $showAccount) {
-                AccountDetailsView()
+            .sheet(item: $sheet) { which in
+                ProfileConfirmSheet(kind: which, flash: { toast.flash($0) })
             }
-            .navigationDestination(isPresented: $showPreferences) {
-                PreferencesView()
+            .auraToast(toast)
+            .onChange(of: appState.profileSaveFlash) { _, msg in
+                if let msg {
+                    toast.flash(msg)
+                    appState.profileSaveFlash = nil
+                }
             }
         }
     }
 
-    @ViewBuilder
-    private func profileStat(_ value: String, label: String) -> some View {
-        VStack(spacing: 2) {
-            Text(value)
-                .font(AuraFont.statNum(size: 20))
-                .foregroundColor(.aura.text)
-            Text(label)
-                .font(AuraFont.secondary())
-                .foregroundColor(.aura.text2)
+    // MARK: Identity card (tap → Account)
+    private var identityCard: some View {
+        NavigationLink(value: ProfileScreen.account) {
+            HStack(spacing: AuraSpacing.s4) {
+                AvatarCircle(initials: initials, size: 60, fontSize: 22)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("\(profile.firstName) \(profile.lastName)")
+                        .font(.system(size: 19, weight: .bold))
+                        .foregroundColor(.aura.text)
+                    Text(identitySubtitle)
+                        .font(AuraFont.secondary())
+                        .foregroundColor(.aura.text2)
+                }
+                Spacer()
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundColor(.aura.text3)
+            }
+            .padding(AuraSpacing.s4)
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .frame(maxWidth: .infinity)
+        .buttonStyle(.plain)
+        .background(Color.aura.surface)
+        .clipShape(RoundedRectangle(cornerRadius: AuraRadius.lg))
+        .auraShadowSm()
+    }
+
+    // MARK: Three stat tiles
+    private var statTiles: some View {
+        HStack(spacing: AuraSpacing.s3) {
+            StatTile(value: "\(totalSessions)", label: "Sessions")
+            StatTile(value: "\(totalPRs)", label: "PRs")
+            StatTile(value: "\(streak)", label: "Week streak")
+        }
+    }
+
+    // MARK: Setting groups
+    private var groupGeneral: some View {
+        SettingsGroup {
+            navRow("moon.fill", .aura.purple, "General", "Appearance, calendar, log page", .general)
+            Divider().padding(.leading, 64)
+            navRow("dumbbell.fill", .aura.accent, "Workout", "Targets, rest timer, display", .workout)
+            Divider().padding(.leading, 64)
+            navRow("bell.fill", .aura.blue, "Notifications", "Reminders & rest sounds", .notifications)
+        }
+    }
+
+    private var groupAccount: some View {
+        SettingsGroup {
+            navRow("person.fill", .aura.text2, "Account Details", "Name, contact, export, delete", .account)
+            Divider().padding(.leading, 64)
+            navRow("ruler.fill", .aura.green, "Units & Measurements", unitsSubtitle, .units)
+            Divider().padding(.leading, 64)
+            navRow("flame.fill", .aura.red, "Connected Apps", connectedSubtitle, .connected)
+        }
+    }
+
+    private var groupSupport: some View {
+        SettingsGroup {
+            navRow("info.circle.fill", .aura.text2, "Support", "Guides, FAQ, contact", .support)
+        }
+    }
+
+    private func navRow(_ icon: String, _ color: Color, _ title: String, _ sub: String, _ dest: ProfileScreen) -> some View {
+        NavigationLink(value: dest) {
+            SettingsRowLabel(icon: icon, iconColor: color, title: title, subtitle: sub)
+        }
+        .buttonStyle(.plain)
+    }
+
+    private var versionFooter: some View {
+        Text("Aura Fitness · v2.4.0")
+            .font(AuraFont.secondary())
+            .foregroundColor(.aura.text3)
+            .frame(maxWidth: .infinity)
+            .padding(.top, AuraSpacing.s2)
+    }
+}
+
+// MARK: - Shared Profile building blocks
+
+/// Gradient initials avatar (accent → warm orange), matching the prototype.
+struct AvatarCircle: View {
+    let initials: String
+    var size: CGFloat = 60
+    var fontSize: CGFloat = 22
+
+    var body: some View {
+        Text(initials)
+            .font(.system(size: fontSize, weight: .heavy))
+            .foregroundColor(.white)
+            .frame(width: size, height: size)
+            .background(
+                LinearGradient(
+                    colors: [.aura.accent, Color(hex: "#D9722E")],
+                    startPoint: .topLeading, endPoint: .bottomTrailing
+                )
+            )
+            .clipShape(Circle())
+    }
+}
+
+/// A grouped settings card (surface, rounded, shadow) wrapping its rows.
+struct SettingsGroup<Content: View>: View {
+    @ViewBuilder var content: Content
+    var body: some View {
+        VStack(spacing: 0) { content }
+            .background(Color.aura.surface)
+            .clipShape(RoundedRectangle(cornerRadius: AuraRadius.lg))
+            .auraShadowSm()
+    }
+}
+
+/// A leading-icon settings row label (no built-in action — wrap in NavigationLink/Button).
+struct SettingsRowLabel: View {
+    let icon: String
+    var iconColor: Color = .aura.accent
+    let title: String
+    var subtitle: String? = nil
+    var showChevron: Bool = true
+
+    var body: some View {
+        HStack(spacing: AuraSpacing.s3) {
+            ZStack {
+                RoundedRectangle(cornerRadius: 9)
+                    .fill(iconColor)
+                    .frame(width: 32, height: 32)
+                Image(systemName: icon)
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundColor(.white)
+            }
+            VStack(alignment: .leading, spacing: 2) {
+                Text(title)
+                    .font(AuraFont.body())
+                    .foregroundColor(.aura.text)
+                if let subtitle {
+                    Text(subtitle)
+                        .font(AuraFont.secondary())
+                        .foregroundColor(.aura.text2)
+                }
+            }
+            Spacer()
+            if showChevron {
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 13, weight: .semibold))
+                    .foregroundColor(.aura.text3)
+            }
+        }
+        .padding(.horizontal, AuraSpacing.s4)
+        .padding(.vertical, 12)
+        .frame(minHeight: 56)
+        .contentShape(Rectangle())
+    }
+}
+
+/// Section label used inside settings sub-screens.
+struct SettingsSectionLabel: View {
+    let title: String
+    var body: some View {
+        Text(title.uppercased())
+            .font(.system(size: 12, weight: .semibold))
+            .foregroundColor(.aura.text2)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.top, AuraSpacing.s4)
+            .padding(.bottom, AuraSpacing.s2)
+    }
+}
+
+/// A plain value/title row inside a settings card (for toggles, segs, steppers).
+struct SettingsControlRow<Trailing: View>: View {
+    let title: String
+    var subtitle: String? = nil
+    var iconName: String? = nil
+    var iconColor: Color = .aura.accent
+    @ViewBuilder var trailing: Trailing
+
+    var body: some View {
+        HStack(spacing: AuraSpacing.s3) {
+            if let iconName {
+                ZStack {
+                    RoundedRectangle(cornerRadius: 9)
+                        .fill(iconColor)
+                        .frame(width: 32, height: 32)
+                    Image(systemName: iconName)
+                        .font(.system(size: 14, weight: .semibold))
+                        .foregroundColor(.white)
+                }
+            }
+            VStack(alignment: .leading, spacing: 2) {
+                Text(title)
+                    .font(AuraFont.body())
+                    .foregroundColor(.aura.text)
+                if let subtitle {
+                    Text(subtitle)
+                        .font(AuraFont.secondary())
+                        .foregroundColor(.aura.text2)
+                }
+            }
+            Spacer()
+            trailing
+        }
+        .padding(.horizontal, AuraSpacing.s4)
+        .padding(.vertical, 12)
+        .frame(minHeight: 56)
     }
 }

@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Aura · Developer Handover</title>
+<link rel="stylesheet" href="../styles/aura.css">
+<link rel="stylesheet" href="handoff.css">
+</head>
+<body>
+<div class="docbar">
+  <div class="crumbs"><a href="Handoff.html">Aura Handover</a><span>/</span><b>Overview</b></div>
+  <span class="pill">v3 · built from Aura App.html</span>
+</div>
+
+<div class="shell">
+  <nav class="rail">
+    <h4>Start here</h4>
+    <a href="#intro">What this is</a>
+    <a href="#howto">How to use it</a>
+    <a href="#stack">Target stack</a>
+    <a href="#map">App map</a>
+    <h4>Chapters</h4>
+    <a href="01-foundation.html">1 · Foundation</a>
+    <a href="02-shell-nav.html">2 · Shell &amp; navigation</a>
+    <a href="03-log.html">3 · Log tab</a>
+    <a href="04-plan.html">4 · Plan tab</a>
+    <a href="05-active-workout.html">5 · Active Workout</a>
+    <a href="06-progress.html">6 · Progress tab</a>
+    <a href="07-profile.html">7 · Profile tab</a>
+    <a href="08-data-models.html">8 · Data models</a>
+    <h4>Reference</h4>
+    <a href="#index">Full screen index</a>
+    <a href="#files">Source files</a>
+  </nav>
+
+  <main class="content">
+    <div class="kicker">Developer Handover</div>
+    <h1 class="doc">Aura Fitness — build spec</h1>
+    <p class="lead">A complete, screen-by-screen, scenario-by-scenario specification for rebuilding Aura natively. This document is written so that nothing built into the prototype gets lost in translation — every state, sheet, timer, animation and edge case is called out explicitly.</p>
+
+    <h2 class="doc first" id="intro">What this is</h2>
+    <p class="doc">Aura is a personal workout-tracking app: it serves training programs and runs an advanced live workout tracker. The source of truth is the interactive prototype <code>Aura App.html</code> — a fully working React app (four tabs + a full-screen Active Workout flow). The HTML/JS files are <b class="k">design references</b>, not production code. Your job is to <b class="k">recreate the behaviour</b> in the target codebase using its own patterns.</p>
+    <p class="doc">This handover is split into <b class="k">8 chapters / phases</b>. Build them roughly in order — Foundation and Shell first, then one tab at a time. Each chapter documents every screen as: <b>purpose → layout → every interactive element → all states/scenarios → edge cases</b>.</p>
+
+    <div class="note"><span class="lbl">Fidelity</span><b>High.</b> Final colours, type, spacing, motion and interaction are all specified. <code>styles/aura.css</code> is the single source of truth for design tokens — read it before writing any UI.</div>
+
+    <h2 class="doc" id="howto">How to use this document</h2>
+    <ul class="doc">
+      <li>Read <a class="link" href="01-foundation.html">Chapter 1 · Foundation</a> first — it defines the tokens, shared components and the global state/persistence model that every screen depends on.</li>
+      <li>Work tab-by-tab. Within a chapter, build the screens top to bottom; the <b>Scenarios</b> blocks are your test checklist.</li>
+      <li>Treat every <span class="id" style="font-size:10px">SCREEN-ID</span> badge as a discrete unit of work. The IDs are stable references you can use in commits, tickets and QA.</li>
+      <li>Anywhere you see a <span class="tag r" style="font-size:10px;padding:2px 7px">EDGE</span> or <b>warn</b> callout, that's a behaviour that is easy to miss — implement it deliberately.</li>
+    </ul>
+
+    <h2 class="doc" id="stack">Target stack</h2>
+    <p class="doc">The design follows Apple HIG (large titles, grouped lists, bottom sheets, segmented controls, a floating tab bar). For iOS, <b class="k">SwiftUI is recommended</b>. If a cross-platform stack is already in place (React Native / Expo, Flutter), rebuild there with that stack's native components. Do not ship the prototype HTML.</p>
+    <ul class="doc">
+      <li><b>Map icons to SF Symbols</b> where equivalents exist (the prototype ships a custom 24px stroke set, weight 1.7, round caps — see Chapter 1).</li>
+      <li><b>Substitute the system font</b> (SF Pro) for Plus Jakarta Sans if preferred — layouts tolerate it. Keep tabular numerals on all stats/timers.</li>
+      <li><b>All imagery is placeholder</b> (striped boxes with monospace captions like "exercise demo", "body map"). Replace with real assets — see each chapter's asset notes.</li>
+    </ul>
+
+    <h2 class="doc" id="map">App map</h2>
+    <p class="doc">One root component (<code>AuraRoot</code>) owns the active tab and a handful of cross-tab settings (theme, week-start, log-stat). Four tabs render inside an iPhone 393×852 frame; the Active Workout flow is a full-screen overlay that takes over the whole device when a session runs.</p>
+    <div class="flow">
+      <span class="step">AuraRoot</span><span class="arr">→</span>
+      <span class="step">Log</span><span class="arr">·</span>
+      <span class="step">Plan</span><span class="arr">·</span>
+      <span class="step">Progress</span><span class="arr">·</span>
+      <span class="step">Profile</span><span class="arr">→</span>
+      <span class="step">Active Workout overlay</span>
+    </div>
+
+    <div class="hub-grid">
+      <a class="hub-card" href="01-foundation.html"><div class="ph-no">PHASE 1</div><h3>Foundation</h3><p>Tokens, type scale, device frame, icon set, shared components, theming &amp; persistence model.</p></a>
+      <a class="hub-card" href="02-shell-nav.html"><div class="ph-no">PHASE 2</div><h3>Shell &amp; navigation</h3><p>Root routing, the glass tab bar (collapse-on-scroll, swipe, sliding indicator) and the FAB quick-action menu.</p></a>
+      <a class="hub-card" href="03-log.html"><div class="ph-no">PHASE 3</div><h3>Log tab</h3><p>Week bar, calendar, six day-states and eleven sheets — the most state-heavy screen in the app.</p></a>
+      <a class="hub-card" href="04-plan.html"><div class="ph-no">PHASE 4</div><h3>Plan tab</h3><p>My Plans, Programs, Workouts &amp; Exercises libraries, workout/program editors, supersets, exercise detail.</p></a>
+      <a class="hub-card" href="05-active-workout.html"><div class="ph-no">PHASE 5</div><h3>Active Workout</h3><p>The hero flow: overview, set logging, supersets, rest pill, celebrations, summary, minimise &amp; tweaks.</p></a>
+      <a class="hub-card" href="06-progress.html"><div class="ph-no">PHASE 6</div><h3>Progress tab</h3><p>Stats (heatmap, strength score, exercise trends, PRs) and Body (measurements, photos, nutrition compute).</p></a>
+      <a class="hub-card" href="07-profile.html"><div class="ph-no">PHASE 7</div><h3>Profile tab</h3><p>Identity card and the full settings tree — seven sub-screens plus confirm sheets.</p></a>
+      <a class="hub-card" href="08-data-models.html"><div class="ph-no">PHASE 8</div><h3>Data models</h3><p>Every state shape, seed dataset and the computed-value formulas, in one reference.</p></a>
+    </div>
+
+    <h2 class="doc" id="index">Full screen index</h2>
+    <p class="doc muted">39 distinct screens &amp; sheets across the app. Each is documented in its chapter.</p>
+    <table class="doc">
+      <tr><th>Group</th><th>Count</th><th>Screens &amp; sheets</th></tr>
+      <tr><td><b>Shell</b></td><td>2</td><td>Tab bar (collapsed/expanded), FAB quick-action menu</td></tr>
+      <tr><td><b>Log</b></td><td>17</td><td>6 day-states (today · done · missed · future · rest · empty) + 11 sheets (menu, edit, move, switch, add, log-past, picker, calendar, view-log, edit-log, quick-log)</td></tr>
+      <tr><td><b>Plan</b></td><td>11</td><td>My Plans, Programs library + detail, Workouts library, Workout editor, Exercises library, Exercise detail (3 tabs), Program editor, create-workout, superset builder, assign/day-menu sheets</td></tr>
+      <tr><td><b>Active Workout</b></td><td>6</td><td>Overview, empty overview, Exercise logging, Superset logging, Summary, Minimised — plus rest pill, celebrations &amp; 6 modals</td></tr>
+      <tr><td><b>Progress</b></td><td>7</td><td>Stats, Measurements, Nutrition + 4 sheets (how-to, log measurements, edit details, exercise picker)</td></tr>
+      <tr><td><b>Profile</b></td><td>8</td><td>Home + General, Workout, Account, Notifications, Units, Connected, Support + confirm sheets</td></tr>
+    </table>
+
+    <h2 class="doc" id="files">Source files</h2>
+    <div class="files">
+      <div class="fref">Aura App.html <span>entry point — loads all modules, scales the frame</span></div>
+      <div class="fref">styles/aura.css <span>design tokens + component CSS · source of truth</span></div>
+      <div class="fref">combined/shell.jsx <span>AuraRoot — tab routing + cross-tab settings</span></div>
+      <div class="fref">combined/ui.jsx <span>shared primitives: TabBar, Seg, Toggle, Stepper, LineChart, SetRow</span></div>
+      <div class="fref">combined/log.jsx <span>Log tab (all day-states + sheets)</span></div>
+      <div class="fref">plan/app.jsx · plan/data.jsx · plan/exercise-detail.jsx <span>Plan tab + libraries + exercise detail</span></div>
+      <div class="fref">workout/app.jsx · exercise.jsx · superset.jsx · data.jsx <span>Active Workout flow + seed</span></div>
+      <div class="fref">combined/progress.jsx · combined/profile.jsx <span>Progress &amp; Profile tabs</span></div>
+      <div class="fref">workout/icons.jsx · styles/icons.js <span>icon set</span></div>
+    </div>
+    <div class="note info"><span class="lbl">Tip</span>Download the whole project to get every file with working relative paths, then point Claude Code at this folder and read chapters in order.</div>
+
+    <div class="chapnav">
+      <span></span>
+      <a class="next" href="01-foundation.html"><div class="dir">Next →</div><div class="ttl">1 · Foundation</div></a>
+    </div>
+  </main>
+</div>
+</body>
+</html>

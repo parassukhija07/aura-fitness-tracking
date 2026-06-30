@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>4 · Plan tab — Aura Handover</title>
+<link rel="stylesheet" href="../styles/aura.css">
+<link rel="stylesheet" href="handoff.css">
+</head>
+<body>
+<div class="docbar">
+  <div class="crumbs"><a href="Handoff.html">Aura Handover</a><span>/</span><b>4 · Plan tab</b></div>
+  <span class="pill">Phase 4</span>
+</div>
+
+<div class="shell">
+  <nav class="rail">
+    <h4>Chapter 4</h4>
+    <a href="#overview">Overview &amp; navigation</a>
+    <a href="#state">App state</a>
+    <a href="#seed">Seed data</a>
+    <a href="#helpers">Colour / icon helpers</a>
+    <h4>Subtabs</h4>
+    <a href="#myplans">My Plans</a>
+    <a href="#weekstrip" class="sub">Week strip</a>
+    <a href="#programs">Programs library</a>
+    <a href="#workouts">Workouts library</a>
+    <a href="#exercises">Exercises library</a>
+    <h4>Sheets</h4>
+    <a href="#sheets">5 plan sheets</a>
+    <h4>Full-screen views</h4>
+    <a href="#progdetail">Program detail</a>
+    <a href="#progeditor">Program editor</a>
+    <a href="#wkeditor">Workout editor</a>
+    <a href="#picker">Exercise picker</a>
+    <a href="#superset">Supersets</a>
+    <a href="#exdetail">Exercise detail</a>
+    <h4>Wrap-up</h4>
+    <a href="#checklist">Scenario checklist</a>
+    <h4>Jump to</h4>
+    <a href="03-log.html">← 3 · Log tab</a>
+    <a href="05-active-workout.html">5 · Active Workout →</a>
+  </nav>
+
+  <main class="content">
+    <div class="kicker">Phase 4</div>
+    <h1 class="doc">Plan tab</h1>
+    <p class="lead">The library and authoring surface. Four sub-tabs (My Plans, Programs, Workouts, Exercises) sit under a shared header, and four <b class="k">full-screen views</b> push over the whole tab for detail and editing — program detail, program editor, workout editor (with drag-reorder + supersets) and a rich three-tab exercise detail. This is the largest chapter by far.</p>
+
+    <div class="note"><span class="lbl">Source</span><code>plan/app.jsx</code> (1258 lines — <code>window.PlanApp</code>), <code>plan/data.jsx</code> (seed: workouts, programs, exercise library, schedule), <code>plan/exercise-detail.jsx</code> (<code>window.ExerciseDetail</code> + body-map + history/PB math). Receives <code>tab</code>, <code>onTab</code>, <code>calStart</code> from <code>AuraRoot</code>.</div>
+
+    <!-- ============================================================ -->
+    <h2 class="doc first" id="overview">Overview &amp; navigation</h2>
+    <p class="doc">The tab renders the <b>phone shell</b> (status bar, "Plan" large title + <code>+</code> button, sub-tab pill row) and one of four sub-tab bodies. Detail/editor screens are <b class="k">not sheets</b> — they are full-screen views swapped in by early <code>return</code>s at the top of <code>App</code>, before the normal shell renders.</p>
+    <div class="note warn"><span class="lbl">Navigation pattern</span>Five pieces of state act like a tiny router, checked in priority order: <code>viewingEx → editingWk → editingProg → viewingProg →</code> (else the sub-tab shell). Whichever is set wins and replaces the entire tab (its own back button clears it). There is no animated push — it's a hard swap. Map these to real navigation pushes in the native build.</p></div>
+    <div class="flow">
+      <span class="step">Plan shell</span><span class="arr">→</span>
+      <span class="step">viewingProg (Program detail)</span><span class="arr">→</span>
+      <span class="step">editingProg (Program editor)</span><span class="arr">→</span>
+      <span class="step">editingWk (Workout editor)</span><span class="arr">→</span>
+      <span class="step">viewingEx (Exercise detail)</span>
+    </div>
+
+    <h3 class="doc" id="state">App state</h3>
+    <table class="doc">
+      <tr><th>State</th><th>Init</th><th>Purpose</th></tr>
+      <tr><td><code>subtab</code></td><td><code>'myplans'</code></td><td>Active sub-tab: <code>myplans · programs · workouts · exercises</code>.</td></tr>
+      <tr><td><code>schedule</code></td><td><code>clone(DEFAULT_SCHEDULE)</code></td><td>Weekday → workoutId map for the active plan (My Plans week strip).</td></tr>
+      <tr><td><code>workouts</code></td><td><code>clone(PLAN_WORKOUTS)</code></td><td>The active plan's workout list (editable — add/delete).</td></tr>
+      <tr><td><code>modal</code></td><td><code>null</code></td><td>Bottom-sheet selector: <code>assign · day-menu · add-workout · create-workout · add-plan</code>.</td></tr>
+      <tr><td><code>editingWk</code></td><td><code>null</code></td><td>→ Workout editor full-screen.</td></tr>
+      <tr><td><code>viewingProg</code></td><td><code>null</code></td><td>→ Program detail full-screen.</td></tr>
+      <tr><td><code>editingProg</code></td><td><code>false</code></td><td>→ Program editor (build-from-scratch).</td></tr>
+      <tr><td><code>viewingEx</code></td><td><code>null</code></td><td>→ Exercise detail full-screen.</td></tr>
+    </table>
+    <div class="note info"><span class="lbl">Persistence caveat</span>Every "Save" button in the editors simply calls <code>onBack</code> — the prototype does <b>not</b> persist editor changes back into the seed/program. In the native build, wire these saves to real mutations. Treat the editors as fully-specced UIs whose <i>commit</i> path is stubbed.</div>
+
+    <h3 class="doc" id="seed">Seed data (<code>plan/data.jsx</code>)</h3>
+    <ul class="spec">
+      <li><b><code>PLAN_WORKOUTS</code></b> (5): push-a, pull-a, leg-a, push-b, pull-b — each <code>{ id, name, exCount, muscles, duration }</code>.</li>
+      <li><b><code>PLAN_PROGRAMS</code></b> (6): <span class="el">ppl (active) · ul · arnold · fb3 · phul · bro</span> — <code>{ id, name, days, level, tag, active }</code>.</li>
+      <li><b><code>PLAN_EXERCISES_LIB</code></b> (47): the master exercise catalog, <code>{ id, name, muscle, equip }</code>, across 6 muscles (Chest, Back, Shoulders, Biceps, Triceps, Legs, Core) and 6 equipment types (Barbell, Dumbbell, Cable, Machine, Bodyweight, Smith).</li>
+      <li><b><code>DEFAULT_SCHEDULE</code></b>: <span class="el">Mon push-a · Tue pull-a · Wed rest · Thu leg-a · Fri push-b · Sat/Sun rest</span>.</li>
+      <li>Editor-only seeds in <code>app.jsx</code>: <code>WK_SEEDS</code> (per-workout exercise lists with <code>{id,name,sets,reps,superset}</code>) and <code>WK_ADD_OPTIONS</code>.</li>
+    </ul>
+
+    <h3 class="doc" id="helpers">Colour / icon heuristics</h3>
+    <div class="note warn"><span class="lbl">Keyword-driven theming</span>Workout cards/strip tiles are coloured by a <b>name keyword match</b>, not stored data. <code>wkStyle(w)</code> / <code>wkIcon(w)</code> inspect the lowercased name: <b>push</b> → accent + flame, <b>pull</b> → blue + bolt, <b>leg</b> → green + trophy, <b>upper</b> → purple + arrow-up, else accent + dumbbell. A custom workout named "Chest Day" therefore falls to the default accent/dumbbell. Preserve this mapping (or replace with an explicit per-workout colour/icon field — better — but then port the defaults).</div>
+
+    <!-- ============================================================ -->
+    <h2 class="doc" id="myplans">Sub-tab 1 · My Plans</h2>
+    <div class="screen">
+      <div class="screen-head"><span class="id">PLAN · myplans</span><h3>Active plan + week schedule + workouts</h3></div>
+      <h5>Plan carousel</h5>
+      <ul class="spec">
+        <li>Horizontal scroll of gradient plan cards: <b>Push Pull Legs</b> (with white "Active" badge), <b>Upper / Lower</b>, <b>Full Body 3×</b>, then a dashed <b>"New"</b> tile → opens the <a class="link" href="#sh-addplan">Add-plan sheet</a>.</li>
+      </ul>
+      <h5>Workouts in program (<code>MyPlansView</code>)</h5>
+      <ul class="spec">
+        <li>List of the active plan's workouts: coloured icon tile (keyword), name, muscle list (split on ", "), and per-row <b>edit</b> (→ workout editor) + <b>delete</b> (red trash) buttons.</li>
+        <li>Section header has a <code>+</code> → <a class="link" href="#sh-addwk">Add-workout sheet</a>. Deleting a workout also nulls any schedule day pointing at it.</li>
+      </ul>
+    </div>
+
+    <div class="screen" id="weekstrip">
+      <div class="screen-head"><span class="id">PLAN · week-strip</span><h3>Weekly schedule strip</h3></div>
+      <p class="screen-purpose">Seven day tiles (<code>WeekStrip</code>) showing which workout is on each day. Shared with the Program editor.</p>
+      <ul class="spec">
+        <li><b>Day order</b> follows <code>calStart</code>: Mon-first by default, Sun-first when <code>calStart==='Sun'</code>.</li>
+        <li><b>Training day:</b> keyword-coloured tile with the workout icon + short name. Tapping → <a class="link" href="#sh-daymenu">Day menu</a>.</li>
+        <li><b>Rest day:</b> outlined tile with a moon glyph + "Rest". Tapping → <a class="link" href="#sh-assign">Assign sheet</a> to put a workout on that day.</li>
+      </ul>
+    </div>
+
+    <!-- ============================================================ -->
+    <h2 class="doc" id="programs">Sub-tab 2 · Programs library</h2>
+    <div class="screen">
+      <div class="screen-head"><span class="id">PLAN · programs</span><h3>Browse &amp; filter programs</h3></div>
+      <ul class="spec">
+        <li>Search box (matches name / tag / level) + a row of <b>5 filter dropdowns</b>: <span class="el">Frequency · Equipment · Level · Split · Type</span>. Each opens its own bottom-sheet option list (with "All" to clear); a red <b>Clear</b> chip appears when any filter is active and active filters tint accent.</li>
+        <li>Filter values come from a side <code>PROG_META</code> table keyed by program id (frequency/equipment/split/type), <i>except</i> Level which reads the card's own <code>level</code>. Empty result → "No programs found".</li>
+        <li>Program cards: thumb, name, "{freq} · {level} · {tag}". Active program shows an accent <b>"Added"</b> badge; others a chevron. Tap → <a class="link" href="#progdetail">Program detail</a>.</li>
+      </ul>
+    </div>
+
+    <h2 class="doc" id="workouts">Sub-tab 3 · Workouts library</h2>
+    <div class="screen">
+      <div class="screen-head"><span class="id">PLAN · workouts</span><h3>Browse workouts</h3></div>
+      <ul class="spec">
+        <li>Search + chip filters <span class="el">All · Push · Pull · Legs · Upper · Chest · Back</span> (matches against name or muscles). Empty → "No workouts found".</li>
+        <li>Library cards (thumb, name, "{exCount} exercises · {muscles}") → tap opens the <a class="link" href="#wkeditor">Workout editor</a>.</li>
+      </ul>
+    </div>
+
+    <h2 class="doc" id="exercises">Sub-tab 4 · Exercises library</h2>
+    <div class="screen">
+      <div class="screen-head"><span class="id">PLAN · exercises</span><h3>Browse the exercise catalog</h3></div>
+      <ul class="spec">
+        <li>Search + <b>two filter rows</b>: muscle chips (colour-coded per muscle) and equipment chips. The <b>Arms</b> muscle chip maps to <code>Biceps + Triceps</code> (those are stored separately but labelled "Arms").</li>
+        <li><b>2-up catalog grid</b> (<code>cat-item</code>): muscle-tinted gradient thumb with the muscle name, exercise name, "{muscle} · {equip}". Tap → <a class="link" href="#exdetail">Exercise detail</a> with <code>showActions</code>.</li>
+      </ul>
+    </div>
+
+    <!-- ============================================================ -->
+    <h2 class="doc" id="sheets">The five plan sheets</h2>
+    <div class="screen" id="sh-addplan">
+      <div class="screen-head"><span class="id">SHEET · add-plan</span><h3>Add to My Plans</h3></div>
+      <ul class="spec">
+        <li>Three sources: <b>Browse programs</b> → switches to the Programs sub-tab; <b>Build from scratch</b> → opens the <a class="link" href="#progeditor">Program editor</a>; <b>Duplicate active plan</b> → (copy PPL) closes.</li>
+        <li>Opened by the header <code>+</code>, the carousel "New" tile, or the carousel <code>+</code>.</li>
+      </ul>
+    </div>
+    <div class="screen" id="sh-assign">
+      <div class="screen-head"><span class="id">SHEET · assign</span><h3>Assign workout to a day</h3></div>
+      <ul class="spec">
+        <li>Lists the plan's workouts; the currently-assigned one is highlighted with an accent ring + check. Picking one writes <code>schedule[day]=id</code>.</li>
+        <li>Footer: <b>Create new workout</b> source card, and <b>Keep as Rest Day</b> (closes without assigning).</li>
+      </ul>
+    </div>
+    <div class="screen" id="sh-daymenu">
+      <div class="screen-head"><span class="id">SHEET · day-menu</span><h3>Day actions</h3></div>
+      <ul class="spec">
+        <li>For a training day: <b>Edit workout</b> (→ workout editor), <b>Change workout</b> (→ assign sheet), <b>Make it a rest day</b>, and <b>Remove from program</b> (red). Both rest/remove null the day.</li>
+      </ul>
+    </div>
+    <div class="screen" id="sh-addwk">
+      <div class="screen-head"><span class="id">SHEET · add-workout</span><h3>Add / create a workout</h3></div>
+      <ul class="spec">
+        <li><b>add-workout:</b> "From Workout Library" (→ Workouts sub-tab) or "Create custom workout" (→ create-workout sheet).</li>
+        <li><b>create-workout:</b> name field + a <b>12-icon picker grid</b> (Push/Pull/Legs/Upper/Weights/Full Body/Core/Strength/Cardio/Cable/Hypertrophy/Recovery). "Continue → Add Exercises" creates the workout (disabled until named) and immediately opens the <a class="link" href="#wkeditor">workout editor</a> on it.</li>
+      </ul>
+    </div>
+
+    <!-- ============================================================ -->
+    <h2 class="doc" id="progdetail">Full-screen · Program detail</h2>
+    <div class="screen">
+      <div class="screen-head"><span class="id">VIEW · program-detail</span><h3>Predefined program preview</h3></div>
+      <ul class="spec">
+        <li>16:9 hero image placeholder, name, generated description ("A {days}-day {tag} split. {level} level."), chips (days/wk · level · tag).</li>
+        <li>"Workouts in this program" = first 4 of <code>PLAN_WORKOUTS</code> as numbered rows → tap opens the <a class="link" href="#wkeditor">workout editor</a>.</li>
+        <li>Info card: predefined programs must be <b>added to My Plans before editing</b> (edits live on your copy). Bottom <b>Add to My Plans</b> button.</li>
+      </ul>
+    </div>
+
+    <h2 class="doc" id="progeditor">Full-screen · Program editor (build from scratch)</h2>
+    <div class="screen">
+      <div class="screen-head"><span class="id">VIEW · program-editor</span><h3>Create a custom weekly program</h3></div>
+      <ul class="spec">
+        <li><b>Name</b> (auto-focused large input) and an <b>optional Difficulty</b> segmented control (Beginner green / Intermediate accent / Advanced red, toggle to clear).</li>
+        <li><b>Week strip</b> (shared <code>WeekStrip</code>): tapping a day tries to assign the first workout. With <b>no workouts yet</b>, it instead flashes an accent warning ("Add workouts below before assigning days") for 2.5s — you must add workouts first.</li>
+        <li><b>Workouts</b> section: empty-state offers "Add from Workout Library" or "Create your own workout"; once populated, each is an editable-name row with chevron (→ editor) + delete. A <code>+</code> opens the add sheet (library list or create-own).</li>
+        <li><b>Save Program</b> (sticky footer) is disabled/dimmed until the name is non-empty; saving calls <code>onBack</code>.</li>
+      </ul>
+    </div>
+
+    <!-- ============================================================ -->
+    <h2 class="doc" id="wkeditor">Full-screen · Workout editor</h2>
+    <div class="screen">
+      <div class="screen-head"><span class="id">VIEW · workout-editor</span><h3>Edit a workout's exercises</h3></div>
+      <p class="screen-purpose">Name field, two rest pickers, and a reorderable exercise list with a per-exercise action menu. Seeds from <code>WK_SEEDS[workout.id]</code> (falls back to push-a).</p>
+      <h5>Header &amp; rest</h5>
+      <ul class="spec">
+        <li>Editable workout name; a back chevron and a <b>Save</b> action (both call <code>onBack</code>).</li>
+        <li>Two <b><code>RestPicker</code></b> cards — <b>Between sets</b> (default 60s) and <b>After exercise</b> (default 90s) — each a stepper over a fixed ladder <span class="el">15·30·45·60·75·90·120·150·180·240·300s</span> with a dot indicator. Formats &lt;60s as "Ns", else "m:ss".</li>
+      </ul>
+      <h5>Exercise cards</h5>
+      <ul class="spec">
+        <li>Each: drag grip, <b>tappable name</b> (→ <a class="link" href="#exdetail">Exercise detail</a> in <code>workoutCtx</code> mode, carrying sets/reps/rest + superset role), chips ("{sets} sets", "{reps} reps", and an accent <b>SS</b> badge on a superset leader), and a <code>⋯</code> menu.</li>
+        <li><b>Drag-reorder:</b> HTML5 drag; dragging dims the others (dashed). Drop recomputes the index (accounting for removal offset).</li>
+      </ul>
+      <h5><code>⋯</code> exercise menu (ex-menu)</h5>
+      <ul class="spec">
+        <li>Inline <b>Sets stepper</b> (min 1) + <b>Rep-range</b> text input (live-editing the card), then: <b>Substitute exercise</b> (→ picker in <code>sub</code> mode), <b>Create / Remove Superset</b> (→ ss-pick, or unlinks), <b>Add exercise after</b> (→ picker in <code>add</code> mode), and <b>Remove exercise</b> (red).</li>
+      </ul>
+    </div>
+
+    <h3 class="doc" id="picker">Exercise picker (full-screen)</h3>
+    <div class="screen">
+      <div class="screen-head"><span class="id">VIEW · exercise-picker</span><h3>Search + catalog to add / substitute</h3></div>
+      <ul class="spec">
+        <li>Back-header with a search field; muscle filter row + equipment filter row (same "Arms"→Biceps/Triceps mapping); 2-up muscle-tinted catalog grid. Empty → "No exercises found".</li>
+        <li><b>Three modes</b> determine the select behaviour: <code>sub</code> (replace exercise <code>i</code>, header "Substitute" + "Replacing <b>X</b>"), <code>add</code> (insert after an index), <code>ss-new</code> (pick "Exercise B" to superset with the source). Selecting routes back to the editor and applies.</li>
+      </ul>
+    </div>
+
+    <h3 class="doc" id="superset">Supersets (the data model to get right)</h3>
+    <div class="note warn"><span class="lbl">Model</span>A superset is encoded as <code>superset:true</code> on the <b>leader</b> exercise; its <b>partner is simply the next exercise in the array</b>. There is no pair id. So <code>isSSFirst = ex.superset===true</code> and <code>isSSSecond = prev.superset===true</code>. Only one pair exists at a time in the prototype — creating a new superset clears all <code>superset</code> flags first.</div>
+    <ul class="spec">
+      <li><b>Create (existing partner):</b> <code>ss-pick</code> sheet shows the leader (badge A) then "pair with existing" rows (badge B). Choosing reorders the target to sit right after the leader and sets the leader's flag.</li>
+      <li><b>Create (new exercise):</b> "Pick from library" → picker in <code>ss-new</code> → inserts the new exercise after the leader and flags the leader.</li>
+      <li><b>Render:</b> a paired second card is preceded by a connector bar — two accent rules around a <b>"⚡ SUPERSET"</b> pill — and both cards get an accent-tinted border.</li>
+      <li><b>Remove:</b> clears all <code>superset</code> flags.</li>
+    </ul>
+
+    <!-- ============================================================ -->
+    <h2 class="doc" id="exdetail">Full-screen · Exercise detail</h2>
+    <div class="screen">
+      <div class="screen-head"><span class="id">VIEW · exercise-detail</span><h3>Overview · History (+ Workout)</h3></div>
+      <p class="screen-purpose">Reusable detail screen (<code>ExerciseDetail</code>) launched two ways: from the Exercises library with <code>showActions</code> (adds the bottom action bar), or from the workout editor with <code>workoutCtx</code> (adds a leading <b>Workout</b> tab for inline set/rep/rest editing).</p>
+      <h5>Tabs</h5>
+      <table class="doc">
+        <tr><th>Tab</th><th>When</th><th>Contents</th></tr>
+        <tr><td><b>Workout</b></td><td>only with <code>workoutCtx</code></td><td>Video, Sets stepper, Rep-range input, Rest picker (ladder 30…300s), <b>Save Changes</b> → writes back sets/reps/rest to the editor card.</td></tr>
+        <tr><td><b>Overview</b></td><td>always</td><td>Category/Equipment/Level pill, demo video w/ play, description, accent <b>Pro tip</b>, <b>Muscle activation</b> (% bars + SVG body map), numbered <b>Key takeaways</b>.</td></tr>
+        <tr><td><b>History</b></td><td>always</td><td><b>Personal bests</b> (Est. 1RM, Max Weight, Max Reps, Max Volume) + 5 seeded sessions, each expandable to a per-set table with Est-1RM.</td></tr>
+      </table>
+      <h5>Computed values</h5>
+      <ul class="spec">
+        <li><b>Level</b> (<code>levelFor</code>) is derived from equipment: Bodyweight/Machine/Smith → Beginner, Dumbbell/Cable → Intermediate, Barbell → Advanced.</li>
+        <li><b>Est. 1RM</b> uses the <b>Epley formula</b> <code>w × (1 + reps/30)</code> (rounded to 0.25; reps≤1 returns the weight). PBs are the max across seeded sessions; bodyweight shows "BW".</li>
+        <li><b>Muscle activation</b> + <b>body map</b> come from <code>XD_INFO[id]</code> when present, else a per-muscle default. Primary muscles fill accent, secondary fill blue, on a front/back SVG silhouette.</li>
+      </ul>
+      <h5>Superset mode</h5>
+      <ul class="spec">
+        <li>When <code>workoutCtx.isSuperset</code>, an <b>A / B segmented control</b> (<code>SSSubTabs</code>) sits atop Overview/History and swaps which exercise's info is shown (leader vs partner).</li>
+      </ul>
+      <h5>Action bar (<code>showActions</code>)</h5>
+      <ul class="spec">
+        <li><b>Add to Today's Workout</b> and <b>Add to a Plan</b>. The latter opens a workout picker (active plan) → then an "Add as new exercise" / "Replace one" sheet (replace lists same-muscle alternatives).</li>
+      </ul>
+    </div>
+
+    <!-- ============================================================ -->
+    <h2 class="doc" id="checklist">Scenario checklist</h2>
+    <ul class="doc">
+      <li>Sub-tab pills switch bodies; the header <code>+</code> opens Add-plan from any sub-tab.</li>
+      <li>My Plans week strip seeds Mon/Tue/Thu/Fri training, Wed/Sat/Sun rest; order flips with <code>calStart</code>.</li>
+      <li>Tapping a training day → day menu; a rest day → assign sheet; assigning/removing updates the strip + nulls deleted workouts' days.</li>
+      <li>Programs: all 5 filter dropdowns work (incl. PROG_META-derived ones), Clear resets, "Added" badge on the active program.</li>
+      <li>Workouts library filters by chip + search; cards open the editor.</li>
+      <li>Exercises library: "Arms" chip surfaces Biceps + Triceps; equipment chips stack with muscle chips; cards open detail with the action bar.</li>
+      <li>Workout editor: rename, both rest pickers, drag-reorder, sets/rep edits via ⋯, substitute, add-after, remove.</li>
+      <li>Superset: create with existing partner (reorders) and with a new library pick; connector + SS badge render; remove unlinks; only one pair at a time.</li>
+      <li>Exercise detail: Workout tab only appears from the editor and writes back on Save; Overview body-map highlights correct muscles; History PBs use Epley; A/B toggle in superset mode.</li>
+      <li>Program editor: difficulty optional; week strip blocked (warning) until a workout exists; Save disabled until named.</li>
+      <li>create-workout: 12-icon grid, disabled until named, then jumps straight into the editor.</li>
+      <li>Keyword colouring: push/pull/leg/upper themed; unmatched names fall back to accent + dumbbell.</li>
+    </ul>
+
+    <div class="note info"><span class="lbl">FAB</span>On the Plan tab all three FAB actions route to the Log tab (see <a class="link" href="02-shell-nav.html#fab-routing">Chapter 2 routing table</a> for the intended per-action destinations).</div>
+
+    <div class="chapnav">
+      <a href="03-log.html"><div class="dir">← Prev</div><div class="ttl">3 · Log tab</div></a>
+      <a class="next" href="05-active-workout.html"><div class="dir">Next →</div><div class="ttl">5 · Active Workout</div></a>
+    </div>
+  </main>
+</div>
+</body>
+</html>

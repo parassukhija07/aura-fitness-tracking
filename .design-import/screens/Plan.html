@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Aura · Plan Tab</title>
+<link rel="stylesheet" href="../styles/aura.css">
+<link rel="stylesheet" href="../styles/gallery.css">
+</head>
+<body>
+<div class="vbar">
+  <div class="crumbs"><a href="../Aura Fitness.html">Aura</a> &nbsp;/&nbsp; <b>Plan</b> tab</div>
+  <button class="theme-toggle" onclick="toggleTheme()"><i data-ic="moon" data-size="16"></i> <span id="tmode">Dark</span></button>
+</div>
+
+<div class="gallery">
+  <h2 class="sec">Tab 02 · Build & organize</h2>
+  <h1 class="sec-title">Plan</h1>
+  <p class="sec-desc">Four libraries behind one tab. My&nbsp;Plans is your shortlist (max 3, one default that drives the Log tab); Programs, Workouts and Exercises are the deep catalogs you pull from and edit.</p>
+
+  <div class="frames">
+
+  <!-- PLAN-01 · My Plans — week template -->
+  <div class="frame-wrap">
+    <div class="frame-cap"><span class="num">PLAN-01</span> My Plans · weekly template</div>
+    <div class="phone" data-theme="light">
+      <div class="dynamic-island"></div><div class="statusbar auto"></div>
+      <div class="navbar">
+        <div class="navbar-row">
+          <div class="nav-title-lg">Plan</div>
+          <button class="nav-icon-btn accent"><i data-ic="plus" data-size="20"></i></button>
+        </div>
+        <div class="subtabs">
+          <button class="subtab active">My Plans</button>
+          <button class="subtab">Programs</button>
+          <button class="subtab">Workouts</button>
+          <button class="subtab">Exercises</button>
+        </div>
+      </div>
+
+      <!-- active plan selector strip -->
+      <div style="padding:10px 14px 0">
+        <div class="plan-scroll">
+          <div class="plan-card" style="min-width:150px"><div class="pc-bg"></div><div class="badge" style="background:#fff;color:var(--accent);align-self:flex-start;margin-bottom:auto"><i data-ic="check" data-size="12"></i> Active</div><div style="font-size:14px;font-weight:800;letter-spacing:-.02em">Push Pull Legs</div><div class="tiny" style="opacity:.85;margin-top:1px">6 days · Intermediate</div></div>
+          <div class="plan-card alt" style="min-width:130px"><div class="pc-bg"></div><div style="font-size:14px;font-weight:800;letter-spacing:-.02em;margin-top:auto">Upper / Lower</div><div class="tiny" style="opacity:.85;margin-top:1px">4 days · Strength</div></div>
+          <div class="plan-card alt2" style="min-width:130px"><div class="pc-bg"></div><div style="font-size:14px;font-weight:800;letter-spacing:-.02em;margin-top:auto">Full Body 3×</div><div class="tiny" style="opacity:.85;margin-top:1px">3 days · Beginner</div></div>
+          <div class="plan-add"><i data-ic="plus" data-size="22"></i><span class="tiny" style="font-weight:700">New</span></div>
+        </div>
+      </div>
+
+      <div class="screen-body pad pad-b" style="padding-top:14px">
+        <div class="sec-label" style="margin-bottom:10px">Weekly template · Push Pull Legs</div>
+
+        <!-- 7-day template list -->
+        <div class="col" style="gap:8px">
+
+          <!-- Monday — assigned -->
+          <div class="card card-pad">
+            <div class="between">
+              <div class="flex gap3" style="align-items:center">
+                <div style="min-width:38px;text-align:center"><div style="font-size:10px;font-weight:800;color:var(--text-3);letter-spacing:.05em">MON</div></div>
+                <div style="width:1px;height:28px;background:var(--separator-2)"></div>
+                <div><div style="font-weight:700;font-size:14px">Push Day A</div><div class="tiny muted">6 ex · Chest, Shoulders, Triceps</div></div>
+              </div>
+              <div class="flex gap2">
+                <button class="nav-icon-btn" style="width:28px;height:28px"><i data-ic="ellipsis" data-size="16"></i></button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tuesday — assigned -->
+          <div class="card card-pad">
+            <div class="between">
+              <div class="flex gap3" style="align-items:center">
+                <div style="min-width:38px;text-align:center"><div style="font-size:10px;font-weight:800;color:var(--text-3);letter-spacing:.05em">TUE</div></div>
+                <div style="width:1px;height:28px;background:var(--separator-2)"></div>
+                <div><div style="font-weight:700;font-size:14px">Pull Day A</div><div class="tiny muted">6 ex · Back, Biceps</div></div>
+              </div>
+              <button class="nav-icon-btn" style="width:28px;height:28px"><i data-ic="ellipsis" data-size="16"></i></button>
+            </div>
+          </div>
+
+          <!-- Wednesday — rest -->
+          <div class="card card-pad" style="background:var(--fill)">
+            <div class="between">
+              <div class="flex gap3" style="align-items:center">
+                <div style="min-width:38px;text-align:center"><div style="font-size:10px;font-weight:800;color:var(--text-3);letter-spacing:.05em">WED</div></div>
+                <div style="width:1px;height:28px;background:var(--separator-2)"></div>
+                <div><div style="font-weight:600;font-size:14px;color:var(--text-3)">Rest Day</div></div>
+              </div>
+              <button class="nav-icon-btn" style="width:28px;height:28px;background:var(--accent-soft);color:var(--accent)"><i data-ic="plus" data-size="16"></i></button>
+            </div>
+          </div>
+
+          <!-- Thursday — assigned -->
+          <div class="card card-pad">
+            <div class="between">
+              <div class="flex gap3" style="align-items:center">
+                <div style="min-width:38px;text-align:center"><div style="font-size:10px;font-weight:800;color:var(--text-3);letter-spacing:.05em">THU</div></div>
+                <div style="width:1px;height:28px;background:var(--separator-2)"></div>
+                <div><div style="font-weight:700;font-size:14px">Leg Day A</div><div class="tiny muted">5 ex · Quads, Hamstrings</div></div>
+              </div>
+              <button class="nav-icon-btn" style="width:28px;height:28px"><i data-ic="ellipsis" data-size="16"></i></button>
+            </div>
+          </div>
+
+          <!-- Friday — assigned -->
+          <div class="card card-pad">
+            <div class="between">
+              <div class="flex gap3" style="align-items:center">
+                <div style="min-width:38px;text-align:center"><div style="font-size:10px;font-weight:800;color:var(--text-3);letter-spacing:.05em">FRI</div></div>
+                <div style="width:1px;height:28px;background:var(--separator-2)"></div>
+                <div><div style="font-weight:700;font-size:14px">Push Day B</div><div class="tiny muted">6 ex · Shoulders focus</div></div>
+              </div>
+              <button class="nav-icon-btn" style="width:28px;height:28px"><i data-ic="ellipsis" data-size="16"></i></button>
+            </div>
+          </div>
+
+          <!-- Saturday — rest -->
+          <div class="card card-pad" style="background:var(--fill)">
+            <div class="between">
+              <div class="flex gap3" style="align-items:center">
+                <div style="min-width:38px;text-align:center"><div style="font-size:10px;font-weight:800;color:var(--text-3);letter-spacing:.05em">SAT</div></div>
+                <div style="width:1px;height:28px;background:var(--separator-2)"></div>
+                <div><div style="font-weight:600;font-size:14px;color:var(--text-3)">Rest Day</div></div>
+              </div>
+              <button class="nav-icon-btn" style="width:28px;height:28px;background:var(--accent-soft);color:var(--accent)"><i data-ic="plus" data-size="16"></i></button>
+            </div>
+          </div>
+
+          <!-- Sunday — rest -->
+          <div class="card card-pad" style="background:var(--fill)">
+            <div class="between">
+              <div class="flex gap3" style="align-items:center">
+                <div style="min-width:38px;text-align:center"><div style="font-size:10px;font-weight:800;color:var(--text-3);letter-spacing:.05em">SUN</div></div>
+                <div style="width:1px;height:28px;background:var(--separator-2)"></div>
+                <div><div style="font-weight:600;font-size:14px;color:var(--text-3)">Rest Day</div></div>
+              </div>
+              <button class="nav-icon-btn" style="width:28px;height:28px;background:var(--accent-soft);color:var(--accent)"><i data-ic="plus" data-size="16"></i></button>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- workouts in this program -->
+        <div class="between" style="margin-top:20px;margin-bottom:10px">
+          <div class="sec-label" style="margin:0">Workouts in program</div>
+          <button class="nav-icon-btn" style="width:28px;height:28px;background:var(--accent-soft);color:var(--accent)"><i data-ic="plus" data-size="16"></i></button>
+        </div>
+        <div class="col" style="gap:8px">
+          <div class="card card-pad"><div class="between"><div><div style="font-weight:700;font-size:14px">Push Day A</div><div class="tiny muted">6 exercises · Chest, Shoulders, Triceps</div></div><div class="flex gap2"><button class="nav-icon-btn" style="width:28px;height:28px"><i data-ic="edit" data-size="15"></i></button><button class="nav-icon-btn" style="width:28px;height:28px;color:var(--red)"><i data-ic="trash" data-size="15"></i></button></div></div></div>
+          <div class="card card-pad"><div class="between"><div><div style="font-weight:700;font-size:14px">Pull Day A</div><div class="tiny muted">6 exercises · Back, Biceps</div></div><div class="flex gap2"><button class="nav-icon-btn" style="width:28px;height:28px"><i data-ic="edit" data-size="15"></i></button><button class="nav-icon-btn" style="width:28px;height:28px;color:var(--red)"><i data-ic="trash" data-size="15"></i></button></div></div></div>
+          <div class="card card-pad"><div class="between"><div><div style="font-weight:700;font-size:14px">Leg Day A</div><div class="tiny muted">5 exercises · Quads, Hamstrings</div></div><div class="flex gap2"><button class="nav-icon-btn" style="width:28px;height:28px"><i data-ic="edit" data-size="15"></i></button><button class="nav-icon-btn" style="width:28px;height:28px;color:var(--red)"><i data-ic="trash" data-size="15"></i></button></div></div></div>
+          <div class="card card-pad"><div class="between"><div><div style="font-weight:700;font-size:14px">Push Day B</div><div class="tiny muted">6 exercises · Shoulders focus</div></div><div class="flex gap2"><button class="nav-icon-btn" style="width:28px;height:28px"><i data-ic="edit" data-size="15"></i></button><button class="nav-icon-btn" style="width:28px;height:28px;color:var(--red)"><i data-ic="trash" data-size="15"></i></button></div></div></div>
+        </div>
+      </div>
+
+      <div class="tabbar">
+        <button class="tab"><i data-ic="log" data-size="25"></i><span>Log</span></button>
+        <button class="tab active"><i data-ic="dumbbell" data-size="25"></i><span>Plan</span></button>
+        <button class="tab"><i data-ic="chart" data-size="25"></i><span>Progress</span></button>
+        <button class="tab"><i data-ic="person" data-size="25"></i><span>Profile</span></button>
+      </div>
+      <div class="home-indicator"></div>
+    </div>
+  </div>
+
+  <!-- PLAN-01b · Assign workout to a day -->
+  <div class="frame-wrap">
+    <div class="frame-cap"><span class="num">PLAN-01b</span> Assign workout to Wednesday</div>
+    <div class="phone" data-theme="light">
+      <div class="dynamic-island"></div><div class="statusbar auto"></div>
+      <div class="navbar">
+        <div class="navbar-row">
+          <div class="nav-title-lg">Plan</div>
+          <button class="nav-icon-btn accent"><i data-ic="plus" data-size="20"></i></button>
+        </div>
+        <div class="subtabs">
+          <button class="subtab active">My Plans</button>
+          <button class="subtab">Programs</button>
+          <button class="subtab">Workouts</button>
+          <button class="subtab">Exercises</button>
+        </div>
+      </div>
+      <!-- blurred bg -->
+      <div style="filter:blur(1.5px);opacity:.4;padding:10px 14px 0">
+        <div class="col" style="gap:8px">
+          <div class="card card-pad"><div class="between"><div class="flex gap3" style="align-items:center"><div style="min-width:38px;text-align:center"><div style="font-size:10px;font-weight:800;color:var(--text-3);letter-spacing:.05em">MON</div></div><div style="width:1px;height:28px;background:var(--separator-2)"></div><div><div style="font-weight:700;font-size:14px">Push Day A</div></div></div></div></div>
+          <div class="card card-pad"><div class="between"><div class="flex gap3" style="align-items:center"><div style="min-width:38px;text-align:center"><div style="font-size:10px;font-weight:800;color:var(--text-3);letter-spacing:.05em">TUE</div></div><div style="width:1px;height:28px;background:var(--separator-2)"></div><div><div style="font-weight:700;font-size:14px">Pull Day A</div></div></div></div></div>
+          <div class="card card-pad" style="border-color:color-mix(in oklab,var(--accent) 40%,transparent)"><div class="between"><div class="flex gap3" style="align-items:center"><div style="min-width:38px;text-align:center"><div style="font-size:10px;font-weight:800;color:var(--accent);letter-spacing:.05em">WED</div></div><div style="width:1px;height:28px;background:var(--separator-2)"></div><div><div style="font-weight:600;font-size:14px;color:var(--text-3)">Rest Day</div></div></div><button class="nav-icon-btn" style="width:28px;height:28px;background:var(--accent);color:#fff"><i data-ic="plus" data-size="16"></i></button></div></div>
+        </div>
+      </div>
+      <!-- sheet -->
+      <div class="sheet">
+        <div class="scrim"></div>
+        <div class="sheet-card" style="max-height:72%">
+          <div class="grabber"></div>
+          <div class="between pad" style="padding-bottom:8px">
+            <div>
+              <div class="nav-title">Assign to Wednesday</div>
+              <div class="tiny muted">Choose from workouts in this program</div>
+            </div>
+            <button class="nav-icon-btn"><i data-ic="x" data-size="18"></i></button>
+          </div>
+          <div class="pad" style="overflow:auto;padding-bottom:24px">
+            <div class="col" style="gap:8px">
+              <div class="card card-pad">
+                <div class="between">
+                  <div><div style="font-weight:700;font-size:15px">Push Day A</div><div class="tiny muted" style="margin-top:2px">6 exercises · Chest, Shoulders, Triceps · ~58 min</div></div>
+                  <i data-ic="chevron-right" data-size="18" class="muted"></i>
+                </div>
+              </div>
+              <div class="card card-pad">
+                <div class="between">
+                  <div><div style="font-weight:700;font-size:15px">Pull Day A</div><div class="tiny muted" style="margin-top:2px">6 exercises · Back, Biceps · ~52 min</div></div>
+                  <i data-ic="chevron-right" data-size="18" class="muted"></i>
+                </div>
+              </div>
+              <div class="card card-pad">
+                <div class="between">
+                  <div><div style="font-weight:700;font-size:15px">Leg Day A</div><div class="tiny muted" style="margin-top:2px">5 exercises · Quads, Hamstrings · ~55 min</div></div>
+                  <i data-ic="chevron-right" data-size="18" class="muted"></i>
+                </div>
+              </div>
+              <div class="card card-pad">
+                <div class="between">
+                  <div><div style="font-weight:700;font-size:15px">Push Day B</div><div class="tiny muted" style="margin-top:2px">6 exercises · Shoulders focus · ~55 min</div></div>
+                  <i data-ic="chevron-right" data-size="18" class="muted"></i>
+                </div>
+              </div>
+            </div>
+            <div class="divider" style="margin:14px 0"></div>
+            <button class="src-card">
+              <div class="src-ic" style="background:var(--accent-soft);color:var(--accent)"><i data-ic="plus-c" data-size="22"></i></div>
+              <div class="grow" style="text-align:left"><div class="src-t">Create new workout</div><div class="src-s">Build from scratch and add to this program</div></div>
+              <i data-ic="chevron-right" data-size="18" class="muted"></i>
+            </button>
+            <button class="btn btn-gray" style="margin-top:10px">Keep as Rest Day</button>
+          </div>
+        </div>
+      </div>
+      <div class="tabbar">
+        <button class="tab"><i data-ic="log" data-size="25"></i><span>Log</span></button>
+        <button class="tab active"><i data-ic="dumbbell" data-size="25"></i><span>Plan</span></button>
+        <button class="tab"><i data-ic="chart" data-size="25"></i><span>Progress</span></button>
+        <button class="tab"><i data-ic="person" data-size="25"></i><span>Profile</span></button>
+      </div>
+      <div class="home-indicator"></div>
+    </div>
+  </div>
+
+  <!-- PLAN-01c · Day ellipsis menu -->
+  <div class="frame-wrap">
+    <div class="frame-cap"><span class="num">PLAN-01c</span> Day ··· menu (assigned day)</div>
+    <div class="phone" data-theme="light">
+      <div class="dynamic-island"></div><div class="statusbar auto"></div>
+      <div class="navbar">
+        <div class="navbar-row">
+          <div class="nav-title-lg">Plan</div>
+          <button class="nav-icon-btn accent"><i data-ic="plus" data-size="20"></i></button>
+        </div>
+        <div class="subtabs">
+          <button class="subtab active">My Plans</button><button class="subtab">Programs</button><button class="subtab">Workouts</button><button class="subtab">Exercises</button>
+        </div>
+      </div>
+      <div style="filter:blur(1.5px);opacity:.4;padding:14px 14px 0">
+        <div class="col" style="gap:8px">
+          <div class="card card-pad"><div class="between"><div class="flex gap3" style="align-items:center"><div style="min-width:38px;text-align:center"><div style="font-size:10px;font-weight:800;letter-spacing:.05em">MON</div></div><div style="width:1px;height:28px;background:var(--separator-2)"></div><div><div style="font-weight:700;font-size:14px">Push Day A</div><div class="tiny muted">6 ex · Chest, Shoulders</div></div></div></div></div>
+        </div>
+      </div>
+      <div class="sheet">
+        <div class="scrim"></div>
+        <div class="sheet-card" style="max-height:56%">
+          <div class="grabber"></div>
+          <div class="pad" style="overflow:auto;padding-bottom:24px">
+            <div class="center" style="margin:4px 0 14px">
+              <div style="font-weight:700;font-size:15px">Monday</div>
+              <div class="tiny muted">Push Day A</div>
+            </div>
+            <div class="list">
+              <div class="row"><div class="row-ic" style="background:var(--accent)"><i data-ic="edit" data-size="17"></i></div><div class="row-main"><div class="row-title">Edit workout</div><div class="row-sub">Change exercises, sets or order</div></div><i data-ic="chevron-right" data-size="18" class="chev"></i></div>
+              <div class="row"><div class="row-ic" style="background:var(--blue)"><i data-ic="swap" data-size="17"></i></div><div class="row-main"><div class="row-title">Change workout</div><div class="row-sub">Assign a different workout to Monday</div></div><i data-ic="chevron-right" data-size="18" class="chev"></i></div>
+              <div class="row"><div class="row-ic" style="background:color-mix(in oklab,var(--text-2) 30%,var(--fill))"><i data-ic="moon" data-size="17"></i></div><div class="row-main"><div class="row-title">Make it a rest day</div></div></div>
+            </div>
+            <div class="list" style="margin-top:12px">
+              <div class="row"><div class="row-ic" style="background:var(--red)"><i data-ic="trash" data-size="17"></i></div><div class="row-main"><div class="row-title" style="color:var(--red)">Remove from program</div></div></div>
+            </div>
+            <button class="btn btn-gray" style="margin-top:12px">Cancel</button>
+          </div>
+        </div>
+      </div>
+      <div class="tabbar">
+        <button class="tab"><i data-ic="log" data-size="25"></i><span>Log</span></button>
+        <button class="tab active"><i data-ic="dumbbell" data-size="25"></i><span>Plan</span></button>
+        <button class="tab"><i data-ic="chart" data-size="25"></i><span>Progress</span></button>
+        <button class="tab"><i data-ic="person" data-size="25"></i><span>Profile</span></button>
+      </div>
+      <div class="home-indicator"></div>
+    </div>
+  </div>
+
+  <!-- PLAN-01d · + navbar button -->
+  <div class="frame-wrap">
+    <div class="frame-cap"><span class="num">PLAN-01d</span> + button · create or add plan</div>
+    <div class="phone" data-theme="light">
+      <div class="dynamic-island"></div><div class="statusbar auto"></div>
+      <div class="navbar">
+        <div class="navbar-row">
+          <div class="nav-title-lg">Plan</div>
+          <button class="nav-icon-btn accent" style="background:var(--accent);color:#fff"><i data-ic="plus" data-size="20"></i></button>
+        </div>
+        <div class="subtabs">
+          <button class="subtab active">My Plans</button><button class="subtab">Programs</button><button class="subtab">Workouts</button><button class="subtab">Exercises</button>
+        </div>
+      </div>
+      <div style="filter:blur(1.5px);opacity:.35;padding:10px 14px 0">
+        <div class="plan-scroll">
+          <div class="plan-card" style="min-width:150px"><div class="pc-bg"></div><div class="badge" style="background:#fff;color:var(--accent);align-self:flex-start;margin-bottom:auto"><i data-ic="check" data-size="12"></i> Active</div><div style="font-size:14px;font-weight:800">Push Pull Legs</div></div>
+        </div>
+      </div>
+      <div class="sheet">
+        <div class="scrim"></div>
+        <div class="sheet-card" style="max-height:60%">
+          <div class="grabber"></div>
+          <div class="pad" style="overflow:auto;padding-bottom:28px">
+            <div class="center" style="margin:4px 0 16px">
+              <div style="font-weight:800;font-size:17px">Add to My Plans</div>
+              <div class="tiny muted" style="margin-top:3px">Pick a program or build your own</div>
+            </div>
+            <div class="col" style="gap:10px">
+              <button class="src-card">
+                <div class="src-ic" style="background:var(--accent-soft);color:var(--accent)"><i data-ic="sparkle" data-size="22"></i></div>
+                <div class="grow" style="text-align:left"><div class="src-t">Browse programs</div><div class="src-s">PPL, Upper/Lower, Full Body and more</div></div>
+                <i data-ic="chevron-right" data-size="18" class="muted"></i>
+              </button>
+              <button class="src-card">
+                <div class="src-ic" style="background:color-mix(in oklab,var(--blue) 14%,transparent);color:var(--blue)"><i data-ic="dumbbell" data-size="22"></i></div>
+                <div class="grow" style="text-align:left"><div class="src-t">Build from scratch</div><div class="src-s">Create a custom weekly program</div></div>
+                <i data-ic="chevron-right" data-size="18" class="muted"></i>
+              </button>
+              <button class="src-card">
+                <div class="src-ic" style="background:color-mix(in oklab,var(--green) 14%,transparent);color:var(--green)"><i data-ic="note" data-size="22"></i></div>
+                <div class="grow" style="text-align:left"><div class="src-t">Duplicate active plan</div><div class="src-s">Copy Push Pull Legs and tweak it</div></div>
+                <i data-ic="chevron-right" data-size="18" class="muted"></i>
+              </button>
+            </div>
+            <button class="btn btn-gray" style="margin-top:14px">Cancel</button>
+          </div>
+        </div>
+      </div>
+      <div class="tabbar">
+        <button class="tab"><i data-ic="log" data-size="25"></i><span>Log</span></button>
+        <button class="tab active"><i data-ic="dumbbell" data-size="25"></i><span>Plan</span></button>
+        <button class="tab"><i data-ic="chart" data-size="25"></i><span>Progress</span></button>
+        <button class="tab"><i data-ic="person" data-size="25"></i><span>Profile</span></button>
+      </div>
+      <div class="home-indicator"></div>
+    </div>
+  </div>
+
+  <!-- PLAN-02 · Program Library -->
+  <div class="frame-wrap">
+    <div class="frame-cap"><span class="num">PLAN-02</span> Program Library</div>
+    <div class="phone" data-theme="light">
+      <div class="dynamic-island"></div><div class="statusbar auto"></div>
+      <div class="navbar">
+        <div class="navbar-row"><div class="nav-title-lg">Plan</div><button class="nav-icon-btn accent"><i data-ic="plus" data-size="20"></i></button></div>
+        <div class="subtabs"><button class="subtab">My Plans</button><button class="subtab active">Programs</button><button class="subtab">Workouts</button><button class="subtab">Exercises</button></div>
+      </div>
+      <div class="pad" style="padding-top:6px"><div class="search"><i data-ic="search" data-size="18"></i><input placeholder="Search programs"></div></div>
+      <div class="pad" style="padding-top:10px;padding-bottom:6px"><div class="filters"><span class="chip active">All</span><span class="chip">PPL</span><span class="chip">Upper/Lower</span><span class="chip">Full Body</span><span class="chip">Bro Split</span></div></div>
+      <div class="screen-body pad pad-b">
+        <div class="col" style="gap:10px;margin-top:6px">
+          <div class="lib-card"><div class="ph lib-thumb"></div><div class="grow"><div class="lib-title">Push Pull Legs</div><div class="lib-meta">6 days/wk · Intermediate <span class="tag-dot"></span> Hypertrophy</div></div><span class="badge badge-accent"><i data-ic="check" data-size="12"></i> Added</span></div>
+          <div class="lib-card"><div class="ph lib-thumb"></div><div class="grow"><div class="lib-title">Upper / Lower 4-Day</div><div class="lib-meta">4 days/wk · Strength <span class="tag-dot"></span> Barbell</div></div><i data-ic="chevron-right" data-size="18" class="muted"></i></div>
+          <div class="lib-card"><div class="ph lib-thumb"></div><div class="grow"><div class="lib-title">Arnold Split</div><div class="lib-meta">6 days/wk · Advanced <span class="tag-dot"></span> Volume</div></div><i data-ic="chevron-right" data-size="18" class="muted"></i></div>
+          <div class="lib-card"><div class="ph lib-thumb"></div><div class="grow"><div class="lib-title">Full Body 3×</div><div class="lib-meta">3 days/wk · Beginner <span class="tag-dot"></span> Compound</div></div><i data-ic="chevron-right" data-size="18" class="muted"></i></div>
+          <div class="lib-card"><div class="ph lib-thumb"></div><div class="grow"><div class="lib-title">PHUL</div><div class="lib-meta">4 days/wk · Intermediate <span class="tag-dot"></span> Power</div></div><i data-ic="chevron-right" data-size="18" class="muted"></i></div>
+          <div class="lib-card"><div class="ph lib-thumb"></div><div class="grow"><div class="lib-title">Bro Split 5-Day</div><div class="lib-meta">5 days/wk · Intermediate <span class="tag-dot"></span> Isolation</div></div><i data-ic="chevron-right" data-size="18" class="muted"></i></div>
+        </div>
+      </div>
+      <div class="tabbar"><button class="tab"><i data-ic="log" data-size="25"></i><span>Log</span></button><button class="tab active"><i data-ic="dumbbell" data-size="25"></i><span>Plan</span></button><button class="tab"><i data-ic="chart" data-size="25"></i><span>Progress</span></button><button class="tab"><i data-ic="person" data-size="25"></i><span>Profile</span></button></div>
+      <div class="home-indicator"></div>
+    </div>
+  </div>
+
+  <!-- PLAN-03 · Program detail -->
+  <div class="frame-wrap">
+    <div class="frame-cap"><span class="num">PLAN-03</span> Program detail</div>
+    <div class="phone" data-theme="light">
+      <div class="dynamic-island"></div><div class="statusbar auto"></div>
+      <div class="navbar bordered"><div class="navbar-row"><button class="nav-btn"><i data-ic="chevron-left" data-size="22"></i>Programs</button><button class="nav-icon-btn"><i data-ic="ellipsis" data-size="20"></i></button></div></div>
+      <div class="screen-body pad pad-b">
+        <div class="ph rounded" style="aspect-ratio:16/9;margin-top:12px"></div>
+        <h2 style="font-size:24px;font-weight:800;letter-spacing:-.02em;margin:14px 0 4px">Push Pull Legs</h2>
+        <div class="tiny muted" style="line-height:1.5">A 6-day hypertrophy split hitting each muscle twice weekly. Push, pull and legs rotated across the week.</div>
+        <div class="chips" style="margin-top:12px"><span class="chip">6 days/wk</span><span class="chip">Intermediate</span><span class="chip">Hypertrophy</span></div>
+        <div class="sec-label">Workouts in this program</div>
+        <div class="list">
+          <div class="row"><div class="ex-n" style="background:var(--accent-soft);color:var(--accent)">1</div><div class="row-main"><div class="row-title">Push Day A</div><div class="row-sub">6 exercises · Chest, Shoulders, Triceps</div></div><i data-ic="chevron-right" data-size="18" class="chev"></i></div>
+          <div class="row"><div class="ex-n" style="background:var(--accent-soft);color:var(--accent)">2</div><div class="row-main"><div class="row-title">Pull Day A</div><div class="row-sub">6 exercises · Back, Biceps</div></div><i data-ic="chevron-right" data-size="18" class="chev"></i></div>
+          <div class="row"><div class="ex-n" style="background:var(--accent-soft);color:var(--accent)">3</div><div class="row-main"><div class="row-title">Leg Day A</div><div class="row-sub">5 exercises · Quads, Hamstrings</div></div><i data-ic="chevron-right" data-size="18" class="chev"></i></div>
+          <div class="row"><div class="ex-n" style="background:var(--accent-soft);color:var(--accent)">4</div><div class="row-main"><div class="row-title">Push Day B</div><div class="row-sub">6 exercises · Shoulders focus</div></div><i data-ic="chevron-right" data-size="18" class="chev"></i></div>
+        </div>
+        <div class="hint-card" style="margin-top:14px"><i data-ic="info" data-size="18" color="var(--text-2)"></i><div class="tiny" style="line-height:1.5;color:var(--text-2)">To edit a predefined program, add it to <b>My Plans</b> first. Your edits stay on your copy.</div></div>
+        <button class="btn btn-primary" style="margin-top:16px"><i data-ic="plus" data-size="18"></i> Add to My Plans</button>
+      </div>
+      <div class="home-indicator"></div>
+    </div>
+  </div>
+
+  <!-- PLAN-04 · Workout Library -->
+  <div class="frame-wrap">
+    <div class="frame-cap"><span class="num">PLAN-04</span> Workout Library</div>
+    <div class="phone" data-theme="light">
+      <div class="dynamic-island"></div><div class="statusbar auto"></div>
+      <div class="navbar">
+        <div class="navbar-row"><div class="nav-title-lg">Plan</div><button class="nav-icon-btn accent"><i data-ic="plus" data-size="20"></i></button></div>
+        <div class="subtabs"><button class="subtab">My Plans</button><button class="subtab">Programs</button><button class="subtab active">Workouts</button><button class="subtab">Exercises</button></div>
+      </div>
+      <div class="pad" style="padding-top:6px"><div class="search"><i data-ic="search" data-size="18"></i><input placeholder="Search workouts"></div></div>
+      <div class="pad" style="padding-top:10px;padding-bottom:6px"><div class="filters"><span class="chip active">All</span><span class="chip">Push</span><span class="chip">Pull</span><span class="chip">Legs</span><span class="chip">Upper</span><span class="chip">Chest</span><span class="chip">Back</span></div></div>
+      <div class="screen-body pad pad-b">
+        <div class="col" style="gap:10px;margin-top:6px">
+          <div class="lib-card"><div class="ph lib-thumb"></div><div class="grow"><div class="lib-title">Push Day A</div><div class="lib-meta">6 exercises · ~58 min <span class="tag-dot"></span> Chest, Delts</div></div><i data-ic="chevron-right" data-size="18" class="muted"></i></div>
+          <div class="lib-card"><div class="ph lib-thumb"></div><div class="grow"><div class="lib-title">Heavy Pull</div><div class="lib-meta">7 exercises · ~62 min <span class="tag-dot"></span> Back, Biceps</div></div><i data-ic="chevron-right" data-size="18" class="muted"></i></div>
+          <div class="lib-card"><div class="ph lib-thumb"></div><div class="grow"><div class="lib-title">Quad-Focused Legs</div><div class="lib-meta">5 exercises · ~55 min <span class="tag-dot"></span> Quads</div></div><i data-ic="chevron-right" data-size="18" class="muted"></i></div>
+          <div class="lib-card"><div class="ph lib-thumb"></div><div class="grow"><div class="lib-title">Arm Day Pump</div><div class="lib-meta">8 exercises · ~45 min <span class="tag-dot"></span> Biceps, Triceps</div></div><i data-ic="chevron-right" data-size="18" class="muted"></i></div>
+          <div class="lib-card"><div class="ph lib-thumb"></div><div class="grow"><div class="lib-title">Upper Body Strength</div><div class="lib-meta">6 exercises · ~60 min <span class="tag-dot"></span> Compound</div></div><i data-ic="chevron-right" data-size="18" class="muted"></i></div>
+        </div>
+      </div>
+      <div class="tabbar"><button class="tab"><i data-ic="log" data-size="25"></i><span>Log</span></button><button class="tab active"><i data-ic="dumbbell" data-size="25"></i><span>Plan</span></button><button class="tab"><i data-ic="chart" data-size="25"></i><span>Progress</span></button><button class="tab"><i data-ic="person" data-size="25"></i><span>Profile</span></button></div>
+      <div class="home-indicator"></div>
+    </div>
+  </div>
+
+  <!-- PLAN-05 · Workout editor -->
+  <div class="frame-wrap">
+    <div class="frame-cap"><span class="num">PLAN-05</span> Workout editor</div>
+    <div class="phone" data-theme="light">
+      <div class="dynamic-island"></div><div class="statusbar auto"></div>
+      <div class="navbar bordered"><div class="navbar-row"><button class="nav-btn"><i data-ic="chevron-left" data-size="22"></i></button><div class="nav-title">Edit · Push Day A</div><button class="nav-btn" style="font-weight:700">Save</button></div></div>
+      <div class="screen-body pad pad-b">
+        <div class="field" style="margin-top:14px"><label>Workout name</label><input value="Push Day A"></div>
+        <div class="flex gap3">
+          <div class="field grow"><label>Rest · between sets</label><input value="60 sec"></div>
+          <div class="field grow"><label>Rest · exercises</label><input value="90 sec"></div>
+        </div>
+        <div class="sec-label">Exercises · 6</div>
+        <div class="col" style="gap:10px">
+          <div class="card card-pad"><div class="flex gap3" style="align-items:flex-start"><i data-ic="grip" data-size="18" class="muted" style="margin-top:2px"></i><div class="grow"><div style="font-weight:700;font-size:15px">Barbell Bench Press</div><div class="flex gap2" style="margin-top:8px"><span class="chip" style="padding:5px 11px;font-size:13px">4 sets</span><span class="chip" style="padding:5px 11px;font-size:13px">6–8 reps</span></div></div><button class="nav-icon-btn"><i data-ic="ellipsis" data-size="18"></i></button></div></div>
+          <div class="card card-pad"><div class="flex gap3" style="align-items:flex-start"><i data-ic="grip" data-size="18" class="muted" style="margin-top:2px"></i><div class="grow"><div style="font-weight:700;font-size:15px">Incline Dumbbell Press</div><div class="flex gap2" style="margin-top:8px"><span class="chip" style="padding:5px 11px;font-size:13px">3 sets</span><span class="chip" style="padding:5px 11px;font-size:13px">8–10 reps</span></div></div><button class="nav-icon-btn"><i data-ic="ellipsis" data-size="18"></i></button></div></div>
+          <div class="card card-pad"><div class="flex gap3" style="align-items:flex-start"><i data-ic="grip" data-size="18" class="muted" style="margin-top:2px"></i><div class="grow"><div style="font-weight:700;font-size:15px">Cable Fly</div><div class="flex gap2" style="margin-top:8px"><span class="chip" style="padding:5px 11px;font-size:13px">3 sets</span><span class="chip" style="padding:5px 11px;font-size:13px">12–15 reps</span></div></div><button class="nav-icon-btn"><i data-ic="ellipsis" data-size="18"></i></button></div></div>
+        </div>
+        <button class="btn btn-tinted" style="margin-top:14px"><i data-ic="plus" data-size="18"></i> Add Exercise</button>
+      </div>
+      <div class="home-indicator"></div>
+    </div>
+  </div>
+
+  <!-- PLAN-06 · Exercise Library -->
+  <div class="frame-wrap">
+    <div class="frame-cap"><span class="num">PLAN-06</span> Exercise Library</div>
+    <div class="phone" data-theme="light">
+      <div class="dynamic-island"></div><div class="statusbar auto"></div>
+      <div class="navbar">
+        <div class="navbar-row"><div class="nav-title-lg">Plan</div><button class="nav-icon-btn accent"><i data-ic="plus" data-size="20"></i></button></div>
+        <div class="subtabs"><button class="subtab">My Plans</button><button class="subtab">Programs</button><button class="subtab">Workouts</button><button class="subtab active">Exercises</button></div>
+      </div>
+      <div class="pad" style="padding-top:6px"><div class="search"><i data-ic="search" data-size="18"></i><input placeholder="Search exercises"></div></div>
+      <div class="pad" style="padding-top:10px"><div class="filters" style="margin-bottom:8px"><span class="chip active">All</span><span class="chip">Chest</span><span class="chip">Back</span><span class="chip">Legs</span><span class="chip">Shoulders</span><span class="chip">Arms</span></div>
+      <div class="filters"><span class="chip" style="background:var(--accent-soft);color:var(--accent)">Cable</span><span class="chip">Barbell</span><span class="chip">Dumbbell</span><span class="chip">Smith</span><span class="chip">Machine</span><span class="chip">Bodyweight</span></div></div>
+      <div class="screen-body pad pad-b" style="padding-top:14px">
+        <div class="catalog">
+          <div class="cat-item"><div class="ph cat-thumb"></div><div class="cat-name">Barbell Bench Press</div><div class="cat-meta">Chest · Barbell</div></div>
+          <div class="cat-item"><div class="ph cat-thumb"></div><div class="cat-name">Cable Fly</div><div class="cat-meta">Chest · Cable</div></div>
+          <div class="cat-item"><div class="ph cat-thumb"></div><div class="cat-name">Incline DB Press</div><div class="cat-meta">Upper Chest · DB</div></div>
+          <div class="cat-item"><div class="ph cat-thumb"></div><div class="cat-name">Pec Deck</div><div class="cat-meta">Chest · Machine</div></div>
+          <div class="cat-item"><div class="ph cat-thumb"></div><div class="cat-name">Push-Up</div><div class="cat-meta">Chest · Bodyweight</div></div>
+          <div class="cat-item"><div class="ph cat-thumb"></div><div class="cat-name">Dips</div><div class="cat-meta">Chest · Bodyweight</div></div>
+        </div>
+      </div>
+      <div class="tabbar"><button class="tab"><i data-ic="log" data-size="25"></i><span>Log</span></button><button class="tab active"><i data-ic="dumbbell" data-size="25"></i><span>Plan</span></button><button class="tab"><i data-ic="chart" data-size="25"></i><span>Progress</span></button><button class="tab"><i data-ic="person" data-size="25"></i><span>Profile</span></button></div>
+      <div class="home-indicator"></div>
+    </div>
+  </div>
+
+  <!-- PLAN-07 · Create exercise -->
+  <div class="frame-wrap">
+    <div class="frame-cap"><span class="num">PLAN-07</span> Create exercise</div>
+    <div class="phone" data-theme="light">
+      <div class="dynamic-island"></div><div class="statusbar auto"></div>
+      <div class="navbar bordered"><div class="navbar-row"><button class="nav-btn">Cancel</button><div class="nav-title">New Exercise</div><button class="nav-btn" style="font-weight:700;opacity:.4">Save</button></div></div>
+      <div class="screen-body pad pad-b">
+        <div class="field" style="margin-top:14px"><label>Exercise name</label><input placeholder="e.g. Incline Cable Fly"></div>
+        <div class="flex gap3"><div class="field grow"><label>Category</label><select><option>Chest</option><option>Back</option><option>Legs</option></select></div><div class="field grow"><label>Equipment</label><select><option>Cable</option><option>Barbell</option></select></div></div>
+        <div class="flex gap3"><div class="field grow"><label>Difficulty</label><select><option>Beginner</option><option>Intermediate</option></select></div><div class="field grow"><label>Primary muscle</label><select><option>Upper Chest</option></select></div></div>
+        <div class="field"><label>Form tips <span class="opt">· optional</span></label><textarea placeholder="Cues & technique notes"></textarea></div>
+        <div class="field"><label>Image URL <span class="opt">· optional</span></label><input placeholder="https://"></div>
+        <div class="field"><label>YouTube video URL <span class="opt">· optional</span></label><input placeholder="https://youtu.be/"></div>
+        <button class="btn btn-primary">Create Exercise</button>
+      </div>
+      <div class="home-indicator"></div>
+    </div>
+  </div>
+
+  <!-- PLAN-08 · Save change dialog -->
+  <div class="frame-wrap">
+    <div class="frame-cap"><span class="num">PLAN-08</span> Save edit · scope dialog</div>
+    <div class="phone" data-theme="light">
+      <div class="dynamic-island"></div><div class="statusbar auto"></div>
+      <div class="navbar bordered" style="opacity:.5;filter:blur(1px)"><div class="navbar-row"><button class="nav-btn"><i data-ic="chevron-left" data-size="22"></i></button><div class="nav-title">Edit · Push Day A</div><button class="nav-btn" style="font-weight:700">Save</button></div></div>
+      <div style="opacity:.4;filter:blur(1px)" class="pad"><div class="field" style="margin-top:14px"><label>Workout name</label><input value="Push Day A"></div></div>
+      <div class="sheet">
+        <div class="scrim"></div>
+        <div class="sheet-card" style="max-height:54%">
+          <div class="grabber"></div>
+          <div class="pad" style="padding-bottom:26px">
+            <div class="center" style="margin:6px 0 18px"><div style="width:52px;height:52px;border-radius:50%;background:var(--accent-soft);color:var(--accent);display:grid;place-items:center;margin:0 auto 12px"><i data-ic="edit" data-size="24"></i></div><div style="font-weight:800;font-size:19px">Apply your changes to…</div><div class="tiny muted" style="margin-top:4px;max-width:250px;margin-inline:auto;line-height:1.4">You added a set to Bench Press. Where should it stick?</div></div>
+            <button class="src-card" style="margin-bottom:10px"><div class="src-ic" style="background:var(--accent-soft);color:var(--accent)"><i data-ic="calendar-day" data-size="20"></i></div><div class="grow" style="text-align:left"><div class="src-t" style="font-size:15px">Just for today</div><div class="src-s">Today's session only — plan unchanged</div></div></button>
+            <button class="src-card"><div class="src-ic" style="background:color-mix(in oklab,var(--blue) 16%,transparent);color:var(--blue)"><i data-ic="dumbbell" data-size="20"></i></div><div class="grow" style="text-align:left"><div class="src-t" style="font-size:15px">Permanently</div><div class="src-s">Update Push Day A in My Plans</div></div></button>
+            <div class="hint-card" style="margin-top:12px"><i data-ic="info" data-size="16" color="var(--text-3)"></i><div class="tiny muted" style="line-height:1.4">Predefined programs aren't changed — only your copy in My&nbsp;Plans.</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  </div>
+</div>
+
+<script src="../styles/gallery.js"></script>
+<script src="../styles/icons.js"></script>
+</body>
+</html>

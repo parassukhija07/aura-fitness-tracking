@@ -1,13 +1,20 @@
 import SwiftUI
 
+/// A single working-set row, matching the design's `WkSetRow`:
+/// set-number/type button · kg input · reps input · check · trash,
+/// with an optional last-session history row underneath.
 struct SetRowView: View {
     @EnvironmentObject var session: WorkoutSessionState
     let exerciseIndex: Int
     let setIndex: Int
     @Binding var set: WorkoutSet
+    /// Last session's value for this set index (shown as faint reference).
+    var history: SetHistory? = nil
+    var showHistory: Bool = true
 
     @State private var weightText: String = ""
     @State private var repsText: String = ""
+<<<<<<< HEAD
     @State private var showNote: Bool = false
     @State private var showTypeMenu: Bool = false
     @FocusState private var weightFocused: Bool
@@ -41,6 +48,85 @@ struct SetRowView: View {
             } label: {
                 Label("Delete", systemImage: "trash")
             }
+=======
+    @State private var showTypeMenu = false
+
+    private var filled: Bool { !weightText.isEmpty && !repsText.isEmpty }
+
+    var body: some View {
+        VStack(spacing: 2) {
+            HStack(spacing: 9) {
+                // Set number / type button
+                Button { showTypeMenu = true } label: {
+                    Text(set.type == .normal ? "\(setIndex + 1)" : set.type.shortLabel)
+                        .font(.system(size: 16, weight: .heavy))
+                        .foregroundColor(set.type == .normal ? .aura.text : set.type.color)
+                        .frame(width: 40, height: 48)
+                        .background(Color.aura.fill)
+                        .clipShape(RoundedRectangle(cornerRadius: AuraRadius.sm))
+                }
+                .buttonStyle(.plain)
+
+                // Weight input
+                inputBox(text: $weightText, placeholder: history.map { $0.weight } ?? "–", label: "kg") {
+                    set.weight = Double(weightText)
+                    autoFinishOnBlur()
+                }
+
+                // Reps input
+                inputBox(text: $repsText, placeholder: history.map { $0.reps } ?? "–", label: "reps") {
+                    set.reps = Int(repsText)
+                    autoFinishOnBlur()
+                }
+
+                // Done check
+                Button { toggleDone() } label: {
+                    Image(systemName: "checkmark")
+                        .font(.system(size: 16, weight: .bold))
+                        .foregroundColor(set.done ? .white : .aura.text3)
+                        .frame(width: 48, height: 48)
+                        .background(set.done ? Color.aura.green : Color.aura.fill)
+                        .clipShape(RoundedRectangle(cornerRadius: AuraRadius.sm))
+                }
+                .buttonStyle(.plain)
+
+                // Delete (always visible, per design)
+                Button {
+                    session.onDeleteSet(exerciseIndex: exerciseIndex, setIndex: setIndex)
+                } label: {
+                    Image(systemName: "trash")
+                        .font(.system(size: 16))
+                        .foregroundColor(.aura.red)
+                        .frame(width: 48, height: 48)
+                        .background(Color.aura.red.opacity(0.12))
+                        .clipShape(RoundedRectangle(cornerRadius: AuraRadius.sm))
+                }
+                .buttonStyle(.plain)
+            }
+
+            // History row (last session), aligned under the kg / reps inputs
+            if showHistory, let h = history {
+                HStack(spacing: 9) {
+                    Color.clear.frame(width: 40)
+                    Text("\(h.weight) kg")
+                        .font(.system(size: 11, weight: .bold))
+                        .foregroundColor(.aura.text3)
+                        .frame(maxWidth: .infinity)
+                    Text("\(h.reps) reps")
+                        .font(.system(size: 11, weight: .bold))
+                        .foregroundColor(.aura.text3)
+                        .frame(maxWidth: .infinity)
+                    Color.clear.frame(width: 48)
+                    Color.clear.frame(width: 48)
+                }
+                .padding(.bottom, 2)
+            }
+        }
+        .padding(.vertical, 4)
+        .onAppear {
+            weightText = set.weight.map { formatWeight($0) } ?? ""
+            repsText = set.reps.map { String($0) } ?? ""
+>>>>>>> 91e379ec4685afd991790ab0373badd82d02b753
         }
         .sheet(isPresented: $showTypeMenu) {
             SetTypeMenuSheet(currentType: set.type) { type in
@@ -56,6 +142,7 @@ struct SetRowView: View {
         }
     }
 
+<<<<<<< HEAD
     // MARK: Main row
     private var mainRow: some View {
         HStack(spacing: AuraSpacing.s2) {
@@ -207,6 +294,42 @@ struct SetRowView: View {
             weightFocused = false
             repsFocused = false
         }
+=======
+    @ViewBuilder
+    private func inputBox(text: Binding<String>, placeholder: String, label: String, onBlur: @escaping () -> Void) -> some View {
+        VStack(spacing: -2) {
+            TextField(placeholder, text: text)
+                .keyboardType(.decimalPad)
+                .multilineTextAlignment(.center)
+                .font(.system(size: 18, weight: .heavy))
+                .foregroundColor(.aura.text)
+                .onChange(of: text.wrappedValue) { _, _ in onBlur() }
+            Text(label)
+                .font(.system(size: 9, weight: .bold))
+                .foregroundColor(.aura.text3)
+                .textCase(.uppercase)
+        }
+        .frame(maxWidth: .infinity)
+        .frame(height: 48)
+        .background(set.done
+                    ? Color.aura.green.opacity(0.09)
+                    : Color.aura.surface2)
+        .clipShape(RoundedRectangle(cornerRadius: AuraRadius.sm))
+        .overlay(
+            RoundedRectangle(cornerRadius: AuraRadius.sm)
+                .stroke(set.done ? Color.aura.green.opacity(0.22) : Color.aura.separator.opacity(0.5), lineWidth: 1)
+        )
+    }
+
+    private func formatWeight(_ w: Double) -> String {
+        w.truncatingRemainder(dividingBy: 1) == 0 ? String(Int(w)) : String(w)
+    }
+
+    private func autoFinishOnBlur() {
+        // Design: when both kg & reps are filled, mark the set done.
+        guard !set.done, filled else { return }
+        session.onSetCompleted(exerciseIndex: exerciseIndex, setIndex: setIndex)
+>>>>>>> 91e379ec4685afd991790ab0373badd82d02b753
     }
 
     private func toggleDone() {
@@ -214,7 +337,11 @@ struct SetRowView: View {
             set.done = false
             UIImpactFeedbackGenerator(style: .soft).impactOccurred()
         } else {
+<<<<<<< HEAD
             set.weight = Double(weightText.replacingOccurrences(of: ",", with: "."))
+=======
+            set.weight = Double(weightText)
+>>>>>>> 91e379ec4685afd991790ab0373badd82d02b753
             set.reps = Int(repsText)
             session.onSetCompleted(exerciseIndex: exerciseIndex, setIndex: setIndex)
             UIImpactFeedbackGenerator(style: .medium).impactOccurred()
@@ -222,7 +349,7 @@ struct SetRowView: View {
     }
 }
 
-// MARK: - Set Type Menu
+// MARK: - Set Type Menu (design SET_TYPES: normal/drop/restpause/failure/partials)
 struct SetTypeMenuSheet: View {
     let currentType: SetType
     let onSelect: (SetType) -> Void
@@ -230,15 +357,20 @@ struct SetTypeMenuSheet: View {
     var body: some View {
         VStack(spacing: 0) {
             SheetGrabber()
-            Text("Set Type")
-                .font(AuraFont.navTitle())
-                .foregroundColor(.aura.text)
-                .padding(.vertical, AuraSpacing.s3)
+            HStack {
+                Text("Set type")
+                    .font(AuraFont.navTitle())
+                    .foregroundColor(.aura.text)
+                Spacer()
+            }
+            .padding(.horizontal, AuraSpacing.screenPad)
+            .padding(.vertical, AuraSpacing.s2)
 
             VStack(spacing: 0) {
                 ForEach(SetType.allCases, id: \.self) { type in
                     Button { onSelect(type) } label: {
                         HStack(spacing: AuraSpacing.s3) {
+<<<<<<< HEAD
                             ZStack {
                                 RoundedRectangle(cornerRadius: 8)
                                     .fill(type.color.opacity(0.15))
@@ -255,11 +387,26 @@ struct SetTypeMenuSheet: View {
                                     .font(AuraFont.secondary())
                                     .foregroundColor(.aura.text2)
                             }
+=======
+                            Text(type.shortLabel.isEmpty ? "N" : type.shortLabel)
+                                .font(.system(size: 12, weight: .heavy))
+                                .foregroundColor(.white)
+                                .frame(width: 28, height: 28)
+                                .background(type.color)
+                                .clipShape(RoundedRectangle(cornerRadius: AuraRadius.xs))
+                            Text(type.label)
+                                .font(AuraFont.body())
+                                .foregroundColor(.aura.text)
+>>>>>>> 91e379ec4685afd991790ab0373badd82d02b753
                             Spacer()
                             if type == currentType {
                                 Image(systemName: "checkmark")
-                                    .foregroundColor(.aura.accent)
                                     .font(.system(size: 14, weight: .semibold))
+                                    .foregroundColor(.aura.accent)
+                            } else {
+                                Image(systemName: "chevron.right")
+                                    .font(.system(size: 14))
+                                    .foregroundColor(.aura.text3)
                             }
                         }
                         .padding(.horizontal, AuraSpacing.s4)
@@ -275,7 +422,7 @@ struct SetTypeMenuSheet: View {
             .background(Color.aura.surface)
             .clipShape(RoundedRectangle(cornerRadius: AuraRadius.md))
             .padding(.horizontal, AuraSpacing.screenPad)
-            .padding(.bottom, AuraSpacing.s5)
+            Spacer()
         }
         .background(Color.aura.bg)
     }

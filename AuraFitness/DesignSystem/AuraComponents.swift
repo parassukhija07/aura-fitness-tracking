@@ -7,14 +7,15 @@ struct AuraCard<Content: View>: View {
         self.content = content()
     }
     var body: some View {
+        // .card · surface fill, radius lg, 1px separator-2 border, --shadow-sm.
         content
             .background(Color.aura.surface)
             .clipShape(RoundedRectangle(cornerRadius: AuraRadius.lg))
             .overlay(
                 RoundedRectangle(cornerRadius: AuraRadius.lg)
-                    .stroke(Color.aura.separator.opacity(0.5), lineWidth: 1)
+                    .stroke(Color.aura.separator2, lineWidth: 1)
             )
-            .shadow(color: Color(red: 0.25, green: 0.16, blue: 0.08).opacity(0.08), radius: 2, x: 0, y: 1)
+            .auraShadowSm()
     }
 }
 
@@ -321,6 +322,49 @@ extension View {
     }
 }
 
+// MARK: - Toast (flash)
+/// Pill toast that auto-dismisses. Mirrors the prototype `flash(m)` helper.
+final class ToastCenter: ObservableObject {
+    @Published var message: String? = nil
+    private var token = 0
+    func flash(_ m: String) {
+        message = m
+        token += 1
+        let mine = token
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.8) { [weak self] in
+            guard let self, self.token == mine else { return }
+            self.message = nil
+        }
+    }
+}
+
+struct ToastOverlay: View {
+    let message: String?
+    var body: some View {
+        if let message {
+            Text(message)
+                .font(.system(size: 13, weight: .semibold))
+                .foregroundColor(.aura.bg)
+                .padding(.horizontal, 16)
+                .padding(.vertical, 9)
+                .background(Color.aura.text)
+                .clipShape(Capsule())
+                .shadow(color: .black.opacity(0.22), radius: 12, y: 8)
+                .padding(.bottom, 100)
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
+                .transition(.opacity.combined(with: .move(edge: .bottom)))
+                .allowsHitTesting(false)
+        }
+    }
+}
+
+extension View {
+    /// Overlays an auto-dismissing toast pill driven by a ToastCenter.
+    func auraToast(_ center: ToastCenter) -> some View {
+        overlay(ToastOverlay(message: center.message).animation(.easeInOut(duration: 0.2), value: center.message))
+    }
+}
+
 // MARK: - Grabber
 struct SheetGrabber: View {
     var body: some View {
@@ -333,6 +377,7 @@ struct SheetGrabber: View {
 }
 
 // MARK: - AuraStepper
+<<<<<<< HEAD
 struct AuraStepper: View {
     @Binding var value: Int
     var min: Int = 0
@@ -492,6 +537,49 @@ struct ToastModifier: ViewModifier {
 extension View {
     func auraToast(isShowing: Binding<Bool>, message: String, icon: String? = nil, color: Color = .aura.green) -> some View {
         modifier(ToastModifier(isShowing: isShowing, message: message, icon: icon, color: color))
+=======
+/// Pill stepper: − [value] + with min/max clamping and an optional value formatter.
+/// Mirrors `Stepper` from ui.jsx (used across Workout settings).
+struct AuraStepper: View {
+    @Binding var value: Int
+    var range: ClosedRange<Int> = 1...99
+    var step: Int = 1
+    var format: ((Int) -> String)? = nil
+
+    private var display: String { format?(value) ?? "\(value)" }
+    private var canDec: Bool { value - step >= range.lowerBound }
+    private var canInc: Bool { value + step <= range.upperBound }
+
+    var body: some View {
+        HStack(spacing: 0) {
+            stepButton("minus", enabled: canDec) {
+                value = max(range.lowerBound, value - step)
+            }
+            Text(display)
+                .font(.system(size: 15, weight: .semibold))
+                .foregroundColor(.aura.text)
+                .frame(minWidth: 64)
+                .monospacedDigit()
+            stepButton("plus", enabled: canInc) {
+                value = min(range.upperBound, value + step)
+            }
+        }
+        .background(Color.aura.fill)
+        .clipShape(Capsule())
+    }
+
+    @ViewBuilder
+    private func stepButton(_ symbol: String, enabled: Bool, _ action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            Image(systemName: symbol)
+                .font(.system(size: 13, weight: .bold))
+                .foregroundColor(enabled ? .aura.text : .aura.text3)
+                .frame(width: 36, height: 34)
+                .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .disabled(!enabled)
+>>>>>>> 91e379ec4685afd991790ab0373badd82d02b753
     }
 }
 

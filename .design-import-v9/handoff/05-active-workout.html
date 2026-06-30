@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>5 · Active Workout — Aura Handover</title>
+<link rel="stylesheet" href="../styles/aura.css">
+<link rel="stylesheet" href="handoff.css">
+</head>
+<body>
+<div class="docbar">
+  <div class="crumbs"><a href="Handoff.html">Aura Handover</a><span>/</span><b>5 · Active Workout</b></div>
+  <span class="pill">Phase 5</span>
+</div>
+
+<div class="shell">
+  <nav class="rail">
+    <h4>Chapter 5</h4>
+    <a href="#overview">The flow</a>
+    <a href="#launch">Launch &amp; restore</a>
+    <a href="#state">State</a>
+    <a href="#model">Data model</a>
+    <a href="#timers">Timers &amp; persistence</a>
+    <h4>Views</h4>
+    <a href="#v-overview">Overview</a>
+    <a href="#v-empty">Empty / build-as-you-go</a>
+    <a href="#v-exercise">Exercise logging</a>
+    <a href="#v-superset">Superset logging</a>
+    <a href="#v-minimized">Minimised</a>
+    <a href="#v-summary">Summary</a>
+    <h4>Rules</h4>
+    <a href="#r-sets">Set logging</a>
+    <a href="#r-rest">Auto rest timer</a>
+    <a href="#r-celeb">Celebrations</a>
+    <a href="#r-pill">Rest pill</a>
+    <a href="#r-superset">Supersets</a>
+    <h4>Sheets</h4>
+    <a href="#modals">7 modals</a>
+    <a href="#tweaks">Tweaks</a>
+    <a href="#checklist">Scenario checklist</a>
+    <h4>Jump to</h4>
+    <a href="04-plan.html">← 4 · Plan tab</a>
+    <a href="06-progress.html">6 · Progress →</a>
+  </nav>
+
+  <main class="content">
+    <div class="kicker">Phase 5</div>
+    <h1 class="doc">Active Workout</h1>
+    <p class="lead">The hero flow — a full-screen takeover (no tab bar) that runs a live training session. Six views, a draggable rest timer, set-type tagging, supersets, auto-rest logic, celebration overlays and a summary. The interaction rules here are the soul of the app; this chapter specifies every threshold and side-effect.</p>
+
+    <div class="note"><span class="lbl">Source</span><code>workout/app.jsx</code> (810 lines — controller, overview, empty mode, rest pill, modals, summary), <code>workout/exercise.jsx</code> (set-logging view), <code>workout/superset.jsx</code> (round-based pair view), <code>workout/data.jsx</code> (the seeded "Push Day A" + set types). Mounted by <code>AuraRoot</code> when <code>workoutOpen</code> — see <a class="link" href="02-shell-nav.html#overlay">Chapter 2</a>.</div>
+
+    <!-- ============================================================ -->
+    <h2 class="doc first" id="overview">The flow</h2>
+    <p class="doc">The controller (<code>WorkoutApp</code>) holds the whole session and renders one of six views by a <code>view</code> string (plus an "empty" branch of overview). Logging screens push from overview and return to it.</p>
+    <div class="flow">
+      <span class="step">overview</span><span class="arr">⇄</span>
+      <span class="step">exercise</span><span class="arr">·</span>
+      <span class="step">superset</span><span class="arr">→</span>
+      <span class="step">summary</span><span class="arr">| also</span>
+      <span class="step">minimized</span><span class="arr">·</span>
+      <span class="step">empty overview (0 exercises)</span>
+    </div>
+
+    <h3 class="doc" id="launch">Launch &amp; restore</h3>
+    <ul class="spec">
+      <li>Props from the shell: <code>onExit</code>, <code>onMinimize</code>, <code>workoutName</code>, <code>emptyMode</code>.</li>
+      <li><b><code>emptyMode === true</code></b> → starts a blank workout <code>{ name: workoutName||'My Workout', program:'Free Workout', exercises: [] }</code> → renders the <a class="link" href="#v-empty">empty overview</a>.</li>
+      <li><b>Otherwise</b> → <code>clone(WORKOUT)</code> (seeded "Push Day A", 6 exercises), then attempts a restore from <code>localStorage 'aura_wk'</code>.</li>
+    </ul>
+    <div class="note warn"><span class="lbl">Schema-gated restore</span>The saved blob carries a <code>version</code>. On load it's compared to <code>WORKOUT.version</code> (currently <b>5</b>). On mismatch the key is <b>cleared</b> and fresh seed data is used. On match, it restores per-exercise <code>sets</code>, <code>completed</code>, <code>note</code>, <code>pulley</code> (matched by exercise <code>id</code> at the same index). Keep this guard — it prevents stale shapes from crashing the logger after a data-model change.</div>
+
+    <h3 class="doc" id="state">Controller state</h3>
+    <table class="doc">
+      <tr><th>State</th><th>Init</th><th>Role</th></tr>
+      <tr><td><code>wk</code></td><td>seed or restored</td><td>The live workout (persisted to <code>aura_wk</code> on every change).</td></tr>
+      <tr><td><code>view</code></td><td>from <code>startView</code> tweak</td><td><code>overview · exercise · superset · minimized · summary</code>.</td></tr>
+      <tr><td><code>idx</code></td><td><code>0</code></td><td>Active exercise index (exercise view).</td></tr>
+      <tr><td><code>ssIdx</code></td><td><code>0/3</code></td><td>Superset leader index (the partner is <code>ssIdx+1</code>).</td></tr>
+      <tr><td><code>elapsed</code></td><td><code>aura_elapsed</code> ?? <b>1487</b></td><td>Workout seconds (seeds at 24:47 for the demo). Persisted.</td></tr>
+      <tr><td><code>rest</code></td><td><code>{active:false,total:60,left:60,running:true}</code></td><td>Rest-timer state.</td></tr>
+      <tr><td><code>pos</code></td><td><code>aura_pill</code> ?? <code>{x:96,y:690}</code></td><td>Rest-pill position. Persisted.</td></tr>
+      <tr><td><code>modal · celeb · dragIdx · exDetail</code></td><td><code>null</code></td><td>Sheet, celebration overlay, drag source, exercise-detail push.</td></tr>
+    </table>
+
+    <h3 class="doc" id="model">Data model (<code>workout/data.jsx</code>)</h3>
+    <ul class="spec">
+      <li><b><code>workout</code></b> = <code>{ version, name, program, exercises[] }</code>.</li>
+      <li><b><code>exercise</code></b> = <code>{ id, name, muscle, groups[], equipment, isCable, repRange, planned, lastPR{weight,reps,date}, target{weight,reps,note}, history[], warmup[{reps,pct}], hint, pulley, sets[], superset?, completed?, note? }</code>.</li>
+      <li><b><code>set</code></b> = <code>{ weight, reps, done, type, note? }</code>. <code>weight</code>/<code>reps</code> are strings (empty = unentered).</li>
+      <li><b><code>SET_TYPES</code></b>: <span class="el">normal · warmup(W) · drop(D, purple) · restpause(R, blue) · failure(F, red) · partials(P, green)</span>. The picker excludes <code>warmup</code>.</li>
+      <li><code>SUB_OPTIONS</code> (substitute list) and <code>ADD_OPTIONS</code> (add-exercise list) are fixed seed arrays.</li>
+    </ul>
+    <div class="note info"><span class="lbl">planned vs sets</span><code>planned</code> is the prescribed set count; <code>sets.length</code> can exceed it (the user added sets). <code>history[]</code> aligns by index — sets beyond <code>planned</code> surface an "extra sets last session" hint. Targets/PRs come from the exercise, not computed live.</div>
+
+    <h3 class="doc" id="timers">Timers &amp; persistence</h3>
+    <table class="doc">
+      <tr><th>Effect</th><th>Behaviour</th></tr>
+      <tr><td><b>Workout timer</b></td><td><code>elapsed++</code> every 1s, <b>paused only on the summary view</b>. (Minimised keeps counting.)</td></tr>
+      <tr><td><b>Rest timer</b></td><td>When <code>rest.active &amp;&amp; rest.running</code>, <code>left--</code> per second; at 0 it sets <code>active:false</code>.</td></tr>
+      <tr><td><b>Celebration</b></td><td>Auto-dismisses 2400ms after it appears.</td></tr>
+      <tr><td><b>Persistence</b></td><td><code>aura_wk</code> (on <code>wk</code> change), <code>aura_elapsed</code>, <code>aura_pill</code> — all written via effects.</td></tr>
+    </table>
+
+    <!-- ============================================================ -->
+    <h2 class="doc">The six views</h2>
+
+    <div class="screen" id="v-overview">
+      <div class="screen-head"><span class="id">WK · overview</span><h3>Overview</h3></div>
+      <p class="screen-purpose">The session hub: list of exercise cards with progress, plus add/finish.</p>
+      <ul class="spec">
+        <li><b>Header:</b> <b>End</b> (red → end modal) · centered workout name + running <b>duration</b> (mm:ss, accent) · <b>Minimise</b> (calls <code>onMinimize</code>, or local <code>minimized</code> view as fallback).</li>
+        <li><b>Progress:</b> "{done}/{total} sets" + program name, and a fill bar.</li>
+        <li><b>Exercise cards:</b> drag grip (reorder), tappable <b>name</b> (→ exercise detail), "{sets} sets · {repRange} reps · {equipment}", per-card mini progress bar, green check + dim-to-done when all sets logged. Tapping the card body opens the exercise (or the superset view if it's part of a pair). A <code>⋯</code> opens the overview exercise menu.</li>
+        <li><b>Superset cards</b> render a "⚡ SUPERSET" connector above the second card and an accent border on both; tapping either opens the superset view at the leader.</li>
+        <li><b>Footer:</b> <b>Add Exercise</b> (→ add modal) and <b>Finish Workout</b> (→ summary).</li>
+      </ul>
+    </div>
+
+    <div class="screen" id="v-empty">
+      <div class="screen-head"><span class="id">WK · empty</span><h3>Empty / build-as-you-go</h3></div>
+      <p class="screen-purpose">Shown whenever <code>wk.exercises.length === 0</code> (empty-mode launch, or after removing every exercise).</p>
+      <ul class="spec">
+        <li>Hero ("Build your workout"), a search button (→ add modal), <b>Quick add by muscle</b> chips (Chest/Back/Legs/Shoulders/Arms/Core, each its own colour), an <b>equipment</b> filter row, and a catalog grid.</li>
+        <li>With a muscle selected → that muscle's exercises filtered by equipment; otherwise a <b>Suggested</b> list. Tapping a card <b>adds it and jumps straight into its exercise view</b> (<code>addExAndStart</code>).</li>
+      </ul>
+    </div>
+
+    <div class="screen" id="v-exercise">
+      <div class="screen-head"><span class="id">WK · exercise</span><h3>Exercise logging</h3></div>
+      <p class="screen-purpose">The detailed set logger (<code>ExerciseView</code>).</p>
+      <ul class="spec">
+        <li><b>Header:</b> back, "Exercise {n}" + name, <code>⋯</code> menu.</li>
+        <li><b>Demo video</b> w/ play; tapping the title opens exercise detail. Equipment + muscle-group chips.</li>
+        <li><b>Cable exercises</b> (<code>isCable</code>) show a <b>Pulley setup</b> card with a Single / Double segmented control (persisted to <code>ex.pulley</code>).</li>
+        <li><b>Last PR</b> + <b>Today's target</b> mini-cards (target highlighted accent, with its note).</li>
+        <li><b>Warm-up protocol</b> — collapsible, <b>only rendered when <code>warmup.length &gt; 0</code></b> (in the seed, only the first two exercises have warm-ups; bench gets the full ramp, incline gets 2 sets). Lists "W{n} · {reps} reps · {pct}". Open by default.</li>
+        <li><b>Form tip</b> card (the exercise <code>hint</code>).</li>
+        <li><b>Working sets:</b> "{done}/{len} done" badge, progression bar, set rows (see <a class="link" href="#r-sets">Set logging</a>), <b>Add set</b>. A blue hint surfaces any extra sets logged last session. An <b>Exercise notes</b> textarea (persisted to <code>ex.note</code>).</li>
+        <li><b>Complete Exercise</b> (primary) — see <a class="link" href="#r-complete">Complete logic</a>.</li>
+      </ul>
+    </div>
+
+    <div class="screen" id="v-superset">
+      <div class="screen-head"><span class="id">WK · superset</span><h3>Superset logging (round-based)</h3></div>
+      <p class="screen-purpose"><code>SupersetView</code> logs a pair (A = leader, B = <code>ssIdx+1</code>) as <b>rounds</b> instead of separate set lists.</p>
+      <ul class="spec">
+        <li>Header shows an accent "⚡ Superset" title + <code>⋯</code>. Progress = combined "{done}/{total} sets" and a "{rounds} rounds" pill (<code>rounds = max(A.sets, B.sets)</code>).</li>
+        <li>Two <b>ExMeta</b> cards (A accent, B blue) each with PR + target. Then one <b>round card</b> per round: "Round {n}", a 0/2 → 2/2 progress, and an A row + B row (tappable names → detail).</li>
+        <li><b>Add Round</b> appends a set to <i>both</i> exercises. Two notes textareas (A, B). <b>Complete Superset</b> finalises both.</li>
+      </ul>
+    </div>
+
+    <div class="screen" id="v-minimized">
+      <div class="screen-head"><span class="id">WK · minimized</span><h3>Minimised (local fallback)</h3></div>
+      <ul class="spec">
+        <li>A dimmed Log-tab mock behind a resume banner showing the workout name + running timer + "Tap to resume" (→ overview) and an <b>✕</b> (→ end modal).</li>
+        <li><b>Note:</b> in the real app the shell's <code>onMinimize</code> intercepts first (returning to the live Log tab with its resume banner — see <a class="link" href="02-shell-nav.html#resume">Ch.2</a>). This local <code>minimized</code> view is the standalone-prototype fallback when no <code>onMinimize</code> is wired.</li>
+      </ul>
+    </div>
+
+    <div class="screen" id="v-summary">
+      <div class="screen-head"><span class="id">WK · summary</span><h3>Summary</h3></div>
+      <ul class="spec">
+        <li>Gradient hero ("🔥 Workout Complete" + name · program). Stat grid: <b>Duration</b> (elapsed), <b>Sets</b> (done), <b>Volume</b> (Σ weight×reps of done sets, kg), <b>New PRs</b> (exercises with a set beating <code>lastPR.weight</code>).</li>
+        <li>If PRs &gt; 0, an accent banner ("{n} new personal record(s)! Logged to your Progress tab."). Per-exercise recap rows (done sets · volume). A <b>Session notes</b> textarea.</li>
+        <li><b>Save Workout</b> → <code>resetAll</code> (clears storage, calls <code>onExit</code>). <b>Back to workout</b> → returns to overview. The workout timer is frozen here.</li>
+      </ul>
+    </div>
+
+    <!-- ============================================================ -->
+    <h2 class="doc">Interaction rules (implement exactly)</h2>
+
+    <div class="screen" id="r-sets">
+      <div class="screen-head"><span class="id">RULE · set rows</span><h3>Set logging</h3></div>
+      <ul class="spec">
+        <li><b>Set-number button</b> → opens the <b>set-type picker</b>. For a non-normal type the button shows the type's letter in its colour instead of the number.</li>
+        <li><b>Weight / reps</b> are free-text decimal inputs (placeholder shows the matching history value when present).</li>
+        <li><b class="k">Auto-finish:</b> on <b>blur</b>, if <b>both</b> weight and reps are non-empty, the set auto-marks <code>done</code>. The ✓ check toggles done manually too.</li>
+        <li><b>Trash</b> deletes the set. A history line (last session's weight×reps) sits under each row when the <code>showHistory</code> tweak is on and history exists.</li>
+      </ul>
+    </div>
+
+    <div class="screen" id="r-rest">
+      <div class="screen-head"><span class="id">RULE · rest</span><h3>Auto rest timer</h3></div>
+      <table class="doc">
+        <tr><th>Trigger</th><th>Starts rest for</th></tr>
+        <tr><td>Mark a set done — <b>unless it's the final set</b> of the exercise</td><td><code>restDuration</code> tweak (default 90)</td></tr>
+        <tr><td>Add a new (empty) set</td><td><code>restDuration</code></td></tr>
+        <tr><td><b>Complete Exercise</b></td><td><b>90s</b> (hard-coded)</td></tr>
+        <tr><td>Mark a <b>superset</b> set done (A or B)</td><td><b>60s</b> (hard-coded)</td></tr>
+        <tr><td><b>Complete Superset</b></td><td><code>restDuration</code></td></tr>
+      </table>
+      <div class="note warn"><span class="lbl">Don't over-normalise</span>The durations are intentionally mixed: single-exercise completion is 90s, superset set-rest is 60s, set/add-rest follows the tweak. Replicate the exact values, not a single global.</div>
+    </div>
+
+    <div class="screen" id="r-celeb">
+      <div class="screen-head"><span class="id">RULE · celebrations</span><h3>Celebration overlay (~2.4s)</h3></div>
+      <table class="doc">
+        <tr><th>Condition</th><th>Overlay</th></tr>
+        <tr><td>set weight &gt; <code>lastPR.weight</code></td><td>🏆 <b>New PR!</b></td></tr>
+        <tr><td>set reps &gt; <code>target.reps</code> <b>and</b> weight ≥ <code>target.weight</code></td><td>🔥 <b>Extra reps!</b></td></tr>
+        <tr><td>Complete Exercise</td><td>💪 <b>Exercise done</b></td></tr>
+        <tr><td>Complete Superset</td><td>💪 <b>Superset done</b></td></tr>
+        <tr><td>Remove superset pairing</td><td>✂️ <b>Superset split</b></td></tr>
+      </table>
+      <p class="doc muted" style="font-size:13px">PR and Extra-reps are checked on the same <code>done</code> toggle (PR takes precedence — it's an <code>else if</code>). All auto-dismiss after 2400ms; tapping is not required.</p>
+    </div>
+
+    <div class="screen" id="r-complete">
+      <div class="screen-head"><span class="id">RULE · complete</span><h3>Complete Exercise / Superset</h3></div>
+      <ul class="spec">
+        <li><b>Removes empty sets</b> (<code>weight==='' &amp;&amp; reps==='' &amp;&amp; !done</code>), marks every <b>filled</b> set <code>done</code>, sets <code>completed=true</code>.</li>
+        <li>Fires the completion celebration, starts the corresponding rest (90s exercise / <code>restDuration</code> superset), and returns to overview.</li>
+        <li>Superset completion does this for <b>both</b> A and B.</li>
+      </ul>
+    </div>
+
+    <div class="screen" id="r-pill">
+      <div class="screen-head"><span class="id">RULE · rest pill</span><h3>Floating rest pill</h3></div>
+      <ul class="spec">
+        <li>Appears whenever <code>rest.active</code>; floats over every logging view at <code>pos</code>. <b>Draggable anywhere</b> (pointer events), clamped within the phone (x 8…193, y 60…782), and the position <b>persists</b> to <code>aura_pill</code>.</li>
+        <li>Conic-gradient ring shows the remaining fraction; center shows "REST" + mm:ss. Controls: <b>+15s</b>, <b>pause/play</b> (toggles <code>running</code>), <b>✕</b> dismiss (sets <code>active:false</code>).</li>
+      </ul>
+    </div>
+
+    <div class="screen" id="r-superset">
+      <div class="screen-head"><span class="id">RULE · supersets</span><h3>Superset model &amp; menu</h3></div>
+      <ul class="spec">
+        <li>Same encoding as the Plan editor: <code>superset:true</code> on the <b>leader</b>; partner is the <b>next</b> exercise. <b>One pair at a time</b> — creating clears all flags first and reorders the chosen B to sit right after A.</li>
+        <li><b>Create</b> via the exercise menu → <code>ss-pick</code>: pick an existing exercise (B) or "Add new exercise" (adds from <code>ADD_OPTIONS</code>, then links). <b>Remove</b> → <code>remove-ss</code> confirmation showing each side's logged-set count; splitting keeps all logged data.</li>
+      </ul>
+    </div>
+
+    <!-- ============================================================ -->
+    <h2 class="doc" id="modals">The seven modals</h2>
+    <table class="doc">
+      <tr><th>kind</th><th>What</th></tr>
+      <tr><td><code>type</code></td><td>Set-type picker (Normal/Drop/Rest-pause/To-failure/Partials — colour-coded, warm-up excluded).</td></tr>
+      <tr><td><code>menu</code> / <code>ex-menu-ov</code></td><td>Exercise actions (from logging view / from overview card): Substitute · Create/Remove Superset · Add after · Remove.</td></tr>
+      <tr><td><code>sub</code></td><td>Substitute — pick from <code>SUB_OPTIONS</code>; swaps name + equipment + recomputes <code>isCable</code>.</td></tr>
+      <tr><td><code>add</code> / <code>add-for-ss</code></td><td>Add exercise (search + suggested <code>ADD_OPTIONS</code>); the SS variant links the new exercise as the partner after insert.</td></tr>
+      <tr><td><code>end</code></td><td>End sheet: <b>Finish &amp; Save</b> (→ summary) · <b>Discard Workout</b> (red → <code>resetAll</code>) · <b>Continue Workout</b>.</td></tr>
+      <tr><td><code>ss-pick</code></td><td>Create-superset picker (A shown, choose B from others or add new).</td></tr>
+      <tr><td><code>remove-ss</code></td><td>Split confirmation with per-side logged-set summary; "Split into individual exercises" keeps data.</td></tr>
+    </table>
+    <div class="note info"><span class="lbl">Exit paths</span><b>End → Discard</b> and <b>Save Workout</b> both reach <code>resetAll</code>, which clears <code>aura_wk</code>/<code>aura_elapsed</code> and calls <code>props.onExit</code> (clearing <code>inProgress</code> in the shell). <b>Minimise</b> calls <code>props.onMinimize</code> (keeps <code>inProgress</code> → resume banner). See <a class="link" href="02-shell-nav.html#overlay">Chapter 2</a>.</div>
+
+    <h3 class="doc" id="tweaks">Tweaks (prototype-only)</h3>
+    <ul class="spec">
+      <li><b>Open on</b> (<code>startView</code>): overview / superset / exercise. <b>Dark mode</b>. <b>Show history</b> (the under-row last-session values). <b>Default rest</b> slider (30–180s, default 90).</li>
+      <li>These drive the demo's initial state and the rest default; they're not user-facing settings in the shipped app (the real rest default lives in Profile → Workout). Treat as authoring knobs.</li>
+    </ul>
+
+    <!-- ============================================================ -->
+    <h2 class="doc" id="checklist">Scenario checklist</h2>
+    <ul class="doc">
+      <li>Seed launch shows "Push Day A" mid-session (timer ~24:47, some sets pre-logged); restore survives reload but resets on a version bump.</li>
+      <li>Entering weight+reps and blurring auto-checks the set; the ✓ also toggles manually; trash removes a set.</li>
+      <li>Marking a non-final set done starts the tweak-length rest; the final set does not; adding a set starts rest.</li>
+      <li>Complete Exercise drops empty sets, marks filled done, fires 💪, starts 90s rest, returns to overview.</li>
+      <li>Beating <code>lastPR.weight</code> → 🏆; exceeding target reps at ≥ target weight → 🔥; both auto-dismiss ~2.4s.</li>
+      <li>Rest pill drags anywhere, persists, +15s / pause / dismiss all work; ring reflects remaining time.</li>
+      <li>Cable exercises show the pulley segmented control and persist the choice.</li>
+      <li>Warm-up protocol appears only on exercises that have one (bench full ramp, incline 2 sets) and is collapsible.</li>
+      <li>Set-type picker tags a set (D/R/F/P colour); the set-number button reflects it.</li>
+      <li>Create superset (existing or new B) pairs &amp; reorders; superset view logs by rounds; Add Round adds to both; 60s rest per side; Complete finalises both; Remove splits but keeps data.</li>
+      <li>Add Exercise (overview/empty) inserts from suggestions; empty-mode card-tap adds and jumps into the logger.</li>
+      <li>End → Finish&amp;Save shows summary (duration frozen, volume + PR count correct); Discard exits; Minimise returns to Log with the resume banner.</li>
+    </ul>
+
+    <div class="chapnav">
+      <a href="04-plan.html"><div class="dir">← Prev</div><div class="ttl">4 · Plan tab</div></a>
+      <a class="next" href="06-progress.html"><div class="dir">Next →</div><div class="ttl">6 · Progress tab</div></a>
+    </div>
+  </main>
+</div>
+</body>
+</html>

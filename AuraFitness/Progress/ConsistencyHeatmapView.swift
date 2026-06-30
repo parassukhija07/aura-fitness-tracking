@@ -103,6 +103,7 @@ struct ConsistencyHeatmapView: View {
         }
     }
 
+<<<<<<< HEAD
     private func legendCell(level: Int) -> some View {
         RoundedRectangle(cornerRadius: 2)
             .fill(legendColor(level: level))
@@ -117,6 +118,25 @@ struct ConsistencyHeatmapView: View {
         case 3:  return Color.aura.accent.opacity(0.76)
         default: return Color.aura.accent
         }
+=======
+        let bg: Color = hasLog ? .aura.green : .aura.fill
+        let opacity: Double = hasLog ? 1.0 : 0.4
+
+        RoundedRectangle(cornerRadius: 3)
+            .fill(bg.opacity(opacity))
+            .frame(height: 20)
+            .overlay {
+                // Rest days are hatched (per design), distinguishing them from empty days.
+                if isRest && !hasLog {
+                    HatchPattern()
+                        .stroke(Color.aura.text3.opacity(0.35), lineWidth: 1)
+                        .clipShape(RoundedRectangle(cornerRadius: 3))
+                }
+            }
+            .overlay(
+                isToday ? RoundedRectangle(cornerRadius: 3).stroke(Color.aura.accent, lineWidth: 1.5) : nil
+            )
+>>>>>>> 91e379ec4685afd991790ab0373badd82d02b753
     }
 
     private func calendarDays() -> [Date?] {
@@ -135,6 +155,7 @@ struct ConsistencyHeatmapView: View {
     }
 }
 
+<<<<<<< HEAD
 // MARK: - HeatCell
 private struct HeatCell: View {
     let date: Date
@@ -185,5 +206,19 @@ private struct HeatCell: View {
         case 3:  return Color.aura.accent.opacity(0.76)
         default: return Color.aura.accent
         }
+=======
+// MARK: - Diagonal hatch fill for rest-day heatmap cells
+private struct HatchPattern: Shape {
+    var spacing: CGFloat = 4
+    func path(in rect: CGRect) -> Path {
+        var path = Path()
+        var x = -rect.height
+        while x < rect.width {
+            path.move(to: CGPoint(x: x, y: rect.height))
+            path.addLine(to: CGPoint(x: x + rect.height, y: 0))
+            x += spacing
+        }
+        return path
+>>>>>>> 91e379ec4685afd991790ab0373badd82d02b753
     }
 }

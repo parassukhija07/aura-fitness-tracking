@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Aura · Profile Tab</title>
+<link rel="stylesheet" href="../styles/aura.css">
+<link rel="stylesheet" href="../styles/gallery.css">
+</head>
+<body>
+<div class="vbar">
+  <div class="crumbs"><a href="../Aura Fitness.html">Aura</a> &nbsp;/&nbsp; <b>Profile</b> tab</div>
+  <button class="theme-toggle" onclick="toggleTheme()"><i data-ic="moon" data-size="16"></i> <span id="tmode">Dark</span></button>
+</div>
+
+<div class="gallery">
+  <h2 class="sec">Tab 04 · You & settings</h2>
+  <h1 class="sec-title">Profile</h1>
+  <p class="sec-desc">Identity synced with the Body tab, then the full settings tree — General, Workout defaults, Account, Notifications, Units, Connected apps and Support.</p>
+
+  <div class="frames">
+
+  <!-- PROF-01 · Profile home -->
+  <div class="frame-wrap">
+    <div class="frame-cap"><span class="num">PROF-01</span> Profile home</div>
+    <div class="phone" data-theme="light">
+      <div class="dynamic-island"></div><div class="statusbar auto"></div>
+      <div class="navbar"><div class="navbar-row"><div class="nav-title-lg">Profile</div><button class="nav-icon-btn"><i data-ic="gear" data-size="19"></i></button></div></div>
+      <div class="screen-body pad pad-b" style="padding-top:6px">
+        <div class="card card-pad" style="border-radius:var(--r-xl)">
+          <div class="flex gap4" style="align-items:center"><div class="ph" style="width:64px;height:64px;border-radius:50%;flex:0 0 auto">photo</div><div class="grow"><div style="font-size:20px;font-weight:800;letter-spacing:-.02em">Alex Carter</div><div class="tiny muted">28 · 178 cm · 78.4 kg · Male</div></div><button class="nav-icon-btn"><i data-ic="edit" data-size="18"></i></button></div>
+          <div class="flex" style="margin-top:16px;gap:0"><div class="grow center"><div class="stat-num" style="font-size:20px">214</div><div class="tiny muted">Sessions</div></div><div style="width:1px;background:var(--separator-2)"></div><div class="grow center"><div class="stat-num" style="font-size:20px">47</div><div class="tiny muted">PRs</div></div><div style="width:1px;background:var(--separator-2)"></div><div class="grow center"><div class="stat-num" style="font-size:20px">31</div><div class="tiny muted">Day streak</div></div></div>
+        </div>
+        <div class="sec-label">Settings</div>
+        <div class="list">
+          <div class="row"><div class="row-ic" style="background:var(--text-2)"><i data-ic="gear" data-size="16"></i></div><div class="row-main"><div class="row-title">General</div></div><i data-ic="chevron-right" data-size="18" class="chev"></i></div>
+          <div class="row"><div class="row-ic" style="background:var(--accent)"><i data-ic="dumbbell" data-size="16"></i></div><div class="row-main"><div class="row-title">Workout</div></div><i data-ic="chevron-right" data-size="18" class="chev"></i></div>
+          <div class="row"><div class="row-ic" style="background:var(--blue)"><i data-ic="person" data-size="16"></i></div><div class="row-main"><div class="row-title">Account Details</div></div><i data-ic="chevron-right" data-size="18" class="chev"></i></div>
+          <div class="row"><div class="row-ic" style="background:var(--red)"><i data-ic="bell" data-size="16"></i></div><div class="row-main"><div class="row-title">Notifications</div></div><i data-ic="chevron-right" data-size="18" class="chev"></i></div>
+          <div class="row"><div class="row-ic" style="background:var(--purple)"><i data-ic="ruler" data-size="16"></i></div><div class="row-main"><div class="row-title">Units & Measurements</div></div><i data-ic="chevron-right" data-size="18" class="chev"></i></div>
+        </div>
+        <div class="list" style="margin-top:12px">
+          <div class="row"><div class="row-ic" style="background:var(--green)"><i data-ic="apple-h" data-size="16"></i></div><div class="row-main"><div class="row-title">Connected Apps</div></div><i data-ic="chevron-right" data-size="18" class="chev"></i></div>
+          <div class="row"><div class="row-ic" style="background:var(--text-3)"><i data-ic="question" data-size="16"></i></div><div class="row-main"><div class="row-title">Support</div></div><i data-ic="chevron-right" data-size="18" class="chev"></i></div>
+        </div>
+        <button class="btn btn-danger" style="margin-top:14px"><i data-ic="logout" data-size="17"></i> Log Out</button>
+      </div>
+      <div class="tabbar"><button class="tab"><i data-ic="log" data-size="25"></i><span>Log</span></button><button class="tab"><i data-ic="dumbbell" data-size="25"></i><span>Plan</span></button><button class="tab"><i data-ic="chart" data-size="25"></i><span>Progress</span></button><button class="tab active"><i data-ic="person" data-size="25"></i><span>Profile</span></button></div>
+      <div class="home-indicator"></div>
+    </div>
+  </div>
+
+  <!-- PROF-02 · Workout settings -->
+  <div class="frame-wrap">
+    <div class="frame-cap"><span class="num">PROF-02</span> Workout settings</div>
+    <div class="phone" data-theme="light">
+      <div class="dynamic-island"></div><div class="statusbar auto"></div>
+      <div class="navbar bordered"><div class="navbar-row"><button class="nav-btn"><i data-ic="chevron-left" data-size="22"></i>Profile</button><div class="nav-title">Workout</div></div></div>
+      <div class="screen-body pad pad-b" style="padding-top:8px">
+        <div class="sec-label">Display</div>
+        <div class="list">
+          <div class="row"><div class="row-main"><div class="row-title">Show reps / time first</div></div><div class="toggle on"></div></div>
+          <div class="row"><div class="row-main"><div class="row-title">Show weight first</div></div><div class="toggle"></div></div>
+          <div class="row"><div class="row-main"><div class="row-title">Show PRs during workout</div></div><div class="toggle on"></div></div>
+        </div>
+        <div class="sec-label">Exercise targets</div>
+        <div class="list">
+          <div class="row"><div class="row-main"><div class="row-title">Default sets</div></div><div class="row-val">3</div><i data-ic="chevron-right" data-size="18" class="chev"></i></div>
+          <div class="row"><div class="row-main"><div class="row-title">Default rep range</div></div><div class="row-val">6 – 10</div><i data-ic="chevron-right" data-size="18" class="chev"></i></div>
+          <div class="row"><div class="row-main"><div class="row-title">Rest · between sets</div></div><div class="row-val">1 min</div><i data-ic="chevron-right" data-size="18" class="chev"></i></div>
+          <div class="row"><div class="row-main"><div class="row-title">Rest · between exercises</div></div><div class="row-val">1 min 30 s</div><i data-ic="chevron-right" data-size="18" class="chev"></i></div>
+        </div>
+        <div class="sec-label">Automation</div>
+        <div class="list">
+          <div class="row"><div class="row-main"><div class="row-title">Auto rest timer</div><div class="row-sub">Starts after each completed set</div></div><div class="toggle on"></div></div>
+          <div class="row"><div class="row-main"><div class="row-title">Auto-play demo video</div></div><div class="toggle"></div></div>
+        </div>
+      </div>
+      <div class="home-indicator"></div>
+    </div>
+  </div>
+
+  <!-- PROF-03 · Account details -->
+  <div class="frame-wrap">
+    <div class="frame-cap"><span class="num">PROF-03</span> Account details</div>
+    <div class="phone" data-theme="light">
+      <div class="dynamic-island"></div><div class="statusbar auto"></div>
+      <div class="navbar bordered"><div class="navbar-row"><button class="nav-btn"><i data-ic="chevron-left" data-size="22"></i>Profile</button><div class="nav-title">Account</div><button class="nav-btn" style="font-weight:700">Save</button></div></div>
+      <div class="screen-body pad pad-b" style="padding-top:8px">
+        <div class="center" style="margin:10px 0 4px"><div class="ph" style="width:84px;height:84px;border-radius:50%;margin:0 auto">photo</div><button class="btn-ghost" style="margin-top:8px;font-weight:700">Change Photo</button></div>
+        <div class="list">
+          <div class="row"><div class="row-main"><div class="row-title">First name</div></div><div class="row-val">Alex</div></div>
+          <div class="row"><div class="row-main"><div class="row-title">Last name</div></div><div class="row-val">Carter</div></div>
+          <div class="row"><div class="row-ic" style="background:var(--blue)"><i data-ic="mail" data-size="15"></i></div><div class="row-main"><div class="row-title">Email</div></div><div class="row-val tiny">alex@mail.com</div></div>
+          <div class="row"><div class="row-ic" style="background:var(--green)"><i data-ic="phone" data-size="15"></i></div><div class="row-main"><div class="row-title">Phone</div></div><div class="row-val tiny">+1 555 0182</div></div>
+          <div class="row"><div class="row-main"><div class="row-title">Birthday</div></div><div class="row-val">Apr 3, 1998</div></div>
+          <div class="row"><div class="row-main"><div class="row-title">Gender</div></div><div class="row-val">Male</div></div>
+          <div class="row"><div class="row-main"><div class="row-title">Height</div></div><div class="row-val">178 cm</div></div>
+          <div class="row"><div class="row-ic" style="background:var(--purple)"><i data-ic="globe" data-size="15"></i></div><div class="row-main"><div class="row-title">Location</div></div><div class="row-val tiny">Austin, TX, US</div></div>
+        </div>
+        <div class="list" style="margin-top:12px">
+          <div class="row"><div class="row-main"><div class="row-title" style="color:var(--accent)">Export my data</div></div><i data-ic="export" data-size="17" class="chev"></i></div>
+          <div class="row"><div class="row-main"><div class="row-title" style="color:var(--accent)">Reset workout data</div></div><i data-ic="reset" data-size="17" class="chev"></i></div>
+        </div>
+        <div class="list" style="margin-top:12px">
+          <div class="row"><div class="row-main"><div class="row-title" style="color:var(--red)">Delete account</div></div><i data-ic="trash" data-size="17" style="color:var(--red)"></i></div>
+        </div>
+      </div>
+      <div class="home-indicator"></div>
+    </div>
+  </div>
+
+  <!-- PROF-04 · Notifications & Units -->
+  <div class="frame-wrap">
+    <div class="frame-cap"><span class="num">PROF-04</span> Notifications · Units · General</div>
+    <div class="phone" data-theme="light">
+      <div class="dynamic-island"></div><div class="statusbar auto"></div>
+      <div class="navbar bordered"><div class="navbar-row"><button class="nav-btn"><i data-ic="chevron-left" data-size="22"></i>Profile</button><div class="nav-title">Preferences</div></div></div>
+      <div class="screen-body pad pad-b" style="padding-top:8px">
+        <div class="sec-label">General</div>
+        <div class="list">
+          <div class="row"><div class="row-ic" style="background:var(--text)"><i data-ic="moon" data-size="15"></i></div><div class="row-main"><div class="row-title">Dark mode</div></div><div class="segmented" style="width:140px"><button>Off</button><button class="active">Auto</button><button>On</button></div></div>
+          <div class="row"><div class="row-main"><div class="row-title">Start week on</div></div><div class="segmented" style="width:120px"><button class="active">Sun</button><button>Mon</button></div></div>
+          <div class="row"><div class="row-main"><div class="row-title">Log shows</div><div class="row-sub">Strength score & balance</div></div><i data-ic="chevron-right" data-size="18" class="chev"></i></div>
+        </div>
+        <div class="sec-label">Notifications</div>
+        <div class="list">
+          <div class="row"><div class="row-main"><div class="row-title">Enable notifications</div></div><div class="toggle on"></div></div>
+          <div class="row"><div class="row-main"><div class="row-title">Rest timer sound</div></div><div class="segmented" style="width:150px"><button class="active">Ding</button><button>Alarm</button></div></div>
+        </div>
+        <div class="sec-label">Units & Measurements</div>
+        <div class="list">
+          <div class="row"><div class="row-ic" style="background:var(--accent)"><i data-ic="scale" data-size="15"></i></div><div class="row-main"><div class="row-title">Weight</div></div><div class="segmented" style="width:120px"><button class="active">kg</button><button>lb</button></div></div>
+          <div class="row"><div class="row-ic" style="background:var(--purple)"><i data-ic="ruler" data-size="15"></i></div><div class="row-main"><div class="row-title">Length</div></div><div class="segmented" style="width:120px"><button class="active">cm</button><button>in</button></div></div>
+        </div>
+      </div>
+      <div class="home-indicator"></div>
+    </div>
+  </div>
+
+  <!-- PROF-05 · Connected & Support -->
+  <div class="frame-wrap">
+    <div class="frame-cap"><span class="num">PROF-05</span> Connected apps · Support</div>
+    <div class="phone" data-theme="light">
+      <div class="dynamic-island"></div><div class="statusbar auto"></div>
+      <div class="navbar bordered"><div class="navbar-row"><button class="nav-btn"><i data-ic="chevron-left" data-size="22"></i>Profile</button><div class="nav-title">Connected & Support</div></div></div>
+      <div class="screen-body pad pad-b" style="padding-top:8px">
+        <div class="sec-label">Connected apps</div>
+        <div class="list">
+          <div class="row"><div class="row-ic" style="background:var(--red)"><i data-ic="apple-h" data-size="16"></i></div><div class="row-main"><div class="row-title">Apple Health</div><div class="row-sub">Syncing workouts & weight</div></div><div class="toggle on"></div></div>
+          <div class="row"><div class="row-ic" style="background:var(--green)"><i data-ic="heart" data-size="16"></i></div><div class="row-main"><div class="row-title">Google Health</div><div class="row-sub">Not connected</div></div><div class="toggle"></div></div>
+        </div>
+        <div class="sec-label">Support</div>
+        <div class="list">
+          <div class="row"><div class="row-ic" style="background:var(--blue)"><i data-ic="question" data-size="16"></i></div><div class="row-main"><div class="row-title">User guides & FAQ</div></div><i data-ic="chevron-right" data-size="18" class="chev"></i></div>
+          <div class="row"><div class="row-ic" style="background:var(--text-2)"><i data-ic="mail" data-size="15"></i></div><div class="row-main"><div class="row-title">Contact us</div></div><i data-ic="chevron-right" data-size="18" class="chev"></i></div>
+          <div class="row"><div class="row-ic" style="background:var(--accent)"><i data-ic="sparkle" data-size="16"></i></div><div class="row-main"><div class="row-title">Request a feature</div></div><i data-ic="chevron-right" data-size="18" class="chev"></i></div>
+        </div>
+        <div class="center tiny muted" style="margin-top:24px">Aura Fitness · v1.0.0 (build 248)</div>
+      </div>
+      <div class="home-indicator"></div>
+    </div>
+  </div>
+
+  </div>
+</div>
+
+<script src="../styles/gallery.js"></script>
+<script src="../styles/icons.js"></script>
+</body>
+</html>

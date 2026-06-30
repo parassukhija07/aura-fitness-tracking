@@ -18,11 +18,14 @@ struct CelebrationData: Identifiable {
 @MainActor
 class WorkoutSessionState: ObservableObject {
     // MARK: - Workout state (draft — not committed until Save)
-    @Published var workout: Workout
+    @Published var workout: Workout { didSet { WorkoutPersistence.saveWorkout(workout) } }
     @Published var activeView: ActiveWorkoutScreen = .overview
 
+    /// Empty / build-as-you-go launch (no seed restore, no elapsed seed).
+    let isEmptyMode: Bool
+
     // MARK: - Timer
-    @Published var elapsedSeconds: Int = 0
+    @Published var elapsedSeconds: Int = 0 { didSet { WorkoutPersistence.saveElapsed(elapsedSeconds) } }
     private var elapsedTimer: Timer? = nil
 
     // MARK: - Rest timer
@@ -33,7 +36,7 @@ class WorkoutSessionState: ObservableObject {
     private var restTimer: Timer? = nil
 
     // MARK: - Rest pill position
-    @Published var pillPosition: CGPoint = CGPoint(x: 96, y: 600)
+    @Published var pillPosition: CGPoint = CGPoint(x: 96, y: 690) { didSet { WorkoutPersistence.savePill(pillPosition) } }
 
     // MARK: - Celebration
     @Published var celebration: CelebrationData? = nil
@@ -47,9 +50,25 @@ class WorkoutSessionState: ObservableObject {
     private weak var appState: AppState?
 
     // MARK: - Init
-    init(workout: Workout, appState: AppState) {
-        self.workout = workout
+    /// - Parameters:
+    ///   - workout: the seed (Push Day A) or an empty workout.
+    ///   - emptyMode: build-as-you-go launch — skips restore + elapsed seeding.
+    init(workout seed: Workout, appState: AppState, emptyMode: Bool = false) {
+        self.isEmptyMode = emptyMode
         self.appState = appState
+
+        if emptyMode {
+            self.workout = seed
+            self.elapsedSeconds = 0
+            self.pillPosition = CGPoint(x: 96, y: 690)
+        } else {
+            // Schema-gated restore onto the fresh seed (mirrors app.jsx).
+            var restored = seed
+            WorkoutPersistence.restore(into: &restored)
+            self.workout = restored
+            self.elapsedSeconds = WorkoutPersistence.restoredElapsed(default: ActiveWorkoutSeed.seedElapsed)
+            self.pillPosition = WorkoutPersistence.restoredPill(default: CGPoint(x: 96, y: 690))
+        }
         startElapsedTimer()
     }
 
@@ -166,6 +185,16 @@ class WorkoutSessionState: ObservableObject {
         }
     }
 
+    /// Marking a superset set done (A or B): hard 60s rest, **no** PR/extra-reps
+    /// celebration, and the rest fires regardless of whether it's the final set
+    /// (mirrors superset.jsx `onToggleA/B`).
+    func onSupersetSetDone(exerciseIndex ei: Int, setIndex si: Int) {
+        guard workout.exercises.indices.contains(ei),
+              workout.exercises[ei].sets.indices.contains(si) else { return }
+        workout.exercises[ei].sets[si].done = true
+        startRest(duration: 60)
+    }
+
     func onAddSet(to exerciseIndex: Int) {
         guard workout.exercises.indices.contains(exerciseIndex) else { return }
         workout.exercises[exerciseIndex].sets.append(WorkoutSet())
@@ -213,11 +242,14 @@ class WorkoutSessionState: ObservableObject {
         workout.exercises[exerciseIndex].pulley = pulley
     }
 
-    func substituteExercise(at index: Int, with replacement: Exercise) {
+    /// Substitute swaps only name + equipment + recomputed `isCable` (mirrors
+    /// app.jsx `substitute`); PR, target, history, warm-up, hint and logged sets
+    /// all stay put on the existing exercise.
+    func substituteExercise(at index: Int, name: String, equipment: String) {
         guard workout.exercises.indices.contains(index) else { return }
-        var ex = replacement
-        ex.sets = workout.exercises[index].sets
-        workout.exercises[index] = ex
+        workout.exercises[index].name = name
+        workout.exercises[index].equipment = equipment
+        workout.exercises[index].isCable = (equipment == "Cable")
     }
 
     func removeExercise(at index: Int) {

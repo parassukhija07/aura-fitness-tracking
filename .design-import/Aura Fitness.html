@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Aura Fitness — App Design</title>
+<link rel="stylesheet" href="styles/aura.css">
+<style>
+  body{background:var(--bg-grouped);}
+  .wrap{max-width:1120px;margin:0 auto;padding:0 32px 120px;}
+  .top{display:flex;align-items:center;justify-content:space-between;padding:26px 0;}
+  .logo{display:flex;align-items:center;gap:11px;font-weight:800;font-size:18px;letter-spacing:-.02em;}
+  .logo .mark{width:34px;height:34px;border-radius:10px;background:linear-gradient(150deg,var(--accent),oklch(0.62 0.16 40));display:grid;place-items:center;color:#fff;}
+  .top .meta{font-size:13px;color:var(--text-2);font-weight:600;}
+  .hero{padding:54px 0 40px;border-bottom:1px solid var(--separator-2);}
+  .hero .eyebrow{font-size:13px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);}
+  .hero h1{font-size:clamp(40px,7vw,76px);font-weight:800;letter-spacing:-.035em;line-height:.98;margin:14px 0 0;}
+  .hero p{font-size:18px;color:var(--text-2);max-width:620px;line-height:1.55;margin:20px 0 0;}
+  .hero .pills{display:flex;flex-wrap:wrap;gap:8px;margin-top:24px;}
+  .pill{font-size:13px;font-weight:600;padding:7px 13px;border-radius:999px;background:var(--surface);border:1px solid var(--separator-2);color:var(--text-2);}
+  /* system band */
+  .band{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:18px;padding:32px 0;border-bottom:1px solid var(--separator-2);}
+  .sys h4{font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--text-3);margin:0 0 12px;}
+  .swatches{display:flex;gap:8px;}
+  .sw{width:42px;height:42px;border-radius:11px;border:1px solid var(--separator-2);}
+  .type-spec{font-weight:800;letter-spacing:-.02em;line-height:1;}
+  /* nav cards */
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:18px;margin-top:36px;}
+  .nav-card{display:flex;flex-direction:column;gap:0;background:var(--surface);border:1px solid var(--separator-2);border-radius:var(--r-lg);overflow:hidden;text-decoration:none;color:inherit;box-shadow:var(--shadow-sm);transition:transform .15s,box-shadow .15s;}
+  .nav-card:hover{transform:translateY(-3px);box-shadow:var(--shadow);}
+  .nav-card .nc-top{height:96px;display:flex;align-items:center;gap:14px;padding:0 22px;position:relative;overflow:hidden;}
+  .nav-card .nc-ic{width:50px;height:50px;border-radius:14px;display:grid;place-items:center;color:#fff;flex:0 0 auto;z-index:1;}
+  .nav-card .nc-tag{position:absolute;top:16px;right:18px;font-size:11px;font-weight:700;letter-spacing:.04em;color:var(--text-3);font-family:var(--mono);}
+  .nav-card .nc-body{padding:18px 22px 20px;border-top:1px solid var(--separator-2);}
+  .nav-card h3{font-size:19px;font-weight:800;letter-spacing:-.02em;margin:0;}
+  .nav-card p{font-size:14px;color:var(--text-2);line-height:1.5;margin:7px 0 0;}
+  .nav-card .nc-foot{font-size:13px;font-weight:700;color:var(--accent);margin-top:14px;display:flex;align-items:center;gap:6px;}
+  .feat{background:linear-gradient(150deg,var(--accent),oklch(0.6 0.16 38));color:#fff;}
+  .feat .nc-body{border-top-color:transparent;}
+  .feat h3,.feat p{color:#fff;}.feat p{opacity:.9;}.feat .nc-foot{color:#fff;}
+  .sec-h{font-size:13px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text-3);margin:48px 0 0;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div class="logo"><div class="mark"><i data-ic="bolt" data-size="20"></i></div> Aura</div>
+    <div class="meta">iOS App Design · iPhone 393×852 · Light + Dark</div>
+  </div>
+
+  <div class="hero">
+    <div class="eyebrow">Fitness Tracker · Design Package</div>
+    <h1>Aura Fitness</h1>
+    <p>Personalized training programs and an advanced workout tracker. Four tabs, every flow designed end-to-end — with the live workout experience built as a working interactive prototype.</p>
+    <div class="pills">
+      <span class="pill">26 screens</span><span class="pill">4 tabs + active-workout flow</span>
+      <span class="pill">Plus Jakarta Sans</span><span class="pill">Native iOS patterns</span>
+      <span class="pill">Built for Claude Code handoff</span>
+    </div>
+  </div>
+
+  <div class="band">
+    <div class="sys"><h4>Accent</h4><div class="swatches"><div class="sw" style="background:oklch(0.70 0.17 60)"></div><div class="sw" style="background:oklch(0.70 0.17 60/.5)"></div><div class="sw" style="background:oklch(0.70 0.15 150)"></div><div class="sw" style="background:oklch(0.66 0.14 250)"></div></div></div>
+    <div class="sys"><h4>Neutrals</h4><div class="swatches"><div class="sw" style="background:oklch(0.985 0.004 80)"></div><div class="sw" style="background:oklch(0.90 0.005 70)"></div><div class="sw" style="background:oklch(0.52 0.012 70)"></div><div class="sw" style="background:oklch(0.20 0.012 70)"></div></div></div>
+    <div class="sys"><h4>Type · Display</h4><div class="type-spec" style="font-size:34px">Aa</div><div class="tiny muted" style="margin-top:6px">Plus Jakarta Sans · 800</div></div>
+    <div class="sys"><h4>Type · Numerals</h4><div class="type-spec stat-num" style="font-size:34px">82.5</div><div class="tiny muted" style="margin-top:6px">Tabular · −.03em</div></div>
+  </div>
+
+  <div class="sec-h">The build</div>
+  <div class="grid">
+    <a class="nav-card feat" href="Active Workout.html">
+      <div class="nc-top"><div class="nc-ic" style="background:rgba(255,255,255,.2)"><i data-ic="play" data-size="22"></i></div><div class="nc-tag" style="color:#fff;opacity:.85">INTERACTIVE</div></div>
+      <div class="nc-body"><h3>Active Workout</h3><p>The hero flow, fully clickable: log sets, auto rest timer (draggable), set types, supersets, PR celebrations, end & summary.</p><div class="nc-foot">Launch prototype <i data-ic="chevron-right" data-size="16"></i></div></div>
+    </a>
+    <a class="nav-card" href="screens/Log.html">
+      <div class="nc-top"><div class="nc-ic" style="background:var(--accent)"><i data-ic="log" data-size="24"></i></div><div class="nc-tag">6 SCREENS</div></div>
+      <div class="nc-body"><h3>Log</h3><p>Week bar, today's planned workout, rest days, calendar jump, and the add-workout source picker.</p><div class="nc-foot">View screens <i data-ic="chevron-right" data-size="16"></i></div></div>
+    </a>
+    <a class="nav-card" href="screens/Plan.html">
+      <div class="nc-top"><div class="nc-ic" style="background:var(--blue)"><i data-ic="dumbbell" data-size="24"></i></div><div class="nc-tag">8 SCREENS</div></div>
+      <div class="nc-body"><h3>Plan</h3><p>My Plans, Program / Workout / Exercise libraries, editors, and the permanent-vs-today save dialog.</p><div class="nc-foot">View screens <i data-ic="chevron-right" data-size="16"></i></div></div>
+    </a>
+    <a class="nav-card" href="screens/Exercise.html">
+      <div class="nc-top"><div class="nc-ic" style="background:var(--green)"><i data-ic="target" data-size="24"></i></div><div class="nc-tag">3 SCREENS</div></div>
+      <div class="nc-body"><h3>Exercise Detail</h3><p>Demo video, muscle activation chart with body map, pro tips, and add-to-workout flows.</p><div class="nc-foot">View screens <i data-ic="chevron-right" data-size="16"></i></div></div>
+    </a>
+    <a class="nav-card" href="screens/Progress.html">
+      <div class="nc-top"><div class="nc-ic" style="background:var(--purple)"><i data-ic="chart" data-size="24"></i></div><div class="nc-tag">7 SCREENS</div></div>
+      <div class="nc-body"><h3>Progress</h3><p>Stats — heatmap, weekly trends, PRs. Body — measurements, progress photos, nutrition targets.</p><div class="nc-foot">View screens <i data-ic="chevron-right" data-size="16"></i></div></div>
+    </a>
+    <a class="nav-card" href="screens/Profile.html">
+      <div class="nc-top"><div class="nc-ic" style="background:var(--text-2)"><i data-ic="person" data-size="24"></i></div><div class="nc-tag">5 SCREENS</div></div>
+      <div class="nc-body"><h3>Profile</h3><p>Identity synced to Body, plus the full settings tree: General, Workout, Account, Notifications, Units, Support.</p><div class="nc-foot">View screens <i data-ic="chevron-right" data-size="16"></i></div></div>
+    </a>
+  </div>
+
+  <div class="sec-h">For developers</div>
+  <div class="grid">
+    <a class="nav-card" href="handoff/Handoff.html">
+      <div class="nc-top"><div class="nc-ic" style="background:var(--text)"><i data-ic="export" data-size="24"></i></div><div class="nc-tag">HANDOFF</div></div>
+      <div class="nc-body"><h3>Build Package</h3><p>Design tokens, component specs, the full screen index, and a build brief for Claude Code — everything to implement Aura natively.</p><div class="nc-foot">Open handoff <i data-ic="chevron-right" data-size="16"></i></div></div>
+    </a>
+  </div>
+</div>
+<script src="styles/icons.js"></script>
+</body>
+</html>
