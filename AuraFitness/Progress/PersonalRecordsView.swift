@@ -7,12 +7,14 @@ struct PersonalRecordsView: View {
     let muscles = ["All","Chest","Back","Shoulders","Arms","Legs","Core"]
 
     var filtered: [PersonalRecord] {
-        if selectedMuscle == "All" { return appState.personalRecords }
-        return appState.personalRecords.filter { $0.muscle.localizedCaseInsensitiveContains(selectedMuscle) }
+        let all = appState.personalRecords.sorted { $0.estimated1RM > $1.estimated1RM }
+        if selectedMuscle == "All" { return all }
+        return all.filter { $0.muscle.localizedCaseInsensitiveContains(selectedMuscle) }
     }
 
     var body: some View {
         VStack(spacing: 0) {
+            // Filter chips
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: AuraSpacing.s2) {
                     ForEach(muscles, id: \.self) { m in
@@ -22,28 +24,60 @@ struct PersonalRecordsView: View {
                 .padding(.horizontal, AuraSpacing.screenPad)
                 .padding(.vertical, AuraSpacing.s2)
             }
+            Divider()
 
             if filtered.isEmpty {
                 Spacer()
                 VStack(spacing: AuraSpacing.s3) {
                     Image(systemName: "trophy")
-                        .font(.system(size: 40))
+                        .font(.system(size: 44))
                         .foregroundColor(.aura.text3)
                     Text("No personal records yet")
-                        .font(AuraFont.body())
+                        .font(.system(size: 17, weight: .semibold))
                         .foregroundColor(.aura.text2)
-                    Text("Complete workouts to set your first PRs!")
+                    Text("Complete workouts to set your first PRs automatically.")
                         .font(AuraFont.secondary())
                         .foregroundColor(.aura.text3)
                         .multilineTextAlignment(.center)
+                        .frame(maxWidth: 260)
                 }
                 Spacer()
             } else {
-                List(filtered.sorted { $0.date > $1.date }) { pr in
-                    prRow(pr)
-                        .listRowBackground(Color.aura.surface)
+                ScrollView {
+                    VStack(spacing: AuraSpacing.s3) {
+                        AuraCard {
+                            VStack(spacing: 0) {
+                                ForEach(Array(filtered.enumerated()), id: \.element.id) { idx, pr in
+                                    prRow(pr, isTop: idx == 0)
+                                    if idx < filtered.count - 1 {
+                                        Divider().padding(.leading, 56)
+                                    }
+                                }
+                            }
+                        }
+
+                        // Info hint
+                        HStack(alignment: .top, spacing: AuraSpacing.s2) {
+                            Image(systemName: "info.circle")
+                                .font(.system(size: 15))
+                                .foregroundColor(.aura.text3)
+                                .padding(.top, 1)
+                            Text("New PRs are detected automatically while you log and celebrated mid-workout.")
+                                .font(AuraFont.secondary())
+                                .foregroundColor(.aura.text2)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
+                        .padding(AuraSpacing.s3)
+                        .background(Color.aura.surface)
+                        .clipShape(RoundedRectangle(cornerRadius: AuraRadius.md))
+                        .overlay(RoundedRectangle(cornerRadius: AuraRadius.md)
+                            .stroke(Color.aura.separator2, lineWidth: 1))
+
+                        Spacer().frame(height: 40)
+                    }
+                    .padding(.horizontal, AuraSpacing.screenPad)
+                    .padding(.top, AuraSpacing.s3)
                 }
-                .listStyle(.insetGrouped)
             }
         }
         .background(Color.aura.bgGrouped)
@@ -52,33 +86,58 @@ struct PersonalRecordsView: View {
     }
 
     @ViewBuilder
-    private func prRow(_ pr: PersonalRecord) -> some View {
+    private func prRow(_ pr: PersonalRecord, isTop: Bool) -> some View {
         HStack(spacing: AuraSpacing.s3) {
+            // Icon
             ZStack {
                 RoundedRectangle(cornerRadius: 8)
-                    .fill(Color.aura.accent.opacity(0.15))
+                    .fill(isTop ? Color.aura.accent : Color.aura.fill)
                     .frame(width: 36, height: 36)
-                Image(systemName: "trophy.fill")
-                    .foregroundColor(.aura.accent)
+                Image(systemName: isTop ? "trophy.fill" : "medal.fill")
+                    .foregroundColor(isTop ? .white : .aura.text2)
                     .font(.system(size: 16))
             }
+
+            // Name + date
             VStack(alignment: .leading, spacing: 2) {
                 Text(pr.exerciseName)
-                    .font(.system(size: 15, weight: .semibold))
+                    .font(.system(size: 15, weight: .bold))
                     .foregroundColor(.aura.text)
-                Text(pr.date.formatted(date: .abbreviated, time: .omitted))
+                Text("Set \(pr.date.formatted(date: .abbreviated, time: .omitted))")
                     .font(AuraFont.secondary())
                     .foregroundColor(.aura.text2)
+                if isTop {
+                    Text("1RM est. \(Int(pr.estimated1RM)) kg")
+                        .font(.system(size: 11, weight: .semibold))
+                        .foregroundColor(.aura.accent)
+                }
             }
+
             Spacer()
+
+            // Weight × reps
             VStack(alignment: .trailing, spacing: 2) {
-                Text("\(String(format: "%.1f", pr.weight)) kg × \(pr.reps)")
-                    .font(.system(size: 14, weight: .bold))
-                    .foregroundColor(.aura.text)
-                Text("1RM ≈ \(Int(pr.estimated1RM)) kg")
-                    .font(.system(size: 11, weight: .medium))
-                    .foregroundColor(.aura.text2)
+                HStack(alignment: .firstTextBaseline, spacing: 2) {
+                    Text(formatW(pr.weight))
+                        .font(AuraFont.statNum(size: 18))
+                        .foregroundColor(.aura.text)
+                    Text("×\(pr.reps)")
+                        .font(.system(size: 13, weight: .semibold))
+                        .foregroundColor(.aura.text2)
+                }
+                if !isTop {
+                    Text("1RM ≈ \(Int(pr.estimated1RM)) kg")
+                        .font(.system(size: 11, weight: .medium))
+                        .foregroundColor(.aura.text3)
+                }
             }
         }
+        .padding(.horizontal, AuraSpacing.s4)
+        .padding(.vertical, 13)
+        .background(isTop ? Color.aura.accentSoft : Color.clear)
+    }
+
+    private func formatW(_ w: Double) -> String {
+        w.truncatingRemainder(dividingBy: 1) == 0 ? String(Int(w)) : String(format: "%.1f", w)
     }
 }

@@ -1,5 +1,14 @@
 import Foundation
 
+// MARK: - ProgressPhoto
+struct ProgressPhoto: Identifiable, Codable {
+    var id = UUID()
+    var date: Date
+    var imageData: Data
+    var weight: Double?
+    var note: String = ""
+}
+
 // MARK: - WorkoutLog
 struct WorkoutLog: Identifiable, Codable {
     var id = UUID()

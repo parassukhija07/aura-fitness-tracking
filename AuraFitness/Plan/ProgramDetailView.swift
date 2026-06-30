@@ -2,10 +2,11 @@ import SwiftUI
 
 struct ProgramDetailView: View {
     @EnvironmentObject var appState: AppState
+    @StateObject private var planDB = UserPlanDatabase.shared
     let program: Program
     @Environment(\.dismiss) var dismiss
 
-    var isAdded: Bool { appState.userPlans.contains { $0.sourceProgramID == program.id } }
+    var isAdded: Bool { planDB.plans.contains { $0.sourceProgramID == program.id } }
 
     var body: some View {
         NavigationStack {
@@ -107,23 +108,9 @@ struct ProgramDetailView: View {
     }
 
     private func addToMyPlans() {
-        var plan = UserPlan(
-            name: program.name,
-            isDefault: appState.userPlans.isEmpty,
-            sourceProgramID: program.id
-        )
-        // Auto-assign workouts to weekdays
-        let wk = program.workouts
-        var dayIdx = 1
-        for w in wk {
-            while dayIdx <= 6 && plan.weekSchedule[dayIdx] != nil { dayIdx += 1 }
-            if dayIdx <= 6 {
-                plan.weekSchedule[dayIdx] = w.id
-                dayIdx += 1
-            }
-        }
-        // Rest on unassigned days
-        for i in 0..<7 { if plan.weekSchedule[i] == nil { plan.weekSchedule[i] = .some(nil) } }
-        appState.userPlans.append(plan)
+        let plan = planDB.createPlan(from: program)
+        planDB.addPlan(plan)
+        // Keep appState in sync for Log tab
+        appState.userPlans = planDB.plans
     }
 }

@@ -1,6 +1,45 @@
 import SwiftUI
 import Combine
 
+// MARK: - Day override (Log tab, today-only mutations)
+enum DayOverrideType: String, Codable {
+    case rest       // marked rest day
+    case removed    // workout removed → empty-today
+    case added      // workout added to rest/empty day
+    case switched   // swapped to different workout
+    case logged     // manually logged (past or quick-log)
+    case edit       // exercises edited for today only
+}
+
+struct DayOverride: Codable {
+    var type: DayOverrideType
+    var workoutID: UUID?      // nil for rest/removed
+    var exercises: [LoggedExercise]?  // for edit/logged overrides
+}
+
+struct LoggedExercise: Identifiable, Codable {
+    var id = UUID()
+    var name: String
+    var sets: [LoggedSet]
+}
+
+struct LoggedSet: Identifiable, Codable {
+    var id = UUID()
+    var weight: String = ""
+    var reps: String = ""
+}
+
+// MARK: - Day kind
+enum DayKind {
+    case today       // planned, not yet done
+    case done        // completed
+    case missed      // past planned, not done
+    case future      // upcoming planned
+    case restToday   // rest day = today
+    case rest        // rest day ≠ today
+    case emptyToday  // removed/unplanned today
+}
+
 enum DarkModePreference: String, CaseIterable, Codable {
     case off, auto, on
 
@@ -40,6 +79,7 @@ class AppState: ObservableObject {
     @Published var bodyStats: BodyStats = BodyStats()
     @Published var personalRecords: [PersonalRecord] = []
     @Published var userProfile: UserProfile = UserProfile()
+    @Published var progressPhotos: [ProgressPhoto] = []
 
     // MARK: - Workout preferences
     @Published var defaultSets: Int = 3
@@ -56,6 +96,25 @@ class AppState: ObservableObject {
     // MARK: - Notifications
     @Published var notificationsEnabled: Bool = true
     @Published var restSound: String = "Ding"    // "Ding" | "Alarm"
+
+    // MARK: - Health & UI signals
+    @Published var healthKitConnected: Bool = false
+    @Published var profileSaveFlash: Bool = false
+
+    // MARK: - Day overrides (keyed by ISO date string "yyyy-MM-dd")
+    @Published var dayOverrides: [String: DayOverride] = [:]
+
+    func setOverride(_ iso: String, _ override: DayOverride) {
+        dayOverrides[iso] = override
+    }
+
+    func clearOverride(_ iso: String) {
+        dayOverrides.removeValue(forKey: iso)
+    }
+
+    func override(for iso: String) -> DayOverride? {
+        dayOverrides[iso]
+    }
 
     // MARK: - Computed
     var defaultPlan: UserPlan? { userPlans.first(where: { $0.isDefault }) }
@@ -110,9 +169,8 @@ class AppState: ObservableObject {
     // MARK: - Week schedule helper
     func todayWorkout() -> Workout? {
         guard let plan = defaultPlan else { return nil }
-        let programs = SeedData.programs
         let dayIndex = Calendar.current.component(.weekday, from: Date()) - 1
-        return plan.workout(for: dayIndex, programs: programs)
+        return plan.workout(for: dayIndex, programs: ProgramDatabase.shared.programs)
     }
 
     func isRestDay(for date: Date = Date()) -> Bool {

@@ -332,6 +332,169 @@ struct SheetGrabber: View {
     }
 }
 
+// MARK: - AuraStepper
+struct AuraStepper: View {
+    @Binding var value: Int
+    var min: Int = 0
+    var max: Int = 99
+    var step: Int = 1
+    var format: ((Int) -> String)? = nil
+
+    var body: some View {
+        HStack(spacing: AuraSpacing.s3) {
+            Button {
+                if value - step >= min { value -= step }
+            } label: {
+                Image(systemName: "minus")
+                    .font(.system(size: 15, weight: .semibold))
+                    .foregroundColor(.aura.text)
+                    .frame(width: 30, height: 30)
+                    .background(Color.aura.fill)
+                    .clipShape(Circle())
+            }
+            .buttonStyle(.plain)
+
+            Text(format?(value) ?? "\(value)")
+                .font(AuraFont.statNum(size: 15))
+                .foregroundColor(.aura.text)
+                .frame(minWidth: 56, alignment: .center)
+
+            Button {
+                if value + step <= max { value += step }
+            } label: {
+                Image(systemName: "plus")
+                    .font(.system(size: 15, weight: .semibold))
+                    .foregroundColor(.aura.accent)
+                    .frame(width: 30, height: 30)
+                    .background(Color.aura.accentSoft)
+                    .clipShape(Circle())
+            }
+            .buttonStyle(.plain)
+        }
+    }
+}
+
+// MARK: - AuraLineChart
+struct AuraLineChart: View {
+    let data: [Double]
+    var color: Color = .aura.accent
+    var height: CGFloat = 120
+    var showArea: Bool = true
+    var showDot: Bool = true
+
+    var body: some View {
+        GeometryReader { geo in
+            let w = geo.size.width
+            let h = height
+            let pad: CGFloat = 12
+            let minV = data.min() ?? 0
+            let maxV = data.max() ?? 1
+            let range = max(maxV - minV, 1)
+            let n = data.count
+            let pts: [CGPoint] = data.enumerated().map { i, v in
+                let x = n == 1
+                    ? pad + (w - 2 * pad) / 2
+                    : pad + CGFloat(i) * (w - 2 * pad) / CGFloat(n - 1)
+                let y = h - pad - CGFloat((v - minV) / range) * (h - 2 * pad - 6)
+                return CGPoint(x: x, y: y)
+            }
+
+            ZStack {
+                if showArea, pts.count > 1 {
+                    Path { p in
+                        p.move(to: pts[0])
+                        pts.dropFirst().forEach { p.addLine(to: $0) }
+                        p.addLine(to: CGPoint(x: pts.last!.x, y: h - pad))
+                        p.addLine(to: CGPoint(x: pts[0].x, y: h - pad))
+                        p.closeSubpath()
+                    }
+                    .fill(LinearGradient(
+                        colors: [color.opacity(0.22), color.opacity(0)],
+                        startPoint: .top, endPoint: .bottom
+                    ))
+                }
+
+                if pts.count > 1 {
+                    Path { p in
+                        p.move(to: pts[0])
+                        pts.dropFirst().forEach { p.addLine(to: $0) }
+                    }
+                    .stroke(color, style: StrokeStyle(lineWidth: 2.4, lineCap: .round, lineJoin: .round))
+                }
+
+                if showDot, let last = pts.last {
+                    Circle()
+                        .fill(color)
+                        .frame(width: 8, height: 8)
+                        .position(last)
+                }
+            }
+            .frame(width: w, height: h)
+        }
+        .frame(height: height)
+    }
+}
+
+// MARK: - AuraToast
+struct AuraToast: View {
+    let message: String
+    var icon: String? = nil
+    var color: Color = .aura.green
+
+    var body: some View {
+        HStack(spacing: AuraSpacing.s2) {
+            if let icon {
+                Image(systemName: icon)
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundColor(color)
+            }
+            Text(message)
+                .font(AuraFont.secondary())
+                .fontWeight(.semibold)
+                .foregroundColor(.aura.text)
+        }
+        .padding(.horizontal, AuraSpacing.s4)
+        .padding(.vertical, AuraSpacing.s3)
+        .background(
+            Color.aura.surface
+                .shadow(.drop(color: .black.opacity(0.15), radius: 12, y: 4))
+        )
+        .clipShape(Capsule())
+        .overlay(Capsule().stroke(Color.aura.separator2, lineWidth: 1))
+    }
+}
+
+struct ToastModifier: ViewModifier {
+    @Binding var isShowing: Bool
+    let message: String
+    var icon: String? = nil
+    var color: Color = .aura.green
+
+    func body(content: Content) -> some View {
+        ZStack(alignment: .bottom) {
+            content
+            if isShowing {
+                AuraToast(message: message, icon: icon, color: color)
+                    .padding(.bottom, 100)
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
+                    .onAppear {
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                            withAnimation(.easeOut(duration: 0.3)) { isShowing = false }
+                        }
+                    }
+                    .zIndex(200)
+            }
+        }
+        .animation(.spring(response: 0.35, dampingFraction: 0.75), value: isShowing)
+    }
+}
+
+extension View {
+    func auraToast(isShowing: Binding<Bool>, message: String, icon: String? = nil, color: Color = .aura.green) -> some View {
+        modifier(ToastModifier(isShowing: isShowing, message: message, icon: icon, color: color))
+    }
+}
+
 // MARK: - Stat tile
 struct StatTile: View {
     let value: String
