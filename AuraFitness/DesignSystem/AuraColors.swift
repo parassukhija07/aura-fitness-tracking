@@ -79,39 +79,19 @@ struct AuraColorNamespace {
     var separator: Color {
         dyn(light: "#E0DDDA", dark: "#353230")
     }
-<<<<<<< HEAD
-    var separator2: Color {
-        Color(UIColor(dynamicProvider: { t in
-            t.userInterfaceStyle == .dark
-                ? UIColor(red: 0.27, green: 0.255, blue: 0.235, alpha: 1) // oklch(0.27 0.006 70)
-                : UIColor(red: 0.93, green: 0.922, blue: 0.912, alpha: 1) // oklch(0.93 0.004 70)
-        }))
-    }
-=======
     /// `--separator-2` · hairline divider
     var separator2: Color {
         dyn(light: "#EAE7E5", dark: "#282623")
     }
     /// `--fill` · neutral fill (chips, icon bg) · base @ 12% (light) / 16% (dark)
->>>>>>> 91e379ec4685afd991790ab0373badd82d02b753
     var fill: Color {
         dynA(light: "#A9A49E", lightA: 0.12, dark: "#B2ADA7", darkA: 0.16)
     }
-<<<<<<< HEAD
-    var fill2: Color {
-        Color(UIColor(dynamicProvider: { t in
-            t.userInterfaceStyle == .dark
-                ? UIColor(red: 0.75, green: 0.74, blue: 0.73, alpha: 0.10) // oklch(0.75 0.01 75 / 0.10)
-                : UIColor(red: 0.72, green: 0.71, blue: 0.695, alpha: 0.08) // oklch(0.72 0.01 70 / 0.08)
-        }))
-    }
-=======
     /// `--fill-2` · subtler neutral fill · base @ 8% (light) / 10% (dark)
     var fill2: Color {
         dynA(light: "#A9A49E", lightA: 0.08, dark: "#B2ADA7", darkA: 0.10)
     }
     /// `--track` · progress/timer track
->>>>>>> 91e379ec4685afd991790ab0373badd82d02b753
     var track: Color {
         dyn(light: "#DAD7D3", dark: "#302D2B")
     }

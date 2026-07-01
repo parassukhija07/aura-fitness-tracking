@@ -377,45 +377,47 @@ struct SheetGrabber: View {
 }
 
 // MARK: - AuraStepper
-<<<<<<< HEAD
+/// Pill stepper: − [value] + with min/max clamping and an optional value formatter.
+/// Mirrors `Stepper` from ui.jsx (used across Workout settings).
 struct AuraStepper: View {
     @Binding var value: Int
-    var min: Int = 0
-    var max: Int = 99
+    var range: ClosedRange<Int> = 1...99
     var step: Int = 1
     var format: ((Int) -> String)? = nil
 
+    private var display: String { format?(value) ?? "\(value)" }
+    private var canDec: Bool { value - step >= range.lowerBound }
+    private var canInc: Bool { value + step <= range.upperBound }
+
     var body: some View {
-        HStack(spacing: AuraSpacing.s3) {
-            Button {
-                if value - step >= min { value -= step }
-            } label: {
-                Image(systemName: "minus")
-                    .font(.system(size: 15, weight: .semibold))
-                    .foregroundColor(.aura.text)
-                    .frame(width: 30, height: 30)
-                    .background(Color.aura.fill)
-                    .clipShape(Circle())
+        HStack(spacing: 0) {
+            stepButton("minus", enabled: canDec) {
+                value = max(range.lowerBound, value - step)
             }
-            .buttonStyle(.plain)
-
-            Text(format?(value) ?? "\(value)")
-                .font(AuraFont.statNum(size: 15))
+            Text(display)
+                .font(.system(size: 15, weight: .semibold))
                 .foregroundColor(.aura.text)
-                .frame(minWidth: 56, alignment: .center)
-
-            Button {
-                if value + step <= max { value += step }
-            } label: {
-                Image(systemName: "plus")
-                    .font(.system(size: 15, weight: .semibold))
-                    .foregroundColor(.aura.accent)
-                    .frame(width: 30, height: 30)
-                    .background(Color.aura.accentSoft)
-                    .clipShape(Circle())
+                .frame(minWidth: 64)
+                .monospacedDigit()
+            stepButton("plus", enabled: canInc) {
+                value = min(range.upperBound, value + step)
             }
-            .buttonStyle(.plain)
         }
+        .background(Color.aura.fill)
+        .clipShape(Capsule())
+    }
+
+    @ViewBuilder
+    private func stepButton(_ symbol: String, enabled: Bool, _ action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            Image(systemName: symbol)
+                .font(.system(size: 13, weight: .bold))
+                .foregroundColor(enabled ? .aura.text : .aura.text3)
+                .frame(width: 36, height: 34)
+                .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .disabled(!enabled)
     }
 }
 
@@ -537,49 +539,6 @@ struct ToastModifier: ViewModifier {
 extension View {
     func auraToast(isShowing: Binding<Bool>, message: String, icon: String? = nil, color: Color = .aura.green) -> some View {
         modifier(ToastModifier(isShowing: isShowing, message: message, icon: icon, color: color))
-=======
-/// Pill stepper: − [value] + with min/max clamping and an optional value formatter.
-/// Mirrors `Stepper` from ui.jsx (used across Workout settings).
-struct AuraStepper: View {
-    @Binding var value: Int
-    var range: ClosedRange<Int> = 1...99
-    var step: Int = 1
-    var format: ((Int) -> String)? = nil
-
-    private var display: String { format?(value) ?? "\(value)" }
-    private var canDec: Bool { value - step >= range.lowerBound }
-    private var canInc: Bool { value + step <= range.upperBound }
-
-    var body: some View {
-        HStack(spacing: 0) {
-            stepButton("minus", enabled: canDec) {
-                value = max(range.lowerBound, value - step)
-            }
-            Text(display)
-                .font(.system(size: 15, weight: .semibold))
-                .foregroundColor(.aura.text)
-                .frame(minWidth: 64)
-                .monospacedDigit()
-            stepButton("plus", enabled: canInc) {
-                value = min(range.upperBound, value + step)
-            }
-        }
-        .background(Color.aura.fill)
-        .clipShape(Capsule())
-    }
-
-    @ViewBuilder
-    private func stepButton(_ symbol: String, enabled: Bool, _ action: @escaping () -> Void) -> some View {
-        Button(action: action) {
-            Image(systemName: symbol)
-                .font(.system(size: 13, weight: .bold))
-                .foregroundColor(enabled ? .aura.text : .aura.text3)
-                .frame(width: 36, height: 34)
-                .contentShape(Rectangle())
-        }
-        .buttonStyle(.plain)
-        .disabled(!enabled)
->>>>>>> 91e379ec4685afd991790ab0373badd82d02b753
     }
 }
 

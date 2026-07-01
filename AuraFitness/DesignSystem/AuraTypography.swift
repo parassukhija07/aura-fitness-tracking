@@ -47,15 +47,12 @@ enum AuraFont {
     static func statNum(size: CGFloat = 24) -> Font {
         .system(size: size, weight: .heavy).monospacedDigit()
     }
-<<<<<<< HEAD
     static func tiny() -> Font {
         .system(size: 11, weight: .medium)
     }
-=======
     static func statNumTracking(size: CGFloat = 24) -> CGFloat { -0.03 * size }
 
     /// Badge · 12 / 700 / +.01em.
->>>>>>> 91e379ec4685afd991790ab0373badd82d02b753
     static func badge() -> Font {
         .system(size: 12, weight: .bold)
     }
