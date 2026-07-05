@@ -9,14 +9,11 @@ extension Comparable {
 struct StatsView: View {
     @EnvironmentObject var appState: AppState
     @State private var showPRs = false
-<<<<<<< HEAD
     @State private var showWeekly = false
-=======
     @State private var selectedExerciseName = "Barbell Bench Press"
     @State private var selectedMetric = "1rm"
     @State private var selectedRange = "6m"
     @State private var showExerciseSearch = false
->>>>>>> 91e379ec4685afd991790ab0373badd82d02b753
 
     var totalSessions: Int { appState.workoutLogs.count }
     var totalSets: Int {
@@ -61,19 +58,14 @@ struct StatsView: View {
                 // Consistency heatmap
                 ConsistencyHeatmapView()
 
-<<<<<<< HEAD
                 // Weekly volume card (tappable → WeeklyVolumeView)
                 weeklyCard
 
-                // This week muscles
-                thisWeekMuscles
-=======
                 // Strength Score & Balance side-by-side
                 HStack(spacing: AuraSpacing.s3) {
                     strengthScoreCard()
                     strengthBalanceCard()
                 }
->>>>>>> 91e379ec4685afd991790ab0373badd82d02b753
 
                 // Lifetime stats
                 AuraSectionLabel(title: "Lifetime")
@@ -154,33 +146,6 @@ struct StatsView: View {
 
     // MARK: Muscle focus bars
     @ViewBuilder
-<<<<<<< HEAD
-    private var thisWeekMuscles: some View {
-        let cal = Calendar.current
-        let weekLogs = appState.workoutLogs.filter {
-            cal.isDate($0.date, equalTo: Date(), toGranularity: .weekOfYear)
-        }
-        let muscles = weekLogs.flatMap { $0.exercises }.flatMap { $0.muscleGroups }
-        let counts = Dictionary(muscles.map { ($0, 1) }, uniquingKeysWith: +)
-        let sorted = counts.sorted { $0.value > $1.value }.prefix(5)
-
-        if !sorted.isEmpty {
-            AuraSectionLabel(title: "This Week — Muscle Focus")
-            AuraCard {
-                VStack(alignment: .leading, spacing: AuraSpacing.s3) {
-                    ForEach(sorted, id: \.key) { muscle, count in
-                        HStack(spacing: AuraSpacing.s2) {
-                            Text(muscle)
-                                .font(AuraFont.secondary())
-                                .foregroundColor(.aura.text)
-                                .frame(width: 88, alignment: .leading)
-                            AuraProgressBar(
-                                value: Double(count) / Double(sorted.first?.value ?? 1),
-                                height: 6
-                            )
-                            Text("\(count)")
-                                .font(.system(size: 12, weight: .bold))
-=======
     private func strengthScoreCard() -> some View {
         AuraCard {
             VStack(alignment: .leading, spacing: AuraSpacing.s3) {
@@ -292,7 +257,6 @@ struct StatsView: View {
                             AuraProgressBar(value: Double(count) / Double(thisWeekByMuscle.first?.1 ?? 1))
                             Text("\(count)%")
                                 .font(AuraFont.secondary())
->>>>>>> 91e379ec4685afd991790ab0373badd82d02b753
                                 .foregroundColor(.aura.text2)
                                 .frame(width: 32, alignment: .trailing)
                         }
@@ -307,12 +271,12 @@ struct StatsView: View {
         }
     }
 
-<<<<<<< HEAD
     private func formatVolume(_ v: Double) -> String {
         v >= 1_000_000 ? String(format: "%.1fM", v / 1_000_000)
             : v >= 1_000 ? String(format: "%.1fk", v / 1_000)
             : String(format: "%.0f", v)
-=======
+    }
+
     @ViewBuilder
     private func exerciseTrendsCard() -> some View {
         AuraCard {
@@ -422,6 +386,5 @@ struct StatsView: View {
         case "volume": return "Max Volume"
         default: return metric
         }
->>>>>>> 91e379ec4685afd991790ab0373badd82d02b753
     }
 }
