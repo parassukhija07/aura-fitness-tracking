@@ -108,7 +108,6 @@ struct ProgramDetailView: View {
     }
 
     private func addToMyPlans() {
-        let plan = planDB.createPlan(from: program)
-        planDB.addPlan(plan)
+        planDB.addPlan(from: program, startDay: appState.calendarStartDay)
     }
 }

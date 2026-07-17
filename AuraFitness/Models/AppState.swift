@@ -298,6 +298,28 @@ class AppState: ObservableObject {
         return f
     }()
 
+    /// Synthesizes a warm-up protocol for a given exercise position in a
+    /// workout: full 4-set ladder for the first exercise, a lighter 2-set
+    /// ladder for the second, and none thereafter.
+    private static func synthesizedWarmup(forExerciseIndex index: Int) -> [WarmupSet] {
+        switch index {
+        case 0:
+            return [
+                WarmupSet(reps: 12, label: "Empty bar"),
+                WarmupSet(reps: 8, label: "40%"),
+                WarmupSet(reps: 5, label: "60%"),
+                WarmupSet(reps: 3, label: "80%")
+            ]
+        case 1:
+            return [
+                WarmupSet(reps: 10, label: "50%"),
+                WarmupSet(reps: 6, label: "75%")
+            ]
+        default:
+            return []
+        }
+    }
+
     /// Build the live session workout from the selected `Workout`: seeds empty
     /// `plannedSets` sets per exercise and enriches with real PR/history/target
     /// data. Purely additive — never overwrites existing data with nil/empty.
@@ -340,6 +362,11 @@ class AppState: ObservableObject {
                           let parsedWeight = Double(first.weight), let parsedReps = Int(first.reps) {
                     w.exercises[i].target = TargetRecord(weight: parsedWeight, reps: parsedReps, note: "Match last session")
                 }
+            }
+
+            // warm-up synthesis (additive — never overwrite an existing warm-up)
+            if w.exercises[i].warmup.isEmpty {
+                w.exercises[i].warmup = Self.synthesizedWarmup(forExerciseIndex: i)
             }
         }
         return w

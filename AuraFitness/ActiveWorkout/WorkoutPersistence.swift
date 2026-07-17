@@ -8,6 +8,7 @@ enum WorkoutPersistence {
     private enum Keys {
         static let workout = "aura_wk"
         static let elapsed = "aura_elapsed"
+        static let runStart = "aura_run_start"
         static let pill    = "aura_pill"
         static let version = "aura_wk_version"
     }
@@ -68,6 +69,10 @@ enum WorkoutPersistence {
         return d.integer(forKey: Keys.elapsed)
     }
 
+    static func restoredRunStart() -> Date? {
+        UserDefaults.standard.object(forKey: Keys.runStart) as? Date
+    }
+
     static func restoredPill(default fallback: CGPoint) -> CGPoint {
         let d = UserDefaults.standard
         guard let arr = d.array(forKey: Keys.pill) as? [Double], arr.count == 2 else { return fallback }
@@ -94,6 +99,11 @@ enum WorkoutPersistence {
         UserDefaults.standard.set(seconds, forKey: Keys.elapsed)
     }
 
+    static func saveRunStart(_ date: Date?) {
+        let d = UserDefaults.standard
+        if let date { d.set(date, forKey: Keys.runStart) } else { d.removeObject(forKey: Keys.runStart) }
+    }
+
     static func savePill(_ p: CGPoint) {
         UserDefaults.standard.set([Double(p.x), Double(p.y)], forKey: Keys.pill)
     }
@@ -104,5 +114,6 @@ enum WorkoutPersistence {
         let d = UserDefaults.standard
         d.removeObject(forKey: Keys.workout)
         d.removeObject(forKey: Keys.elapsed)
+        d.removeObject(forKey: Keys.runStart)
     }
 }

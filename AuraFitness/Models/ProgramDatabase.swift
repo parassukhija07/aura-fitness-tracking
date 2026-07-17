@@ -212,8 +212,12 @@ final class UserPlanDatabase: ObservableObject {
         persist()
     }
 
-    // MARK: Create plan from existing program
-    func createPlan(from program: Program, name: String? = nil) -> UserPlan {
+    /// Auto-assign workouts sequentially to weekdays, then insert + persist.
+    /// `startDay` is 0=Sunday, 1=Monday — pass `appState.calendarStartDay`
+    /// (defaults to Monday, matching most training-split conventions when no
+    /// preference is available, e.g. during boot-time seeding).
+    @discardableResult
+    func addPlan(from program: Program, name: String? = nil, startDay: Int = 1) -> UserPlan {
         var plan = UserPlan(
             name: name ?? program.name,
             isDefault: plans.isEmpty,
@@ -221,12 +225,11 @@ final class UserPlanDatabase: ObservableObject {
             weekSchedule: [:],
             customWorkouts: []
         )
-        // Auto-assign workouts sequentially to weekdays (Mon–Fri for 5-day, etc.)
-        let startDay = 2 // Monday
         for (i, workout) in program.workouts.prefix(program.daysPerWeek).enumerated() {
             let dayIdx = (startDay + i) % 7
             plan.weekSchedule[dayIdx] = workout.id
         }
+        addPlan(plan)
         return plan
     }
 
@@ -248,10 +251,8 @@ final class UserPlanDatabase: ObservableObject {
         } else {
             // Boot: create default plan from first seed program
             if let prog = SeedData.programs.first {
-                let plan = createPlan(from: prog)
-                plans = [plan]
+                addPlan(from: prog)
             }
-            persist()
         }
     }
 }

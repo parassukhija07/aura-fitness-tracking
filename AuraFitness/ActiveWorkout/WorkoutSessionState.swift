@@ -19,18 +19,37 @@ struct CelebrationData: Identifiable {
 class WorkoutSessionState: ObservableObject {
     // MARK: - Workout state (draft — not committed until Save)
     @Published var workout: Workout { didSet { WorkoutPersistence.saveWorkout(workout) } }
-    @Published var activeView: ActiveWorkoutScreen = .overview
+    @Published var activeView: ActiveWorkoutScreen = .overview {
+        didSet {
+            if case .summary = activeView { freezeElapsed() }
+        }
+    }
 
     /// Empty / build-as-you-go launch (no seed restore, no elapsed seed).
     let isEmptyMode: Bool
 
     // MARK: - Timer
-    @Published var elapsedSeconds: Int = 0 { didSet { WorkoutPersistence.saveElapsed(elapsedSeconds) } }
+    /// Base seconds accumulated before the current run (i.e. across pauses /
+    /// background suspends where the tick loop itself may have frozen).
+    private var baseElapsed: Int = 0 { didSet { WorkoutPersistence.saveElapsed(baseElapsed) } }
+    /// Wall-clock start of the current run; nil while paused (never, today —
+    /// elapsed always runs until summary). Persisted so a relaunch mid-session
+    /// still derives correct elapsed from real time, not a frozen tick count.
+    private var runStart: Date? = nil { didSet { WorkoutPersistence.saveRunStart(runStart) } }
     private var elapsedTimer: Timer? = nil
+
+    /// Elapsed = base + wall-clock time since runStart. Computed from `Date`
+    /// so backgrounding (which suspends `Timer`) can't cause drift — the timer
+    /// below only exists to tick the UI, not to count seconds.
+    @Published private(set) var elapsedSeconds: Int = 0
 
     // MARK: - Rest timer
     @Published var restActive: Bool = false
     @Published var restTotal: Int = 60
+    /// Target end of the current rest window; countdown is derived from this,
+    /// not from decrementing a counter, so a backgrounded app still reports
+    /// the correct remaining time on return.
+    private var restEndDate: Date? = nil
     @Published var restLeft: Int = 60
     @Published var restRunning: Bool = true
     private var restTimer: Timer? = nil
@@ -59,16 +78,18 @@ class WorkoutSessionState: ObservableObject {
 
         if emptyMode {
             self.workout = seed
-            self.elapsedSeconds = 0
+            self.baseElapsed = 0
             self.pillPosition = CGPoint(x: 96, y: 690)
         } else {
             // Schema-gated restore onto the fresh seed (mirrors app.jsx).
             var restored = seed
             WorkoutPersistence.restore(into: &restored, workoutKey: seed.name)
             self.workout = restored
-            self.elapsedSeconds = WorkoutPersistence.restoredElapsed(default: 0)
+            self.baseElapsed = WorkoutPersistence.restoredElapsed(default: 0)
             self.pillPosition = WorkoutPersistence.restoredPill(default: CGPoint(x: 96, y: 690))
         }
+        self.runStart = WorkoutPersistence.restoredRunStart() ?? Date()
+        refreshElapsed()
         startElapsedTimer()
     }
 
@@ -83,11 +104,32 @@ class WorkoutSessionState: ObservableObject {
         elapsedTimer?.invalidate()
         elapsedTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
             Task { @MainActor [weak self] in
-                guard let self else { return }
-                if case .summary = self.activeView { return }
-                self.elapsedSeconds += 1
+                self?.refreshElapsed()
             }
         }
+    }
+
+    private func refreshElapsed() {
+        if case .summary = activeView { return }
+        guard let runStart else { return }
+        elapsedSeconds = baseElapsed + max(0, Int(Date().timeIntervalSince(runStart)))
+    }
+
+    /// Fold the current run into `baseElapsed` and persist the tally. Called on
+    /// summary entry so the freeze there matches pre-refactor behavior (elapsed
+    /// stops advancing once the workout is done).
+    private func freezeElapsed() {
+        refreshElapsed()
+        baseElapsed = elapsedSeconds
+        runStart = nil
+    }
+
+    /// Recompute elapsed/rest from wall-clock time immediately — call on
+    /// scenePhase → .active so a backgrounded session's UI catches up instantly
+    /// instead of waiting for the next 1s tick.
+    func refreshOnForeground() {
+        refreshElapsed()
+        refreshRest()
     }
 
     var elapsedFormatted: String {
@@ -99,11 +141,11 @@ class WorkoutSessionState: ObservableObject {
     // MARK: - Rest timer
     func startRest(duration: Int) {
         guard appState?.autoRestTimer == true else { return }
-        restTimer?.invalidate()
         restActive = true
         restTotal = duration
         restLeft = duration
         restRunning = true
+        restEndDate = Date().addingTimeInterval(TimeInterval(duration))
         scheduleRestTick()
     }
 
@@ -111,30 +153,44 @@ class WorkoutSessionState: ObservableObject {
         restTimer?.invalidate()
         restTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
             Task { @MainActor [weak self] in
-                guard let self, self.restActive, self.restRunning else { return }
-                if self.restLeft <= 1 {
-                    self.restTimer?.invalidate()
-                    self.restActive = false
-                    self.restLeft = 0
-                } else {
-                    self.restLeft -= 1
-                }
+                self?.refreshRest()
             }
+        }
+    }
+
+    /// Recompute `restLeft` from `restEndDate` (wall clock), not a decremented
+    /// counter — a background suspend can't cause the countdown to freeze.
+    private func refreshRest() {
+        guard restActive, restRunning, let restEndDate else { return }
+        let remaining = Int(restEndDate.timeIntervalSince(Date()).rounded(.up))
+        if remaining <= 0 {
+            restTimer?.invalidate()
+            restActive = false
+            restLeft = 0
+        } else {
+            restLeft = remaining
         }
     }
 
     func pauseResumeRest() {
         restRunning.toggle()
-        if restRunning { scheduleRestTick() } else { restTimer?.invalidate() }
+        if restRunning {
+            restEndDate = Date().addingTimeInterval(TimeInterval(restLeft))
+            scheduleRestTick()
+        } else {
+            restTimer?.invalidate()
+        }
     }
 
     func addRestTime(_ seconds: Int) {
         restLeft += seconds
+        if let restEndDate { self.restEndDate = restEndDate.addingTimeInterval(TimeInterval(seconds)) }
     }
 
     func dismissRest() {
         restTimer?.invalidate()
         restActive = false
+        restEndDate = nil
     }
 
     var restFormatted: String {
