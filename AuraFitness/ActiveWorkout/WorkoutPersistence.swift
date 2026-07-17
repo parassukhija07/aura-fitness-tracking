@@ -25,18 +25,28 @@ enum WorkoutPersistence {
     }
     private struct SavedWorkout: Codable {
         var version: Int
+        var workoutKey: String
         var exercises: [SavedExercise]
     }
 
     /// Apply a schema-compatible saved blob onto a fresh seed (in place). On a
-    /// version mismatch the key is cleared and the seed is left untouched.
-    static func restore(into workout: inout Workout) {
+    /// version mismatch, or if the blob belongs to a different workout, the key
+    /// is cleared and the seed is left untouched.
+    static func restore(into workout: inout Workout, workoutKey: String) {
         let d = UserDefaults.standard
-        guard let data = d.data(forKey: Keys.workout),
-              let saved = try? JSONDecoder().decode(SavedWorkout.self, from: data)
-        else { return }
+        guard let data = d.data(forKey: Keys.workout) else { return }
+
+        guard let saved = try? JSONDecoder().decode(SavedWorkout.self, from: data) else {
+            clearWorkout()
+            return
+        }
 
         guard saved.version == ActiveWorkoutSeed.version else {
+            clearWorkout()
+            return
+        }
+
+        guard saved.workoutKey == workoutKey else {
             clearWorkout()
             return
         }
@@ -69,6 +79,7 @@ enum WorkoutPersistence {
     static func saveWorkout(_ workout: Workout) {
         let saved = SavedWorkout(
             version: ActiveWorkoutSeed.version,
+            workoutKey: workout.name,
             exercises: workout.exercises.map {
                 SavedExercise(name: $0.name, sets: $0.sets,
                               completed: $0.completed, note: $0.note, pulley: $0.pulley)

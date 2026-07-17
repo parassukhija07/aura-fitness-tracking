@@ -8,11 +8,16 @@ import Foundation
 /// whenever the persisted shape changes so stale blobs are cleared, not crashed.
 enum ActiveWorkoutSeed {
     /// Bumped when the persisted workout shape changes (data.jsx `WORKOUT.version`).
-    static let version = 5
+    /// v6: `SavedWorkout.workoutKey` added (WorkoutPersistence) — forces stale
+    /// pre-v6 blobs to clear rather than crash on decode.
+    static let version = 6
 
     /// Seed elapsed seconds (24:47) for the demo mid-session (data.jsx default).
     static let seedElapsed = 1487
 
+    #if DEBUG
+    /// Demo-only: `pushDayA()` is invoked exclusively by
+    /// `AppState.debugStartPushDayDemo()`, never by the real `startWorkout` path.
     static func pushDayA() -> Workout {
         var w = Workout(
             id: UUID(),
@@ -170,4 +175,5 @@ enum ActiveWorkoutSeed {
         e.sets = [WorkoutSet(), WorkoutSet(), WorkoutSet()]
         return e
     }
+    #endif
 }

@@ -64,9 +64,9 @@ class WorkoutSessionState: ObservableObject {
         } else {
             // Schema-gated restore onto the fresh seed (mirrors app.jsx).
             var restored = seed
-            WorkoutPersistence.restore(into: &restored)
+            WorkoutPersistence.restore(into: &restored, workoutKey: seed.name)
             self.workout = restored
-            self.elapsedSeconds = WorkoutPersistence.restoredElapsed(default: ActiveWorkoutSeed.seedElapsed)
+            self.elapsedSeconds = WorkoutPersistence.restoredElapsed(default: 0)
             self.pillPosition = WorkoutPersistence.restoredPill(default: CGPoint(x: 96, y: 690))
         }
         startElapsedTimer()

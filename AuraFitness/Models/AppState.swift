@@ -142,12 +142,11 @@ class AppState: ObservableObject {
 
     // MARK: - Workout overlay lifecycle (mirrors shell.jsx startWorkout / onMinimize / onExit)
 
-    /// Launch the Active Workout overlay with a (seeded or empty) session.
-    ///
-    /// The active-workout hero flow always runs the seeded "Push Day A" mid-session
-    /// demo (with PRs/targets/history/warm-ups and the seeded superset), restored
-    /// from `aura_wk` when a compatible blob exists. The `workout` passed in only
-    /// supplies the overview name/program tag; pass `emptyMode` for build-as-you-go.
+    /// Launch the Active Workout overlay for the SELECTED workout.
+    /// Each exercise is seeded with `plannedSets` empty `WorkoutSet()`s and enriched
+    /// with the user's real PR/history/target data. Elapsed time starts at 0.
+    /// `emptyMode` = build-as-you-go (no exercises). The Push Day A demo lives behind
+    /// `#if DEBUG` only (see `debugStartPushDayDemo`).
     func startWorkout(_ workout: Workout, emptyMode: Bool = false) {
         let seed: Workout
         if emptyMode {
@@ -155,12 +154,75 @@ class AppState: ObservableObject {
                            primaryMuscles: "—", estimatedMinutes: 0,
                            exercises: [], program: "Free Workout")
         } else {
-            seed = ActiveWorkoutSeed.pushDayA()
+            seed = buildSession(from: workout)
         }
         let session = WorkoutSessionState(workout: seed, appState: self, emptyMode: emptyMode)
         activeWorkoutSession = session
         workoutOverlayOpen = true
     }
+
+    private static let prDateFormatter: DateFormatter = {
+        let f = DateFormatter()
+        f.dateFormat = "MMM d"
+        return f
+    }()
+
+    /// Build the live session workout from the selected `Workout`: seeds empty
+    /// `plannedSets` sets per exercise and enriches with real PR/history/target
+    /// data. Purely additive — never overwrites existing data with nil/empty.
+    private func buildSession(from workout: Workout) -> Workout {
+        var w = workout
+        for i in w.exercises.indices {
+            let planned = max(1, w.exercises[i].plannedSets)
+            w.exercises[i].sets = (0..<planned).map { _ in WorkoutSet() }
+            w.exercises[i].completed = false
+            let exName = w.exercises[i].name
+
+            // lastPR enrichment
+            if let pr = personalRecords.first(where: { $0.exerciseName.lowercased() == exName.lowercased() }) {
+                w.exercises[i].lastPR = PRRecord(weight: pr.weight, reps: pr.reps,
+                                                  date: Self.prDateFormatter.string(from: pr.date))
+            }
+
+            // history enrichment: most-recent matching log
+            let matchingLogs = workoutLogs.filter { log in
+                log.exercises.contains { $0.name.lowercased() == exName.lowercased() }
+            }
+            if let latestLog = matchingLogs.max(by: { $0.date < $1.date }),
+               let matchedExercise = latestLog.exercises.first(where: { $0.name.lowercased() == exName.lowercased() }) {
+                let mappedHistory: [SetHistory] = matchedExercise.sets.compactMap { s in
+                    if s.weight == nil && s.reps == nil { return nil }
+                    let wStr = s.weight.map { String($0) } ?? "0"
+                    let rStr = s.reps.map(String.init) ?? "0"
+                    return SetHistory(weight: wStr, reps: rStr)
+                }
+                if !mappedHistory.isEmpty {
+                    w.exercises[i].history = mappedHistory
+                }
+            }
+
+            // target derivation (minimal rule — do NOT overbuild)
+            if w.exercises[i].target == nil {
+                if let pr = w.exercises[i].lastPR {
+                    w.exercises[i].target = TargetRecord(weight: pr.weight, reps: pr.reps, note: "Match your last best")
+                } else if let first = w.exercises[i].history.first,
+                          let parsedWeight = Double(first.weight), let parsedReps = Int(first.reps) {
+                    w.exercises[i].target = TargetRecord(weight: parsedWeight, reps: parsedReps, note: "Match last session")
+                }
+            }
+        }
+        return w
+    }
+
+    #if DEBUG
+    /// Demo-only: launch the seeded Push Day A mid-session (fake PRs/history/elapsed).
+    func debugStartPushDayDemo() {
+        let seed = ActiveWorkoutSeed.pushDayA()
+        let session = WorkoutSessionState(workout: seed, appState: self, emptyMode: false)
+        activeWorkoutSession = session
+        workoutOverlayOpen = true
+    }
+    #endif
 
     /// Minimize: keep the live session (timers, logged sets, rest) but close the
     /// overlay → lands on Log with the resume banner showing.
