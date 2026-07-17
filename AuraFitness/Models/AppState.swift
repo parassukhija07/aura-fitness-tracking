@@ -24,6 +24,9 @@ enum DarkModePreference: String, CaseIterable, Codable {
 @MainActor
 class AppState: ObservableObject {
     // MARK: - Persistence keys (mirror shell.jsx localStorage keys)
+    // NOTE: "aura_seeded_missed_v1" is now an orphaned key in existing installs —
+    // it was used to persist the removed demo-only `seededMissed` mechanism and
+    // is intentionally never read or written again (no migration/cleanup needed).
     private enum Keys {
         static let dark     = "aura_dark"      // DarkModePreference rawValue
         static let calStart = "aura_calstart"  // "Sun" | "Mon"
@@ -31,7 +34,6 @@ class AppState: ObservableObject {
         static let workoutLogs      = "aura_workout_logs_v1"
         static let dayOverrides     = "aura_day_overrides_v1"
         static let quickLogs        = "aura_quick_logs_v1"
-        static let seededMissed     = "aura_seeded_missed_v1"
         static let measurements     = "aura_measurements_v1"
         static let bodyStats        = "aura_body_stats_v1"
         static let personalRecords  = "aura_personal_records_v1"
@@ -95,7 +97,6 @@ class AppState: ObservableObject {
         if let v = loadCodable([WorkoutLog].self, Keys.workoutLogs)      { workoutLogs = v }
         if let v = loadCodable([String: DayOverride].self, Keys.dayOverrides) { dayOverrides = v }
         if let v = loadCodable([String: QuickLog].self, Keys.quickLogs)  { quickLogs = v }
-        if let v = loadCodable([String].self, Keys.seededMissed)         { seededMissed = Set(v) }
         if let v = loadCodable([Measurement].self, Keys.measurements)    { measurements = v }
         if let v = loadCodable(BodyStats.self, Keys.bodyStats)           { bodyStats = v }
         if let v = loadCodable([PersonalRecord].self, Keys.personalRecords) { personalRecords = v }
@@ -189,10 +190,6 @@ class AppState: ObservableObject {
     /// Per-day quick logs keyed by ISO date string.
     @Published var quickLogs: [String: QuickLog] = [:] {
         didSet { persistCodable(quickLogs, Keys.quickLogs) }
-    }
-    /// Past days seeded as "missed" for the demo (no log exists).
-    @Published var seededMissed: Set<String> = [] {
-        didSet { persistCodable(Array(seededMissed), Keys.seededMissed) }
     }
     @Published var measurements: [Measurement] = [] {
         didSet { persistCodable(measurements, Keys.measurements) }
@@ -386,6 +383,15 @@ class AppState: ObservableObject {
         )
         workoutLogs.append(log)
 
+        // Stamp a `.logged` override for this day so the Log tab's dayInfo
+        // state machine derives past-day completion from actual logs. Skip if
+        // an override is already logged (idempotent re-save; avoids clobbering
+        // a manually-set workoutId from a quick-log at LogSheetsView:881).
+        let iso = AppState.iso(session.startDate)
+        if dayOverrides[iso]?.kind != .logged {
+            setOverride(DayOverride(kind: .logged, workoutId: session.workout.id), for: iso)
+        }
+
         // Update personal records
         for ex in session.workout.exercises {
             for s in ex.sets where s.done {
@@ -520,10 +526,11 @@ class AppState: ObservableObject {
         } else if relation == .future {
             state = .future
         } else {
-            // Past planned day: done unless seeded as missed.
-            if ov?.kind == .added { state = .done }
-            else if seededMissed.contains(iso) { state = .missed }
-            else { state = .done }
+            // Past planned day: derive completion from actual logs, not an
+            // optimistic default. A workout being `.added` doesn't force
+            // `.done` on its own — if no log exists, it's still `.missed`.
+            if hasLog(for: date) { state = .done }
+            else { state = .missed }
         }
 
         return DayInfo(iso: iso, dowIndex: dow, date: date,

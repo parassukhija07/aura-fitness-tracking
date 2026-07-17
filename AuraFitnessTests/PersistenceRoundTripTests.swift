@@ -5,7 +5,6 @@ final class PersistenceRoundTripTests: XCTestCase {
 
     // MARK: - Key strings (copied verbatim from AppState.Keys)
 
-    let seededMissedKey    = "aura_seeded_missed_v1"
     let dayOverridesKey    = "aura_day_overrides_v1"
     let quickLogsKey       = "aura_quick_logs_v1"
     let progressPhotosKey = "aura_progress_photos_v1"
@@ -35,7 +34,6 @@ final class PersistenceRoundTripTests: XCTestCase {
 
     private func clearStandardDefaultsKeys() {
         let d = UserDefaults.standard
-        d.removeObject(forKey: seededMissedKey)
         d.removeObject(forKey: dayOverridesKey)
         d.removeObject(forKey: quickLogsKey)
         d.removeObject(forKey: progressPhotosKey)
@@ -76,29 +74,6 @@ final class PersistenceRoundTripTests: XCTestCase {
             difficulty: "Intermediate",
             isCable: false
         )
-    }
-
-    // MARK: - Test 1: Set<String> round-trip via Array bridge
-
-    func test_seededMissed_setEncodesAsArrayAndDecodesBackToSet_membershipAndOrderIndependent() throws {
-        let original: Set<String> = ["2026-01-05", "2026-03-11", "2025-12-31", "2026-07-17"]
-
-        // Mirrors AppState line 182: persistCodable(Array(seededMissed), Keys.seededMissed)
-        let encodedArray = Array(original)
-        let data = try JSONEncoder().encode(encodedArray)
-        let decodedArray = try JSONDecoder().decode([String].self, from: data)
-
-        // Mirrors AppState line 94: seededMissed = Set(v)
-        let rebuiltSet = Set(decodedArray)
-
-        XCTAssertEqual(rebuiltSet, original)
-        for s in original {
-            XCTAssertTrue(rebuiltSet.contains(s))
-        }
-        XCTAssertEqual(rebuiltSet.count, original.count)
-
-        // Negative guard
-        XCTAssertFalse(rebuiltSet.contains("1999-01-01"))
     }
 
     // MARK: - Test 2: [String: DayOverride] round-trip
@@ -176,7 +151,6 @@ final class PersistenceRoundTripTests: XCTestCase {
     func test_fullPersistRelaunch_simulation_freshAppStatePicksUpMutatedCollections() throws {
         // Step A: mutate + persist through the real app path.
         let state = AppState()
-        state.seededMissed = ["2026-01-01", "2026-02-02"]
         state.dayOverrides = ["2026-07-01": DayOverride(kind: .rest)]
         state.quickLogs = ["2026-07-10": QuickLog(time: "08:30", exercises: [])]
         state.progressPhotos = [
@@ -192,7 +166,6 @@ final class PersistenceRoundTripTests: XCTestCase {
         let relaunched = AppState()
 
         // Step C: assertions.
-        XCTAssertEqual(relaunched.seededMissed, state.seededMissed)
         XCTAssertEqual(relaunched.dayOverrides, state.dayOverrides)
         XCTAssertEqual(relaunched.quickLogs, state.quickLogs)
         XCTAssertEqual(relaunched.progressPhotos.first?.imageData, Data([1, 2, 3, 4]))
