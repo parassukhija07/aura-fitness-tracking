@@ -62,6 +62,10 @@ class AppState: ObservableObject {
     /// When true, `didSet` writers don't persist (used while loading in `init`).
     private var isLoading = false
 
+    /// Combine subscriptions bridging external ObservableObject singletons
+    /// (e.g. UserPlanDatabase, ProgramDatabase) into AppState.objectWillChange.
+    private var cancellables = Set<AnyCancellable>()
+
     // MARK: - Appearance
     @Published var darkModePreference: DarkModePreference = .auto {
         didSet { persist(Keys.dark, darkModePreference.rawValue) }
@@ -107,6 +111,15 @@ class AppState: ObservableObject {
             appleHealthConnected = p.appleHealthConnected; googleHealthConnected = p.googleHealthConnected
         }
         isLoading = false
+
+        // Bridge UserPlanDatabase/ProgramDatabase changes into AppState so
+        // views that only observe AppState (e.g. Log tab) still refresh.
+        UserPlanDatabase.shared.objectWillChange
+            .sink { [weak self] _ in self?.objectWillChange.send() }
+            .store(in: &cancellables)
+        ProgramDatabase.shared.objectWillChange
+            .sink { [weak self] _ in self?.objectWillChange.send() }
+            .store(in: &cancellables)
     }
 
     /// Persist a single key immediately (no debounce), skipped during initial load.
@@ -163,7 +176,7 @@ class AppState: ObservableObject {
     @Published var requestLogAddSheet: Bool = false
 
     // MARK: - User data
-    @Published var userPlans: [UserPlan] = []
+    var userPlans: [UserPlan] { UserPlanDatabase.shared.plans }
     @Published var workoutLogs: [WorkoutLog] = [] {
         didSet { persistCodable(workoutLogs, Keys.workoutLogs) }
     }
@@ -463,14 +476,14 @@ class AppState: ObservableObject {
         // Resolve the workout for this day (program schedule, then overrides).
         var workout: Workout? = {
             guard let plan = defaultPlan else { return nil }
-            return plan.workout(for: dow, programs: SeedData.programs)
+            return plan.workout(for: dow, programs: ProgramDatabase.shared.programs)
         }()
 
         if let ov {
             switch ov.kind {
             case .switched, .added, .logged:
                 if let wid = ov.workoutId {
-                    workout = SeedData.programs.flatMap { $0.workouts }
+                    workout = ProgramDatabase.shared.programs.flatMap { $0.workouts }
                         .first { $0.id == wid }
                         ?? defaultPlan?.customWorkouts.first { $0.id == wid }
                         ?? workout

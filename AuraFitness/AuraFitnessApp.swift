@@ -9,11 +9,6 @@ struct AuraFitnessApp: App {
             ContentView()
                 .environmentObject(appState)
                 .onAppear {
-                    // Sync AppState.userPlans from UserPlanDatabase on launch
-                    // UserPlanDatabase.load() already seeded from first program if empty
-                    if appState.userPlans.isEmpty {
-                        appState.userPlans = UserPlanDatabase.shared.plans
-                    }
                     // Seed a few recent "missed" days so the Log tab shows that state
                     // (mirrors combined/log.jsx SEED_MISSED, relative to today).
                     if appState.seededMissed.isEmpty {

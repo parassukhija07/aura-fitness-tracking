@@ -69,8 +69,6 @@ struct MyPlansView: View {
         .alert("Delete Plan", isPresented: $showDeleteAlert, presenting: planToDelete) { plan in
             Button("Delete", role: .destructive) {
                 planDB.deletePlan(id: plan.id)
-                // Keep appState.userPlans in sync
-                appState.userPlans = planDB.plans
             }
             Button("Cancel", role: .cancel) {}
         } message: { plan in
@@ -115,7 +113,6 @@ struct MyPlansView: View {
         .contextMenu {
             Button {
                 planDB.setDefault(id: plan.id)
-                appState.userPlans = planDB.plans
             } label: {
                 Label("Set as Active", systemImage: "star.fill")
             }
@@ -246,7 +243,6 @@ struct CreatePlanView: View {
                             weekSchedule: [:]
                         )
                         planDB.addPlan(plan)
-                        appState.userPlans = planDB.plans
                         dismiss()
                     }
                     .foregroundColor(.aura.accent)
@@ -293,7 +289,6 @@ struct PlanScheduleEditorView: View {
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Save") {
                         planDB.updatePlan(plan)
-                        appState.userPlans = planDB.plans
                         dismiss()
                     }
                     .foregroundColor(.aura.accent)

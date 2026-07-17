@@ -110,7 +110,5 @@ struct ProgramDetailView: View {
     private func addToMyPlans() {
         let plan = planDB.createPlan(from: program)
         planDB.addPlan(plan)
-        // Keep appState in sync for Log tab
-        appState.userPlans = planDB.plans
     }
 }
