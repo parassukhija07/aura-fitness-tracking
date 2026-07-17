@@ -28,6 +28,35 @@ class AppState: ObservableObject {
         static let dark     = "aura_dark"      // DarkModePreference rawValue
         static let calStart = "aura_calstart"  // "Sun" | "Mon"
         static let logStat  = "aura_logstat"   // "Strength Score" | "Strength Balance" | "Both"
+        static let workoutLogs      = "aura_workout_logs_v1"
+        static let dayOverrides     = "aura_day_overrides_v1"
+        static let quickLogs        = "aura_quick_logs_v1"
+        static let seededMissed     = "aura_seeded_missed_v1"
+        static let measurements     = "aura_measurements_v1"
+        static let bodyStats        = "aura_body_stats_v1"
+        static let personalRecords  = "aura_personal_records_v1"
+        static let userProfile      = "aura_user_profile_v1"
+        static let progressPhotos   = "aura_progress_photos_v1"
+        static let workoutPrefs     = "aura_workout_prefs_v1"  // bundles the preference scalars (see below)
+    }
+
+    /// Bundles the scattered workout-preference scalars into a single persisted blob.
+    private struct WorkoutPrefs: Codable {
+        var defaultSets: Int
+        var defaultRepLow: Int
+        var defaultRepHigh: Int
+        var defaultRestBetweenSets: Int
+        var defaultRestBetweenExercises: Int
+        var autoRestTimer: Bool
+        var autoPlayVideo: Bool
+        var showPRsDuringWorkout: Bool
+        var showRepsFirst: Bool
+        var weightUnit: String
+        var lengthUnit: String
+        var notificationsEnabled: Bool
+        var restSound: String
+        var appleHealthConnected: Bool
+        var googleHealthConnected: Bool
     }
 
     /// When true, `didSet` writers don't persist (used while loading in `init`).
@@ -59,6 +88,24 @@ class AppState: ObservableObject {
         if let ls = d.string(forKey: Keys.logStat) {
             logDisplayMode = ls
         }
+        if let v = loadCodable([WorkoutLog].self, Keys.workoutLogs)      { workoutLogs = v }
+        if let v = loadCodable([String: DayOverride].self, Keys.dayOverrides) { dayOverrides = v }
+        if let v = loadCodable([String: QuickLog].self, Keys.quickLogs)  { quickLogs = v }
+        if let v = loadCodable([String].self, Keys.seededMissed)         { seededMissed = Set(v) }
+        if let v = loadCodable([Measurement].self, Keys.measurements)    { measurements = v }
+        if let v = loadCodable(BodyStats.self, Keys.bodyStats)           { bodyStats = v }
+        if let v = loadCodable([PersonalRecord].self, Keys.personalRecords) { personalRecords = v }
+        if let v = loadCodable(UserProfile.self, Keys.userProfile)       { userProfile = v }
+        if let v = loadCodable([ProgressPhoto].self, Keys.progressPhotos){ progressPhotos = v }
+        if let p = loadCodable(WorkoutPrefs.self, Keys.workoutPrefs) {
+            defaultSets = p.defaultSets; defaultRepLow = p.defaultRepLow; defaultRepHigh = p.defaultRepHigh
+            defaultRestBetweenSets = p.defaultRestBetweenSets; defaultRestBetweenExercises = p.defaultRestBetweenExercises
+            autoRestTimer = p.autoRestTimer; autoPlayVideo = p.autoPlayVideo
+            showPRsDuringWorkout = p.showPRsDuringWorkout; showRepsFirst = p.showRepsFirst
+            weightUnit = p.weightUnit; lengthUnit = p.lengthUnit
+            notificationsEnabled = p.notificationsEnabled; restSound = p.restSound
+            appleHealthConnected = p.appleHealthConnected; googleHealthConnected = p.googleHealthConnected
+        }
         isLoading = false
     }
 
@@ -66,6 +113,31 @@ class AppState: ObservableObject {
     private func persist(_ key: String, _ value: String) {
         guard !isLoading else { return }
         UserDefaults.standard.set(value, forKey: key)
+    }
+
+    /// Persist a Codable value immediately (no debounce), skipped during initial load.
+    private func persistCodable<T: Encodable>(_ value: T, _ key: String) {
+        guard !isLoading else { return }
+        guard let data = try? JSONEncoder().encode(value) else { return }
+        UserDefaults.standard.set(data, forKey: key)
+    }
+    private func loadCodable<T: Decodable>(_ type: T.Type, _ key: String) -> T? {
+        guard let data = UserDefaults.standard.data(forKey: key) else { return nil }
+        return try? JSONDecoder().decode(type, from: data)
+    }
+
+    /// Builds a `WorkoutPrefs` snapshot from the current scalar values and persists it.
+    private func persistWorkoutPrefs() {
+        let prefs = WorkoutPrefs(
+            defaultSets: defaultSets, defaultRepLow: defaultRepLow, defaultRepHigh: defaultRepHigh,
+            defaultRestBetweenSets: defaultRestBetweenSets, defaultRestBetweenExercises: defaultRestBetweenExercises,
+            autoRestTimer: autoRestTimer, autoPlayVideo: autoPlayVideo,
+            showPRsDuringWorkout: showPRsDuringWorkout, showRepsFirst: showRepsFirst,
+            weightUnit: weightUnit, lengthUnit: lengthUnit,
+            notificationsEnabled: notificationsEnabled, restSound: restSound,
+            appleHealthConnected: appleHealthConnected, googleHealthConnected: googleHealthConnected
+        )
+        persistCodable(prefs, Keys.workoutPrefs)
     }
 
     // MARK: - Workout session (nil = no active workout)
@@ -92,43 +164,92 @@ class AppState: ObservableObject {
 
     // MARK: - User data
     @Published var userPlans: [UserPlan] = []
-    @Published var workoutLogs: [WorkoutLog] = []
+    @Published var workoutLogs: [WorkoutLog] = [] {
+        didSet { persistCodable(workoutLogs, Keys.workoutLogs) }
+    }
 
     // MARK: - Log tab per-day state (mirrors combined/log.jsx)
     /// Day overrides keyed by ISO date string (yyyy-MM-dd).
-    @Published var dayOverrides: [String: DayOverride] = [:]
+    @Published var dayOverrides: [String: DayOverride] = [:] {
+        didSet { persistCodable(dayOverrides, Keys.dayOverrides) }
+    }
     /// Per-day quick logs keyed by ISO date string.
-    @Published var quickLogs: [String: QuickLog] = [:]
+    @Published var quickLogs: [String: QuickLog] = [:] {
+        didSet { persistCodable(quickLogs, Keys.quickLogs) }
+    }
     /// Past days seeded as "missed" for the demo (no log exists).
-    @Published var seededMissed: Set<String> = []
-    @Published var measurements: [Measurement] = []
-    @Published var bodyStats: BodyStats = BodyStats()
-    @Published var personalRecords: [PersonalRecord] = []
-    @Published var userProfile: UserProfile = UserProfile()
-    @Published var progressPhotos: [ProgressPhoto] = []
+    @Published var seededMissed: Set<String> = [] {
+        didSet { persistCodable(Array(seededMissed), Keys.seededMissed) }
+    }
+    @Published var measurements: [Measurement] = [] {
+        didSet { persistCodable(measurements, Keys.measurements) }
+    }
+    @Published var bodyStats: BodyStats = BodyStats() {
+        didSet { persistCodable(bodyStats, Keys.bodyStats) }
+    }
+    @Published var personalRecords: [PersonalRecord] = [] {
+        didSet { persistCodable(personalRecords, Keys.personalRecords) }
+    }
+    @Published var userProfile: UserProfile = UserProfile() {
+        didSet { persistCodable(userProfile, Keys.userProfile) }
+    }
+    // TODO: migrate progressPhotos image blobs to file storage (UserDefaults size pressure)
+    @Published var progressPhotos: [ProgressPhoto] = [] {
+        didSet { persistCodable(progressPhotos, Keys.progressPhotos) }
+    }
 
     // MARK: - Workout preferences
-    @Published var defaultSets: Int = 3
-    @Published var defaultRepLow: Int = 6
-    @Published var defaultRepHigh: Int = 10
+    @Published var defaultSets: Int = 3 {
+        didSet { persistWorkoutPrefs() }
+    }
+    @Published var defaultRepLow: Int = 6 {
+        didSet { persistWorkoutPrefs() }
+    }
+    @Published var defaultRepHigh: Int = 10 {
+        didSet { persistWorkoutPrefs() }
+    }
     /// Derived "lo–hi" display string (mirrors the prototype's defRepsLo/Hi pair).
     var defaultRepRange: String { "\(defaultRepLow)–\(defaultRepHigh)" }
-    @Published var defaultRestBetweenSets: Int = 60
-    @Published var defaultRestBetweenExercises: Int = 90
-    @Published var autoRestTimer: Bool = true
-    @Published var autoPlayVideo: Bool = false
-    @Published var showPRsDuringWorkout: Bool = true
-    @Published var showRepsFirst: Bool = true
-    @Published var weightUnit: String = "kg"
-    @Published var lengthUnit: String = "cm"
+    @Published var defaultRestBetweenSets: Int = 60 {
+        didSet { persistWorkoutPrefs() }
+    }
+    @Published var defaultRestBetweenExercises: Int = 90 {
+        didSet { persistWorkoutPrefs() }
+    }
+    @Published var autoRestTimer: Bool = true {
+        didSet { persistWorkoutPrefs() }
+    }
+    @Published var autoPlayVideo: Bool = false {
+        didSet { persistWorkoutPrefs() }
+    }
+    @Published var showPRsDuringWorkout: Bool = true {
+        didSet { persistWorkoutPrefs() }
+    }
+    @Published var showRepsFirst: Bool = true {
+        didSet { persistWorkoutPrefs() }
+    }
+    @Published var weightUnit: String = "kg" {
+        didSet { persistWorkoutPrefs() }
+    }
+    @Published var lengthUnit: String = "cm" {
+        didSet { persistWorkoutPrefs() }
+    }
 
     // MARK: - Notifications
-    @Published var notificationsEnabled: Bool = true
-    @Published var restSound: String = "Ding"    // "Ding" | "Alarm clock"
+    @Published var notificationsEnabled: Bool = true {
+        didSet { persistWorkoutPrefs() }
+    }
+    @Published var restSound: String = "Ding" {    // "Ding" | "Alarm clock"
+        didSet { persistWorkoutPrefs() }
+    }
 
     // MARK: - Connected health apps
-    @Published var appleHealthConnected: Bool = true
-    @Published var googleHealthConnected: Bool = false
+    @Published var appleHealthConnected: Bool = true {
+        didSet { persistWorkoutPrefs() }
+    }
+    @Published var googleHealthConnected: Bool = false {
+        didSet { persistWorkoutPrefs() }
+    }
 
     /// Set by AccountDetailsView "Save Changes" on dismiss; the Profile root
     /// consumes it to flash a confirmation toast (mirrors prototype Save flow).
