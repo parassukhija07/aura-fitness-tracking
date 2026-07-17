@@ -113,7 +113,9 @@ struct PlanWorkoutEditorView: View {
 
                     VStack(spacing: 8) {
                         ForEach(Array(exercises.enumerated()), id: \.element.id) { i, ex in
-                            let isSSSecond = i > 0 && exercises[i - 1].superset
+                            let isSSSecond = i > 0
+                                && ex.supersetGroupID != nil
+                                && exercises[i - 1].supersetGroupID == ex.supersetGroupID
                             if isSSSecond { supersetConnector }
                             exerciseCard(i, ex)
                         }
@@ -167,8 +169,10 @@ struct PlanWorkoutEditorView: View {
 
     @ViewBuilder
     private func exerciseCard(_ i: Int, _ ex: PlanEditorExercise) -> some View {
-        let isSSFirst = ex.superset
-        let isSSSecond = i > 0 && exercises[i - 1].superset
+        let isSSSecond = i > 0
+            && ex.supersetGroupID != nil
+            && exercises[i - 1].supersetGroupID == ex.supersetGroupID
+        let isSSFirst = ex.supersetGroupID != nil && !isSSSecond
         let tinted = isSSFirst || isSSSecond
         let dimmed = dragIndex != nil && dragIndex != i
 
@@ -225,7 +229,7 @@ struct PlanWorkoutEditorView: View {
     @ViewBuilder
     private func exMenuSheet(_ i: Int) -> some View {
         let ex = exercises[i]
-        let isSSed = ex.superset || (i > 0 && exercises[i - 1].superset)
+        let isSSed = ex.supersetGroupID != nil
         PlanSheet(centeredTitle: ex.name) {
             VStack(spacing: 0) {
                 // Sets stepper
@@ -271,7 +275,7 @@ struct PlanWorkoutEditorView: View {
                     Divider().padding(.leading, 14)
                     PlanRow(icon: "bolt.fill", color: .aura.accent,
                             label: isSSed ? "Remove Superset" : "Create Superset…") {
-                        if isSSed { removeSuperset(); sheet = nil }
+                        if isSSed { removeSuperset(i); sheet = nil }
                         else { sheet = .ssPick(i) }   // swap sheet content in place
                     }
                     Divider().padding(.leading, 14)
@@ -371,20 +375,27 @@ struct PlanWorkoutEditorView: View {
         exercises.remove(at: i)
     }
 
-    private func removeSuperset() {
-        for idx in exercises.indices { exercises[idx].superset = false }
+    private func removeSuperset(_ index: Int) {
+        guard exercises.indices.contains(index),
+              let gid = exercises[index].supersetGroupID else { return }
+        for idx in exercises.indices where exercises[idx].supersetGroupID == gid {
+            exercises[idx].supersetGroupID = nil
+        }
     }
 
     /// Create superset with existing partner — reorder target to sit right after
-    /// the leader and set the leader's flag (mirrors createSS in app.jsx).
+    /// the leader and assign both a shared group id (mirrors createSS in app.jsx).
     private func createSuperset(src: Int, tgt: Int) {
         var a = exercises
-        for idx in a.indices { a[idx].superset = false }
+        for existingGID in [a[src].supersetGroupID, a[tgt].supersetGroupID].compactMap({ $0 }) {
+            for idx in a.indices where a[idx].supersetGroupID == existingGID { a[idx].supersetGroupID = nil }
+        }
         let t = a.remove(at: tgt)
-        let ins = tgt > src ? src + 1 : src
-        a.insert(t, at: ins)
-        let leader = src < ins ? src : ins
-        a[leader].superset = true
+        let leader = tgt < src ? src - 1 : src
+        a.insert(t, at: leader + 1)
+        let gid = UUID()
+        a[leader].supersetGroupID = gid
+        a[leader + 1].supersetGroupID = gid
         exercises = a
     }
 
@@ -395,9 +406,12 @@ struct PlanWorkoutEditorView: View {
         case .ssNew:
             if let src = route.ssSource {
                 var a = exercises
-                for idx in a.indices { a[idx].superset = false }
-                a.insert(PlanEditorExercise(name: ex.name, sets: 3, reps: "8–12"), at: src + 1)
-                a[src].superset = true
+                if let existingGID = a[src].supersetGroupID {
+                    for idx in a.indices where a[idx].supersetGroupID == existingGID { a[idx].supersetGroupID = nil }
+                }
+                let gid = UUID()
+                a.insert(PlanEditorExercise(name: ex.name, sets: 3, reps: "8–12", supersetGroupID: gid), at: src + 1)
+                a[src].supersetGroupID = gid
                 exercises = a
             }
         case .add:
@@ -409,8 +423,10 @@ struct PlanWorkoutEditorView: View {
     private func openExDetail(_ i: Int) {
         let ex = exercises[i]
         let libEx = PlanData.libExercise(named: ex.name)
-        let isSSFirst = ex.superset
-        let isSSSecond = i > 0 && exercises[i - 1].superset
+        let isSSSecond = i > 0
+            && ex.supersetGroupID != nil
+            && exercises[i - 1].supersetGroupID == ex.supersetGroupID
+        let isSSFirst = ex.supersetGroupID != nil && !isSSSecond
         let isSuperset = isSSFirst || isSSSecond
         let partner: PlanLibExercise? = isSSFirst ? (exercises.indices.contains(i + 1) ? PlanData.libExercise(named: exercises[i + 1].name) : nil)
             : (isSSSecond ? PlanData.libExercise(named: exercises[i - 1].name) : nil)

@@ -184,6 +184,7 @@ class WorkoutSessionState: ObservableObject {
 
     func addRestTime(_ seconds: Int) {
         restLeft += seconds
+        restTotal += seconds
         if let restEndDate { self.restEndDate = restEndDate.addingTimeInterval(TimeInterval(seconds)) }
     }
 
@@ -322,17 +323,33 @@ class WorkoutSessionState: ObservableObject {
     func createSuperset(sourceIndex: Int, targetIndex: Int) {
         guard workout.exercises.indices.contains(sourceIndex),
               workout.exercises.indices.contains(targetIndex) else { return }
-        // Clear all existing superset flags
-        for i in workout.exercises.indices { workout.exercises[i].superset = false }
-        // Move target adjacent to source
+
+        // Dissolve any group either party already belongs to first, so a
+        // groupID is never left held by exactly one exercise.
+        for existingGID in [workout.exercises[sourceIndex].supersetGroupID,
+                             workout.exercises[targetIndex].supersetGroupID].compactMap({ $0 }) {
+            for i in workout.exercises.indices where workout.exercises[i].supersetGroupID == existingGID {
+                workout.exercises[i].supersetGroupID = nil
+            }
+        }
+
+        // Move target adjacent to source. Removing target can shift source's own
+        // index (when target sat before source), so track source's position
+        // through the removal before computing where to insert.
         let target = workout.exercises.remove(at: targetIndex)
-        let insertAt = targetIndex > sourceIndex ? sourceIndex + 1 : sourceIndex
-        workout.exercises.insert(target, at: insertAt)
-        workout.exercises[sourceIndex].superset = true
+        let leader = targetIndex < sourceIndex ? sourceIndex - 1 : sourceIndex
+        workout.exercises.insert(target, at: leader + 1)
+        let newGroupID = UUID()
+        workout.exercises[leader].supersetGroupID = newGroupID
+        workout.exercises[leader + 1].supersetGroupID = newGroupID
     }
 
     func removeSuperset(at index: Int) {
-        for i in workout.exercises.indices { workout.exercises[i].superset = false }
+        guard workout.exercises.indices.contains(index),
+              let gid = workout.exercises[index].supersetGroupID else { return }
+        for i in workout.exercises.indices where workout.exercises[i].supersetGroupID == gid {
+            workout.exercises[i].supersetGroupID = nil
+        }
     }
 
     func moveExercise(from: IndexSet, to: Int) {

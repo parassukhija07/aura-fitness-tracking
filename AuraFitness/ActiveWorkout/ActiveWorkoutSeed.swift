@@ -27,7 +27,12 @@ enum ActiveWorkoutSeed {
             exercises: [],
             program: "Push · Pull · Legs"
         )
-        w.exercises = [bench(), incline(), fly(), ohp(), lateral(), pushdown()]
+        var ohpEx = ohp()
+        var lateralEx = lateral()
+        let seedSupersetID = UUID()
+        ohpEx.supersetGroupID = seedSupersetID   // leader of the seeded superset pair
+        lateralEx.supersetGroupID = seedSupersetID   // partner
+        w.exercises = [bench(), incline(), fly(), ohpEx, lateralEx, pushdown()]
         return w
     }
 
@@ -123,7 +128,6 @@ enum ActiveWorkoutSeed {
             warmup: [],
             hint: "Keep your core braced and avoid arching your lower back as you press overhead."
         )
-        e.superset = true   // leader of the seeded superset pair (partner = lateral)
         e.sets = [
             WorkoutSet(weight: 45, reps: 10, done: true),
             WorkoutSet(weight: 45, reps: 9, done: true),
