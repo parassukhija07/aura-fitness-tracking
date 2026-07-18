@@ -112,6 +112,8 @@ struct AccountDetailsView: View {
         .navigationBarTitleDisplayMode(.inline)
         .sheet(item: $sheet) { which in
             ProfileConfirmSheet(kind: which, flash: { toast.flash($0) })
+                .environmentObject(appState)
+                .environmentObject(AuthService.shared)
         }
         .auraToast(toast)
     }

@@ -86,6 +86,8 @@ struct ProfileTabView: View {
             }
             .sheet(item: $sheet) { which in
                 ProfileConfirmSheet(kind: which, flash: { toast.flash($0) })
+                    .environmentObject(appState)
+                    .environmentObject(AuthService.shared)
             }
             .auraToast(toast)
             .onChange(of: appState.profileSaveFlash) { _, msg in

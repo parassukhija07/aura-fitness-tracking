@@ -42,27 +42,41 @@ class AppState: ObservableObject {
         static let workoutPrefs     = "aura_workout_prefs_v1"  // bundles the preference scalars (see below)
     }
 
-    /// Bundles the scattered workout-preference scalars into a single persisted blob.
-    private struct WorkoutPrefs: Codable {
-        var defaultSets: Int
-        var defaultRepLow: Int
-        var defaultRepHigh: Int
-        var defaultRestBetweenSets: Int
-        var defaultRestBetweenExercises: Int
-        var autoRestTimer: Bool
-        var autoPlayVideo: Bool
-        var showPRsDuringWorkout: Bool
-        var showRepsFirst: Bool
-        var weightUnit: String
-        var lengthUnit: String
-        var notificationsEnabled: Bool
-        var restSound: String
-        var appleHealthConnected: Bool
-        var googleHealthConnected: Bool
+    /// Bundles the scattered workout-preference scalars into a single
+    /// persisted blob. Public (not `private`) + renamed `RemotePrefs` (H8) so
+    /// it can also be used as the `aura_preferences` Supabase JSONB payload
+    /// and the `DataArchive.preferences` export snapshot. Also carries the
+    /// three top-level pref scalars (`darkModePreference`, `calendarStartDay`,
+    /// `logDisplayMode`) per the H8 spec (`aura_preferences` payload note).
+    struct RemotePrefs: Codable {
+        var defaultSets: Int = 3
+        var defaultRepLow: Int = 6
+        var defaultRepHigh: Int = 10
+        var defaultRestBetweenSets: Int = 60
+        var defaultRestBetweenExercises: Int = 90
+        var autoRestTimer: Bool = true
+        var autoPlayVideo: Bool = false
+        var showPRsDuringWorkout: Bool = true
+        var showRepsFirst: Bool = true
+        var weightUnit: String = "kg"
+        var lengthUnit: String = "cm"
+        var notificationsEnabled: Bool = true
+        var restSound: String = "Ding"
+        var appleHealthConnected: Bool = true
+        var googleHealthConnected: Bool = false
+        var darkModePreference: String = DarkModePreference.auto.rawValue
+        var calendarStartDay: Int = 0
+        var logDisplayMode: String = "Both"
     }
+    private typealias WorkoutPrefs = RemotePrefs
 
     /// When true, `didSet` writers don't persist (used while loading in `init`).
     private var isLoading = false
+
+    /// When true, `didSet` writers persist locally (disk must match) but do
+    /// NOT push to Supabase — set while applying pulled remote rows so a
+    /// pull never triggers an immediate re-push (push/pull echo guard).
+    private var isApplyingRemote = false
 
     /// Combine subscriptions bridging external ObservableObject singletons
     /// (e.g. UserPlanDatabase, ProgramDatabase) into AppState.objectWillChange.
@@ -140,18 +154,180 @@ class AppState: ObservableObject {
         return try? JSONDecoder().decode(type, from: data)
     }
 
-    /// Builds a `WorkoutPrefs` snapshot from the current scalar values and persists it.
-    private func persistWorkoutPrefs() {
-        let prefs = WorkoutPrefs(
+    /// Builds a `RemotePrefs` snapshot from the current scalar values.
+    func currentPrefsBlob() -> RemotePrefs {
+        RemotePrefs(
             defaultSets: defaultSets, defaultRepLow: defaultRepLow, defaultRepHigh: defaultRepHigh,
             defaultRestBetweenSets: defaultRestBetweenSets, defaultRestBetweenExercises: defaultRestBetweenExercises,
             autoRestTimer: autoRestTimer, autoPlayVideo: autoPlayVideo,
             showPRsDuringWorkout: showPRsDuringWorkout, showRepsFirst: showRepsFirst,
             weightUnit: weightUnit, lengthUnit: lengthUnit,
             notificationsEnabled: notificationsEnabled, restSound: restSound,
-            appleHealthConnected: appleHealthConnected, googleHealthConnected: googleHealthConnected
+            appleHealthConnected: appleHealthConnected, googleHealthConnected: googleHealthConnected,
+            darkModePreference: darkModePreference.rawValue, calendarStartDay: calendarStartDay,
+            logDisplayMode: logDisplayMode
         )
+    }
+
+    /// Builds + persists the `RemotePrefs` blob, then write-through pushes it
+    /// (fire-and-forget; skipped while loading or applying a remote pull).
+    private func persistWorkoutPrefs() {
+        let prefs = currentPrefsBlob()
         persistCodable(prefs, Keys.workoutPrefs)
+        guard !isLoading, !isApplyingRemote, let uid = AuthService.shared.userID else { return }
+        SupabaseSyncService.shared.push(prefs, id: uid, table: .preferences)
+    }
+
+    // MARK: - Remote apply hooks (SupabaseSyncService.pullAll reconcile target)
+    //
+    // Each of these assigns local state without re-pushing (isApplyingRemote
+    // guard) and always re-persists so disk matches after a pull.
+
+    /// Merges pulled remote rows over local (LWW reconcile target — used by
+    /// `SupabaseSyncService.pullAll()`, which already only hands us rows it
+    /// decided should win). NOT used for reset — passing `[]` here is
+    /// deliberately a no-op merge, not a clear. See `clearWorkoutLogs()` etc.
+    /// below for the real "replace with empty" reset path.
+    func applyRemoteWorkoutLogs(_ logs: [WorkoutLog]) {
+        isApplyingRemote = true
+        defer { isApplyingRemote = false }
+        var byID: [UUID: WorkoutLog] = [:]
+        for l in workoutLogs { byID[l.id] = l }
+        for l in logs { byID[l.id] = l }
+        workoutLogs = Array(byID.values)
+    }
+
+    func applyRemoteMeasurements(_ items: [Measurement]) {
+        isApplyingRemote = true
+        defer { isApplyingRemote = false }
+        var byID: [UUID: Measurement] = [:]
+        for m in measurements { byID[m.id] = m }
+        for m in items { byID[m.id] = m }
+        measurements = Array(byID.values)
+    }
+
+    func applyRemotePersonalRecords(_ items: [PersonalRecord]) {
+        isApplyingRemote = true
+        defer { isApplyingRemote = false }
+        var byID: [UUID: PersonalRecord] = [:]
+        for p in personalRecords { byID[p.id] = p }
+        for p in items { byID[p.id] = p }
+        personalRecords = Array(byID.values)
+    }
+
+    func applyRemoteProgressPhotos(_ items: [ProgressPhoto]) {
+        isApplyingRemote = true
+        defer { isApplyingRemote = false }
+        var byID: [UUID: ProgressPhoto] = [:]
+        for p in progressPhotos { byID[p.id] = p }
+        for p in items { byID[p.id] = p }
+        progressPhotos = Array(byID.values)
+    }
+
+    func applyRemoteDayOverrides(_ items: [String: DayOverride]) {
+        isApplyingRemote = true
+        defer { isApplyingRemote = false }
+        var merged = dayOverrides
+        for (k, v) in items { merged[k] = v }
+        dayOverrides = merged
+    }
+
+    func applyRemoteQuickLogs(_ items: [String: QuickLog]) {
+        isApplyingRemote = true
+        defer { isApplyingRemote = false }
+        var merged = quickLogs
+        for (k, v) in items { merged[k] = v }
+        quickLogs = merged
+    }
+
+    func applyRemoteBodyStats(_ stats: BodyStats) {
+        isApplyingRemote = true
+        defer { isApplyingRemote = false }
+        bodyStats = stats
+    }
+
+    func applyRemoteUserProfile(_ profile: UserProfile) {
+        isApplyingRemote = true
+        defer { isApplyingRemote = false }
+        userProfile = profile
+    }
+
+    // MARK: - Reset support (hard REPLACE, not merge)
+    //
+    // `applyRemote*` above are union-merge helpers for pull reconcile and
+    // must never double as the reset mechanism (passing `[]`/`[:]` there is
+    // a no-op). These `clear*` methods actually reassign the `@Published`
+    // collection to the given value, guarded the same way so the write
+    // doesn't get pushed back to Supabase mid-reset (the caller,
+    // `DataResetService`, separately wipes the remote tables when
+    // `alsoRemote` is true).
+
+    func clearWorkoutLogs() {
+        isApplyingRemote = true
+        defer { isApplyingRemote = false }
+        workoutLogs = []
+    }
+    func clearMeasurements() {
+        isApplyingRemote = true
+        defer { isApplyingRemote = false }
+        measurements = []
+    }
+    func clearPersonalRecords() {
+        isApplyingRemote = true
+        defer { isApplyingRemote = false }
+        personalRecords = []
+    }
+    func clearProgressPhotos() {
+        isApplyingRemote = true
+        defer { isApplyingRemote = false }
+        progressPhotos = []
+    }
+    func clearDayOverrides() {
+        isApplyingRemote = true
+        defer { isApplyingRemote = false }
+        dayOverrides = [:]
+    }
+    func clearQuickLogs() {
+        isApplyingRemote = true
+        defer { isApplyingRemote = false }
+        quickLogs = [:]
+    }
+    func resetBodyStats() {
+        isApplyingRemote = true
+        defer { isApplyingRemote = false }
+        bodyStats = BodyStats()
+    }
+    func resetUserProfile() {
+        isApplyingRemote = true
+        defer { isApplyingRemote = false }
+        userProfile = UserProfile()
+    }
+    func resetPrefs() {
+        isApplyingRemote = true
+        defer { isApplyingRemote = false }
+        applyRemotePrefsRaw(RemotePrefs())
+    }
+
+    func applyRemotePrefs(_ prefs: RemotePrefs) {
+        isApplyingRemote = true
+        defer { isApplyingRemote = false }
+        applyRemotePrefsRaw(prefs)
+    }
+
+    /// Shared scalar-assignment body for `applyRemotePrefs`/`resetPrefs` —
+    /// factored out so both can guard `isApplyingRemote` at their own call
+    /// site without a nested double set/reset.
+    private func applyRemotePrefsRaw(_ prefs: RemotePrefs) {
+        defaultSets = prefs.defaultSets; defaultRepLow = prefs.defaultRepLow; defaultRepHigh = prefs.defaultRepHigh
+        defaultRestBetweenSets = prefs.defaultRestBetweenSets; defaultRestBetweenExercises = prefs.defaultRestBetweenExercises
+        autoRestTimer = prefs.autoRestTimer; autoPlayVideo = prefs.autoPlayVideo
+        showPRsDuringWorkout = prefs.showPRsDuringWorkout; showRepsFirst = prefs.showRepsFirst
+        weightUnit = prefs.weightUnit; lengthUnit = prefs.lengthUnit
+        notificationsEnabled = prefs.notificationsEnabled; restSound = prefs.restSound
+        appleHealthConnected = prefs.appleHealthConnected; googleHealthConnected = prefs.googleHealthConnected
+        if let pref = DarkModePreference(rawValue: prefs.darkModePreference) { darkModePreference = pref }
+        calendarStartDay = prefs.calendarStartDay
+        logDisplayMode = prefs.logDisplayMode
     }
 
     // MARK: - Workout session (nil = no active workout)
@@ -179,33 +355,108 @@ class AppState: ObservableObject {
     // MARK: - User data
     var userPlans: [UserPlan] { UserPlanDatabase.shared.plans }
     @Published var workoutLogs: [WorkoutLog] = [] {
-        didSet { persistCodable(workoutLogs, Keys.workoutLogs) }
+        didSet {
+            persistCodable(workoutLogs, Keys.workoutLogs)
+            syncDiff(old: oldValue, new: workoutLogs, table: .workoutLogs, idOf: { $0.id.uuidString })
+        }
     }
 
     // MARK: - Log tab per-day state (mirrors combined/log.jsx)
     /// Day overrides keyed by ISO date string (yyyy-MM-dd).
     @Published var dayOverrides: [String: DayOverride] = [:] {
-        didSet { persistCodable(dayOverrides, Keys.dayOverrides) }
+        didSet {
+            persistCodable(dayOverrides, Keys.dayOverrides)
+            syncDiffKeyed(old: oldValue, new: dayOverrides, table: .dayOverrides)
+        }
     }
     /// Per-day quick logs keyed by ISO date string.
     @Published var quickLogs: [String: QuickLog] = [:] {
-        didSet { persistCodable(quickLogs, Keys.quickLogs) }
+        didSet {
+            persistCodable(quickLogs, Keys.quickLogs)
+            syncDiffKeyed(old: oldValue, new: quickLogs, table: .quickLogs)
+        }
     }
     @Published var measurements: [Measurement] = [] {
-        didSet { persistCodable(measurements, Keys.measurements) }
+        didSet {
+            persistCodable(measurements, Keys.measurements)
+            syncDiff(old: oldValue, new: measurements, table: .measurements, idOf: { $0.id.uuidString })
+        }
     }
     @Published var bodyStats: BodyStats = BodyStats() {
-        didSet { persistCodable(bodyStats, Keys.bodyStats) }
+        didSet {
+            persistCodable(bodyStats, Keys.bodyStats)
+            syncSingleton(bodyStats, table: .bodyStats)
+        }
     }
     @Published var personalRecords: [PersonalRecord] = [] {
-        didSet { persistCodable(personalRecords, Keys.personalRecords) }
+        didSet {
+            persistCodable(personalRecords, Keys.personalRecords)
+            syncDiff(old: oldValue, new: personalRecords, table: .personalRecords, idOf: { $0.id.uuidString })
+        }
     }
     @Published var userProfile: UserProfile = UserProfile() {
-        didSet { persistCodable(userProfile, Keys.userProfile) }
+        didSet {
+            persistCodable(userProfile, Keys.userProfile)
+            syncSingleton(userProfile, table: .userProfile)
+        }
     }
     // TODO: migrate progressPhotos image blobs to file storage (UserDefaults size pressure)
     @Published var progressPhotos: [ProgressPhoto] = [] {
-        didSet { persistCodable(progressPhotos, Keys.progressPhotos) }
+        didSet {
+            persistCodable(progressPhotos, Keys.progressPhotos)
+            syncDiff(old: oldValue, new: progressPhotos, table: .progressPhotos, idOf: { $0.id.uuidString })
+        }
+    }
+
+    // MARK: - Write-through diff helpers (whole-array `didSet` hazard)
+    //
+    // Assigning the entire array/dict fires one `didSet`; naively "pushing
+    // everything" on every keystroke would be wasteful and racy. These diff
+    // old vs new and push only changed/added rows + delete removed rows.
+    // Skipped entirely during initial load or while applying a remote pull
+    // (both guarded, mirroring the `isLoading` guard already used for local
+    // persistence).
+
+    private func syncDiff<T: Encodable>(old: [T], new: [T], table: SupabaseSyncService.Table, idOf: (T) -> String) {
+        guard !isLoading, !isApplyingRemote else { return }
+        let oldByID = Dictionary(uniqueKeysWithValues: old.map { (idOf($0), $0) })
+        let newByID = Dictionary(uniqueKeysWithValues: new.map { (idOf($0), $0) })
+        for (id, value) in newByID {
+            // Push if new or changed. Encodable structs aren't Equatable here,
+            // so compare via JSON bytes (cheap relative to a network round
+            // trip, and correct without requiring every model to add
+            // Equatable just for this).
+            if oldByID[id] == nil || !jsonEqual(oldByID[id]!, value) {
+                SupabaseSyncService.shared.push(value, id: id, table: table)
+            }
+        }
+        for id in oldByID.keys where newByID[id] == nil {
+            SupabaseSyncService.shared.delete(id: id, table: table)
+        }
+    }
+
+    private func syncDiffKeyed<T: Encodable & Equatable>(old: [String: T], new: [String: T], table: SupabaseSyncService.Table) {
+        guard !isLoading, !isApplyingRemote else { return }
+        for (key, value) in new {
+            if old[key] != value {
+                SupabaseSyncService.shared.push(value, id: key, table: table)
+            }
+        }
+        for key in old.keys where new[key] == nil {
+            SupabaseSyncService.shared.delete(id: key, table: table)
+        }
+    }
+
+    private func syncSingleton<T: Encodable>(_ value: T, table: SupabaseSyncService.Table) {
+        guard !isLoading, !isApplyingRemote, let uid = AuthService.shared.userID else { return }
+        SupabaseSyncService.shared.push(value, id: uid, table: table)
+    }
+
+    private func jsonEqual<T: Encodable>(_ a: T, _ b: T) -> Bool {
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = [.sortedKeys]
+        guard let da = try? encoder.encode(a), let db = try? encoder.encode(b) else { return false }
+        return da == db
     }
 
     // MARK: - Workout preferences

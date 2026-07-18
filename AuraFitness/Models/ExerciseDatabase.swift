@@ -48,6 +48,9 @@ final class ExerciseDatabase: ObservableObject {
 
     private let storageKey = "aura_exercise_db_v1"
 
+    /// Guards against a push loop while applying pulled remote rows.
+    private var isApplyingRemote = false
+
     var categories: [String] {
         Array(Set(entries.map { $0.category })).sorted()
     }
@@ -80,22 +83,55 @@ final class ExerciseDatabase: ObservableObject {
     func add(_ entry: ExerciseEntry) {
         entries.append(entry)
         persist()
+        syncPush(entry)
     }
 
     func update(_ updated: ExerciseEntry) {
         guard let i = entries.firstIndex(where: { $0.id == updated.id }) else { return }
         entries[i] = updated
         persist()
+        syncPush(updated)
     }
 
     func delete(id: UUID) {
         entries.removeAll { $0.id == id }
         persist()
+        syncDelete(id: id)
     }
 
     func toggleFavorite(id: UUID) {
         guard let i = entries.firstIndex(where: { $0.id == id }) else { return }
         entries[i].isFavorite.toggle()
+        persist()
+        syncPush(entries[i])
+    }
+
+    // MARK: - Remote sync hooks
+    private func syncPush(_ entry: ExerciseEntry) {
+        guard !isApplyingRemote else { return }
+        entry.syncPush(table: .exercises)
+    }
+    private func syncDelete(id: UUID) {
+        guard !isApplyingRemote else { return }
+        SupabaseSyncService.shared.delete(id: id.uuidString, table: .exercises)
+    }
+
+    /// Replaces `entries` with pulled remote rows merged over local, without
+    /// re-pushing (guards the push loop).
+    func applyRemote(_ remoteEntries: [ExerciseEntry]) {
+        isApplyingRemote = true
+        defer { isApplyingRemote = false }
+        var byID: [UUID: ExerciseEntry] = [:]
+        for e in entries { byID[e.id] = e }
+        for e in remoteEntries { byID[e.id] = e }
+        entries = Array(byID.values)
+        persist()
+    }
+
+    /// Drops ALL entries (library + custom) back to the raw seed — distinct
+    /// from `resetToSeed()` below, which preserves customs.
+    func hardReset() {
+        entries = Self.seedEntries()
         persist()
     }
 

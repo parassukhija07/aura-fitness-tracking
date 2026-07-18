@@ -109,11 +109,18 @@ enum WorkoutPersistence {
     }
 
     // MARK: - Reset (resetAll: clears aura_wk + aura_elapsed)
+    //
+    // This live-workout blob is transient session state, NOT synced to
+    // Supabase (H8): an in-progress workout is device-local until saved; on
+    // save it becomes a `WorkoutLog`, which IS synced (see AppState.workoutLogs
+    // didSet). No push hooks belong in this file.
 
     static func clearWorkout() {
         let d = UserDefaults.standard
         d.removeObject(forKey: Keys.workout)
         d.removeObject(forKey: Keys.elapsed)
         d.removeObject(forKey: Keys.runStart)
+        d.removeObject(forKey: Keys.pill)
+        d.removeObject(forKey: Keys.version)
     }
 }
