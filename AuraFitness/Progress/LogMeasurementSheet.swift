@@ -73,15 +73,15 @@ struct LogMeasurementSheet: View {
     private func save() {
         let m = Measurement(
             date: date,
-            weight: Double(weight),
+            weight: UnitFormatter.parseWeightToKg(weight, unit: appState.weightUnit),
             bodyFatPct: Double(bodyFat),
-            neck: Double(neck),
-            chest: Double(chest),
-            waist: Double(waist),
-            hips: Double(hips),
-            arms: Double(arms),
-            thighs: Double(thighs),
-            shoulders: Double(shoulders)
+            neck: UnitFormatter.parseLengthToCm(neck, unit: appState.lengthUnit),
+            chest: UnitFormatter.parseLengthToCm(chest, unit: appState.lengthUnit),
+            waist: UnitFormatter.parseLengthToCm(waist, unit: appState.lengthUnit),
+            hips: UnitFormatter.parseLengthToCm(hips, unit: appState.lengthUnit),
+            arms: UnitFormatter.parseLengthToCm(arms, unit: appState.lengthUnit),
+            thighs: UnitFormatter.parseLengthToCm(thighs, unit: appState.lengthUnit),
+            shoulders: UnitFormatter.parseLengthToCm(shoulders, unit: appState.lengthUnit)
         )
         appState.measurements.append(m)
     }

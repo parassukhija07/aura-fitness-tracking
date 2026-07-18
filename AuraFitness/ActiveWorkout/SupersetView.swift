@@ -163,12 +163,12 @@ struct SupersetView: View {
             }
             HStack(spacing: 0) {
                 metaCell(label: "🏆 PR",
-                         value: ex.lastPR.map { "\(fmt($0.weight)) kg × \($0.reps)" } ?? "—",
+                         value: ex.lastPR.map { "\(UnitFormatter.weight($0.weight, unit: appState.weightUnit)) × \($0.reps)" } ?? "—",
                          sub: ex.lastPR?.date ?? "—",
                          tint: false)
                     .overlay(Divider(), alignment: .trailing)
                 metaCell(label: "🎯 Target",
-                         value: ex.target.map { "\(fmt($0.weight)) kg × \($0.reps)" } ?? "—",
+                         value: ex.target.map { "\(UnitFormatter.weight($0.weight, unit: appState.weightUnit)) × \($0.reps)" } ?? "—",
                          sub: ex.target?.note ?? "",
                          tint: true)
             }
@@ -318,6 +318,7 @@ struct SupersetView: View {
 
 struct SupersetSetRow: View {
     @EnvironmentObject var session: WorkoutSessionState
+    @EnvironmentObject var appState: AppState
     let exerciseIndex: Int
     let setIndex: Int
     @Binding var set: WorkoutSet
@@ -335,8 +336,8 @@ struct SupersetSetRow: View {
                     .font(.system(size: 14, weight: .bold)).foregroundColor(.aura.text2)
                     .frame(width: 40, height: 48)
                     .background(Color.aura.fill).clipShape(RoundedRectangle(cornerRadius: AuraRadius.sm))
-                input($weightText, placeholder: history?.weight ?? "–", label: "kg") {
-                    set.weight = Double(weightText); finish()
+                input($weightText, placeholder: history?.weight ?? "–", label: appState.weightUnit) {
+                    set.weight = UnitFormatter.parseWeightToKg(weightText, unit: appState.weightUnit); finish()
                 }
                 input($repsText, placeholder: history?.reps ?? "–", label: "reps") {
                     set.reps = Int(repsText); finish()
@@ -359,7 +360,7 @@ struct SupersetSetRow: View {
             if let h = history {
                 HStack(spacing: 9) {
                     Color.clear.frame(width: 40)
-                    Text("\(h.weight) kg").font(.system(size: 11, weight: .bold)).foregroundColor(.aura.text3).frame(maxWidth: .infinity)
+                    Text(UnitFormatter.weight(Double(h.weight) ?? 0, unit: appState.weightUnit)).font(.system(size: 11, weight: .bold)).foregroundColor(.aura.text3).frame(maxWidth: .infinity)
                     Text("\(h.reps) reps").font(.system(size: 11, weight: .bold)).foregroundColor(.aura.text3).frame(maxWidth: .infinity)
                     Color.clear.frame(width: 48)
                     Color.clear.frame(width: 48)
@@ -367,7 +368,7 @@ struct SupersetSetRow: View {
             }
         }
         .onAppear {
-            weightText = set.weight.map { $0.truncatingRemainder(dividingBy: 1) == 0 ? String(Int($0)) : String($0) } ?? ""
+            weightText = set.weight.map { UnitFormatter.weightNumber($0, unit: appState.weightUnit) } ?? ""
             repsText = set.reps.map { String($0) } ?? ""
         }
     }

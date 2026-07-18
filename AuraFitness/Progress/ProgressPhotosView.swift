@@ -211,7 +211,8 @@ struct ProgressPhotosView: View {
                         .foregroundColor(.aura.text)
                     if let fw = first.weight, let lw = latest.weight {
                         let delta = lw - fw
-                        Text("\(delta >= 0 ? "+" : "")\(String(format: "%.1f", delta)) kg · body change")
+                        let d = UnitFormatter.weightValue(delta, unit: appState.weightUnit)
+                        Text("\(d >= 0 ? "+" : "")\(String(format: "%.1f", d)) \(appState.weightUnit) · body change")
                             .font(AuraFont.secondary())
                             .foregroundColor(.aura.text2)
                     }
@@ -289,7 +290,7 @@ struct ProgressPhotosView: View {
         let photo = ProgressPhoto(
             date: Date(),
             imageData: data,
-            weight: Double(newPhotoWeight),
+            weight: UnitFormatter.parseWeightToKg(newPhotoWeight, unit: appState.weightUnit),
             note: newPhotoNote
         )
         appState.progressPhotos.append(photo)

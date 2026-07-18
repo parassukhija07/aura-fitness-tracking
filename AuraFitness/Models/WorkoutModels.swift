@@ -92,7 +92,7 @@ struct Exercise: Identifiable, Codable, Hashable {
     var youtubeURL: String? = nil
     var sets: [WorkoutSet] = []
     var completed: Bool = false
-    var superset: Bool = false
+    var supersetGroupID: UUID? = nil
     var note: String = ""
 
     // Convenience: total done sets

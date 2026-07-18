@@ -5,6 +5,7 @@ import SwiftUI
 /// with an optional last-session history row underneath.
 struct SetRowView: View {
     @EnvironmentObject var session: WorkoutSessionState
+    @EnvironmentObject var appState: AppState
     let exerciseIndex: Int
     let setIndex: Int
     @Binding var set: WorkoutSet
@@ -33,8 +34,8 @@ struct SetRowView: View {
                 .buttonStyle(.plain)
 
                 // Weight input
-                inputBox(text: $weightText, placeholder: history.map { $0.weight } ?? "–", label: "kg") {
-                    set.weight = Double(weightText)
+                inputBox(text: $weightText, placeholder: history.map { $0.weight } ?? "–", label: appState.weightUnit) {
+                    set.weight = UnitFormatter.parseWeightToKg(weightText, unit: appState.weightUnit)
                     autoFinishOnBlur()
                 }
 
@@ -73,7 +74,7 @@ struct SetRowView: View {
             if showHistory, let h = history {
                 HStack(spacing: 9) {
                     Color.clear.frame(width: 40)
-                    Text("\(h.weight) kg")
+                    Text(UnitFormatter.weight(Double(h.weight) ?? 0, unit: appState.weightUnit))
                         .font(.system(size: 11, weight: .bold))
                         .foregroundColor(.aura.text3)
                         .frame(maxWidth: .infinity)
@@ -89,7 +90,7 @@ struct SetRowView: View {
         }
         .padding(.vertical, 4)
         .onAppear {
-            weightText = set.weight.map { formatWeight($0) } ?? ""
+            weightText = set.weight.map { UnitFormatter.weightNumber($0, unit: appState.weightUnit) } ?? ""
             repsText = set.reps.map { String($0) } ?? ""
         }
         .sheet(isPresented: $showTypeMenu) {
@@ -143,7 +144,7 @@ struct SetRowView: View {
             set.done = false
             UIImpactFeedbackGenerator(style: .soft).impactOccurred()
         } else {
-            set.weight = Double(weightText)
+            set.weight = UnitFormatter.parseWeightToKg(weightText, unit: appState.weightUnit)
             set.reps = Int(repsText)
             session.onSetCompleted(exerciseIndex: exerciseIndex, setIndex: setIndex)
             UIImpactFeedbackGenerator(style: .medium).impactOccurred()

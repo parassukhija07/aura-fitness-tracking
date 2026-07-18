@@ -107,7 +107,7 @@ struct PersonalRecordsView: View {
                     .font(AuraFont.secondary())
                     .foregroundColor(.aura.text2)
                 if isTop {
-                    Text("1RM est. \(Int(pr.estimated1RM)) kg")
+                    Text("1RM est. \(UnitFormatter.weight(pr.estimated1RM, unit: appState.weightUnit))")
                         .font(.system(size: 11, weight: .semibold))
                         .foregroundColor(.aura.accent)
                 }
@@ -118,7 +118,7 @@ struct PersonalRecordsView: View {
             // Weight × reps
             VStack(alignment: .trailing, spacing: 2) {
                 HStack(alignment: .firstTextBaseline, spacing: 2) {
-                    Text(formatW(pr.weight))
+                    Text(UnitFormatter.weightNumber(pr.weight, unit: appState.weightUnit))
                         .font(AuraFont.statNum(size: 18))
                         .foregroundColor(.aura.text)
                     Text("×\(pr.reps)")
@@ -126,7 +126,7 @@ struct PersonalRecordsView: View {
                         .foregroundColor(.aura.text2)
                 }
                 if !isTop {
-                    Text("1RM ≈ \(Int(pr.estimated1RM)) kg")
+                    Text("1RM ≈ \(UnitFormatter.weight(pr.estimated1RM, unit: appState.weightUnit))")
                         .font(.system(size: 11, weight: .medium))
                         .foregroundColor(.aura.text3)
                 }

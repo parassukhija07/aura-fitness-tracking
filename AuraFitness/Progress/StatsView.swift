@@ -122,10 +122,10 @@ struct StatsView: View {
                             .font(AuraFont.sectionLabel())
                             .foregroundColor(.aura.text3)
                         HStack(alignment: .firstTextBaseline, spacing: 6) {
-                            Text(formatVolume(weekVol))
+                            Text(UnitFormatter.weightNumber(weekVol, unit: appState.weightUnit))
                                 .font(AuraFont.statNum(size: 26))
                                 .foregroundColor(.aura.text)
-                            Text("kg")
+                            Text(appState.weightUnit)
                                 .font(AuraFont.body())
                                 .foregroundColor(.aura.text2)
                         }

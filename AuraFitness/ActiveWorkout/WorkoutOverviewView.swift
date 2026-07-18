@@ -106,8 +106,10 @@ struct WorkoutOverviewView: View {
     private func exerciseCard(exercise: Exercise, index: Int) -> some View {
         let doneSets = exercise.sets.filter { $0.done }.count
         let allDone = exercise.isFullyDone
-        let isSSFirst = exercise.superset
-        let isSSSecond = index > 0 && session.workout.exercises[index - 1].superset
+        let isSSSecond = index > 0
+            && exercise.supersetGroupID != nil
+            && session.workout.exercises[index - 1].supersetGroupID == exercise.supersetGroupID
+        let isSSFirst = exercise.supersetGroupID != nil && !isSSSecond
 
         VStack(spacing: 0) {
             if isSSSecond { supersetConnector }
@@ -234,8 +236,7 @@ struct ExerciseMenuSheet: View {
             ? session.workout.exercises[exerciseIndex] : nil
     }
     var isInSuperset: Bool {
-        guard let e = exercise else { return false }
-        return e.superset || (exerciseIndex > 0 && session.workout.exercises[exerciseIndex - 1].superset)
+        exercise?.supersetGroupID != nil
     }
 
     @State private var showNote = false
@@ -315,9 +316,11 @@ struct ExerciseMenuSheet: View {
 
     /// The first exercise of the superset pair (for remove confirmation).
     private var supersetAnchor: Int {
-        guard let e = exercise else { return exerciseIndex }
-        if e.superset { return exerciseIndex }
-        return exerciseIndex - 1
+        guard let e = exercise, let gid = e.supersetGroupID else { return exerciseIndex }
+        if exerciseIndex > 0, session.workout.exercises[exerciseIndex - 1].supersetGroupID == gid {
+            return exerciseIndex - 1
+        }
+        return exerciseIndex
     }
 
     private func triggerModal(_ m: WorkoutModal) {

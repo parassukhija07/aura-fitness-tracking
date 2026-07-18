@@ -21,8 +21,8 @@ struct LogSheetsView: View {
     /// All assignable workouts from the active program (for pick/switch).
     private var programWorkouts: [Workout] {
         appState.defaultPlan.flatMap { plan in
-            SeedData.programs.first { $0.id == plan.sourceProgramID }?.workouts
-        } ?? SeedData.programs.first?.workouts ?? []
+            ProgramDatabase.shared.programs.first { $0.id == plan.sourceProgramID }?.workouts
+        } ?? ProgramDatabase.shared.programs.first?.workouts ?? []
     }
 
     var body: some View {
@@ -212,17 +212,17 @@ struct LogSheetsView: View {
 
     /// The program the active plan is built from (level-1 "Active" section).
     private var activeProgram: Program? {
-        guard let pid = appState.defaultPlan?.sourceProgramID else { return SeedData.programs.first }
-        return SeedData.programs.first { $0.id == pid }
+        guard let pid = appState.defaultPlan?.sourceProgramID else { return ProgramDatabase.shared.programs.first }
+        return ProgramDatabase.shared.programs.first { $0.id == pid }
     }
     /// Every other predefined program, surfaced as drill-in "Other Plans" rows.
     private var otherPrograms: [Program] {
-        SeedData.programs.filter { $0.id != activeProgram?.id }
+        ProgramDatabase.shared.programs.filter { $0.id != activeProgram?.id }
     }
 
     @ViewBuilder
     private func switchSheet(planId: UUID?) -> some View {
-        if let planId, let plan = SeedData.programs.first(where: { $0.id == planId }) {
+        if let planId, let plan = ProgramDatabase.shared.programs.first(where: { $0.id == planId }) {
             switchLevel2(plan)
         } else {
             switchLevel1
@@ -836,7 +836,7 @@ struct LogSheetsView: View {
                 ForEach(Array(ex.sets.enumerated()), id: \.element.id) { j, _ in
                     HStack(spacing: 8) {
                         Text("\(j + 1)").font(.system(size: 12, weight: .bold)).foregroundColor(.aura.text3).frame(width: 28, alignment: .leading)
-                        TextField("kg", text: bindingWeight(i, j)).logFieldStyle()
+                        TextField(appState.weightUnit, text: bindingWeight(i, j)).logFieldStyle()
                         TextField("reps", text: bindingReps(i, j)).logFieldStyle()
                         Button { formExercises[i].sets.remove(at: j) } label: {
                             Image(systemName: "minus.circle.fill").foregroundColor(.aura.red).font(.system(size: 15))

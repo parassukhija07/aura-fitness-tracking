@@ -4,6 +4,7 @@ struct ActiveWorkoutView: View {
     @EnvironmentObject var appState: AppState
     @EnvironmentObject var session: WorkoutSessionState
     @State private var showEndSheet = false
+    @Environment(\.scenePhase) private var scenePhase
 
     var body: some View {
         ZStack {
@@ -30,6 +31,9 @@ struct ActiveWorkoutView: View {
             EndWorkoutSheet(showEndSheet: $showEndSheet)
                 .presentationDetents([.fraction(0.45)])
                 .presentationDragIndicator(.visible)
+        }
+        .onChange(of: scenePhase) { _, newPhase in
+            if newPhase == .active { session.refreshOnForeground() }
         }
     }
 }

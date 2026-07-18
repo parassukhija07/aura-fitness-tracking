@@ -8,6 +8,7 @@ enum WorkoutPersistence {
     private enum Keys {
         static let workout = "aura_wk"
         static let elapsed = "aura_elapsed"
+        static let runStart = "aura_run_start"
         static let pill    = "aura_pill"
         static let version = "aura_wk_version"
     }
@@ -25,18 +26,28 @@ enum WorkoutPersistence {
     }
     private struct SavedWorkout: Codable {
         var version: Int
+        var workoutKey: String
         var exercises: [SavedExercise]
     }
 
     /// Apply a schema-compatible saved blob onto a fresh seed (in place). On a
-    /// version mismatch the key is cleared and the seed is left untouched.
-    static func restore(into workout: inout Workout) {
+    /// version mismatch, or if the blob belongs to a different workout, the key
+    /// is cleared and the seed is left untouched.
+    static func restore(into workout: inout Workout, workoutKey: String) {
         let d = UserDefaults.standard
-        guard let data = d.data(forKey: Keys.workout),
-              let saved = try? JSONDecoder().decode(SavedWorkout.self, from: data)
-        else { return }
+        guard let data = d.data(forKey: Keys.workout) else { return }
+
+        guard let saved = try? JSONDecoder().decode(SavedWorkout.self, from: data) else {
+            clearWorkout()
+            return
+        }
 
         guard saved.version == ActiveWorkoutSeed.version else {
+            clearWorkout()
+            return
+        }
+
+        guard saved.workoutKey == workoutKey else {
             clearWorkout()
             return
         }
@@ -58,6 +69,10 @@ enum WorkoutPersistence {
         return d.integer(forKey: Keys.elapsed)
     }
 
+    static func restoredRunStart() -> Date? {
+        UserDefaults.standard.object(forKey: Keys.runStart) as? Date
+    }
+
     static func restoredPill(default fallback: CGPoint) -> CGPoint {
         let d = UserDefaults.standard
         guard let arr = d.array(forKey: Keys.pill) as? [Double], arr.count == 2 else { return fallback }
@@ -69,6 +84,7 @@ enum WorkoutPersistence {
     static func saveWorkout(_ workout: Workout) {
         let saved = SavedWorkout(
             version: ActiveWorkoutSeed.version,
+            workoutKey: workout.name,
             exercises: workout.exercises.map {
                 SavedExercise(name: $0.name, sets: $0.sets,
                               completed: $0.completed, note: $0.note, pulley: $0.pulley)
@@ -83,6 +99,11 @@ enum WorkoutPersistence {
         UserDefaults.standard.set(seconds, forKey: Keys.elapsed)
     }
 
+    static func saveRunStart(_ date: Date?) {
+        let d = UserDefaults.standard
+        if let date { d.set(date, forKey: Keys.runStart) } else { d.removeObject(forKey: Keys.runStart) }
+    }
+
     static func savePill(_ p: CGPoint) {
         UserDefaults.standard.set([Double(p.x), Double(p.y)], forKey: Keys.pill)
     }
@@ -93,5 +114,6 @@ enum WorkoutPersistence {
         let d = UserDefaults.standard
         d.removeObject(forKey: Keys.workout)
         d.removeObject(forKey: Keys.elapsed)
+        d.removeObject(forKey: Keys.runStart)
     }
 }

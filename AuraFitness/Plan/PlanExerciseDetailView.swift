@@ -457,6 +457,7 @@ private struct PlanOverviewTab<SS: View>: View {
 // MARK: - History tab
 
 private struct PlanHistoryTab<SS: View>: View {
+    @EnvironmentObject var appState: AppState
     let ex: PlanLibExercise
     @ViewBuilder var ssTabs: () -> SS
 
@@ -472,7 +473,7 @@ private struct PlanHistoryTab<SS: View>: View {
                 pbCard("EST. 1RM", fmt(pbs.e1rm), "Epley formula")
                 pbCard("MAX WEIGHT", fmt(pbs.maxW), "Single set")
                 pbCard("MAX REPS", "\(pbs.maxR)", "Single set")
-                pbCard("MAX VOLUME", pbs.maxVol > 0 ? "\(pbs.maxVol)kg" : "BW", "Per session")
+                pbCard("MAX VOLUME", pbs.maxVol > 0 ? UnitFormatter.weight(pbs.maxVol, unit: appState.weightUnit) : "BW", "Per session")
             }
 
             AuraSectionLabel(title: "Session history")
@@ -485,7 +486,7 @@ private struct PlanHistoryTab<SS: View>: View {
         .padding(.horizontal, 14)
     }
 
-    private func fmt(_ v: Double) -> String { v > 0 ? "\(planNum(v))kg" : "BW" }
+    private func fmt(_ v: Double) -> String { v > 0 ? UnitFormatter.weight(v, unit: appState.weightUnit) : "BW" }
 
     private func pbCard(_ label: String, _ value: String, _ sub: String) -> some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -507,7 +508,7 @@ private struct PlanHistoryTab<SS: View>: View {
                 HStack {
                     VStack(alignment: .leading, spacing: 2) {
                         Text(s.date).font(.system(size: 14, weight: .bold)).foregroundColor(.aura.text)
-                        Text("\(s.sets.count) sets · " + (s.sets[0].weight > 0 ? "top \(planNum(s.sets[0].weight))kg" : "bodyweight"))
+                        Text("\(s.sets.count) sets · " + (s.sets[0].weight > 0 ? "top \(UnitFormatter.weight(s.sets[0].weight, unit: appState.weightUnit))" : "bodyweight"))
                             .font(.system(size: 12)).foregroundColor(.aura.text2)
                     }
                     Spacer()
@@ -527,9 +528,9 @@ private struct PlanHistoryTab<SS: View>: View {
                     ForEach(Array(s.sets.enumerated()), id: \.offset) { si, st in
                         HStack(spacing: 6) {
                             cell("\(si + 1)", flex: 0.5, color: .aura.text3, weight: .bold)
-                            cell(st.weight > 0 ? "\(planNum(st.weight))kg" : "BW", weight: .semibold)
+                            cell(st.weight > 0 ? UnitFormatter.weight(st.weight, unit: appState.weightUnit) : "BW", weight: .semibold)
                             cell("\(st.reps)", weight: .semibold)
-                            cell("\(planNum(PlanExerciseDetail.epley(st.weight, st.reps)))kg", color: .aura.accent, weight: .bold)
+                            cell(UnitFormatter.weight(PlanExerciseDetail.epley(st.weight, st.reps), unit: appState.weightUnit), color: .aura.accent, weight: .bold)
                         }
                         .padding(.vertical, 5)
                         .overlay(alignment: .top) {

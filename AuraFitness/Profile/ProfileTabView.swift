@@ -43,9 +43,9 @@ struct ProfileTabView: View {
     }
     private var identitySubtitle: String {
         let age = appState.bodyStats.age
-        let h = String(format: "%.0f", appState.bodyStats.height)
-        let w = String(format: "%.1f", appState.bodyStats.weight)
-        return "\(age) · \(h) cm · \(w) kg · \(profile.gender)"
+        let h = UnitFormatter.length(appState.bodyStats.height, unit: appState.lengthUnit)
+        let w = UnitFormatter.weight(appState.bodyStats.weight, unit: appState.weightUnit)
+        return "\(age) · \(h) · \(w) · \(profile.gender)"
     }
     private var unitsSubtitle: String { "\(appState.weightUnit) · \(appState.lengthUnit)" }
     private var connectedSubtitle: String {

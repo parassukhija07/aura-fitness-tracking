@@ -179,17 +179,17 @@ struct PlanEditorExercise: Identifiable, Hashable {
     var name: String
     var sets: Int
     var reps: String
-    /// A superset is encoded as `superset == true` on the *leader*; the partner
-    /// is simply the next exercise in the array (mirrors superset.jsx model).
-    var superset: Bool
+    /// A superset pair shares the same non-nil `supersetGroupID`; the partner
+    /// is the next exercise in the array (pairs are kept physically adjacent).
+    var supersetGroupID: UUID?
 
     init(id: String = "e\(Int(Date().timeIntervalSince1970 * 1000))-\(UUID().uuidString.prefix(4))",
-         name: String, sets: Int, reps: String, superset: Bool = false) {
+         name: String, sets: Int, reps: String, supersetGroupID: UUID? = nil) {
         self.id = id
         self.name = name
         self.sets = sets
         self.reps = reps
-        self.superset = superset
+        self.supersetGroupID = supersetGroupID
     }
 }
 
