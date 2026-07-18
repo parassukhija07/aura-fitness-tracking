@@ -149,13 +149,13 @@ struct MeasurementsView: View {
     private var compositionTiles: some View {
         HStack(spacing: AuraSpacing.s3) {
             compTile(
-                label: "BODY FAT",
+                "BODY FAT",
                 value: latest?.bodyFatPct.map { String(format: "%.1f%%", $0) },
                 delta: bodyFatDelta30.map { String(format: "%.1f%%", abs($0)) },
                 deltaDown: (bodyFatDelta30 ?? 0) < 0
             )
             compTile(
-                label: "LEAN MASS",
+                "LEAN MASS",
                 value: leanMass.map { UnitFormatter.weight($0, unit: appState.weightUnit) },
                 delta: nil,
                 deltaDown: true

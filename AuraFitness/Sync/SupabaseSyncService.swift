@@ -456,6 +456,7 @@ final class SupabaseSyncService: ObservableObject {
 /// (see AppState.swift H8 additions); this indirection just gives
 /// `SupabaseSyncService` a single `shared`-style handle without holding a
 /// second `@StateObject` copy.
+@MainActor
 enum AppStateBridge {
     /// Set synchronously in `AuraFitnessApp.init()` — BEFORE `AuthService.shared`
     /// is ever touched — so `AuthService.restoreSession()`'s `onSignedIn` ->

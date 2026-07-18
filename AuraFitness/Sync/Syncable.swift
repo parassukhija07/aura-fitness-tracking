@@ -13,6 +13,7 @@ protocol Syncable: Encodable {
 
 extension Syncable {
     /// Fire-and-forget push of `self` to the given table.
+    @MainActor
     func syncPush(table: SupabaseSyncService.Table) {
         SupabaseSyncService.shared.push(self, id: stringID, table: table)
     }

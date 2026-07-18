@@ -40,7 +40,7 @@ enum AuthConfig {
             // of crashing a shipped build.
             return URL(string: "https://missing-config.invalid")!
             #endif
-        }()
+        }
         return url
     }()
 
@@ -62,7 +62,7 @@ enum AuthConfig {
             #else
             return ""
             #endif
-        }()
+        }
         return key
     }()
 
