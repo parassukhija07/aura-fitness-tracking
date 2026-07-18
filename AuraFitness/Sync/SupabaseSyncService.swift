@@ -345,7 +345,7 @@ final class SupabaseSyncService: ObservableObject {
         if let row = bodyStats.first, let decoded: BodyStats = decode(row.payload) {
             appState.applyRemoteBodyStats(decoded)
         }
-        if let row = userProfile.first, let decoded: UserProfile = decode(row.payload) {
+        if let row = profile.first, let decoded: UserProfile = decode(row.payload) {
             appState.applyRemoteUserProfile(decoded)
         }
         if let row = prefs.first, let decoded: AppState.RemotePrefs = decode(row.payload) {

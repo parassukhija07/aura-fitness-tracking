@@ -24,6 +24,7 @@ enum DataArchiveBuilder {
     /// to a temp JSON file for `ShareLink`. Runs the (potentially large,
     /// photo-heavy — see O2) encode off the main thread; returns nil on
     /// failure so the caller can degrade gracefully instead of crashing.
+    @MainActor
     static func writeTempFile(_ appState: AppState) async -> URL? {
         let archive = DataArchive(
             exportedAt: Date(),

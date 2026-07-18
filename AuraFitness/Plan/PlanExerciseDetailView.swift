@@ -476,7 +476,7 @@ private struct PlanHistoryTab<SS: View>: View {
                     pbCard("EST. 1RM", fmt(pbs.e1rm), "Epley formula")
                     pbCard("MAX WEIGHT", fmt(pbs.maxW), "Single set")
                     pbCard("MAX REPS", "\(pbs.maxR)", "Single set")
-                    pbCard("MAX VOLUME", pbs.maxVol > 0 ? UnitFormatter.weight(pbs.maxVol, unit: appState.weightUnit) : "BW", "Per session")
+                    pbCard("MAX VOLUME", pbs.maxVol > 0 ? UnitFormatter.weight(Double(pbs.maxVol), unit: appState.weightUnit) : "BW", "Per session")
                 }
 
                 AuraSectionLabel(title: "Session history")
