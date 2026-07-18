@@ -4,81 +4,67 @@
 NEEDS WORK
 
 ## 🔍 DIFF ANALYSIS
-The H4-specific change is present, correct, and matches the Coder's claim byte-for-byte:
-`AuraFitness/Models/AppState.swift` adds `private static func synthesizedWarmup(forExerciseIndex:)`
-and an additive `if w.exercises[i].warmup.isEmpty { ... }` block at the end of the
-`buildSession(from:)` per-exercise loop. That part is exactly what changes.md and
-test-results.md describe.
+The actual `git diff` matches `changes.md` with high fidelity. Exactly the 16 source files
+claimed were modified, plus the one new file `AuraFitness/Models/UnitFormatter.swift`. No
+unauthorized files were touched. The working tree contained ONLY H7 files (no stray H5
+remnants), so scope discipline is clean — no scope creep detected.
 
-The problem is SCOPE. The spec is explicit: "No new files, no model changes, no UI
-changes... This fix is confined to `AppState.buildSession` and one private helper in the
-same file." The actual working tree modifies SIX files:
-
-- `AuraFitness/Models/AppState.swift`        — IN SCOPE (H4).
-- `AuraFitness/ActiveWorkout/WorkoutSessionState.swift`  — OUT OF SCOPE. A full timer
-  refactor (wall-clock elapsed via `runStart`, wall-clock rest via `restEndDate`,
-  `freezeElapsed`, `refreshOnForeground`).
-- `AuraFitness/ActiveWorkout/WorkoutPersistence.swift`   — OUT OF SCOPE. New `aura_run_start`
-  key + save/restore/clear, supporting the timer refactor above.
-- `AuraFitness/ActiveWorkout/ActiveWorkoutView.swift`    — OUT OF SCOPE. New `scenePhase`
-  observation calling `session.refreshOnForeground()`.
-- `AuraFitness/Models/ProgramDatabase.swift`             — OUT OF SCOPE. `createPlan` renamed
-  to `addPlan(from:...)`, `startDay` parameterized, boot-seed path rewired.
-- `AuraFitness/Plan/ProgramDetailView.swift`             — OUT OF SCOPE. Updated to the new
-  `addPlan(from:startDay:)` signature.
-
-The Coder's changes.md and the Tester's test-results.md BOTH claim only AppState.swift was
-touched and that "the demo path / substituteExercise were checked and are untouched by this
-diff." That statement is false against the real working tree. Neither report acknowledges the
-timer refactor or the ProgramDatabase API rename. This is exactly the "trust but verify"
-failure the audit exists to catch — the reports do not describe the actual diff.
+`UnitFormatter.swift` implements the spec's signatures exactly (constants 0.45359237 / 2.54,
+`%.1f`-then-trim-".0" rounding, `nil` on empty/invalid parse rather than coercing to 0).
+`@EnvironmentObject var appState` is present in every view flagged by the spec
+(SetRowView, SupersetSetRow, ExerciseLoggingView, WorkoutSummaryView, WeeklyVolumeView,
+StatsView, PersonalRecordsView, PlanHistoryTab, NutritionView — all verified).
+App-wide sweep for leftover hardcoded `kg`/`cm` display literals: zero remaining.
 
 ## 🛡️ QUALITY & SECURITY AUDIT
+
 - **Strengths:**
-  - The H4 change itself is textbook: additive guard prevents clobbering DB-sourced
-    warm-ups, `switch` with `default: []` is exhaustive and crash-safe for negative /
-    out-of-range indices, `WarmupSet(reps:label:)` memberwise init and non-optional
-    `warmup: [WarmupSet] = []` default both exist, so `.isEmpty` cannot trap. Values match
-    the demo-seed ladder canonically. Placement after the target-enrichment block is correct.
-  - The out-of-scope timer refactor is, on its own merits, architecturally sound (deriving
-    elapsed/rest from `Date()` rather than a `Timer` tick fixes real background-drift bugs
-    on mobile). The ProgramDatabase change is internally consistent — no dangling `createPlan`
-    callers remain. So this is not broken code; it is undisclosed, unaudited code.
+  - Correct canonical-preserving design: storage stays kg/cm; only display/input layers
+    convert. `parseWeightToKg`/`parseLengthToCm` correctly return `nil` (not 0) so unfilled
+    sets stay unfilled and PR/auto-finish logic is not corrupted.
+  - The R2 free-text vs numeric-string distinction was honored precisely — QuickLogSet stays
+    a pure String passthrough (only the placeholder changed); SetHistory numeric strings are
+    parsed with a `Double(...) ?? 0` crash guard at all three display sites.
+  - Sign preservation in ProgressPhotosView delta is correct (positive scalar multiply keeps
+    the `>= 0` branch valid after conversion).
 
 - **Vulnerabilities/Flaws:**
-  - PRIMARY: Scope contamination. Two unrelated features (session-timer wall-clock refactor;
-    plan-creation API rename) are riding inside an "H4 warm-up" changeset. If H4 must be
-    reverted, these get dragged with it; if these regress, H4 is blamed. This defeats
-    bisectable history and clean review.
-  - The timer refactor is a behavioral change to live-workout timekeeping and has had ZERO
-    test coverage or even a mention in test-results.md. On mobile this is high-risk surface
-    (scenePhase transitions, persistence across relaunch, pause/resume rest math). Shipping it
-    silently is unacceptable regardless of its quality.
-  - `elapsedSeconds` is now `@Published private(set)` recomputed off `Date()`. Any external
-    writer of `elapsedSeconds` would now fail to compile — not verifiable here (no Swift
-    toolchain), and not covered by any test.
+  - **CORRECTNESS BUG — WeeklyVolumeView headline number/label mismatch.**
+    `WeeklyVolumeView.swift:97` was changed to label the stat with `appState.weightUnit`, but
+    the headline number directly above it (`line 92: formatVolume(currentWeekVolume)`) is
+    still the RAW canonical-kg value with NO conversion. `currentWeekVolume` (line 50-52) is a
+    kg volume sum. In `lb` mode this renders the kg number under an "lb this week" label —
+    e.g. "5000 lb this week" when the true value is ~11023 lb. The number and its unit label
+    now disagree. The spec under-specified this (it instructed a label-only change at that
+    site) but the shipped result is a visibly wrong statistic. Note the sibling StatsView
+    weekly-volume card DID convert its number (`weightNumber`), so this is an inconsistency,
+    not an intended design.
+  - **Latent (not blocking):** `PlanHistoryTab` relies on inherited `@EnvironmentObject`.
+    It is reached via `PlanTabView` (root, injected) and `PlanWorkoutEditorView`. If any
+    present path wraps `PlanExerciseDetailView` in a `.sheet`/`.fullScreenCover` without
+    re-injecting AppState, the missing environment object would crash at runtime. Consistent
+    with existing app-wide pattern, so acceptable, but worth a runtime smoke test once a
+    toolchain is available.
 
-- **Test Integrity:** Weak. No automated tests were added (no Apple toolchain on this Windows
-  box — a legitimate constraint). Verification was a manual static trace. For the H4 helper
-  that trace is adequate and its conclusions are correct. But the Tester's PASS explicitly
-  asserts the diff is "byte-for-byte" only the AppState change and that other files are
-  untouched — that assertion is contradicted by the working tree. A test report that
-  mis-describes the scope of the diff cannot be trusted as a merge gate.
+- **Test Integrity:**
+  Superficial. NO code was compiled or executed — the "PASS" is static grep/read verification
+  only, on a Windows machine with no Apple toolchain. The tester's own grep-based coverage
+  check for WeeklyVolumeView stopped at line 97/150 and never inspected the paired headline
+  number on line 92, which is exactly where the bug lives. Green here does not mean shippable:
+  compilation (Text/LocalizedStringKey vs String at every edited call site), the PR celebration
+  render, and live unit-toggle re-render were all reasoned about, not observed. The math
+  spot-checks were done by hand, not run.
 
 ## 🛠️ ACTION ITEMS
-- `AuraFitness/ActiveWorkout/WorkoutSessionState.swift`,
-  `AuraFitness/ActiveWorkout/WorkoutPersistence.swift`,
-  `AuraFitness/ActiveWorkout/ActiveWorkoutView.swift`:
-  Remove these from the H4 changeset. The wall-clock timer refactor is a separate feature —
-  split it into its own branch/PR with its own spec and its own tests (background/foreground
-  scenePhase, relaunch-mid-session elapsed restore, rest pause/resume/add-time math). Do not
-  merge it under an H4 label.
-- `AuraFitness/Models/ProgramDatabase.swift`, `AuraFitness/Plan/ProgramDetailView.swift`:
-  Remove from the H4 changeset. The `createPlan` → `addPlan(from:startDay:)` rename and
-  boot-seed rewire is an unrelated API refactor. Split into its own commit/PR.
-- `.pipeline/changes.md` and `.pipeline/test-results.md`:
-  Both must be corrected to reflect the ACTUAL files changed. The current reports understate
-  the diff to a single file, which is a governance failure independent of code quality.
-- After splitting, the isolated H4 diff (AppState.swift only) is SHIP-ready as written and
-  needs no further code changes — only a real Xcode build + a unit test on
-  `synthesizedWarmup` for indices -1/0/1/2/5 before final merge.
+- `AuraFitness/Progress/WeeklyVolumeView.swift`: Line 92 — convert the headline volume number
+  to match its now-dynamic unit label. Replace
+  `formatVolume(currentWeekVolume)` with a `UnitFormatter`-converted value
+  (e.g. `UnitFormatter.weightNumber(currentWeekVolume, unit: appState.weightUnit)`), so the
+  number and the "\(appState.weightUnit) this week" label agree in lb mode. This is the same
+  treatment already applied in StatsView.swift:125.
+- `AuraFitness/` (whole H7 pass): This code has NEVER been compiled or run. Before merge, build
+  and run on the Apple toolchain and manually verify: (1) toggling weightUnit to "lb"
+  live-updates WeeklyVolumeView, StatsView, MeasurementsView, and all active-workout rows with
+  correct numbers; (2) a measurement logged in lb/in mode round-trips to unchanged canonical
+  kg/cm; (3) PlanExerciseDetailView opens without an EnvironmentObject crash from every
+  presentation path.

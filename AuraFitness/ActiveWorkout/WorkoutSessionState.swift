@@ -227,8 +227,9 @@ class WorkoutSessionState: ObservableObject {
 
         // Celebration checks
         if let w = s.weight, let pr = ex.lastPR, w > pr.weight {
+            let u = appState?.weightUnit ?? "kg"
             triggerCelebration(emoji: "🏆", title: "New PR!",
-                message: "\(w) kg beats your \(pr.weight) kg best.")
+                message: "\(UnitFormatter.weight(w, unit: u)) beats your \(UnitFormatter.weight(pr.weight, unit: u)) best.")
         } else if let r = s.reps, let t = ex.target,
                   r > t.reps, let w = s.weight, w >= t.weight {
             triggerCelebration(emoji: "🔥", title: "Extra reps!",

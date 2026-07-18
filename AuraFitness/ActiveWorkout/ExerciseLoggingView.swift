@@ -185,12 +185,12 @@ struct ExerciseLoggingView: View {
         HStack(spacing: AuraSpacing.s3) {
             miniCard(
                 icon: "trophy.fill", iconColor: .aura.accent, head: "Last PR",
-                value: ex.lastPR.map { "\(fmt($0.weight)) kg × \($0.reps)" } ?? "—",
+                value: ex.lastPR.map { "\(UnitFormatter.weight($0.weight, unit: appState.weightUnit)) × \($0.reps)" } ?? "—",
                 sub: ex.lastPR?.date ?? "—", highlighted: false
             )
             miniCard(
                 icon: "target", iconColor: .aura.accent, head: "Today's target",
-                value: ex.target.map { "\(fmt($0.weight)) kg × \($0.reps)" } ?? "—",
+                value: ex.target.map { "\(UnitFormatter.weight($0.weight, unit: appState.weightUnit)) × \($0.reps)" } ?? "—",
                 sub: ex.target?.note ?? "", highlighted: true
             )
         }
@@ -347,7 +347,7 @@ struct ExerciseLoggingView: View {
     private func extraSetsCard(ex: Exercise) -> some View {
         let extra = extraHistory(ex: ex)
         let detail = extra.enumerated().map { j, h in
-            "Set \(ex.plannedSets + j + 1): \(h.weight) kg × \(h.reps) reps"
+            "Set \(ex.plannedSets + j + 1): \(UnitFormatter.weight(Double(h.weight) ?? 0, unit: appState.weightUnit)) × \(h.reps) reps"
         }.joined(separator: " · ")
         return HStack(alignment: .top, spacing: AuraSpacing.s3) {
             Image(systemName: "info.circle.fill").foregroundColor(.aura.blue).font(.system(size: 16))

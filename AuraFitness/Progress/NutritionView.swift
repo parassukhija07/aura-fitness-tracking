@@ -46,16 +46,16 @@ struct NutritionView: View {
                         Text("Body Weight")
                             .font(AuraFont.sectionLabel())
                             .foregroundColor(.aura.text3)
-                        Text("\(String(format: "%.1f", stats.weight))")
+                        Text(UnitFormatter.weightNumber(stats.weight, unit: appState.weightUnit))
                             .font(AuraFont.statNum(size: 28))
                             .foregroundColor(.aura.text)
                             +
-                            Text(" kg")
+                            Text(" \(appState.weightUnit)")
                                 .font(AuraFont.body())
                                 .foregroundColor(.aura.text2)
                     }
                     Spacer()
-                    Text("Target \(String(format: "%.0f", stats.targetWeight)) kg")
+                    Text("Target \(UnitFormatter.weight(stats.targetWeight, unit: appState.weightUnit))")
                         .font(.system(size: 12, weight: .semibold))
                         .foregroundColor(.white)
                         .padding(.horizontal, 8)
@@ -92,9 +92,9 @@ struct NutritionView: View {
     private var detailsGrid: some View {
         AuraCard {
             HStack(spacing: AuraSpacing.s4) {
-                detailCol("Height", "\(Int(stats.height)) cm")
+                detailCol("Height", UnitFormatter.length(stats.height, unit: appState.lengthUnit))
                 Divider()
-                detailCol("Weight", "\(String(format: "%.1f", stats.weight)) kg")
+                detailCol("Weight", UnitFormatter.weight(stats.weight, unit: appState.weightUnit))
                 Divider()
                 detailCol("Age", "\(stats.age)")
                 Divider()

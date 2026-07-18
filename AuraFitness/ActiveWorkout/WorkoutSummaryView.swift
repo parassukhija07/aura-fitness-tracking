@@ -81,7 +81,7 @@ struct WorkoutSummaryView: View {
                                             .foregroundColor(.aura.text)
                                         let d = ex.sets.filter { $0.done }.count
                                         let vol = ex.sets.filter { $0.done }.reduce(0.0) { $0 + ($1.weight ?? 0) * Double($1.reps ?? 0) }
-                                        Text("\(d) sets · \(Int(vol).formatted()) kg")
+                                        Text("\(d) sets · \(UnitFormatter.weight(vol, unit: appState.weightUnit))")
                                             .font(AuraFont.secondary())
                                             .foregroundColor(.aura.text2)
                                     }

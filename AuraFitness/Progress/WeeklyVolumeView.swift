@@ -89,12 +89,12 @@ struct WeeklyVolumeView: View {
                 HStack(alignment: .top) {
                     VStack(alignment: .leading, spacing: 3) {
                         Text(metric == "Volume"
-                             ? formatVolume(currentWeekVolume)
+                             ? formatVolume(UnitFormatter.weightValue(currentWeekVolume, unit: appState.weightUnit))
                              : "\(currentWeekSets)")
                             .font(AuraFont.statNum(size: 30))
                             .foregroundColor(.aura.text)
                         HStack(spacing: 6) {
-                            Text(metric == "Volume" ? "kg this week" : "sets this week")
+                            Text(metric == "Volume" ? "\(appState.weightUnit) this week" : "sets this week")
                                 .font(AuraFont.secondary())
                                 .foregroundColor(.aura.text2)
                             if let pct = weekOverWeekPct {
@@ -147,7 +147,7 @@ struct WeeklyVolumeView: View {
                                 Text(top.name)
                                     .font(.system(size: 16, weight: .bold))
                                     .foregroundColor(.aura.text)
-                                Text("\(top.sets) sets · \(formatVolume(top.volume)) kg")
+                                Text("\(top.sets) sets · \(UnitFormatter.weight(top.volume, unit: appState.weightUnit))")
                                     .font(AuraFont.secondary())
                                     .foregroundColor(.aura.text2)
                             }

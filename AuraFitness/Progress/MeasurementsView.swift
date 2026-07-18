@@ -11,7 +11,6 @@ struct MeasurementsView: View {
 
     let measurements = ["weight", "bodyFat", "chest", "waist", "arms", "thighs", "shoulders", "neck", "hips"]
     let measurementLabels = ["Weight", "Body fat", "Chest", "Waist", "Arms", "Thighs", "Shoulders", "Neck", "Hips"]
-    let measurementUnits = ["kg", "%", "cm", "cm", "cm", "cm", "cm", "cm", "cm"]
 
     let measurementHowTo = [
         ("Chest", "Around the fullest part, under the armpits, arms relaxed."),
@@ -57,7 +56,7 @@ struct MeasurementsView: View {
     }
 
     private var weightChartData: [Double] {
-        sorted.compactMap { $0.weight }
+        sorted.compactMap { $0.weight }.map { UnitFormatter.weightValue($0, unit: appState.weightUnit) }
     }
 
     var body: some View {
@@ -97,7 +96,7 @@ struct MeasurementsView: View {
                             .tracking(0.5)
                         if let w = latest?.weight {
                             HStack(alignment: .firstTextBaseline, spacing: 4) {
-                                Text(String(format: "%.1f", w))
+                                Text(UnitFormatter.weightNumber(w, unit: appState.weightUnit))
                                     .font(AuraFont.statNum(size: 32))
                                     .foregroundColor(.aura.text)
                                 Text(appState.weightUnit)
@@ -116,7 +115,7 @@ struct MeasurementsView: View {
                         HStack(spacing: 3) {
                             Image(systemName: down ? "arrow.down" : "arrow.up")
                                 .font(.system(size: 11, weight: .bold))
-                            Text(String(format: "%.1f %@ / 30d", abs(delta), appState.weightUnit))
+                            Text(String(format: "%.1f %@ / 30d", abs(UnitFormatter.weightValue(delta, unit: appState.weightUnit)), appState.weightUnit))
                                 .font(.system(size: 12, weight: .bold))
                         }
                         .foregroundColor(down ? .aura.green : .aura.red)
@@ -157,7 +156,7 @@ struct MeasurementsView: View {
             )
             compTile(
                 label: "LEAN MASS",
-                value: leanMass.map { String(format: "%.1f kg", $0) },
+                value: leanMass.map { UnitFormatter.weight($0, unit: appState.weightUnit) },
                 delta: nil,
                 deltaDown: true
             )
@@ -259,8 +258,11 @@ struct MeasurementsView: View {
     }
 
     private func measurementUnit(_ metric: String) -> String {
-        guard let idx = measurements.firstIndex(of: metric) else { return "" }
-        return measurementUnits[idx]
+        switch metric {
+        case "weight": return appState.weightUnit
+        case "bodyFat": return "%"
+        default: return appState.lengthUnit
+        }
     }
 
     // MARK: Circumferences
@@ -285,7 +287,7 @@ struct MeasurementsView: View {
                                 .foregroundColor(.aura.text)
                             Spacer()
                             if let v = val {
-                                Text(String(format: "%.1f \(appState.lengthUnit)", v))
+                                Text(UnitFormatter.length(v, unit: appState.lengthUnit))
                                     .font(.system(size: 15, weight: .semibold))
                                     .foregroundColor(.aura.text)
                             } else {

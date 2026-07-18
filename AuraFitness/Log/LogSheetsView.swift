@@ -836,7 +836,7 @@ struct LogSheetsView: View {
                 ForEach(Array(ex.sets.enumerated()), id: \.element.id) { j, _ in
                     HStack(spacing: 8) {
                         Text("\(j + 1)").font(.system(size: 12, weight: .bold)).foregroundColor(.aura.text3).frame(width: 28, alignment: .leading)
-                        TextField("kg", text: bindingWeight(i, j)).logFieldStyle()
+                        TextField(appState.weightUnit, text: bindingWeight(i, j)).logFieldStyle()
                         TextField("reps", text: bindingReps(i, j)).logFieldStyle()
                         Button { formExercises[i].sets.remove(at: j) } label: {
                             Image(systemName: "minus.circle.fill").foregroundColor(.aura.red).font(.system(size: 15))
