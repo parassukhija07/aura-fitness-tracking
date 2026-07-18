@@ -305,7 +305,7 @@ struct SupersetView: View {
         session.triggerCelebration(emoji: "💪", title: "Superset done", message: "Both exercises logged. Keep going.")
         // Complete Superset rest = the default-rest tweak (Profile "Rest Between Sets"),
         // not the hard 60s used for per-side set completion.
-        session.startRest(duration: appState.defaultRestBetweenSets)
+        session.startRest(duration: appState.defaultRestBetweenSets, automatic: false)
         session.activeView = .overview
     }
 

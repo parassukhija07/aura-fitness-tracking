@@ -15,8 +15,12 @@ struct RestPillView: View {
     @ViewBuilder
     private func restPill(geo: GeometryProxy) -> some View {
         let pct = session.restProgress
-        let x = session.pillPosition.x
-        let y = session.pillPosition.y
+        // Clamp the restored/default position against this device's actual
+        // screen size — the persisted/hardcoded default was sized for a
+        // larger device and can land off-screen (or past the safe area) on
+        // an SE or after a rotation.
+        let x = max(8, min(session.pillPosition.x, geo.size.width - 200))
+        let y = max(60, min(session.pillPosition.y, geo.size.height - 70))
 
         HStack(spacing: AuraSpacing.s2) {
             // Conic ring

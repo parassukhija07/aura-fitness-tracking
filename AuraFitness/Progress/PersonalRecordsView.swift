@@ -6,8 +6,12 @@ struct PersonalRecordsView: View {
 
     let muscles = ["All","Chest","Back","Shoulders","Arms","Legs","Core"]
 
+    /// Current best per exercise — `personalRecords` is an append-only log,
+    /// so group down to the top e1RM entry per exercise for display.
     var filtered: [PersonalRecord] {
-        let all = appState.personalRecords.sorted { $0.estimated1RM > $1.estimated1RM }
+        let bestByExercise = Dictionary(grouping: appState.personalRecords, by: { $0.exerciseName.lowercased() })
+            .compactMap { _, records in records.max { a, b in (a.estimated1RM, a.weight) < (b.estimated1RM, b.weight) } }
+        let all = bestByExercise.sorted { $0.estimated1RM > $1.estimated1RM }
         if selectedMuscle == "All" { return all }
         return all.filter { $0.muscle.localizedCaseInsensitiveContains(selectedMuscle) }
     }

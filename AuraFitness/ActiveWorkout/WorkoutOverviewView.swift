@@ -36,6 +36,14 @@ struct WorkoutOverviewView: View {
             WorkoutModalsView(modal: m, presented: $modal)
                 .environmentObject(session)
         }
+        // §2.27 — offer to write an add/remove/substitute edit back to the
+        // source plan/program, or keep it scoped to today's session only.
+        .alert("Save this change?", isPresented: $session.pendingScopePrompt) {
+            Button("Today Only") { session.resolveScopePrompt(savePermanently: false) }
+            Button("Save Permanently") { session.resolveScopePrompt(savePermanently: true) }
+        } message: {
+            Text("Keep this edit for today's workout only, or save it to your plan so it applies every time?")
+        }
     }
 
     // MARK: Populated overview

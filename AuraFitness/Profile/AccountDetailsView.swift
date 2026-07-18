@@ -43,7 +43,9 @@ struct AccountDetailsView: View {
                 VStack(spacing: AuraSpacing.s3) {
                     HStack(spacing: AuraSpacing.s3) {
                         dateField("Birthday", date: p.birthday)
+                            .onChange(of: appState.userProfile.birthday) { _, _ in appState.syncBodyAndProfile() }
                         selectField("Gender", selection: p.gender, options: ["Male", "Female", "Other"])
+                            .onChange(of: appState.userProfile.gender) { _, _ in appState.syncBodyAndProfile() }
                     }
                     HStack(spacing: AuraSpacing.s3) {
                         numberField("Height (cm)", value: $appState.bodyStats.height)
@@ -112,6 +114,8 @@ struct AccountDetailsView: View {
         .navigationBarTitleDisplayMode(.inline)
         .sheet(item: $sheet) { which in
             ProfileConfirmSheet(kind: which, flash: { toast.flash($0) })
+                .environmentObject(appState)
+                .environmentObject(AuthService.shared)
         }
         .auraToast(toast)
     }

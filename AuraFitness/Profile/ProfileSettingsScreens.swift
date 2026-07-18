@@ -86,6 +86,9 @@ struct NotificationsSettingsView: View {
                 SettingsControlRow(title: "Enable notifications",
                                    subtitle: "Reminders, streaks and updates") {
                     AuraToggle(isOn: $appState.notificationsEnabled)
+                        .onChange(of: appState.notificationsEnabled) { _, enabled in
+                            if enabled { NotificationScheduler.requestAuthorizationIfNeeded() }
+                        }
                 }
             }
 
@@ -183,13 +186,16 @@ struct ConnectedAppsView: View {
                 SettingsControlRow(title: "Apple Health",
                                    subtitle: appState.appleHealthConnected ? "Connected" : "Not connected",
                                    iconName: "flame.fill", iconColor: .aura.red) {
-                    AuraToggle(isOn: $appState.appleHealthConnected)
-                }
-                Divider().padding(.leading, 64)
-                SettingsControlRow(title: "Google Health",
-                                   subtitle: appState.googleHealthConnected ? "Connected" : "Not connected",
-                                   iconName: "target", iconColor: .aura.green) {
-                    AuraToggle(isOn: $appState.googleHealthConnected)
+                    AuraToggle(isOn: Binding(
+                        get: { appState.appleHealthConnected },
+                        set: { newValue in
+                            if newValue {
+                                Task { await HealthKitService.shared.requestAuthorization(appState: appState) }
+                            } else {
+                                HealthKitService.shared.disconnect(appState: appState)
+                            }
+                        }
+                    ))
                 }
             }
 
@@ -282,6 +288,12 @@ struct ProfileConfirmSheet: View {
     let kind: ProfileSheet
     let flash: (String) -> Void
     @Environment(\.dismiss) private var dismiss
+    @EnvironmentObject var appState: AppState
+    @EnvironmentObject var authService: AuthService
+
+    @State private var exportURL: URL? = nil
+    @State private var busy = false
+    @State private var showFullResetConfirm = false
 
     var body: some View {
         VStack(spacing: 0) {
@@ -293,6 +305,15 @@ struct ProfileConfirmSheet: View {
         .presentationDetents([.height(detentHeight)])
         .presentationDragIndicator(.hidden)
         .background(Color.aura.surface)
+        .alert("Reset everything?", isPresented: $showFullResetConfirm) {
+            Button("Cancel", role: .cancel) {}
+            Button("Reset Everything", role: .destructive) {
+                DataResetService.resetAll(workoutOnly: false, appState: appState, alsoRemote: true)
+                dismiss(); flash("All data reset")
+            }
+        } message: {
+            Text("This clears your profile, settings, and all workout data on this device and in the cloud. This cannot be undone.")
+        }
     }
 
     private var detentHeight: CGFloat {
@@ -321,15 +342,38 @@ struct ProfileConfirmSheet: View {
                 .font(.system(size: 17, weight: .bold))
                 .foregroundColor(.aura.text)
                 .padding(.bottom, AuraSpacing.s2)
-            Text("Download a full copy of your workouts, measurements and settings as a CSV + JSON archive.")
+            Text("Download a full copy of your workouts, measurements and settings as a JSON archive.")
                 .font(AuraFont.secondary())
                 .foregroundColor(.aura.text2)
                 .multilineTextAlignment(.center)
                 .padding(.bottom, AuraSpacing.s2)
-            AuraPrimaryButton(label: "Export Archive") {
-                dismiss(); flash("Export started")
+            if let exportURL {
+                ShareLink(item: exportURL) {
+                    HStack(spacing: AuraSpacing.s2) {
+                        Image(systemName: "square.and.arrow.up")
+                            .font(.system(size: 16, weight: .semibold))
+                        Text("Export Archive")
+                            .font(AuraFont.body())
+                    }
+                    .foregroundColor(.white)
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 52)
+                    .background(Color.aura.accent)
+                    .clipShape(RoundedRectangle(cornerRadius: AuraRadius.md))
+                }
+                .simultaneousGesture(TapGesture().onEnded { flash("Export ready") })
+            } else {
+                AuraPrimaryButton(label: busy ? "Preparing…" : "Export Archive", isLoading: busy) {}
+                    .disabled(true)
+                    .opacity(0.6)
             }
             AuraGrayButton(label: "Cancel") { dismiss() }
+        }
+        .task {
+            guard exportURL == nil else { return }
+            busy = true
+            exportURL = await DataArchiveBuilder.writeTempFile(appState)
+            busy = false
         }
     }
 
@@ -342,6 +386,7 @@ struct ProfileConfirmSheet: View {
                 .padding(.bottom, AuraSpacing.s2)
             SettingsGroup {
                 Button {
+                    DataResetService.resetAll(workoutOnly: true, appState: appState, alsoRemote: true)
                     dismiss(); flash("Workout data reset")
                 } label: {
                     SettingsRowLabel(icon: "dumbbell.fill", iconColor: .aura.text2,
@@ -353,7 +398,8 @@ struct ProfileConfirmSheet: View {
             }
             SettingsGroup {
                 Button {
-                    dismiss(); flash("All data reset")
+                    // Recommended confirmation before a destructive full wipe.
+                    showFullResetConfirm = true
                 } label: {
                     HStack(spacing: AuraSpacing.s3) {
                         ZStack {
@@ -397,7 +443,7 @@ struct ProfileConfirmSheet: View {
                 .font(.system(size: 18, weight: .bold))
                 .foregroundColor(.aura.text)
             Text(delete
-                 ? "This permanently erases your account and all data. This cannot be undone."
+                 ? "This permanently erases your account and all synced + local data. This cannot be undone."
                  : "You can log back in anytime with your email.")
                 .font(AuraFont.secondary())
                 .foregroundColor(.aura.text2)
@@ -405,15 +451,49 @@ struct ProfileConfirmSheet: View {
                 .frame(maxWidth: 280)
                 .padding(.bottom, AuraSpacing.s2)
             if delete {
-                AuraDangerButton(label: "Delete Account") {
-                    dismiss(); flash("Account deleted")
+                AuraDangerButton(label: busy ? "Deleting…" : "Delete Account") {
+                    guard !busy else { return }
+                    busy = true
+                    Task {
+                        // Remote delete (Edge Function) must SUCCEED before
+                        // any local wipe or sign-out. On failure: no wipe,
+                        // stay signed in, show error — wrong order orphans an
+                        // account with lost local data.
+                        if await authService.deleteAccount() {
+                            // Edge Function's `on delete cascade` already
+                            // wiped every aura_* row remotely — alsoRemote:
+                            // false here to avoid a pointless post-delete
+                            // network call against a user that no longer exists.
+                            DataResetService.resetAll(workoutOnly: false, appState: appState, alsoRemote: false)
+                            busy = false
+                            dismiss(); flash("Account deleted")
+                        } else {
+                            busy = false
+                            flash(authService.lastError ?? "Delete failed")
+                        }
+                    }
                 }
+                .disabled(busy)
+                .opacity(busy ? 0.6 : 1)
             } else {
-                AuraPrimaryButton(label: "Log Out") {
-                    dismiss(); flash("Logged out")
+                AuraPrimaryButton(label: busy ? "Logging out…" : "Log Out") {
+                    guard !busy else { return }
+                    busy = true
+                    Task {
+                        // Do NOT wipe local data — it stays for the next
+                        // login on this device and is already backed up
+                        // remotely. Sign-out flips sessionState -> gate
+                        // shows login.
+                        await authService.signOut()
+                        busy = false
+                        dismiss(); flash("Logged out")
+                    }
                 }
+                .disabled(busy)
+                .opacity(busy ? 0.6 : 1)
             }
             AuraGrayButton(label: "Cancel") { dismiss() }
+                .disabled(busy)
         }
     }
 }

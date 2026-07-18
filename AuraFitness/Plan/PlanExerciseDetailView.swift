@@ -464,26 +464,48 @@ private struct PlanHistoryTab<SS: View>: View {
     @State private var open: Int? = nil
 
     var body: some View {
-        let history = PlanExerciseDetail.history(for: ex)
-        let pbs = PlanExerciseDetail.calcPBs(history)
+        let history = appState.realHistory(forExercise: ex.name)
         VStack(alignment: .leading, spacing: 0) {
             ssTabs()
-            AuraSectionLabel(title: "Personal best").padding(.top, 0)
-            LazyVGrid(columns: [GridItem(.flexible(), spacing: 8), GridItem(.flexible(), spacing: 8)], spacing: 8) {
-                pbCard("EST. 1RM", fmt(pbs.e1rm), "Epley formula")
-                pbCard("MAX WEIGHT", fmt(pbs.maxW), "Single set")
-                pbCard("MAX REPS", "\(pbs.maxR)", "Single set")
-                pbCard("MAX VOLUME", pbs.maxVol > 0 ? UnitFormatter.weight(pbs.maxVol, unit: appState.weightUnit) : "BW", "Per session")
-            }
+            if history.isEmpty {
+                emptyState
+            } else {
+                let pbs = PlanExerciseDetail.calcPBs(history)
+                AuraSectionLabel(title: "Personal best").padding(.top, 0)
+                LazyVGrid(columns: [GridItem(.flexible(), spacing: 8), GridItem(.flexible(), spacing: 8)], spacing: 8) {
+                    pbCard("EST. 1RM", fmt(pbs.e1rm), "Epley formula")
+                    pbCard("MAX WEIGHT", fmt(pbs.maxW), "Single set")
+                    pbCard("MAX REPS", "\(pbs.maxR)", "Single set")
+                    pbCard("MAX VOLUME", pbs.maxVol > 0 ? UnitFormatter.weight(Double(pbs.maxVol), unit: appState.weightUnit) : "BW", "Per session")
+                }
 
-            AuraSectionLabel(title: "Session history")
-            VStack(spacing: 8) {
-                ForEach(Array(history.enumerated()), id: \.offset) { i, s in
-                    sessionRow(i, s)
+                AuraSectionLabel(title: "Session history")
+                VStack(spacing: 8) {
+                    ForEach(Array(history.enumerated()), id: \.offset) { i, s in
+                        sessionRow(i, s)
+                    }
                 }
             }
         }
         .padding(.horizontal, 14)
+    }
+
+    private var emptyState: some View {
+        VStack(spacing: AuraSpacing.s2) {
+            Image(systemName: "chart.bar")
+                .font(.system(size: 32))
+                .foregroundColor(.aura.text3)
+            Text("No history yet")
+                .font(.system(size: 15, weight: .bold))
+                .foregroundColor(.aura.text2)
+            Text("Log this exercise in a workout to see your personal bests and session history here.")
+                .font(.system(size: 13))
+                .foregroundColor(.aura.text3)
+                .multilineTextAlignment(.center)
+                .frame(maxWidth: 260)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, AuraSpacing.s6)
     }
 
     private func fmt(_ v: Double) -> String { v > 0 ? UnitFormatter.weight(v, unit: appState.weightUnit) : "BW" }

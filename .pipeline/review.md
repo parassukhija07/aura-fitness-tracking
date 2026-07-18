@@ -1,70 +1,30 @@
 # FINAL ARCHITECTURE REVIEW
 
-## ⚖️ VERDICT
+## VERDICT
 NEEDS WORK
 
-## 🔍 DIFF ANALYSIS
-The actual `git diff` matches `changes.md` with high fidelity. Exactly the 16 source files
-claimed were modified, plus the one new file `AuraFitness/Models/UnitFormatter.swift`. No
-unauthorized files were touched. The working tree contained ONLY H7 files (no stray H5
-remnants), so scope discipline is clean — no scope creep detected.
+## DIFF ANALYSIS
+The actual git diff / working-tree matches the Coder's stated file list. All 10 new files exist (Auth/, Sync/, Profile/DataArchive.swift, Profile/DataResetService.swift, Secrets.xcconfig.template, supabase/*). All 11 modified files were touched. No unauthorized/out-of-spec file modifications detected (the formatVolume hits in StatsView/WeeklyVolumeView/WorkoutOverviewView are pre-existing H7 display helpers, unrelated to the old export stub). Secrets handling verified clean: AuraFitness/Secrets.xcconfig is git-ignored (git check-ignore confirms), no hardcoded URL/anon key anywhere, AuthConfig reads Info.plist, Edge Function reads Deno.env. RLS covers every one of the 12 tables with an owner-only auth.uid() = user_id policy for all commands. Edge Function verifies the caller JWT via auth.getUser(jwt) and deletes only the resolved uid (no user id read from request body). The pbxproj diff is structurally balanced. Good work overall, but several correctness defects block a SHIP.
 
-`UnitFormatter.swift` implements the spec's signatures exactly (constants 0.45359237 / 2.54,
-`%.1f`-then-trim-".0" rounding, `nil` on empty/invalid parse rather than coercing to 0).
-`@EnvironmentObject var appState` is present in every view flagged by the spec
-(SetRowView, SupersetSetRow, ExerciseLoggingView, WorkoutSummaryView, WeeklyVolumeView,
-StatsView, PersonalRecordsView, PlanHistoryTab, NutritionView — all verified).
-App-wide sweep for leftover hardcoded `kg`/`cm` display literals: zero remaining.
+## QUALITY & SECURITY AUDIT
+- Strengths:
+  - RLS + Edge Function security is correct: every table scoped to auth.uid(), JWT verified server-side, deletion keyed to the token's uid (not request body), cascade FKs wipe remote data.
+  - Secrets are properly externalized and gitignored; no credentials committed.
+  - Offline-queue coalescing (enqueue de-dupes by table+id+action) and whole-array didSet diffing (syncDiff/jsonEqual) are genuinely implemented, not just commented.
 
-## 🛡️ QUALITY & SECURITY AUDIT
+- Vulnerabilities/Flaws:
+  1. RESET DOES NOT CLEAR IN-MEMORY DATA (high). AppState.applyRemote*([]) UNION-merges the empty argument into existing state, so passing [] is a no-op: the arrays are reassigned to their current contents, NOT cleared. DataResetService.resetAll therefore wipes UserDefaults keys but leaves workoutLogs/measurements/PRs/photos/dayOverrides/quickLogs on screen and re-persisted by didSet. The whole reset feature is defeated. applyRemoteDayOverrides([:])/applyRemoteQuickLogs([:]) have the same merge-not-replace defect.
+  2. FULL RESET LEAVES CUSTOM PROGRAMS & EXERCISES (high). DataResetService calls ProgramDatabase.resetToSeed() and ExerciseDatabase.resetToSeed() for BOTH modes; both PRESERVE customs by design. The spec mandated hardReset() for the full-wipe path. hardReset() was written on both stores but is never called anywhere (dead code). So "Reset everything"/Delete Account keep all custom programs and custom exercises.
+  3. APPSTATEBRIDGE NIL-RACE ON COLD LAUNCH (high). AuthService.shared is instantiated during AuraFitnessApp's @StateObject init and immediately fires restoreSession -> transitionToSignedIn -> onSignedIn -> pullAll/backfill. AppStateBridge.shared is only set later in .onAppear. For a returning user, pullAll() (line 320) and backfillLocalToRemote (line 242) can run while AppStateBridge.shared == nil and silently return, so on cold launch NONE of the AppState-owned collections pull or backfill; only programs/plans/exercises do. Backfill runs once per sign-in, so a fresh account's pre-existing local logs/measurements may never reach the server (foreground pull later only partially recovers visibility, not the one-shot backfill).
+  4. LWW TIMESTAMP / RE-PUSH GAP (medium). When a remote row wins in reconcile, applyRemote* never calls stampLocalChange, so aura_local_ts_v1 keeps the stale local timestamp for that id. And when a LOCAL row is newer (localTs > remote), reconcile just continues and never re-pushes the local winner (the toRepush array is explicitly discarded: _ = toRepush), so the spec's "if local won, push it up" is not implemented; an offline device can fail to propagate its newer edit until the row is touched again.
+  5. PBXPROJ UUID LENGTH INCONSISTENCY (medium, over-flagged per instructions). Every pre-existing identifier is exactly 24 chars; the new build/file-ref IDs are 22 chars (AAH8000000000000000001) and ABH8SECRETSXCCFG0000001 is 23. Xcode is usually tolerant, and I confirmed no collisions and correct section placement (all sections balanced and cross-referenced). But given zero compile verification and blast radius, normalize to 24 hex chars and open in Xcode to confirm load + supabase-swift resolution before trusting it.
+  6. INFOPLIST_KEY_* PASSTHROUGH UNVERIFIED (medium). INFOPLIST_KEY_SUPABASE_URL/ANON_KEY were added to both configs, but arbitrary INFOPLIST_KEY_* suffixes may not flow into the generated Info.plist; if they do not, AuthConfig hits its DEBUG fatalError / RELEASE invalid-config gate at first launch. A documented fallback exists but this is unverified.
 
-- **Strengths:**
-  - Correct canonical-preserving design: storage stays kg/cm; only display/input layers
-    convert. `parseWeightToKg`/`parseLengthToCm` correctly return `nil` (not 0) so unfilled
-    sets stay unfilled and PR/auto-finish logic is not corrupted.
-  - The R2 free-text vs numeric-string distinction was honored precisely — QuickLogSet stays
-    a pure String passthrough (only the placeholder changed); SetHistory numeric strings are
-    parsed with a `Double(...) ?? 0` crash guard at all three display sites.
-  - Sign preservation in ProgressPhotosView delta is correct (positive scalar multiply keeps
-    the `>= 0` branch valid after conversion).
+- Test Integrity: Not independently re-run (no toolchain). The Coder's "Tester focus areas" correctly name the echo guard, backfill-vs-pull, delete ordering, and coalescing. But any test claiming reset "clears data" and passing would be a FALSE GREEN, because the in-memory clear is a no-op (flaw #1). Treat green reset/backfill tests with suspicion until #1 and #3 are fixed.
 
-- **Vulnerabilities/Flaws:**
-  - **CORRECTNESS BUG — WeeklyVolumeView headline number/label mismatch.**
-    `WeeklyVolumeView.swift:97` was changed to label the stat with `appState.weightUnit`, but
-    the headline number directly above it (`line 92: formatVolume(currentWeekVolume)`) is
-    still the RAW canonical-kg value with NO conversion. `currentWeekVolume` (line 50-52) is a
-    kg volume sum. In `lb` mode this renders the kg number under an "lb this week" label —
-    e.g. "5000 lb this week" when the true value is ~11023 lb. The number and its unit label
-    now disagree. The spec under-specified this (it instructed a label-only change at that
-    site) but the shipped result is a visibly wrong statistic. Note the sibling StatsView
-    weekly-volume card DID convert its number (`weightNumber`), so this is an inconsistency,
-    not an intended design.
-  - **Latent (not blocking):** `PlanHistoryTab` relies on inherited `@EnvironmentObject`.
-    It is reached via `PlanTabView` (root, injected) and `PlanWorkoutEditorView`. If any
-    present path wraps `PlanExerciseDetailView` in a `.sheet`/`.fullScreenCover` without
-    re-injecting AppState, the missing environment object would crash at runtime. Consistent
-    with existing app-wide pattern, so acceptable, but worth a runtime smoke test once a
-    toolchain is available.
-
-- **Test Integrity:**
-  Superficial. NO code was compiled or executed — the "PASS" is static grep/read verification
-  only, on a Windows machine with no Apple toolchain. The tester's own grep-based coverage
-  check for WeeklyVolumeView stopped at line 97/150 and never inspected the paired headline
-  number on line 92, which is exactly where the bug lives. Green here does not mean shippable:
-  compilation (Text/LocalizedStringKey vs String at every edited call site), the PR celebration
-  render, and live unit-toggle re-render were all reasoned about, not observed. The math
-  spot-checks were done by hand, not run.
-
-## 🛠️ ACTION ITEMS
-- `AuraFitness/Progress/WeeklyVolumeView.swift`: Line 92 — convert the headline volume number
-  to match its now-dynamic unit label. Replace
-  `formatVolume(currentWeekVolume)` with a `UnitFormatter`-converted value
-  (e.g. `UnitFormatter.weightNumber(currentWeekVolume, unit: appState.weightUnit)`), so the
-  number and the "\(appState.weightUnit) this week" label agree in lb mode. This is the same
-  treatment already applied in StatsView.swift:125.
-- `AuraFitness/` (whole H7 pass): This code has NEVER been compiled or run. Before merge, build
-  and run on the Apple toolchain and manually verify: (1) toggling weightUnit to "lb"
-  live-updates WeeklyVolumeView, StatsView, MeasurementsView, and all active-workout rows with
-  correct numbers; (2) a measurement logged in lb/in mode round-trips to unchanged canonical
-  kg/cm; (3) PlanExerciseDetailView opens without an EnvironmentObject crash from every
-  presentation path.
+## ACTION ITEMS
+- AuraFitness/Models/AppState.swift: applyRemote* are union-merge helpers and must NOT double as the reset mechanism. Add explicit clear entry points (or have DataResetService assign empty collections directly under the isApplyingRemote guard) so reset actually empties workoutLogs, measurements, personalRecords, progressPhotos, dayOverrides, quickLogs in memory.
+- AuraFitness/Profile/DataResetService.swift: For the full-reset path call ProgramDatabase.hardReset() and ExerciseDatabase.hardReset() (drop customs) instead of resetToSeed(). Confirm custom programs/exercises are gone from memory after "Reset everything."
+- AuraFitness/AuraFitnessApp.swift / AuraFitness/Auth/AuthService.swift: Fix the bridge race. Set AppStateBridge.shared = appState BEFORE AuthService.shared can drive onSignedIn/pullAll (assign the bridge in the App initializer before referencing AuthService.shared, or gate restoreSession until the bridge is set). Ensure the one-shot backfill never runs with a nil bridge.
+- AuraFitness/Sync/SupabaseSyncService.swift: In reconcile/reconcileKeyed, actually re-push local-wins (implement the discarded toRepush) and call stampLocalChange when a remote row is applied so the timestamp map stays consistent with disk.
+- AuraFitness.xcodeproj/project.pbxproj: Normalize the 8 new identifiers to canonical 24-hex-char UUIDs and open in Xcode to confirm the project loads and supabase-swift resolves. Verify INFOPLIST_KEY_SUPABASE_* actually surface in the generated Info.plist (or switch to explicit custom Info.plist entries) so AuthConfig does not dead-end at launch.

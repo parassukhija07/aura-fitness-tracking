@@ -36,6 +36,25 @@ struct QuickLogExercise: Identifiable, Codable, Hashable {
 struct QuickLog: Codable, Hashable {
     var time: String           // "HH:mm"
     var exercises: [QuickLogExercise]
+    var durationMinutes: Int = 0
+
+    init(time: String, exercises: [QuickLogExercise], durationMinutes: Int = 0) {
+        self.time = time
+        self.exercises = exercises
+        self.durationMinutes = durationMinutes
+    }
+
+    // Manual decode: `durationMinutes` is a field added after initial ship,
+    // so entries persisted before this change lack the key. A synthesized
+    // decoder would throw on the missing key and silently drop the entire
+    // quickLogs dictionary (`loadCodable` swallows decode errors).
+    enum CodingKeys: String, CodingKey { case time, exercises, durationMinutes }
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        time = try c.decode(String.self, forKey: .time)
+        exercises = try c.decode([QuickLogExercise].self, forKey: .exercises)
+        durationMinutes = try c.decodeIfPresent(Int.self, forKey: .durationMinutes) ?? 0
+    }
 }
 
 // MARK: - Day state (mirrors `dayInfo().kind`)

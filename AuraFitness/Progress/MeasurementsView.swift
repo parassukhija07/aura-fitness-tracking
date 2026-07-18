@@ -149,13 +149,13 @@ struct MeasurementsView: View {
     private var compositionTiles: some View {
         HStack(spacing: AuraSpacing.s3) {
             compTile(
-                label: "BODY FAT",
+                "BODY FAT",
                 value: latest?.bodyFatPct.map { String(format: "%.1f%%", $0) },
                 delta: bodyFatDelta30.map { String(format: "%.1f%%", abs($0)) },
                 deltaDown: (bodyFatDelta30 ?? 0) < 0
             )
             compTile(
-                label: "LEAN MASS",
+                "LEAN MASS",
                 value: leanMass.map { UnitFormatter.weight($0, unit: appState.weightUnit) },
                 delta: nil,
                 deltaDown: true
@@ -268,7 +268,15 @@ struct MeasurementsView: View {
     // MARK: Circumferences
     private var circumferencesCard: some View {
         VStack(alignment: .leading, spacing: AuraSpacing.s2) {
-            AuraSectionLabel(title: "Circumferences")
+            HStack {
+                AuraSectionLabel(title: "Circumferences")
+                Spacer()
+                Button { showHowTo = true } label: {
+                    Image(systemName: "questionmark.circle")
+                        .font(.system(size: 15, weight: .semibold))
+                        .foregroundColor(.aura.text3)
+                }
+            }
             AuraCard {
                 VStack(spacing: 0) {
                     let items: [(String, Double?)] = [

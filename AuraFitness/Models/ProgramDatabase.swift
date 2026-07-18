@@ -12,6 +12,11 @@ final class ProgramDatabase: ObservableObject {
 
     private let storageKey = "aura_program_db_v1"
 
+    /// Guards against a push loop: while applying pulled remote rows, local
+    /// `persist()` still runs (disk must match), but writes must NOT be
+    /// re-pushed to Supabase (mirrors `AppState.isLoading` at AppState.swift:65).
+    private var isApplyingRemote = false
+
     // MARK: Queries
     var predefined: [Program] { programs.filter { $0.isPredefined } }
     var custom: [Program] { programs.filter { !$0.isPredefined } }
@@ -25,6 +30,12 @@ final class ProgramDatabase: ObservableObject {
         return nil
     }
 
+    /// Which program (if any) owns a workout id — lets a caller resolve
+    /// where to write a permanent edit back to.
+    func owningProgramID(forWorkout id: UUID) -> UUID? {
+        programs.first { prog in prog.workouts.contains { $0.id == id } }?.id
+    }
+
     // All workouts across all programs (flat)
     var allWorkouts: [Workout] { programs.flatMap { $0.workouts } }
 
@@ -32,17 +43,26 @@ final class ProgramDatabase: ObservableObject {
     func addProgram(_ program: Program) {
         programs.append(program)
         persist()
+        syncPush(program)
     }
 
     func updateProgram(_ updated: Program) {
         guard let i = programs.firstIndex(where: { $0.id == updated.id }) else { return }
         programs[i] = updated
         persist()
+        syncPush(updated)
     }
 
-    func deleteProgram(id: UUID) {
-        programs.removeAll { $0.id == id && !$0.isPredefined }
+    /// Returns `false` (no-op) if `id` refers to a predefined program —
+    /// those can't be deleted by policy. Callers should surface that to the
+    /// user (e.g. a toast) rather than failing silently.
+    @discardableResult
+    func deleteProgram(id: UUID) -> Bool {
+        guard let target = programs.first(where: { $0.id == id }), !target.isPredefined else { return false }
+        programs.removeAll { $0.id == id }
         persist()
+        syncDelete(id: id)
+        return true
     }
 
     // MARK: Workout CRUD within a program
@@ -50,6 +70,7 @@ final class ProgramDatabase: ObservableObject {
         guard let i = programs.firstIndex(where: { $0.id == programID }) else { return }
         programs[i].workouts.append(workout)
         persist()
+        syncPush(programs[i])
     }
 
     func updateWorkout(_ updated: Workout, in programID: UUID) {
@@ -57,12 +78,14 @@ final class ProgramDatabase: ObservableObject {
               let wi = programs[pi].workouts.firstIndex(where: { $0.id == updated.id }) else { return }
         programs[pi].workouts[wi] = updated
         persist()
+        syncPush(programs[pi])
     }
 
     func deleteWorkout(id: UUID, from programID: UUID) {
         guard let pi = programs.firstIndex(where: { $0.id == programID }) else { return }
         programs[pi].workouts.removeAll { $0.id == id }
         persist()
+        syncPush(programs[pi])
     }
 
     // Add exercise to workout in program
@@ -71,6 +94,7 @@ final class ProgramDatabase: ObservableObject {
               let wi = programs[pi].workouts.firstIndex(where: { $0.id == workoutID }) else { return }
         programs[pi].workouts[wi].exercises.append(exercise)
         persist()
+        syncPush(programs[pi])
     }
 
     // Remove exercise from workout
@@ -79,6 +103,7 @@ final class ProgramDatabase: ObservableObject {
               let wi = programs[pi].workouts.firstIndex(where: { $0.id == workoutID }) else { return }
         programs[pi].workouts[wi].exercises.removeAll { $0.id == id }
         persist()
+        syncPush(programs[pi])
     }
 
     // Reorder exercises in workout
@@ -86,6 +111,46 @@ final class ProgramDatabase: ObservableObject {
         guard let pi = programs.firstIndex(where: { $0.id == programID }),
               let wi = programs[pi].workouts.firstIndex(where: { $0.id == workoutID }) else { return }
         programs[pi].workouts[wi].exercises.move(fromOffsets: from, toOffset: to)
+        persist()
+        syncPush(programs[pi])
+    }
+
+    // MARK: - Remote sync hooks
+    private func syncPush(_ program: Program) {
+        guard !isApplyingRemote else { return }
+        program.syncPush(table: .programs)
+    }
+    private func syncDelete(id: UUID) {
+        guard !isApplyingRemote else { return }
+        SupabaseSyncService.shared.delete(id: id.uuidString, table: .programs)
+    }
+
+    /// Replaces `programs` with pulled remote rows + un-pulled local
+    /// customs, without re-pushing (guards the push loop). Predefined
+    /// programs are preserved by ID; any local custom program not present
+    /// remotely is kept as-is (LWW already decided the push direction).
+    func applyRemote(_ remotePrograms: [Program]) {
+        isApplyingRemote = true
+        defer { isApplyingRemote = false }
+        var byID: [UUID: Program] = [:]
+        for p in programs { byID[p.id] = p }
+        for p in remotePrograms { byID[p.id] = p }
+        programs = Array(byID.values)
+        persist()
+    }
+
+    /// Resets predefined programs to the shipped seed, preserving any
+    /// user-created custom programs (used by DataResetService — NOT full
+    /// wipe; see `hardReset()` for that).
+    func resetToSeed() {
+        resetSeedPrograms()
+    }
+
+    /// Drops ALL programs (predefined + custom) back to the raw seed —
+    /// distinct from `resetToSeed()`/`resetSeedPrograms()` which preserves
+    /// customs.
+    func hardReset() {
+        programs = SeedData.programs
         persist()
     }
 
@@ -127,19 +192,37 @@ final class UserPlanDatabase: ObservableObject {
 
     private let storageKey = "aura_plans_db_v1"
 
+    /// Guards against a push loop while applying pulled remote rows.
+    private var isApplyingRemote = false
+
     var defaultPlan: UserPlan? { plans.first { $0.isDefault } }
 
+    /// Which plan (if any) owns a custom-workout id — lets a caller resolve
+    /// where to write a permanent edit back to.
+    func owningPlanID(forCustomWorkout id: UUID) -> UUID? {
+        plans.first { plan in plan.customWorkouts.contains { $0.id == id } }?.id
+    }
+
+    /// §3.1.1 — My Plans caps adopted plans at 3.
+    static let maxPlans = 3
+
     // MARK: Plan CRUD
-    func addPlan(_ plan: UserPlan) {
+    /// Returns `false` (no-op) if the plan cap (`maxPlans`) is already reached.
+    @discardableResult
+    func addPlan(_ plan: UserPlan) -> Bool {
+        guard plans.count < Self.maxPlans else { return false }
         plans.append(plan)
         if plans.count == 1 { setDefault(id: plan.id) }
         persist()
+        syncPush(plan)
+        return true
     }
 
     func updatePlan(_ updated: UserPlan) {
         guard let i = plans.firstIndex(where: { $0.id == updated.id }) else { return }
         plans[i] = updated
         persist()
+        syncPush(updated)
     }
 
     func deletePlan(id: UUID) {
@@ -149,11 +232,13 @@ final class UserPlanDatabase: ObservableObject {
             setDefault(id: first.id)
         }
         persist()
+        syncDelete(id: id)
     }
 
     func setDefault(id: UUID) {
         for i in plans.indices { plans[i].isDefault = (plans[i].id == id) }
         persist()
+        for plan in plans { syncPush(plan) }
     }
 
     // MARK: Schedule editing
@@ -161,18 +246,21 @@ final class UserPlanDatabase: ObservableObject {
         guard let i = plans.firstIndex(where: { $0.id == planID }) else { return }
         plans[i].weekSchedule[dayIndex] = workoutID
         persist()
+        syncPush(plans[i])
     }
 
     func setRestDay(planID: UUID, dayIndex: Int) {
         guard let i = plans.firstIndex(where: { $0.id == planID }) else { return }
         plans[i].weekSchedule[dayIndex] = .some(nil)
         persist()
+        syncPush(plans[i])
     }
 
     func clearDay(planID: UUID, dayIndex: Int) {
         guard let i = plans.firstIndex(where: { $0.id == planID }) else { return }
         plans[i].weekSchedule.removeValue(forKey: dayIndex)
         persist()
+        syncPush(plans[i])
     }
 
     // MARK: Custom workouts within a plan
@@ -180,6 +268,7 @@ final class UserPlanDatabase: ObservableObject {
         guard let i = plans.firstIndex(where: { $0.id == planID }) else { return }
         plans[i].customWorkouts.append(workout)
         persist()
+        syncPush(plans[i])
     }
 
     func updateCustomWorkout(_ updated: Workout, in planID: UUID) {
@@ -187,6 +276,7 @@ final class UserPlanDatabase: ObservableObject {
               let wi = plans[pi].customWorkouts.firstIndex(where: { $0.id == updated.id }) else { return }
         plans[pi].customWorkouts[wi] = updated
         persist()
+        syncPush(plans[pi])
     }
 
     func deleteCustomWorkout(id: UUID, from planID: UUID) {
@@ -196,6 +286,7 @@ final class UserPlanDatabase: ObservableObject {
             wid == id ? Optional(nil) : wid
         }
         persist()
+        syncPush(plans[i])
     }
 
     func addExercise(_ exercise: Exercise, to workoutID: UUID, in planID: UUID) {
@@ -203,6 +294,7 @@ final class UserPlanDatabase: ObservableObject {
               let wi = plans[pi].customWorkouts.firstIndex(where: { $0.id == workoutID }) else { return }
         plans[pi].customWorkouts[wi].exercises.append(exercise)
         persist()
+        syncPush(plans[pi])
     }
 
     func removeExercise(id: UUID, from workoutID: UUID, in planID: UUID) {
@@ -210,6 +302,7 @@ final class UserPlanDatabase: ObservableObject {
               let wi = plans[pi].customWorkouts.firstIndex(where: { $0.id == workoutID }) else { return }
         plans[pi].customWorkouts[wi].exercises.removeAll { $0.id == id }
         persist()
+        syncPush(plans[pi])
     }
 
     /// Auto-assign workouts sequentially to weekdays, then insert + persist.
@@ -231,6 +324,43 @@ final class UserPlanDatabase: ObservableObject {
         }
         addPlan(plan)
         return plan
+    }
+
+    // MARK: - Remote sync hooks
+    private func syncPush(_ plan: UserPlan) {
+        guard !isApplyingRemote else { return }
+        plan.syncPush(table: .plans)
+    }
+    private func syncDelete(id: UUID) {
+        guard !isApplyingRemote else { return }
+        SupabaseSyncService.shared.delete(id: id.uuidString, table: .plans)
+    }
+
+    /// Replaces `plans` with pulled remote rows merged over local (LWW
+    /// already decided direction upstream), without re-pushing. Never leaves
+    /// `plans` empty — re-seeds the default plan if the merge is empty.
+    func applyRemote(_ remotePlans: [UserPlan]) {
+        isApplyingRemote = true
+        defer { isApplyingRemote = false }
+        var byID: [UUID: UserPlan] = [:]
+        for p in plans { byID[p.id] = p }
+        for p in remotePlans { byID[p.id] = p }
+        plans = Array(byID.values)
+        if plans.isEmpty, let prog = SeedData.programs.first {
+            _ = addPlan(from: prog)
+        } else {
+            persist()
+        }
+    }
+
+    /// Re-seed the default plan from the first seed program — never leaves
+    /// `plans` empty (mirrors the boot-time seeding at `load()`).
+    func resetToSeed() {
+        plans = []
+        persist()
+        if let prog = SeedData.programs.first {
+            _ = addPlan(from: prog)
+        }
     }
 
     // MARK: Persistence

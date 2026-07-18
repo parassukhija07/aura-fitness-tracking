@@ -12,10 +12,10 @@ enum ActiveWorkoutSeed {
     /// pre-v6 blobs to clear rather than crash on decode.
     static let version = 6
 
+    #if DEBUG
     /// Seed elapsed seconds (24:47) for the demo mid-session (data.jsx default).
     static let seedElapsed = 1487
 
-    #if DEBUG
     /// Demo-only: `pushDayA()` is invoked exclusively by
     /// `AppState.debugStartPushDayDemo()`, never by the real `startWorkout` path.
     static func pushDayA() -> Workout {

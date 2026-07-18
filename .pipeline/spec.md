@@ -1,164 +1,280 @@
 # IMPLEMENTATION SPEC
 
-Feature: H7 — Wire existing unit preferences (`weightUnit`/`lengthUnit`) through every hardcoded kg/cm/lb/in display and input site via a central `UnitFormatter`.
+Feature: H8 (scoped UP, full remote) — Introduce Supabase email/password auth (with email confirmation) AND full remote data sync of every user model to Supabase (keyed by `user_id`), plus real Export / Reset / Delete Account / Log Out replacing the stubs at `AuraFitness/Profile/ProfileSettingsScreens.swift`. This is the app's first network layer, first remote data, and first backend dependency.
+
+---
 
 ## ⚠️ OPEN QUESTIONS
 
-None. Both prior open questions are resolved below.
+All five prior blocking questions are RESOLVED (see decisions below). Only genuinely-open, low-risk items remain — none block starting; the Coder proceeds with the stated defaults and flags in review if reality differs.
 
-### RESOLVED — R1: Input conversion IS in scope (bidirectional).
-Confirmed by requester: H7 includes input→metric conversion, not display-only. Implement every `[INPUT-CONVERSION]` site in this spec. The three live-workout write sites convert typed `lb` → canonical `kg` before assigning `WorkoutSet.weight: Double?`:
-- `AuraFitness/ActiveWorkout/SetRowView.swift:37` → `set.weight = UnitFormatter.parseWeightToKg(weightText, unit: appState.weightUnit)`
-- `AuraFitness/ActiveWorkout/SetRowView.swift:147` (`toggleDone`) → same
-- `AuraFitness/ActiveWorkout/SupersetView.swift:339` → same
+### RESOLVED decisions (locked)
+- **R1 — Data scope: FULL REMOTE SYNC.** Every user model migrates to Supabase tables keyed by `user_id`. Sync model = **local-first with write-through** (see ARCHITECTURE). NOT auth-only.
+- **R2 — Delete Account: Edge Function** `delete-account` using the `service_role` key (source written in this spec; user deploys).
+- **R3 — Email confirmation REQUIRED** on sign-up. Login blocked until confirmed.
+- **R4 — Pre-account local data is PRESERVED** and back-filled to Supabase on first login (one-time migration, not a wipe).
+- **R5 — Secrets via `Secrets.xcconfig` → Info.plist** (git-ignored).
 
-`WorkoutSet.weight` (`AuraFitness/Models/WorkoutModels.swift:41`) stays canonical kg; PR computation (`AppState.saveWorkout`), volume totals, and persisted `WorkoutLog`s remain unchanged and correct. Do NOT leave any `// TODO(H7)` markers.
+### STILL-OPEN (non-blocking — proceed with the stated default)
+- **O1 — Exact Postgres table names.** This spec uses snake_case `aura_*` table names (below). If the user's Supabase project has a naming convention, rename consistently in the SQL migration + the `table:` string constants in `SupabaseSyncService`. Default: use the names as written.
+- **O2 — `progress_photos` storage location.** `ProgressPhoto.imageData` is raw `Data` (`ProgressModels.swift:7`). Storing base64 blobs in a Postgres JSONB column is functional but heavy. Default for v1: store the row in `aura_progress_photos` with the image as base64 in the JSONB payload (simplest, matches every other table). **Flagged limitation:** if photo volume is large this should move to Supabase Storage buckets with a URL reference — OUT OF SCOPE this pass, noted for a follow-up. Proceed with base64-in-JSONB.
+- **O3 — Conflict resolution granularity.** v1 uses **last-write-wins per row via `updated_at`** (see limitations). This can silently drop a concurrent edit made on another device between pulls. Accepted for v1; NOT silently — surfaced here as a known limitation. No per-field merge.
 
-### RESOLVED — R2: `SetHistory.weight` vs `QuickLogSet.weight` — two DIFFERENT handlings.
-
-Investigation performed (construction sites + model defs):
-
-- **`SetHistory.weight` (`AuraFitness/Models/WorkoutModels.swift:56`, type `String`) = canonical-kg NUMERIC string. CONVERT via `Double(str)`.**
-  Evidence:
-  - Dynamic build at `AuraFitness/Models/AppState.swift:346-350`: `let wStr = s.weight.map { String($0) } ?? "0"` — sourced from `WorkoutSet.weight: Double?` (canonical kg), so it is always a bare numeric string like `"82.5"` or the fallback `"0"`. Never carries a unit suffix or locale formatting.
-  - Seed data confirms bare numerics: `SeedData.swift:13,21,28,88,94` and `ActiveWorkoutSeed.swift:50-174` all use `SetHistory(weight: "80", …)`, `"77.5"`, `"28"`, etc.
-  - **Decision:** these are assumed-metric-kg numeric strings. Display via `Double(h.weight)` parse then convert. Guard the parse (fallback to showing the raw string with the pref suffix if `Double(...)` is nil, which should not occur in practice but must not crash).
-
-- **`QuickLogSet.weight` (`AuraFitness/Models/LogDayModel.swift:26`, type `String`, default `""`) = FREE-TEXT. DO NOT convert numerically. Label/placeholder swap only.**
-  Evidence:
-  - Bound directly to a raw `TextField` at `AuraFitness/Log/LogSheetsView.swift:839` (`TextField("kg", text: bindingWeight(i, j))`) — user types arbitrary text; no numeric contract, no canonical unit.
-  - Seeded with the non-numeric sentinel `"—"` at `LogSheetsView.swift:725` (`QuickLogSet(weight: "—", reps: "")`) and empty `""` at lines 847/871; test data uses `"100"` (`AuraFitnessTests/PersistenceRoundTripTests.swift:105-106`).
-  - Because values are free-text (may be `"—"`, `""`, or non-numeric) and there is no stored-canonical guarantee, converting would corrupt data. **Decision:** treat as free-text. Only the placeholder `"kg"` at line 839 (and the `"WEIGHT"` column header at line 832 — leave header text as-is) may show `appState.weightUnit` as a placeholder hint. No parse, no conversion, no save/load transform for QuickLogSet.
+---
 
 ## 🏗️ ARCHITECTURE & PATTERNS
 
-- **Existing patterns to match:**
-  - Unit prefs are plain `String`s on `AppState`: `weightUnit` ∈ {`"kg"`,`"lb"`}, `lengthUnit` ∈ {`"cm"`,`"in"`} — see `AuraFitness/Models/AppState.swift:241-246`. Changed via `ProfileSettingsScreens.swift:140-150`.
-  - Views already read `appState.weightUnit`/`lengthUnit` for the *label only* in `LogMeasurementSheet.swift:31,34`, `ProgressPhotosView.swift:255`, `MeasurementsView.swift:103,119,288`, `ProfileTabView.swift:48,50` — these show the unit string but never convert the number.
-  - `@EnvironmentObject var appState: AppState` is the standard injection in all views. `WorkoutSessionState` holds `private weak var appState: AppState?` (`WorkoutSessionState.swift:69`).
-  - All weight Doubles are canonical **kg**; all length/circumference Doubles are canonical **cm** (confirmed: `BodyStats.weight` line 79 `// kg`, `.height` line 78 `// cm`, `.targetWeight` line 83 `// kg`; `WorkoutSet.weight`, `PRRecord.weight`, `TargetRecord.weight`, `Measurement.*` all raw Doubles with no conversion anywhere). **No data migration is required** — storage stays metric; this is purely a display/input transform layer.
+### Sync model: local-first with write-through (v1)
+- **Local stores stay the source of truth for all UI reads.** No view is rearchitected. `ProgramDatabase.shared`, `UserPlanDatabase.shared`, `ExerciseDatabase.shared`, and `AppState`'s `@Published` collections continue to drive every screen exactly as today. This is deliberate: it avoids touching dozens of views and keeps the UI synchronous and offline-usable.
+- **Write-through:** every existing mutation that already calls `persist()` (or assigns a `@Published` with a `didSet` persister) additionally enqueues a **push** of the affected row(s) to Supabase. Pushes go through a central `SupabaseSyncService` that is fire-and-forget from the caller's perspective (never blocks UI, never throws into the store).
+- **Pull + reconcile:** on successful login and on app foreground/launch (while signed in), `SupabaseSyncService.pullAll()` fetches remote rows for the user and reconciles into the local stores using **last-write-wins by `updated_at`** (row-level). After reconcile, the stores re-`persist()` locally so disk matches.
+- **Offline queue:** mutations while offline (or on push failure) are appended to a durable local queue (`aura_sync_queue_v1` in UserDefaults). The queue flushes on the next successful network op (login, foreground pull, or a successful push). UI never waits on the network.
 
-- **Core strategy:** Add a stateless `UnitFormatter` utility with static functions that take the canonical metric `Double` plus the unit string (`appState.weightUnit`/`lengthUnit`) and return a formatted display string (or parse a typed string back to metric). Replace every hardcoded `"kg"`/`"cm"` literal and every raw `String(format:)`/interpolation of a metric value with a `UnitFormatter` call passing `appState`'s current unit.
+### EXPLICITLY OUT OF SCOPE (state clearly to the user)
+- **No real-time / live multi-device sync.** There is NO Supabase Realtime subscription. Changes on device B appear on device A only after device A next pulls (launch/foreground). A user editing on two devices simultaneously can lose the older write (last-write-wins). This is a periodic pull + write-through push model, not live sync.
+- **No per-field conflict merge**, no operational transforms, no CRDTs. Row-level last-write-wins only.
+- **No offline auth for a brand-new device** (email confirm + first login require network); once a session exists in Keychain the app is fully usable offline (all reads are local).
+
+### Existing patterns to match
+- **Singletons:** `ProgramDatabase` / `UserPlanDatabase` / `ExerciseDatabase` (`AuraFitness/Models/ProgramDatabase.swift`, `ExerciseDatabase.swift`): `@MainActor final class ... : ObservableObject`, `static let shared`, private `storageKey`, `private func persist()`, `private init { load() }`. New services (`AuthService`, `SupabaseSyncService`) follow this shape.
+- **Root env injection:** `AuraFitnessApp.swift:5-11`.
+- **Settings UI building blocks + confirm sheets:** `ProfileSettingsScreens.swift` (`SettingsScreenScaffold`, `SettingsGroup`, `SettingsRowLabel`, `ProfileConfirmSheet`), toast pattern (`ToastCenter` + `.auraToast`), `AuraPrimaryButton` / `AuraGrayButton` / `AuraDangerButton`. Reuse for auth screens.
+- **All models are already `Codable`** (`ProgressModels.swift`, `LogDayModel.swift`, `WorkoutModels.swift`, `PlanModels.swift`, `ExerciseDatabase.swift`) — so each maps to a JSONB payload with zero new serialization code. This is why the schema below stores each struct as a JSONB `payload` column rather than fully-normalized columns: the structs contain nested arrays (`WorkoutLog.exercises: [Exercise]`, `QuickLog.exercises: [QuickLogExercise]`, `UserPlan.weekSchedule: [Int: UUID?]`) that would be painful and brittle to normalize, and the app never queries inside them server-side.
+
+### Core strategy
+`AuthService.shared` wraps `supabase-swift`'s `auth`. `ContentView` is gated behind `sessionState`. `SupabaseSyncService.shared` owns all table push/pull + the offline queue. Each local store gains thin `pushRow`/`applyRemote` hooks. The four `ProfileConfirmSheet` stubs get real bodies: Export (`ShareLink` over local JSON), Reset (`DataResetService` — local wipe + optional remote wipe), Delete (`AuthService.deleteAccount()` Edge Function + local+remote wipe), Log Out (`AuthService.signOut()`).
+
+---
+
+## 🗄️ SUPABASE SCHEMA (SQL migration — file to create, see FILES TO CREATE)
+
+**Design rule:** one table per Codable model. Common columns on every table:
+- `id uuid primary key` — the model's own `id` (UUID) where it has one; for keyed dictionaries (dayOverrides/quickLogs keyed by ISO string) and singletons (BodyStats, UserProfile) see per-table notes.
+- `user_id uuid not null references auth.users(id) on delete cascade`
+- `payload jsonb not null` — the full `Codable` struct encoded as JSON.
+- `updated_at timestamptz not null default now()` — drives last-write-wins.
+- **RLS enabled on every table**, with a single policy per table: `using (auth.uid() = user_id) with check (auth.uid() = user_id)` for all of SELECT/INSERT/UPDATE/DELETE. No row is ever visible or writable across users.
+
+Tables (names per O1 default):
+
+| Table | Source model (file) | `id` semantics | Cardinality per user |
+|---|---|---|---|
+| `aura_workout_logs` | `WorkoutLog` (`ProgressModels.swift:13`) | model `id` uuid | many |
+| `aura_measurements` | `Measurement` (`ProgressModels.swift:23`) | model `id` uuid | many |
+| `aura_personal_records` | `PersonalRecord` (`ProgressModels.swift:137`) | model `id` uuid | many |
+| `aura_progress_photos` | `ProgressPhoto` (`ProgressModels.swift:4`) | model `id` uuid | many (see O2) |
+| `aura_programs` | `Program` (`ProgramDatabase.swift` / `WorkoutModels.swift`) | model `id` uuid | many |
+| `aura_plans` | `UserPlan` (`ProgramDatabase.swift` / `PlanModels.swift`) | model `id` uuid | many (≤3, L7) |
+| `aura_exercises` | `ExerciseEntry` (`ExerciseDatabase.swift:5`) | model `id` uuid | many |
+| `aura_day_overrides` | `DayOverride` (`LogDayModel.swift:7`) | **synthetic**: `iso` string is the natural key → PK `(user_id, day_iso text)`, no uuid | many, keyed by ISO date |
+| `aura_quick_logs` | `QuickLog` (`LogDayModel.swift:36`) | **synthetic**: PK `(user_id, day_iso text)` | many, keyed by ISO date |
+| `aura_body_stats` | `BodyStats` (`ProgressModels.swift:77`) | **singleton**: PK = `user_id` | exactly one |
+| `aura_user_profile` | `UserProfile` (`ProgressModels.swift:122`) | **singleton**: PK = `user_id` | exactly one |
+| `aura_preferences` | AppState pref scalars (see below) | **singleton**: PK = `user_id` | exactly one |
+
+Notes:
+- `aura_day_overrides` / `aura_quick_logs`: replace the `id uuid` column with `day_iso text not null`; composite PK `(user_id, day_iso)`. Payload is the `DayOverride` / `QuickLog` struct. The ISO key is `AppState.iso(date)` format `yyyy-MM-dd` (`AppState.swift:494-498`).
+- `aura_body_stats` / `aura_user_profile` / `aura_preferences`: singletons — PK is `user_id` itself (upsert on conflict `user_id`). Payload is the whole struct.
+- `aura_preferences` payload = the `WorkoutPrefs` blob defined at `AppState.swift:46-62` PLUS the three scalar prefs (`darkModePreference`, `calendarStartDay`, `logDisplayMode`). Mirror the existing `WorkoutPrefs` Codable shape so encoding is trivial.
+- Give every table `updated_at` a `before update` trigger to bump it to `now()` (SQL function `set_updated_at()`), so server-side writes also refresh the LWW timestamp.
+
+---
 
 ## 📄 FILES TO CREATE
 
-### `AuraFitness/Models/UnitFormatter.swift`
-- **Purpose:** Central, stateless conversion + formatting utility. No new settings, no state — reads unit as a passed-in `String`.
-- **Constants:**
-  - `kgPerLb = 0.45359237`
-  - `cmPerInch = 2.54`
-- **Signatures/Interfaces (implement exactly):**
-  ```
-  enum UnitFormatter {
-      // ---- WEIGHT (canonical = kg) ----
-      /// Convert canonical kg to the display unit's numeric value.
-      static func weightValue(_ kg: Double, unit: String) -> Double
-          // unit == "lb" → kg / 0.45359237 ; else kg
+### `supabase/migrations/0001_init_schema.sql`  (SQL — infra, allowed)
+- **Purpose:** Create all 12 tables above, enable RLS, add the per-table `user_id = auth.uid()` policies, the `set_updated_at()` trigger function + triggers. Written per Supabase migration convention.
+- Must be runnable via `supabase db push` (or pasted into the Supabase SQL editor). Document both in the deploy notes.
+- For singleton/composite tables, use the PKs described above. Add index `(user_id, updated_at)` on the multi-row tables to make pull queries efficient.
 
-      /// Formatted number only (no unit suffix). Precision: 1 decimal, trimmed if whole.
-      /// e.g. 100.0 -> "100", 100.5 -> "100.5"
-      static func weightNumber(_ kg: Double, unit: String) -> String
+### `supabase/functions/delete-account/index.ts`  (Deno / TypeScript — infra, allowed)
+- **Purpose:** Server-side account deletion using `service_role`. The anon client cannot delete an auth user; this runs privileged.
+- **Contract:**
+  - Method `POST`, requires `Authorization: Bearer <user JWT>` (attached automatically by the app's SDK call).
+  - Verify the JWT → resolve `uid`. Reject (401) if missing/invalid.
+  - Using a `service_role` Supabase admin client, call `auth.admin.deleteUser(uid)`. The `on delete cascade` FKs on every `aura_*` table wipe all remote user data automatically.
+  - Return `200 {"ok": true}` on success; `4xx/5xx {"error": "..."}` otherwise. Handle CORS (Supabase Edge Function standard headers).
+- **Source to write in the file** (standard Supabase Edge Function shape):
+  - `import { serve } from "https://deno.land/std/http/server.ts"` and `createClient` from `@supabase/supabase-js`.
+  - Read `SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY` from `Deno.env` (auto-injected in the Edge runtime — NOT hardcoded).
+  - Create an admin client with the service role key; a second client with the caller's JWT to identify the user (`auth.getUser(jwt)`), then `adminClient.auth.admin.deleteUser(user.id)`.
+- **Manual deploy step (user must run — planner/coder cannot):**
+  - `supabase functions deploy delete-account` (project linked via `supabase link`).
+  - Document that the function inherits the project's `SERVICE_ROLE_KEY` env automatically; no secret is committed.
 
-      /// Formatted "<number> <unit>" e.g. "220 lb" / "100 kg".
-      static func weight(_ kg: Double, unit: String) -> String
-
-      /// Parse a user-typed string in `unit` back to canonical kg. Returns nil on empty/invalid.
-      static func parseWeightToKg(_ text: String, unit: String) -> Double?
-          // Double(text) then, if unit == "lb", * 0.45359237
-
-      // ---- LENGTH (canonical = cm) ----
-      static func lengthValue(_ cm: Double, unit: String) -> Double   // "in" → cm / 2.54
-      static func lengthNumber(_ cm: Double, unit: String) -> String  // 1 decimal, trimmed
-      static func length(_ cm: Double, unit: String) -> String        // "<n> <unit>"
-      static func parseLengthToCm(_ text: String, unit: String) -> Double?
-
-      /// Bare display suffix, echoing the pref (used where only the label is needed).
-      static func weightSuffix(_ unit: String) -> String   // returns unit as-is ("kg"/"lb")
-      static func lengthSuffix(_ unit: String) -> String    // returns unit as-is ("cm"/"in")
+### `AuraFitness/Auth/AuthConfig.swift`
+- Reads `SUPABASE_URL` + `SUPABASE_ANON_KEY` from `Info.plist` (injected from `Secrets.xcconfig`). No literals. `fatalError` in DEBUG if missing; non-crashing config-error gate in RELEASE. (Same as prior revision.)
+- ```
+  enum AuthConfig {
+      static var supabaseURL: URL
+      static var supabaseAnonKey: String
   }
   ```
-- **Rounding rule:** weight → 1 decimal place, drop trailing `.0`. length/circumference → 1 decimal place, drop trailing `.0`. Whole-number formatting helper: format with `%.1f`, then strip a trailing `".0"`.
+
+### `AuraFitness/Auth/AuthService.swift`
+- **Purpose:** Auth + session single source of truth. SDK Keychain session persistence (do not roll custom).
+- ```
+  @MainActor
+  final class AuthService: ObservableObject {
+      static let shared = AuthService()
+      enum SessionState: Equatable { case loading; case signedOut; case awaitingEmailConfirmation(email: String); case signedIn(userID: String, email: String) }
+      @Published private(set) var sessionState: SessionState = .loading
+      @Published var lastError: String? = nil
+      let client: SupabaseClient        // built from AuthConfig
+      var userID: String?               // convenience for SupabaseSyncService
+
+      private init()
+      func restoreSession() async
+      func signUp(email: String, password: String) async -> Bool   // → .awaitingEmailConfirmation on success (R3)
+      func signIn(email: String, password: String) async -> Bool   // fails if email unconfirmed → surfaces message
+      func signOut() async
+      func deleteAccount() async -> Bool   // invoke("delete-account"); on success signOut
+  }
+  ```
+- **R3 behavior:** `signUp` success sets `.awaitingEmailConfirmation(email:)`, NOT `.signedIn`. `signIn` for an unconfirmed account: map the SDK "Email not confirmed" error to a clear message ("Please confirm your email — check your inbox.") in `lastError`, keep `.signedOut`.
+- **First-login migration hook (R4):** on the transition INTO `.signedIn` (from restore or signIn), call `SupabaseSyncService.shared.onSignedIn(userID:)` (see below) which decides push-backfill vs pull.
+- Map SDK errors to human strings; never surface raw dumps.
+
+### `AuraFitness/Auth/AuthGateView.swift`
+- Pre-auth root. Shows splash while `.loading`; login/sign-up forms when `.signedOut`; a "Check your email to confirm your account" screen when `.awaitingEmailConfirmation` (with a "Resend"/"Back to login" affordance). Reuse `AuraPrimaryButton`, `ToastCenter`, and the field style from `AccountDetailsView.swift:121-135`. Errors → toast (match `ProfileTabView.swift:91-96`). This is a NEW screen above the tab bar.
+
+### `AuraFitness/Sync/SupabaseSyncService.swift`
+- **Purpose:** All table push/pull + the offline queue + first-login migration. Fire-and-forget from stores.
+- ```
+  @MainActor
+  final class SupabaseSyncService: ObservableObject {
+      static let shared = SupabaseSyncService()
+      enum Table: String { case workoutLogs = "aura_workout_logs", measurements = "aura_measurements", personalRecords = "aura_personal_records", progressPhotos = "aura_progress_photos", programs = "aura_programs", plans = "aura_plans", exercises = "aura_exercises", dayOverrides = "aura_day_overrides", quickLogs = "aura_quick_logs", bodyStats = "aura_body_stats", userProfile = "aura_user_profile", preferences = "aura_preferences" }
+
+      @Published private(set) var syncing = false
+      @Published private(set) var lastPullAt: Date? = nil
+
+      private init()
+
+      /// Enqueue a write-through upsert of one encodable row (fire-and-forget; queues on failure/offline).
+      func push<T: Encodable>(_ value: T, id: String, table: Table)
+      /// Enqueue a delete of one row by id.
+      func delete(id: String, table: Table)
+
+      /// Pull every table for the current user and reconcile into local stores (LWW by updated_at).
+      func pullAll() async
+
+      /// Called by AuthService on first sign-in this session. Detects an empty remote
+      /// (fresh account) → BACKFILL all local data up (R4). Otherwise → pullAll() reconcile.
+      func onSignedIn(userID: String) async
+
+      /// Flush the durable offline queue (aura_sync_queue_v1). Called after any successful net op.
+      func flushQueue() async
+  }
+  ```
+- **Queue durability:** `aura_sync_queue_v1` (UserDefaults) holds an ordered array of pending ops `{table, id, action(upsert|delete), payloadJSON, queuedAt}`. Coalesce duplicate (table,id) upserts (keep latest). Flush on: successful login, foreground pull, any successful push.
+- **Reconcile (LWW):** for each pulled row, compare remote `updated_at` to the local record's effective timestamp. Since local models mostly lack an `updated_at` field, track a parallel local `aura_local_ts_v1` map keyed by `table:id` updated on every local mutation; if absent, treat remote as authoritative on first pull. Newer wins; write the winner to the local store (which re-persists) and, if local won, push it up.
+- **onSignedIn / R4 backfill:** query counts across the user's tables. If ALL remote tables are empty for this user (fresh account) AND local stores are non-empty → push everything local up (backfill), stamping `updated_at = now()`. Otherwise run `pullAll()` reconcile (which still merges any local-only rows up via LWW). This makes pre-account local data survive and become the account's data.
+
+### `AuraFitness/Profile/DataArchive.swift`  (unchanged from prior revision — local JSON export)
+- `DataArchive` Codable aggregate of all collections + a `preferences` snapshot; `DataArchiveBuilder.writeTempFile(_:) -> URL?` for `ShareLink`. Export reads LOCAL stores (which are the source of truth), so it needs no network. (Full interface as in prior spec; unchanged.)
+
+### `AuraFitness/Profile/DataResetService.swift`
+- **Purpose:** Real `resetAll(workoutOnly:)`. Now also optionally clears REMOTE rows.
+- ```
+  enum DataResetService {
+      @MainActor static func resetAll(workoutOnly: Bool, appState: AppState, alsoRemote: Bool)
+  }
+  ```
+- Local wipe: identical UserDefaults key set + singleton reloads as documented in FILES TO MODIFY (see key enumeration below).
+- **Remote wipe (`alsoRemote == true`):** delete the corresponding tables' rows for the current user via `SupabaseSyncService` deletes (workout-data tables for `workoutOnly`, all tables for full reset). If offline, enqueue the deletes. Delete Account does NOT use this path — it relies on the Edge Function's `on delete cascade`.
+
+### `AuraFitness/Sync/Syncable.swift` (small helper, optional)
+- A tiny protocol/util giving each store a uniform `syncPush(_:)` call and a `stringID` for the row key, to keep the per-store hooks one-liners. Not required if the Coder inlines the `SupabaseSyncService.shared.push(...)` calls.
+
+---
 
 ## 📝 FILES TO MODIFY
 
-Each site below currently hardcodes a metric literal and/or a raw number. Replace the number with a `UnitFormatter` call and the literal with the pref. All views listed already have (or must add) `@EnvironmentObject var appState: AppState`.
+### `AuraFitness/AuraFitnessApp.swift` (14 lines)
+- Inject `AuthService.shared` and `SupabaseSyncService.shared` via `.environmentObject` alongside `appState`.
+- Gate: `.signedIn` → `ContentView`; `.awaitingEmailConfirmation`/`.signedOut` → `AuthGateView`; `.loading` → splash. Keep `.environmentObject(appState)` on the authed view.
+- On becoming active (`ScenePhase .active`) while signed in → `Task { await SupabaseSyncService.shared.pullAll() }` (foreground pull).
 
-### `AuraFitness/Progress/NutritionView.swift`
-- Line **49 + 53**: `Text("\(String(format: "%.1f", stats.weight))")` + `Text(" kg")` → number becomes `UnitFormatter.weightNumber(stats.weight, unit: appState.weightUnit)`, suffix becomes `" \(appState.weightUnit)"`. (View needs `appState` — confirm it is injected; add `@EnvironmentObject var appState: AppState` if absent.)
-- Line **58**: `Text("Target \(String(format: "%.0f", stats.targetWeight)) kg")` → `Text("Target \(UnitFormatter.weight(stats.targetWeight, unit: appState.weightUnit))")`.
-- Line **95**: `detailCol("Height", "\(Int(stats.height)) cm")` → `detailCol("Height", UnitFormatter.length(stats.height, unit: appState.lengthUnit))`.
-- Line **97**: `detailCol("Weight", "\(String(format: "%.1f", stats.weight)) kg")` → `detailCol("Weight", UnitFormatter.weight(stats.weight, unit: appState.weightUnit))`.
+### `AuraFitness/Models/ProgramDatabase.swift`
+- **Write-through:** in `addProgram/updateProgram/deleteProgram/addWorkout/updateWorkout/deleteWorkout/addExercise/removeExercise/reorderExercises` (lines 32-90) — after each `persist()`, call `SupabaseSyncService.shared.push(program, id: program.id.uuidString, table: .programs)` for the affected program (or `.delete` for deletes). Simplest: push the whole affected `Program` row on any change (it's one JSONB row).
+- **Apply-remote:** add `func applyRemote(_ programs: [Program])` that replaces `self.programs` + `persist()` WITHOUT re-pushing (guard against push loop — add an `isApplyingRemote` flag like the existing `isLoading` guard in AppState at `AppState.swift:65`).
+- **Reset:** add public `resetToSeed()` (seed = `SeedData.programs`) and `hardReset()` (drop customs); both reassign `programs` + `persist()`.
+- Same set of additions to **`UserPlanDatabase`** (lines 122-258): write-through on every mutating method (`addPlan/updatePlan/deletePlan/setDefault/setWorkout/setRestDay/clearDay/addCustomWorkout/updateCustomWorkout/deleteCustomWorkout/addExercise/removeExercise/addPlan(from:)`), `applyRemote(_ plans:)`, `resetToSeed()` (re-seed default plan from `SeedData.programs.first` as boot does at lines 252-256 — never leave `plans` empty).
 
-### `AuraFitness/ActiveWorkout/WorkoutSessionState.swift`
-- Line **231** (celebration message): `message: "\(w) kg beats your \(pr.weight) kg best."` → use `appState?.weightUnit ?? "kg"` and `UnitFormatter.weight(...)`:
-  `let u = appState?.weightUnit ?? "kg"` then `message: "\(UnitFormatter.weight(w, unit: u)) beats your \(UnitFormatter.weight(pr.weight, unit: u)) best."`
-  (`appState` is already a member here, `WorkoutSessionState.swift:69`.)
+### `AuraFitness/Models/ExerciseDatabase.swift`
+- Write-through in `add/update/delete/toggleFavorite` (lines 80-100) → push the `ExerciseEntry` row (table `.exercises`). `applyRemote(_ entries:)`. Add `hardReset()` (`entries = Self.seedEntries(); persist()`, distinct from `resetToSeed()` at line 146 which preserves customs).
 
-### `AuraFitness/ActiveWorkout/SetRowView.swift`  — needs `@EnvironmentObject var appState: AppState` added
-- Line **36**: `label: "kg"` → `label: appState.weightUnit`.
-- Line **76**: `Text("\(h.weight) kg")` — `h.weight` is a canonical-kg NUMERIC String (see R2). CONVERT: `Text(UnitFormatter.weight(Double(h.weight) ?? 0, unit: appState.weightUnit))`. If `Double(h.weight)` is nil (should not occur), the `?? 0` guard prevents a crash.
-- Line **92** (`onAppear`): `weightText = set.weight.map { formatWeight($0) }` → seed the field in the DISPLAY unit: `set.weight.map { UnitFormatter.weightNumber($0, unit: appState.weightUnit) }`.
-- `[INPUT-CONVERSION]` Line **37**: `set.weight = Double(weightText)` → `set.weight = UnitFormatter.parseWeightToKg(weightText, unit: appState.weightUnit)`.
-- `[INPUT-CONVERSION]` Line **147** (`toggleDone`): `set.weight = Double(weightText)` → `set.weight = UnitFormatter.parseWeightToKg(weightText, unit: appState.weightUnit)`.
+### `AuraFitness/Models/AppState.swift`
+- Every `@Published` collection with a persister `didSet` (`workoutLogs:181`, `dayOverrides:187`, `quickLogs:191`, `measurements:194`, `bodyStats:197`, `personalRecords:200`, `userProfile:203`, `progressPhotos:207`, and the pref scalars) additionally push through `SupabaseSyncService`:
+  - Row-collections (workoutLogs, measurements, personalRecords, progressPhotos): the `didSet` fires on whole-array assignment; to push only changed rows, add small helper mutators OR (simplest v1) diff old vs new in `didSet` and push added/changed rows + delete removed rows. Flag: whole-array `didSet` makes per-row diffing the cleanest correctness path — implement a `syncDiff(old:new:table:idOf:)` helper.
+  - Keyed dicts (dayOverrides, quickLogs): push per changed key using `day_iso` as the row id.
+  - Singletons (bodyStats, userProfile, preferences blob): upsert the single row on change.
+  - **Guard the push during `isLoading` and during remote-apply** (extend the existing `isLoading` guard at `AppState.swift:65,128,134`; add an `isApplyingRemote` flag) so pulling from Supabase doesn't immediately re-push.
+- Add `func applyRemote(...)` entry points AppState-side for each collection used by `SupabaseSyncService.pullAll()`.
+- The pref scalars (`weightUnit`…`googleHealthConnected`, `darkModePreference`, `calendarStartDay`, `logDisplayMode`) already funnel through `persistWorkoutPrefs()`/`persist()`; add a single `SupabaseSyncService.push(prefsBlob, id: userID, table: .preferences)` call there.
 
-### `AuraFitness/ActiveWorkout/SupersetView.swift` (the set-row struct) — needs `@EnvironmentObject var appState: AppState` added
-- Line **338**: `label: "kg"` → `label: appState.weightUnit`.
-- Line **362**: `Text("\(h.weight) kg")` — `h.weight` is a canonical-kg NUMERIC String (R2). CONVERT: `Text(UnitFormatter.weight(Double(h.weight) ?? 0, unit: appState.weightUnit))`.
-- Line **370** (`onAppear`): seed field via `UnitFormatter.weightNumber($0, unit: appState.weightUnit)`.
-- `[INPUT-CONVERSION]` Line **339**: `set.weight = Double(weightText)` → `set.weight = UnitFormatter.parseWeightToKg(weightText, unit: appState.weightUnit)`.
-- Lines **166 & 171** (`fmt($0.weight)) kg`): `fmt` produces the kg number; replace `"\(fmt($0.weight)) kg"` with `UnitFormatter.weight($0.weight, unit: appState.weightUnit)`.
+### `AuraFitness/ActiveWorkout/WorkoutPersistence.swift`
+- The live-workout blob (`aura_wk`/`aura_elapsed`/`aura_run_start`/`aura_pill`/`aura_wk_version`) is transient session state, **not synced** (an in-progress workout is device-local until saved; on save it becomes a `WorkoutLog` which IS synced). Document this explicitly — no push hooks here.
+- Extend `clearWorkout()` (lines 113-118) to also remove `aura_pill` + `aura_wk_version` (for the reset path), as in the prior revision.
 
-### `AuraFitness/ActiveWorkout/ExerciseLoggingView.swift` — verify `appState` injected
-- Lines **188 & 193**: `"\(fmt($0.weight)) kg × \($0.reps)"` → `"\(UnitFormatter.weight($0.weight, unit: appState.weightUnit)) × \($0.reps)"`.
-- Line **350**: `"Set …: \(h.weight) kg × \(h.reps) reps"` — `h.weight` is a canonical-kg NUMERIC String (R2). CONVERT: `"…: \(UnitFormatter.weight(Double(h.weight) ?? 0, unit: appState.weightUnit)) × \(h.reps) reps"`.
+### `AuraFitness/Profile/ProfileSettingsScreens.swift` — the stub site
+- Add `@EnvironmentObject var appState: AppState` + `@EnvironmentObject var authService: AuthService` to `ProfileConfirmSheet` (line 281). Verify BOTH presentation sites (`ProfileTabView.swift:87-89`, `AccountDetailsView.swift:113-115`) re-inject the environment onto the sheet content.
+- **`exportSheet` (318-334):** replace the flash button (329-331) with a `ShareLink` over `DataArchiveBuilder.writeTempFile(appState)` (built in `.task`, stored in `@State exportURL`). (Unchanged from prior revision.)
+- **`resetSheet` (337-382):**
+  - Workout-only (344-352) → `DataResetService.resetAll(workoutOnly: true, appState: appState, alsoRemote: true)`.
+  - Reset everything (355-377) → `DataResetService.resetAll(workoutOnly: false, appState: appState, alsoRemote: true)`. Recommend a confirmation alert before the full wipe.
+- **`destructiveSheet(delete:)` (385-418):**
+  - Delete (408-410): `Task { if await authService.deleteAccount() { DataResetService.resetAll(workoutOnly: false, appState: appState, alsoRemote: false) } else { flash(authService.lastError ?? "Delete failed") } }`. Remote data is wiped by the Edge Function's cascade, so `alsoRemote: false` here. Order: remote delete succeeds → local wipe → sign-out (auto-gates to login). On failure: no wipe, no sign-out, show error. Update copy (399-401) to reflect that this erases the account and all synced + local data.
+  - Log Out (412-414): `Task { await authService.signOut() }`. Do NOT wipe local data (it stays for the next login on this device and is already backed up remotely). Sign-out flips `sessionState` → gate shows login.
+  - Wrap async calls in `Task`, guard with `@State busy` to disable buttons in-flight.
 
-### `AuraFitness/ActiveWorkout/WorkoutSummaryView.swift` — verify `appState` injected
-- Line **84**: `"\(d) sets · \(Int(vol).formatted()) kg"` — `vol` is canonical kg volume. Convert: `"\(d) sets · \(UnitFormatter.weight(vol, unit: appState.weightUnit))"`.
+### `AuraFitness/Profile/AccountDetailsView.swift`
+- Same sheet is presented here (113-115) — ensure `appState` + `authService` are injected into `ProfileConfirmSheet`. No other change.
 
-### `AuraFitness/Progress/WeeklyVolumeView.swift` — verify `appState` injected
-- Line **97**: `Text(metric == "Volume" ? "kg this week" : "sets this week")` → `"\(appState.weightUnit) this week"`.
-- Line **150**: `"\(top.sets) sets · \(formatVolume(top.volume)) kg"` → `"\(top.sets) sets · \(UnitFormatter.weight(top.volume, unit: appState.weightUnit))"`.
+### `AuraFitness/ContentView.swift`
+- No structural change required (it renders only when signed-in). Optionally surface a subtle "syncing…" indicator bound to `SupabaseSyncService.syncing`. Not required for sign-off.
 
-### `AuraFitness/Progress/ProgressPhotosView.swift`
-- Line **214**: `"\(delta >= 0 ? "+" : "")\(String(format: "%.1f", delta)) kg · body change"` — `delta` is a kg difference. Convert the magnitude: `let d = UnitFormatter.weightValue(delta, unit: appState.weightUnit)` then format with sign + `" \(appState.weightUnit) · body change"`.
-- Line **255**: `Text("Weight (\(appState.weightUnit))")` — already dynamic label; no change unless the paired input value needs conversion (check the weight entry field in this view and apply `parseWeightToKg`/`weightNumber` if it binds to a canonical Double). `[INPUT-CONVERSION]` if that field writes a stored kg Double.
+---
 
-### `AuraFitness/Progress/StatsView.swift` — verify `appState` injected
-- Line **128**: `Text("kg")` → `Text(appState.weightUnit)`. Also convert the paired numeric value at its call site (locate the metric Double rendered next to this label and wrap with `UnitFormatter.weightNumber`).
+## 📊 EXACT UserDefaults KEYS FOR LOCAL RESET (verified — enumerate literally)
 
-### `AuraFitness/Progress/PersonalRecordsView.swift` — verify `appState` injected
-- Line **110**: `"1RM est. \(Int(pr.estimated1RM)) kg"` → `"1RM est. \(UnitFormatter.weight(pr.estimated1RM, unit: appState.weightUnit))"`.
-- Line **129**: `"1RM ≈ \(Int(pr.estimated1RM)) kg"` → `"1RM ≈ \(UnitFormatter.weight(pr.estimated1RM, unit: appState.weightUnit))"`.
-- Also scan this view for any `pr.weight` display (raw kg) and convert.
+(Unchanged from prior revision — still needed for the local half of reset/delete.)
 
-### `AuraFitness/Progress/MeasurementsView.swift`
-- Line **14**: `let measurementUnits = ["kg", "%", "cm", …]` — this static array must become dynamic. Replace with a computed function that returns `appState.weightUnit` for the weight row, `"%"` for body fat, and `appState.lengthUnit` for all circumference rows. Every consumer of `measurementUnits[i]` must switch to this computed lookup.
-- Line **103**: `Text(appState.weightUnit)` — already dynamic; ensure paired numeric weight value uses `UnitFormatter.weightNumber`.
-- Line **119**: `String(format: "%.1f %@ / 30d", abs(delta), appState.weightUnit)` — `delta` is kg; convert: `abs(UnitFormatter.weightValue(delta, unit: appState.weightUnit))` for the number.
-- Line **288**: `String(format: "%.1f \(appState.lengthUnit)", v)` — `v` is a canonical cm circumference; convert: `UnitFormatter.lengthNumber(v, unit: appState.lengthUnit)` + suffix.
-- Scan the weight/circumference chart + card numbers (`weightDelta30`, `weightChartData`, `weightCard`) and wrap displayed values in `UnitFormatter.weightValue`/`lengthValue` so the trend numbers match the label.
+**WORKOUT-DATA keys (cleared in BOTH reset modes; matching remote tables also wiped when `alsoRemote`):**
+- `aura_program_db_v1` (`ProgramDatabase.swift:13`) → table `aura_programs`
+- `aura_plans_db_v1` (`ProgramDatabase.swift:128`) → `aura_plans`
+- `aura_wk`,`aura_elapsed`,`aura_run_start`,`aura_pill`,`aura_wk_version` (`WorkoutPersistence.swift:9-13`) → NOT synced
+- `aura_workout_logs_v1` (`AppState.swift:34`) → `aura_workout_logs`
+- `aura_day_overrides_v1` (`AppState.swift:35`) → `aura_day_overrides`
+- `aura_quick_logs_v1` (`AppState.swift:36`) → `aura_quick_logs`
+- `aura_personal_records_v1` (`AppState.swift:39`) → `aura_personal_records`
+- `aura_exercise_db_v1` (`ExerciseDatabase.swift:49`) → `aura_exercises` (reseed locally after clear)
 
-### `AuraFitness/Progress/LogMeasurementSheet.swift`
-- Lines **31 & 34**: labels already dynamic — no change.
-- `[INPUT-CONVERSION]` `save()` (lines 73-86): `weight` is typed in `appState.weightUnit`; circumferences (`neck…shoulders`) typed in `appState.lengthUnit`. Convert before storing canonical:
-  - `weight: UnitFormatter.parseWeightToKg(weight, unit: appState.weightUnit)`
-  - each circumference: `UnitFormatter.parseLengthToCm(neck, unit: appState.lengthUnit)` etc.
-  - `bodyFat` stays `Double(bodyFat)` (percentage, unit-agnostic).
+**PROFILE / MEASUREMENT / SETTINGS keys (full-reset ONLY; KEPT in workoutOnly):**
+- `aura_measurements_v1` (`AppState.swift:37`) → `aura_measurements`
+- `aura_body_stats_v1` (`AppState.swift:38`) → `aura_body_stats`
+- `aura_user_profile_v1` (`AppState.swift:40`) → `aura_user_profile`
+- `aura_progress_photos_v1` (`AppState.swift:41`) → `aura_progress_photos`
+- `aura_workout_prefs_v1` (`AppState.swift:42`) → `aura_preferences`
+- `aura_dark`,`aura_calstart`,`aura_logstat` (`AppState.swift:31-33`) → folded into `aura_preferences`
+- `aura_seeded_missed_v1` (dead key, `AppState.swift:28`) — remove opportunistically
+- **New sync-infra keys** (cleared on full reset): `aura_sync_queue_v1`, `aura_local_ts_v1`.
 
-### `AuraFitness/Profile/ProfileTabView.swift`
-- Line **48**: `"\(age) · \(h) cm · \(w) kg · \(profile.gender)"` — `h`/`w` are canonical cm/kg. Convert: `"…· \(UnitFormatter.length(h, unit: appState.lengthUnit)) · \(UnitFormatter.weight(w, unit: appState.weightUnit)) · …"`. Confirm `h`/`w` are Doubles at this line; if they are pre-formatted strings, trace back to their source and convert there instead.
-- Line **50** (`unitsSubtitle`): already just echoes the two pref strings — no change.
+**Post-clear reload (CRITICAL):** clearing a UserDefaults key does NOT update the in-memory `@Published` singletons — every reset MUST reassign store state via `resetToSeed()`/`hardReset()` and reset AppState collections to defaults; call `appState.exitWorkout()` (`AppState.swift:398`) first if a session is live; never leave `UserPlanDatabase.plans` empty (re-seed default plan).
 
-### `AuraFitness/Log/LogSheetsView.swift`
-- Line **832**: `Text("WEIGHT")` column header — LEAVE AS-IS (generic header, not a unit label).
-- Line **839**: `TextField("kg", text: bindingWeight(i, j))` → placeholder becomes `appState.weightUnit`: `TextField(appState.weightUnit, text: bindingWeight(i, j))`. This is a PLACEHOLDER-ONLY change. `bindingWeight` maps to `QuickLogSet.weight`, which is FREE-TEXT (see R2): do NOT parse or convert it, do NOT add any save/load transform. The stored string is written verbatim as typed. View needs `@EnvironmentObject var appState: AppState` — confirm injected.
-
-### `AuraFitness/Plan/PlanExerciseDetailView.swift`
-- Lines **475, 488, 510, 530, 532**: all render `"\(planNum(v))kg"` from canonical-kg Doubles (`pbs.maxVol`, `st.weight`, Epley 1RM). This view lacks `appState` — add `@EnvironmentObject var appState: AppState`. Replace each `"…kg"` with `UnitFormatter.weight(v, unit: appState.weightUnit)` (or `weightNumber` + `appState.weightUnit` suffix where the layout appends the unit separately). `planNum`/`fmt` helpers stay for the number-shaping but feed the converted value, OR are replaced by `UnitFormatter.weightNumber`. Keep the `"BW"`/bodyweight branch unchanged.
+---
 
 ## 🛡️ EDGE CASES TO HANDLE
 
-- **Invalid / empty typed input:** `parseWeightToKg`/`parseLengthToCm` must return `nil` (not 0) on empty or non-numeric text so `set.weight = nil` clears correctly and the auto-finish/PR logic still treats the set as unfilled. Do not coerce empty to `0`.
-- **Round-trip precision drift:** seeding an input field from a converted value then re-parsing must not silently mutate stored kg on every keystroke. Only write back to the stored Double on the existing blur/onChange callbacks (already the case), and use 1-decimal display precision so `100 kg → 220.5 lb → 100.0006 kg` drift stays sub-display. Do not re-normalize stored values on load.
-- **History strings vs free-text strings (RESOLVED, R2):** `SetHistory.weight` is a canonical-kg numeric string — parse with `Double(h.weight) ?? 0` then convert for display (SetRowView:76, SupersetView:362, ExerciseLoggingView:350). `QuickLogSet.weight` is arbitrary free-text (may be `"—"`, `""`, or non-numeric) — NEVER parse or convert; only swap the placeholder at LogSheetsView:839. Mixing these up will corrupt quick-log data or crash on `"—"`.
-- **Missing `appState` injection:** several display views (`PlanExerciseDetailView`, possibly `StatsView`/`WeeklyVolumeView`/`WorkoutSummaryView`/`PersonalRecordsView`) may not currently hold `@EnvironmentObject var appState`. Adding it is safe (AppState is app-root injected) but the Coder must add the property to each and verify the view is instantiated within the AppState environment.
+- **Session restore flash:** `.loading` renders a splash, not the login form (authed users must not see a login flash each launch). Do not default to `.signedOut`.
+- **Email-unconfirmed login (R3):** `signIn` on an unconfirmed account must surface "confirm your email", not a raw SDK error, and keep the user on the gate.
+- **First-login backfill vs pull (R4):** `onSignedIn` must correctly distinguish a FRESH remote (empty → backfill local up) from a RETURNING user (non-empty → pull + LWW reconcile). Getting this wrong either loses pre-account data or clobbers cloud data. When in doubt, LWW merge (never blind-overwrite) so both directions are preserved.
+- **Push loop / echo:** applying pulled remote rows into local stores triggers their `persist()`/`didSet`, which must NOT re-push. Guard every store with an `isApplyingRemote` flag (mirror the `isLoading` guard at `AppState.swift:65`). Missing this creates an infinite push↔pull loop.
+- **Offline mutations:** every push is fire-and-forget; failures/offline enqueue to `aura_sync_queue_v1` and NEVER block or throw into the UI. Flush on next successful net op. Coalesce duplicate (table,id) upserts.
+- **Whole-array `didSet` on AppState collections:** assigning the entire array fires one `didSet`; naive "push everything" on every keystroke is wasteful and racy. Diff old vs new and push only changed/added rows + delete removed rows.
+- **Delete Account partial failure:** remote-delete (Edge Function) must SUCCEED before any local wipe or sign-out. On failure: no wipe, stay signed in, show error. Wrong order orphans an account with lost local data.
+- **Reset while a workout is live:** call `appState.exitWorkout()` before clearing keys so no stale session re-persists post-wipe.
+- **In-memory vs disk desync after reset:** reassign singleton `@Published` state (via new reset methods), don't just delete keys — otherwise the wiped data stays on screen.
+- **`progress_photos` size (O2):** base64 blobs in JSONB can be large and slow to push/pull; keep the temp-file export path off the main thread and consider batching/limiting photo sync. Flagged as a v1 limitation; Storage-bucket migration is a follow-up.
+- **LWW data loss (O3, out-of-scope realtime):** concurrent edits on two devices between pulls can silently drop the older write. This is an ACCEPTED v1 limitation of the periodic-pull + write-through model — communicated here, not hidden. No live subscription this pass.

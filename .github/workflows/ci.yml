@@ -9,15 +9,30 @@ on:
 
 jobs:
   build:
-    runs-on: macos-14
+    runs-on: macos-15
 
     steps:
       - uses: actions/checkout@v4
 
-      - name: Select Xcode 15.4
+      - name: Select Xcode 16
         uses: maxim-lobanov/setup-xcode@v1
         with:
-          xcode-version: '~15.4'
+          xcode-version: '16.1'
+
+      - name: List available Xcode/platform versions
+        run: |
+          ls /Applications | grep -i xcode || true
+          xcodebuild -showsdks || true
+
+      - name: Ensure iOS platform SDK is installed
+        run: |
+          # Runner images vary: some macos-15 image builds ship Xcode 16.1
+          # without the iOS 18.1 device platform. Download it explicitly so
+          # 'generic/platform=iOS' destinations always resolve.
+          if ! xcodebuild -showsdks | grep -q iphoneos; then
+            sudo xcodebuild -downloadPlatform iOS
+          fi
+          xcodebuild -showsdks
 
       - name: Install xcpretty
         run: gem install xcpretty --no-document || true

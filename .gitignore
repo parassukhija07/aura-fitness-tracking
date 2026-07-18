@@ -1,1 +1,5 @@
 AUDIT_REPORT.md
+
+# H8 — Supabase secrets (real values live only on the developer's machine)
+AuraFitness/Secrets.xcconfig
+

@@ -114,39 +114,8 @@ enum PlanExerciseDetail {
     struct HistSession: Hashable { var date: String; var sets: [HistSet] }
     struct PBs { var e1rm: Double; var maxW: Double; var maxR: Int; var maxVol: Int }
 
-    private static let baseWeights: [String: Double] = [
-        "Barbell Bench Press": 80, "Incline DB Press": 30, "Cable Fly": 15, "Pec Deck": 40,
-        "Barbell Row": 72.5, "Pull-ups": 0, "Cable Row": 55, "Lat Pulldown": 52,
-        "Overhead Press": 52.5, "Lateral Raise": 12, "Barbell Squat": 90, "Romanian Deadlift": 75,
-        "Leg Press": 120, "Leg Curl": 45, "Leg Extension": 50, "Barbell Curl": 35,
-        "Hammer Curl": 18, "Tricep Pushdown": 25, "Skull Crushers": 35,
-    ]
-
-    /// `genHistory` — 5 seeded sessions at offsets [2,7,12,19,26] days before 2026-06-26.
-    static func history(for ex: PlanLibExercise) -> [HistSession] {
-        let base = baseWeights[ex.name] ?? 40
-        let isPw = base == 0
-        let days = [2, 7, 12, 19, 26]
-        var cal = Calendar(identifier: .gregorian)
-        cal.timeZone = TimeZone(identifier: "UTC") ?? .current
-        let anchor = DateComponents(calendar: cal, year: 2026, month: 6, day: 26).date ?? Date()
-        let fmt = DateFormatter()
-        fmt.locale = Locale(identifier: "en_US")
-        fmt.dateFormat = "MMM d, yyyy"
-
-        var sessions: [HistSession] = []
-        for i in 0..<5 {
-            let d = cal.date(byAdding: .day, value: -days[i], to: anchor) ?? anchor
-            let w: Double = isPw ? 0 : (((base - Double(i) * 2.5) / 1.25).rounded() * 1.25)
-            let numSets = i == 0 ? 4 : 3
-            let sets: [HistSet] = (0..<numSets).map { s in
-                let reps = s == 0 ? (isPw ? 10 : 8) : (s == 1 ? (isPw ? 9 : 7) : (isPw ? 8 : 6))
-                return HistSet(weight: w, reps: reps)
-            }
-            sessions.append(HistSession(date: fmt.string(from: d), sets: sets))
-        }
-        return sessions
-    }
+    // Real session history now comes from `AppState.realHistory(forExercise:)`,
+    // derived from the user's actual `workoutLogs` (see AppState.swift).
 
     /// `epley` — w × (1 + reps/30), rounded to 0.25; reps ≤ 1 returns the weight.
     static func epley(_ w: Double, _ r: Int) -> Double {
