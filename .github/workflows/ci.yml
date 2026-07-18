@@ -24,6 +24,16 @@ jobs:
           ls /Applications | grep -i xcode || true
           xcodebuild -showsdks || true
 
+      - name: Ensure iOS platform SDK is installed
+        run: |
+          # Runner images vary: some macos-15 image builds ship Xcode 16.1
+          # without the iOS 18.1 device platform. Download it explicitly so
+          # 'generic/platform=iOS' destinations always resolve.
+          if ! xcodebuild -showsdks | grep -q iphoneos; then
+            sudo xcodebuild -downloadPlatform iOS
+          fi
+          xcodebuild -showsdks
+
       - name: Install xcpretty
         run: gem install xcpretty --no-document || true
 
