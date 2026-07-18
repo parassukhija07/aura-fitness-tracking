@@ -30,6 +30,10 @@
 		AA000009000000000000009B /* SeedData.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000009000000000000009B /* SeedData.swift */; };
 		AA00000A0000000000000010 /* ProgressModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB00000A0000000000000010 /* ProgressModels.swift */; };
 		AAF182697FEFC84D54BF50A0 /* LogDayModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABF182697FEFC84D54BF50A0 /* LogDayModel.swift */; };
+		AAC1D4E5F60718293A4B5C01 /* ProgramDatabase.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABC1D4E5F60718293A4B5C01 /* ProgramDatabase.swift */; };
+		AAC1D4E5F60718293A4B5C02 /* ExerciseDatabase.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABC1D4E5F60718293A4B5C02 /* ExerciseDatabase.swift */; };
+		AAC1D4E5F60718293A4B5C03 /* UnitFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABC1D4E5F60718293A4B5C03 /* UnitFormatter.swift */; };
+		AAC1D4E5F60718293A4B5C04 /* WeeklyVolumeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABC1D4E5F60718293A4B5C04 /* WeeklyVolumeView.swift */; };
 		AA00000B0000000000000011 /* LogTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB00000B0000000000000011 /* LogTabView.swift */; };
 		AAEE0004000000000000004B /* LogSheetsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABEE0004000000000000004B /* LogSheetsView.swift */; };
 		AA000014000000000000002C /* ActiveWorkoutView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000014000000000000002C /* ActiveWorkoutView.swift */; };
@@ -98,6 +102,10 @@
 		AB000009000000000000009B /* SeedData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SeedData.swift; sourceTree = "<group>"; };
 		AB00000A0000000000000010 /* ProgressModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressModels.swift; sourceTree = "<group>"; };
 		ABF182697FEFC84D54BF50A0 /* LogDayModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogDayModel.swift; sourceTree = "<group>"; };
+		ABC1D4E5F60718293A4B5C01 /* ProgramDatabase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgramDatabase.swift; sourceTree = "<group>"; };
+		ABC1D4E5F60718293A4B5C02 /* ExerciseDatabase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseDatabase.swift; sourceTree = "<group>"; };
+		ABC1D4E5F60718293A4B5C03 /* UnitFormatter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UnitFormatter.swift; sourceTree = "<group>"; };
+		ABC1D4E5F60718293A4B5C04 /* WeeklyVolumeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeeklyVolumeView.swift; sourceTree = "<group>"; };
 		AB00000B0000000000000011 /* LogTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogTabView.swift; sourceTree = "<group>"; };
 		ABEE0004000000000000004B /* LogSheetsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogSheetsView.swift; sourceTree = "<group>"; };
 		AB000014000000000000002C /* ActiveWorkoutView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActiveWorkoutView.swift; sourceTree = "<group>"; };
@@ -211,6 +219,9 @@
 				AB000009000000000000009B /* SeedData.swift */,
 				AB00000A0000000000000010 /* ProgressModels.swift */,
 				ABF182697FEFC84D54BF50A0 /* LogDayModel.swift */,
+				ABC1D4E5F60718293A4B5C01 /* ProgramDatabase.swift */,
+				ABC1D4E5F60718293A4B5C02 /* ExerciseDatabase.swift */,
+				ABC1D4E5F60718293A4B5C03 /* UnitFormatter.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -276,6 +287,7 @@
 				AB00002D000000000000008D /* LogMeasurementSheet.swift */,
 				AB00002E000000000000008E /* ProgressPhotosView.swift */,
 				AB00002F000000000000008F /* NutritionView.swift */,
+				ABC1D4E5F60718293A4B5C04 /* WeeklyVolumeView.swift */,
 			);
 			path = Progress;
 			sourceTree = "<group>";
@@ -421,6 +433,10 @@
 				AA000009000000000000009B /* SeedData.swift in Sources */,
 				AA00000A0000000000000010 /* ProgressModels.swift in Sources */,
 				AAF182697FEFC84D54BF50A0 /* LogDayModel.swift in Sources */,
+				AAC1D4E5F60718293A4B5C01 /* ProgramDatabase.swift in Sources */,
+				AAC1D4E5F60718293A4B5C02 /* ExerciseDatabase.swift in Sources */,
+				AAC1D4E5F60718293A4B5C03 /* UnitFormatter.swift in Sources */,
+				AAC1D4E5F60718293A4B5C04 /* WeeklyVolumeView.swift in Sources */,
 				AA00000B0000000000000011 /* LogTabView.swift in Sources */,
 				AAEE0004000000000000004B /* LogSheetsView.swift in Sources */,
 				AA000014000000000000002C /* ActiveWorkoutView.swift in Sources */,
