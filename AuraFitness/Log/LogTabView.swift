@@ -12,10 +12,15 @@ enum LogSheet: Identifiable {
     case add
     case logPast(date: String, showToday: Bool)
     case pick(mode: PickMode, date: String)
+    /// Multi-select exercise picker over the full Exercise Library, assembles
+    /// a from-scratch workout (§2.9 "Build from Library" / "From Workout Library").
+    case buildFromLibrary(mode: PickMode, date: String)
     case calendar(forLogPast: Bool)
     case viewLog
     case editLog
     case logQuick(iso: String)
+    /// Read-only preview of a future planned workout's exercise list (§2.11).
+    case viewWorkout(iso: String)
 
     enum PickMode { case add, logpast, switchMode }
 
@@ -32,6 +37,8 @@ enum LogSheet: Identifiable {
         case .viewLog: return "viewlog"
         case .editLog: return "editlog"
         case .logQuick: return "logquick"
+        case .viewWorkout(let iso): return "viewworkout-\(iso)"
+        case .buildFromLibrary(let mode, let date): return "buildlib-\(mode)-\(date)"
         }
     }
 }
@@ -464,7 +471,7 @@ struct LogTabView: View {
             }
         case .future:
             VStack(alignment: .leading, spacing: AuraSpacing.s3) {
-                AuraGrayButton(label: "View Workout", icon: "doc.text") { flash("Read-only preview") }
+                AuraGrayButton(label: "View Workout", icon: "doc.text") { sheet = .viewWorkout(iso: info.iso) }
                 futureNotice
             }
         default: EmptyView()
@@ -516,7 +523,7 @@ struct LogTabView: View {
 
         ScrollView(.vertical, showsIndicators: scrollable) {
             VStack(spacing: 11) {
-                ForEach(Array(exercises.enumerated()), id: \.offset) { i, e in
+                ForEach(Array(exercises.enumerated()), id: \.element.id) { i, e in
                     HStack(spacing: 12) {
                         Text("\(i + 1)")
                             .font(.system(size: 12, weight: .bold))

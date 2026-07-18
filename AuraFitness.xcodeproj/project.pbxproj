@@ -8,14 +8,15 @@
 
 /* Begin PBXBuildFile section */
 		AA000001000000000000001B /* AuraFitnessApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000001000000000000001B /* AuraFitnessApp.swift */; };
-		AAF80000000000000000011A /* AuthConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABF80000000000000000011B /* AuthConfig.swift */; };
-		AAF80000000000000000021A /* AuthService.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABF80000000000000000021B /* AuthService.swift */; };
-		AAF80000000000000000031A /* AuthGateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABF80000000000000000031B /* AuthGateView.swift */; };
-		AAF80000000000000000041A /* SupabaseSyncService.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABF80000000000000000041B /* SupabaseSyncService.swift */; };
-		AAF80000000000000000051A /* Syncable.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABF80000000000000000051B /* Syncable.swift */; };
-		AAF80000000000000000061A /* DataArchive.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABF80000000000000000061B /* DataArchive.swift */; };
-		AAF80000000000000000071A /* DataResetService.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABF80000000000000000071B /* DataResetService.swift */; };
-		AAF80000000000000000081A /* Supabase in Frameworks */ = {isa = PBXBuildFile; productRef = ABF800000PKGPRODUCT0001B /* Supabase */; };
+		D8A00B123B1A43B8971B64F8 /* AuthConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = F78DA246F23D4CD0AD741E1E /* AuthConfig.swift */; };
+		EEE687EEC65948289B3FE94A /* AuthService.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB96C74100F945C2A73DD75E /* AuthService.swift */; };
+		F4B7795274B943A5B9B62526 /* AuthGateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 767A044673D746789E72D381 /* AuthGateView.swift */; };
+		1C44CF6B34AC4873A99272F1 /* SupabaseSyncService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1769544EF2E3416F82E81B02 /* SupabaseSyncService.swift */; };
+		4656E2A977A641238D1AB9C0 /* Syncable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 803A4A0AEB6F4A24B9B0F3EF /* Syncable.swift */; };
+		8D33A0F1C2094AB78B2B8659 /* DataArchive.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D8FE47712C54B54A93D5F78 /* DataArchive.swift */; };
+		3C776F2B48C74E23A00FABDA /* DataResetService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AEA826CEB9E4915BB1984C0 /* DataResetService.swift */; };
+		AA59FEAF6AB35E46E6A39847 /* HealthKitService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB16797C38CBD24BBD9E0E01 /* HealthKitService.swift */; };
+		CDFC6024797645AEA88AE07C /* Supabase in Frameworks */ = {isa = PBXBuildFile; productRef = 864C1DE126BD4F349BBC6DA2 /* Supabase */; };
 		AA000002000000000000002B /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000002000000000000002B /* ContentView.swift */; };
 		AA000003000000000000003B /* AuraColors.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000003000000000000003B /* AuraColors.swift */; };
 		AA000004000000000000004B /* AuraTypography.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000004000000000000004B /* AuraTypography.swift */; };
@@ -45,6 +46,7 @@
 		AAEE00A1000000000000A002 /* WorkoutPersistence.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABEE00A1000000000000A002 /* WorkoutPersistence.swift */; };
 		AA00001B000000000000003F /* SetRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB00001B000000000000003F /* SetRowView.swift */; };
 		AA00001C000000000000004C /* WorkoutSessionState.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB00001C000000000000004C /* WorkoutSessionState.swift */; };
+		AA65380299159B488098A530 /* NotificationScheduler.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB65380299159B488098A530 /* NotificationScheduler.swift */; };
 		AA00001D000000000000004D /* PlanTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB00001D000000000000004D /* PlanTabView.swift */; };
 		AAA10000000000 /* PlanModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABA10000000000 /* PlanModels.swift */; };
 		AAA10000000001 /* PlanExerciseDetailData.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABA10000000001 /* PlanExerciseDetailData.swift */; };
@@ -73,14 +75,16 @@
 
 /* Begin PBXFileReference section */
 		AB000001000000000000001B /* AuraFitnessApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuraFitnessApp.swift; sourceTree = "<group>"; };
-		ABF80000000000000000011B /* AuthConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthConfig.swift; sourceTree = "<group>"; };
-		ABF80000000000000000021B /* AuthService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthService.swift; sourceTree = "<group>"; };
-		ABF80000000000000000031B /* AuthGateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthGateView.swift; sourceTree = "<group>"; };
-		ABF80000000000000000041B /* SupabaseSyncService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupabaseSyncService.swift; sourceTree = "<group>"; };
-		ABF80000000000000000051B /* Syncable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Syncable.swift; sourceTree = "<group>"; };
-		ABF80000000000000000061B /* DataArchive.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataArchive.swift; sourceTree = "<group>"; };
-		ABF80000000000000000071B /* DataResetService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataResetService.swift; sourceTree = "<group>"; };
-		ABF80000SECRETSXCCFG001B /* Secrets.xcconfig.template */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Secrets.xcconfig.template; sourceTree = "<group>"; };
+		F78DA246F23D4CD0AD741E1E /* AuthConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthConfig.swift; sourceTree = "<group>"; };
+		EB96C74100F945C2A73DD75E /* AuthService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthService.swift; sourceTree = "<group>"; };
+		767A044673D746789E72D381 /* AuthGateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthGateView.swift; sourceTree = "<group>"; };
+		1769544EF2E3416F82E81B02 /* SupabaseSyncService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupabaseSyncService.swift; sourceTree = "<group>"; };
+		803A4A0AEB6F4A24B9B0F3EF /* Syncable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Syncable.swift; sourceTree = "<group>"; };
+		3D8FE47712C54B54A93D5F78 /* DataArchive.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataArchive.swift; sourceTree = "<group>"; };
+		5AEA826CEB9E4915BB1984C0 /* DataResetService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataResetService.swift; sourceTree = "<group>"; };
+		AB16797C38CBD24BBD9E0E01 /* HealthKitService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthKitService.swift; sourceTree = "<group>"; };
+		ABD7B37CF9C0AE4B69B23611 /* AuraFitness.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = AuraFitness.entitlements; sourceTree = "<group>"; };
+		BF07BF8539F741408786E738 /* Secrets.xcconfig.template */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Secrets.xcconfig.template; sourceTree = "<group>"; };
 		AB000002000000000000002B /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		AB000003000000000000003B /* AuraColors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuraColors.swift; sourceTree = "<group>"; };
 		AB000004000000000000004B /* AuraTypography.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuraTypography.swift; sourceTree = "<group>"; };
@@ -110,6 +114,7 @@
 		ABEE00A1000000000000A002 /* WorkoutPersistence.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutPersistence.swift; sourceTree = "<group>"; };
 		AB00001B000000000000003F /* SetRowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetRowView.swift; sourceTree = "<group>"; };
 		AB00001C000000000000004C /* WorkoutSessionState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutSessionState.swift; sourceTree = "<group>"; };
+		AB65380299159B488098A530 /* NotificationScheduler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationScheduler.swift; sourceTree = "<group>"; };
 		AB00001D000000000000004D /* PlanTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlanTabView.swift; sourceTree = "<group>"; };
 		ABA10000000000 /* PlanModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlanModels.swift; sourceTree = "<group>"; };
 		ABA10000000001 /* PlanExerciseDetailData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlanExerciseDetailData.swift; sourceTree = "<group>"; };
@@ -142,7 +147,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				AAF80000000000000000081A /* Supabase in Frameworks */,
+				CDFC6024797645AEA88AE07C /* Supabase in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -170,7 +175,7 @@
 			children = (
 				AB000001000000000000001B /* AuraFitnessApp.swift */,
 				AB000002000000000000002B /* ContentView.swift */,
-				ABF80000SECRETSXCCFG001B /* Secrets.xcconfig.template */,
+				BF07BF8539F741408786E738 /* Secrets.xcconfig.template */,
 				ACGRP020000000000000000A /* DesignSystem */,
 				ACGRP030000000000000000A /* Models */,
 				ACGRP040000000000000000A /* Log */,
@@ -236,6 +241,7 @@
 				ABEE0007000000000000007B /* WorkoutModalsView.swift */,
 				ABEE00A0000000000000A001 /* ActiveWorkoutSeed.swift */,
 				ABEE00A1000000000000A002 /* WorkoutPersistence.swift */,
+				AB65380299159B488098A530 /* NotificationScheduler.swift */,
 			);
 			path = ActiveWorkout;
 			sourceTree = "<group>";
@@ -281,8 +287,10 @@
 				AB000031000000000000009D /* WorkoutSettingsView.swift */,
 				AB000032000000000000009E /* AccountDetailsView.swift */,
 				AB000033000000000000009F /* ProfileSettingsScreens.swift */,
-				ABF80000000000000000061B /* DataArchive.swift */,
-				ABF80000000000000000071B /* DataResetService.swift */,
+				3D8FE47712C54B54A93D5F78 /* DataArchive.swift */,
+				5AEA826CEB9E4915BB1984C0 /* DataResetService.swift */,
+				AB16797C38CBD24BBD9E0E01 /* HealthKitService.swift */,
+				ABD7B37CF9C0AE4B69B23611 /* AuraFitness.entitlements */,
 			);
 			path = Profile;
 			sourceTree = "<group>";
@@ -290,9 +298,9 @@
 		ACGRP090000000000000000A /* Auth */ = {
 			isa = PBXGroup;
 			children = (
-				ABF80000000000000000011B /* AuthConfig.swift */,
-				ABF80000000000000000021B /* AuthService.swift */,
-				ABF80000000000000000031B /* AuthGateView.swift */,
+				F78DA246F23D4CD0AD741E1E /* AuthConfig.swift */,
+				EB96C74100F945C2A73DD75E /* AuthService.swift */,
+				767A044673D746789E72D381 /* AuthGateView.swift */,
 			);
 			path = Auth;
 			sourceTree = "<group>";
@@ -300,8 +308,8 @@
 		ACGRP0A0000000000000000A /* Sync */ = {
 			isa = PBXGroup;
 			children = (
-				ABF80000000000000000041B /* SupabaseSyncService.swift */,
-				ABF80000000000000000051B /* Syncable.swift */,
+				1769544EF2E3416F82E81B02 /* SupabaseSyncService.swift */,
+				803A4A0AEB6F4A24B9B0F3EF /* Syncable.swift */,
 			);
 			path = Sync;
 			sourceTree = "<group>";
@@ -323,7 +331,7 @@
 			);
 			name = AuraFitness;
 			packageProductDependencies = (
-				ABF800000PKGPRODUCT0001B /* Supabase */,
+				864C1DE126BD4F349BBC6DA2 /* Supabase */,
 			);
 			productName = AuraFitness;
 			productReference = ACPROD00000000000000000A /* AuraFitness.app */;
@@ -354,7 +362,7 @@
 			);
 			mainGroup = ACROOT00000000000000000A;
 			packageReferences = (
-				ABF800000000PKGREF00001B /* XCRemoteSwiftPackageReference "supabase-swift" */,
+				00115CA3DCF7477A9C049CE5 /* XCRemoteSwiftPackageReference "supabase-swift" */,
 			);
 			productRefGroup = ACPROD00000000000000010A /* Products */;
 			projectDirPath = "";
@@ -366,7 +374,7 @@
 /* End PBXProject section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		ABF800000000PKGREF00001B /* XCRemoteSwiftPackageReference "supabase-swift" */ = {
+		00115CA3DCF7477A9C049CE5 /* XCRemoteSwiftPackageReference "supabase-swift" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/supabase/supabase-swift";
 			requirement = {
@@ -377,9 +385,9 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		ABF800000PKGPRODUCT0001B /* Supabase */ = {
+		864C1DE126BD4F349BBC6DA2 /* Supabase */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = ABF800000000PKGREF00001B /* XCRemoteSwiftPackageReference "supabase-swift" */;
+			package = 00115CA3DCF7477A9C049CE5 /* XCRemoteSwiftPackageReference "supabase-swift" */;
 			productName = Supabase;
 		};
 /* End XCSwiftPackageProductDependency section */
@@ -429,6 +437,7 @@
 				AAEE00A1000000000000A002 /* WorkoutPersistence.swift in Sources */,
 				AA00001B000000000000003F /* SetRowView.swift in Sources */,
 				AA00001C000000000000004C /* WorkoutSessionState.swift in Sources */,
+				AA65380299159B488098A530 /* NotificationScheduler.swift in Sources */,
 				AA00001D000000000000004D /* PlanTabView.swift in Sources */,
 				AAA10000000000 /* PlanModels.swift in Sources */,
 				AAA10000000001 /* PlanExerciseDetailData.swift in Sources */,
@@ -453,13 +462,14 @@
 				AA000031000000000000009D /* WorkoutSettingsView.swift in Sources */,
 				AA000032000000000000009E /* AccountDetailsView.swift in Sources */,
 				AA000033000000000000009F /* ProfileSettingsScreens.swift in Sources */,
-				AAF80000000000000000011A /* AuthConfig.swift in Sources */,
-				AAF80000000000000000021A /* AuthService.swift in Sources */,
-				AAF80000000000000000031A /* AuthGateView.swift in Sources */,
-				AAF80000000000000000041A /* SupabaseSyncService.swift in Sources */,
-				AAF80000000000000000051A /* Syncable.swift in Sources */,
-				AAF80000000000000000061A /* DataArchive.swift in Sources */,
-				AAF80000000000000000071A /* DataResetService.swift in Sources */,
+				D8A00B123B1A43B8971B64F8 /* AuthConfig.swift in Sources */,
+				EEE687EEC65948289B3FE94A /* AuthService.swift in Sources */,
+				F4B7795274B943A5B9B62526 /* AuthGateView.swift in Sources */,
+				1C44CF6B34AC4873A99272F1 /* SupabaseSyncService.swift in Sources */,
+				4656E2A977A641238D1AB9C0 /* Syncable.swift in Sources */,
+				8D33A0F1C2094AB78B2B8659 /* DataArchive.swift in Sources */,
+				3C776F2B48C74E23A00FABDA /* DataResetService.swift in Sources */,
+				AA59FEAF6AB35E46E6A39847 /* HealthKitService.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -589,12 +599,15 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
+				CODE_SIGN_ENTITLEMENTS = AuraFitness/AuraFitness.entitlements;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "";
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_SUPABASE_ANON_KEY = "$(SUPABASE_ANON_KEY)";
 				INFOPLIST_KEY_SUPABASE_URL = "$(SUPABASE_URL)";
+				INFOPLIST_KEY_NSHealthShareUsageDescription = "Aura reads your body weight from Health to keep your measurements up to date.";
+				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "Aura writes your logged workouts and body weight to Health.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -618,12 +631,15 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
+				CODE_SIGN_ENTITLEMENTS = AuraFitness/AuraFitness.entitlements;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "";
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_SUPABASE_ANON_KEY = "$(SUPABASE_ANON_KEY)";
 				INFOPLIST_KEY_SUPABASE_URL = "$(SUPABASE_URL)";
+				INFOPLIST_KEY_NSHealthShareUsageDescription = "Aura reads your body weight from Health to keep your measurements up to date.";
+				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "Aura writes your logged workouts and body weight to Health.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;

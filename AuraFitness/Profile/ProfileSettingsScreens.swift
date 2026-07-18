@@ -86,6 +86,9 @@ struct NotificationsSettingsView: View {
                 SettingsControlRow(title: "Enable notifications",
                                    subtitle: "Reminders, streaks and updates") {
                     AuraToggle(isOn: $appState.notificationsEnabled)
+                        .onChange(of: appState.notificationsEnabled) { _, enabled in
+                            if enabled { NotificationScheduler.requestAuthorizationIfNeeded() }
+                        }
                 }
             }
 
@@ -183,13 +186,16 @@ struct ConnectedAppsView: View {
                 SettingsControlRow(title: "Apple Health",
                                    subtitle: appState.appleHealthConnected ? "Connected" : "Not connected",
                                    iconName: "flame.fill", iconColor: .aura.red) {
-                    AuraToggle(isOn: $appState.appleHealthConnected)
-                }
-                Divider().padding(.leading, 64)
-                SettingsControlRow(title: "Google Health",
-                                   subtitle: appState.googleHealthConnected ? "Connected" : "Not connected",
-                                   iconName: "target", iconColor: .aura.green) {
-                    AuraToggle(isOn: $appState.googleHealthConnected)
+                    AuraToggle(isOn: Binding(
+                        get: { appState.appleHealthConnected },
+                        set: { newValue in
+                            if newValue {
+                                Task { await HealthKitService.shared.requestAuthorization(appState: appState) }
+                            } else {
+                                HealthKitService.shared.disconnect(appState: appState)
+                            }
+                        }
+                    ))
                 }
             }
 

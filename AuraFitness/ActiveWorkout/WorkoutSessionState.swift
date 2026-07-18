@@ -61,6 +61,13 @@ class WorkoutSessionState: ObservableObject {
     @Published var celebration: CelebrationData? = nil
     private var celebTimer: Timer? = nil
 
+    // MARK: - Save-scope prompt (§2.27)
+    /// Set after add/remove/substitute so the UI can offer "today only vs
+    /// permanently"; the edit is already applied to `workout` by the time
+    /// this fires — this only decides whether it ALSO gets written back to
+    /// the source Program/UserPlan.
+    @Published var pendingScopePrompt: Bool = false
+
     // MARK: - Session meta
     let startDate: Date = Date()
     @Published var sessionNotes: String = ""
@@ -139,14 +146,22 @@ class WorkoutSessionState: ObservableObject {
     }
 
     // MARK: - Rest timer
-    func startRest(duration: Int) {
-        guard appState?.autoRestTimer == true else { return }
+    /// `automatic: true` for per-set rest triggered by completing a set —
+    /// gated by the "Auto Rest Timer" setting. Explicit workflow rests
+    /// (between-exercise §2.18, manual start) always fire regardless of
+    /// that setting.
+    func startRest(duration: Int, automatic: Bool = true) {
+        if automatic {
+            guard appState?.autoRestTimer == true else { return }
+        }
         restActive = true
         restTotal = duration
         restLeft = duration
         restRunning = true
         restEndDate = Date().addingTimeInterval(TimeInterval(duration))
         scheduleRestTick()
+        NotificationScheduler.scheduleRestComplete(in: duration, sound: appState?.restSound ?? "Ding",
+                                                    enabled: appState?.notificationsEnabled ?? false)
     }
 
     private func scheduleRestTick() {
@@ -167,6 +182,7 @@ class WorkoutSessionState: ObservableObject {
             restTimer?.invalidate()
             restActive = false
             restLeft = 0
+            NotificationScheduler.cancelRestComplete()
         } else {
             restLeft = remaining
         }
@@ -177,8 +193,11 @@ class WorkoutSessionState: ObservableObject {
         if restRunning {
             restEndDate = Date().addingTimeInterval(TimeInterval(restLeft))
             scheduleRestTick()
+            NotificationScheduler.scheduleRestComplete(in: restLeft, sound: appState?.restSound ?? "Ding",
+                                                        enabled: appState?.notificationsEnabled ?? false)
         } else {
             restTimer?.invalidate()
+            NotificationScheduler.cancelRestComplete()
         }
     }
 
@@ -186,12 +205,17 @@ class WorkoutSessionState: ObservableObject {
         restLeft += seconds
         restTotal += seconds
         if let restEndDate { self.restEndDate = restEndDate.addingTimeInterval(TimeInterval(seconds)) }
+        if restRunning {
+            NotificationScheduler.scheduleRestComplete(in: restLeft, sound: appState?.restSound ?? "Ding",
+                                                        enabled: appState?.notificationsEnabled ?? false)
+        }
     }
 
     func dismissRest() {
         restTimer?.invalidate()
         restActive = false
         restEndDate = nil
+        NotificationScheduler.cancelRestComplete()
     }
 
     var restFormatted: String {
@@ -236,8 +260,11 @@ class WorkoutSessionState: ObservableObject {
                 message: "\(r) reps — above today's target.")
         }
 
-        // Rest timer — NOT after final set
-        if si < ex.sets.count - 1 {
+        // Rest timer — NOT after the last remaining incomplete set. Checked
+        // by completion state, not position, since sets can be completed
+        // out of order.
+        let anyIncomplete = ex.sets.contains { !$0.done }
+        if anyIncomplete {
             let dur = appState?.defaultRestBetweenSets ?? 60
             startRest(duration: dur)
         }
@@ -279,7 +306,7 @@ class WorkoutSessionState: ObservableObject {
         let doneSets = workout.exercises[exerciseIndex].sets.filter { $0.done }.count
         triggerCelebration(emoji: "💪", title: "Exercise done",
             message: "\(doneSets) solid sets logged. On to the next.")
-        startRest(duration: appState?.defaultRestBetweenExercises ?? 90)
+        startRest(duration: appState?.defaultRestBetweenExercises ?? 90, automatic: false)
         activeView = .overview
     }
 
@@ -308,17 +335,36 @@ class WorkoutSessionState: ObservableObject {
         workout.exercises[index].name = name
         workout.exercises[index].equipment = equipment
         workout.exercises[index].isCable = (equipment == "Cable")
+        offerScopePromptIfApplicable()
     }
 
     func removeExercise(at index: Int) {
         guard workout.exercises.indices.contains(index) else { return }
         workout.exercises.remove(at: index)
+        offerScopePromptIfApplicable()
     }
 
     func addExercise(_ exercise: Exercise) {
         var ex = exercise
         ex.sets = (0..<ex.plannedSets).map { _ in WorkoutSet() }
         workout.exercises.append(ex)
+        offerScopePromptIfApplicable()
+    }
+
+    /// Empty-mode / build-as-you-go sessions have no Program/UserPlan source
+    /// to write back to, so there's nothing to offer.
+    private func offerScopePromptIfApplicable() {
+        guard !isEmptyMode else { return }
+        pendingScopePrompt = true
+    }
+
+    /// §2.27 resolution — `true` writes the current exercise list back to the
+    /// source Program/UserPlan workout; `false` (today only) is a no-op, the
+    /// edit already lives in `workout` for this session same as before.
+    func resolveScopePrompt(savePermanently: Bool) {
+        defer { pendingScopePrompt = false }
+        guard savePermanently else { return }
+        appState?.savePermanently(exercises: workout.exercises, forWorkoutID: workout.id, name: workout.name)
     }
 
     func createSuperset(sourceIndex: Int, targetIndex: Int) {

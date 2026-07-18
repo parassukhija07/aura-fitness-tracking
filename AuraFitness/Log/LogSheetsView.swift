@@ -18,6 +18,12 @@ struct LogSheetsView: View {
     private var info: AppState.DayInfo { appState.dayInfo(for: selected) }
     private var isToday: Bool { cal.isDate(selected, inSameDayAs: cal.startOfDay(for: Date())) }
 
+    // MARK: Build-from-library state
+    @StateObject private var exerciseDB = ExerciseDatabase.shared
+    @State private var libQuery = ""
+    @State private var libCategory = "All"
+    @State private var libSelected: [UUID] = []
+
     /// All assignable workouts from the active program (for pick/switch).
     private var programWorkouts: [Workout] {
         appState.defaultPlan.flatMap { plan in
@@ -35,10 +41,12 @@ struct LogSheetsView: View {
             case .add:                           addSheet
             case .logPast(let date, let show):   logPastSheet(date: date, showToday: show)
             case .pick(let mode, let date):      pickSheet(mode: mode, date: date)
+            case .buildFromLibrary(let mode, let date): buildFromLibrarySheet(mode: mode, date: date)
             case .calendar(let forLogPast):      calendarSheet(forLogPast: forLogPast)
             case .viewLog:                       viewLogSheet
             case .editLog:                       editLogSheet
             case .logQuick(let iso):             logQuickSheet(iso: iso)
+            case .viewWorkout(let iso):          viewWorkoutSheet(iso: iso)
             }
         }
         .id(sheet.id)
@@ -454,7 +462,7 @@ struct LogSheetsView: View {
                     }
                     srcCard(icon: "magnifyingglass", bg: .aura.green.opacity(0.16), color: .aura.green,
                             title: "From Workout Library", sub: "Pick exercises from scratch") {
-                        parentSheet = .pick(mode: .add, date: info.iso)
+                        parentSheet = .buildFromLibrary(mode: .add, date: info.iso)
                     }
                     srcCard(icon: "plus", bg: .aura.fill, color: .aura.text2,
                             title: "Empty Workout", sub: "Start blank, add as you go") {
@@ -517,7 +525,7 @@ struct LogSheetsView: View {
                     }
                     srcCard(icon: "magnifyingglass", bg: .aura.green.opacity(0.16), color: .aura.green,
                             title: "Build from Library", sub: "Pick exercises from scratch") {
-                        parentSheet = .pick(mode: .logpast, date: date)
+                        parentSheet = .buildFromLibrary(mode: .logpast, date: date)
                     }
                 }
                 .padding(.horizontal, AuraSpacing.screenPad)
@@ -567,6 +575,118 @@ struct LogSheetsView: View {
         }
         .padding(.horizontal, 16).padding(.vertical, 13)
         .background(accent ? Color.aura.accent.opacity(0.06) : Color.clear)
+    }
+
+    // MARK: Build-from-library sheet (§2.9 from-scratch workout)
+
+    private var libFiltered: [ExerciseEntry] {
+        exerciseDB.filtered(category: libCategory == "All" ? nil : libCategory, equipment: nil, query: libQuery)
+    }
+    private let libCategories = ["All","Chest","Back","Shoulders","Arms","Legs","Core","Cardio","Warm-up"]
+
+    private func buildFromLibrarySheet(mode: LogSheet.PickMode, date: String) -> some View {
+        VStack(spacing: 0) {
+            grabber().frame(maxWidth: .infinity).padding(.top, AuraSpacing.s2)
+            sheetHeader("Build a Workout", sub: "Select exercises, then confirm")
+                .padding(.horizontal, AuraSpacing.screenPad)
+
+            HStack(spacing: AuraSpacing.s2) {
+                Image(systemName: "magnifyingglass").foregroundColor(.aura.text3)
+                TextField("Search exercises", text: $libQuery).font(AuraFont.body())
+            }
+            .padding(AuraSpacing.s3)
+            .background(Color.aura.fill)
+            .clipShape(RoundedRectangle(cornerRadius: AuraRadius.md))
+            .padding(.horizontal, AuraSpacing.screenPad)
+            .padding(.top, AuraSpacing.s2)
+
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: AuraSpacing.s2) {
+                    ForEach(libCategories, id: \.self) { c in
+                        AuraChip(label: c, active: libCategory == c) { libCategory = c }
+                    }
+                }
+                .padding(.horizontal, AuraSpacing.screenPad)
+                .padding(.vertical, AuraSpacing.s2)
+            }
+
+            ScrollView {
+                VStack(spacing: 8) {
+                    ForEach(libFiltered) { entry in
+                        libExerciseRow(entry)
+                    }
+                }
+                .padding(.horizontal, AuraSpacing.screenPad)
+                .padding(.bottom, AuraSpacing.s6)
+            }
+
+            AuraPrimaryButton(label: libSelected.isEmpty ? "Select exercises" : "Add \(libSelected.count) Exercise\(libSelected.count == 1 ? "" : "s")") {
+                confirmBuildFromLibrary(mode: mode, date: date)
+            }
+            .disabled(libSelected.isEmpty)
+            .opacity(libSelected.isEmpty ? 0.5 : 1)
+            .padding(.horizontal, AuraSpacing.screenPad)
+            .padding(.vertical, AuraSpacing.s3)
+        }
+        .background(Color.aura.bg)
+        .onAppear { libSelected = []; libQuery = ""; libCategory = "All" }
+    }
+
+    private func libExerciseRow(_ entry: ExerciseEntry) -> some View {
+        let isOn = libSelected.contains(entry.id)
+        return Button {
+            if isOn { libSelected.removeAll { $0 == entry.id } } else { libSelected.append(entry.id) }
+        } label: {
+            HStack(spacing: 12) {
+                Image(systemName: isOn ? "checkmark.circle.fill" : "circle")
+                    .font(.system(size: 20))
+                    .foregroundColor(isOn ? .aura.accent : .aura.text3)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(entry.name).font(.system(size: 15, weight: .bold)).foregroundColor(.aura.text)
+                    Text("\(entry.category) · \(entry.equipment)").font(.system(size: 12)).foregroundColor(.aura.text2)
+                }
+                Spacer()
+            }
+            .padding(.horizontal, 14).padding(.vertical, 11)
+            .background(isOn ? Color.aura.accentSoft : Color.aura.surface)
+            .clipShape(RoundedRectangle(cornerRadius: AuraRadius.md))
+            .overlay(RoundedRectangle(cornerRadius: AuraRadius.md).stroke(Color.aura.separator.opacity(0.5), lineWidth: 1))
+        }
+        .buttonStyle(.plain)
+    }
+
+    /// Assembles the picked `ExerciseEntry` rows into an ad-hoc `Workout` and
+    /// applies it the same way `assign(_:mode:dateIso:)` does for a program
+    /// workout — via a `DayOverride` with `editedExercises` set, since this
+    /// workout has no `Program`/`UserPlan` entry for `workoutId` to resolve to
+    /// (`dayInfo`'s placeholder-synthesis fallback picks it up from there).
+    private func confirmBuildFromLibrary(mode: LogSheet.PickMode, date: String) {
+        let picked = libSelected.compactMap { id in exerciseDB.entries.first { $0.id == id } }
+        guard !picked.isEmpty else { return }
+        let exercises: [Exercise] = picked.map { entry in
+            Exercise(name: entry.name, primaryMuscle: entry.category, muscleGroups: entry.musclesTargeted,
+                     equipment: entry.equipment, difficulty: entry.difficulty, isCable: entry.isCable,
+                     pulley: entry.pulley, repRange: entry.repRange, plannedSets: entry.plannedSets,
+                     hint: entry.hint, imageURL: entry.imageURL.isEmpty ? nil : entry.imageURL,
+                     youtubeURL: entry.youtubeURL.isEmpty ? nil : entry.youtubeURL)
+        }
+        let wid = UUID()
+        let kind: DayOverride.Kind
+        switch mode {
+        case .logpast: kind = .logged
+        default:
+            let di = appState.dayInfo(for: dateFromIso(date))
+            kind = di.relation == .past ? .logged : .added
+        }
+        appState.setOverride(DayOverride(kind: kind, workoutId: wid, editedExercises: exercises), for: date)
+        if kind == .logged {
+            let quickExs = exercises.map { QuickLogExercise(name: $0.name, sets: []) }
+            let f = DateFormatter(); f.dateFormat = "HH:mm"
+            appState.quickLogs[date] = QuickLog(time: f.string(from: Date()), exercises: quickExs)
+        }
+        selected = dateFromIso(date)
+        parentSheet = nil
+        flash(mode == .logpast ? "Past workout logged" : "Workout added")
     }
 
     // MARK: Pick sheet
@@ -727,7 +847,9 @@ struct LogSheetsView: View {
         return ScrollView {
             VStack(alignment: .leading, spacing: AuraSpacing.s3) {
                 grabber().frame(maxWidth: .infinity)
-                sheetHeader("Workout Log", sub: (info.workout?.name ?? "") + (log != nil ? "  ·  \(log!.time)" : ""))
+                sheetHeader("Workout Log", sub: (info.workout?.name ?? "")
+                    + (log != nil ? "  ·  \(log!.time)" : "")
+                    + (log.map { $0.durationMinutes > 0 ? "  ·  \($0.durationMinutes) min" : "" } ?? ""))
                 VStack(spacing: 12) {
                     ForEach(exs) { ex in
                         logExerciseCard(ex, editable: false)
@@ -769,10 +891,43 @@ struct LogSheetsView: View {
         }
     }
 
+    // MARK: View-workout sheet (read-only future-day preview, §2.11)
+
+    private func viewWorkoutSheet(iso: String) -> some View {
+        let workout = info.workout
+        return ScrollView {
+            VStack(alignment: .leading, spacing: AuraSpacing.s3) {
+                grabber().frame(maxWidth: .infinity)
+                sheetHeader(workout?.name ?? "Workout", sub: "Planned · read-only")
+                VStack(spacing: 12) {
+                    ForEach(workout?.exercises ?? []) { ex in
+                        plannedExerciseCard(ex)
+                    }
+                }.padding(.horizontal, AuraSpacing.screenPad)
+            }
+            .padding(.bottom, AuraSpacing.s6)
+        }
+        .background(Color.aura.bg)
+    }
+
+    private func plannedExerciseCard(_ ex: Exercise) -> some View {
+        AuraCard {
+            VStack(alignment: .leading, spacing: 4) {
+                Text(ex.name).font(.system(size: 14.5, weight: .bold)).foregroundColor(.aura.text)
+                Text("\(ex.plannedSets) sets")
+                    .font(.system(size: 13, weight: .semibold))
+                    .foregroundColor(.aura.text3)
+            }
+            .padding(.horizontal, 14).padding(.vertical, 12)
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+    }
+
     // MARK: Edit-log + Log-quick (editable forms)
 
     @State private var formExercises: [QuickLogExercise] = []
     @State private var formTime: String = ""
+    @State private var formDurationMinutes: Int = 0
 
     private var editLogSheet: some View {
         quickLogForm(title: "Edit Log", sub: info.workout?.name ?? "", showTime: false, iso: info.iso, saveLabel: "Save Log")
@@ -808,6 +963,27 @@ struct LogSheetsView: View {
                     .overlay(RoundedRectangle(cornerRadius: AuraRadius.lg).stroke(Color.aura.separator.opacity(0.5), lineWidth: 1))
                     .padding(.horizontal, AuraSpacing.screenPad)
                 }
+                HStack(spacing: 14) {
+                    ZStack {
+                        Circle().fill(Color.aura.accentSoft).frame(width: 36, height: 36)
+                        Image(systemName: "stopwatch").foregroundColor(.aura.accent).font(.system(size: 18))
+                    }
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("DURATION").font(.system(size: 11, weight: .bold)).foregroundColor(.aura.text3).tracking(0.5)
+                        Text("How long did it take?").font(.system(size: 13)).foregroundColor(.aura.text2)
+                    }
+                    Spacer()
+                    TextField("min", value: $formDurationMinutes, format: .number)
+                        .keyboardType(.numberPad)
+                        .multilineTextAlignment(.center).frame(width: 60)
+                        .font(.system(size: 16, weight: .bold)).foregroundColor(.aura.text)
+                        .padding(.horizontal, 12).padding(.vertical, 8)
+                        .background(Color.aura.fill.opacity(0.5)).clipShape(RoundedRectangle(cornerRadius: 10))
+                    Text("min").font(.system(size: 13, weight: .semibold)).foregroundColor(.aura.text3)
+                }
+                .padding(13).background(Color.aura.surface).clipShape(RoundedRectangle(cornerRadius: AuraRadius.lg))
+                .overlay(RoundedRectangle(cornerRadius: AuraRadius.lg).stroke(Color.aura.separator.opacity(0.5), lineWidth: 1))
+                .padding(.horizontal, AuraSpacing.screenPad)
                 VStack(spacing: 14) {
                     ForEach(Array(formExercises.enumerated()), id: \.element.id) { i, ex in
                         editableLogCard(i: i, ex: ex)
@@ -866,17 +1042,19 @@ struct LogSheetsView: View {
         if let log = appState.quickLogs[iso] {
             formExercises = log.exercises
             formTime = log.time
+            formDurationMinutes = log.durationMinutes
         } else {
             formExercises = (info.workout?.exercises ?? []).map {
                 QuickLogExercise(name: $0.name, sets: (0..<$0.plannedSets).map { _ in QuickLogSet() })
             }
             let f = DateFormatter(); f.dateFormat = "HH:mm"
             formTime = f.string(from: Date())
+            formDurationMinutes = 0
         }
     }
 
     private func saveQuickLog(iso: String) {
-        appState.quickLogs[iso] = QuickLog(time: formTime.isEmpty ? "—" : formTime, exercises: formExercises)
+        appState.quickLogs[iso] = QuickLog(time: formTime.isEmpty ? "—" : formTime, exercises: formExercises, durationMinutes: formDurationMinutes)
         let wid = appState.dayOverrides[iso]?.workoutId ?? info.workout?.id
         appState.setOverride(DayOverride(kind: .logged, workoutId: wid), for: iso)
         parentSheet = nil

@@ -62,8 +62,7 @@ class AppState: ObservableObject {
         var lengthUnit: String = "cm"
         var notificationsEnabled: Bool = true
         var restSound: String = "Ding"
-        var appleHealthConnected: Bool = true
-        var googleHealthConnected: Bool = false
+        var appleHealthConnected: Bool = false
         var darkModePreference: String = DarkModePreference.auto.rawValue
         var calendarStartDay: Int = 0
         var logDisplayMode: String = "Both"
@@ -123,7 +122,7 @@ class AppState: ObservableObject {
             showPRsDuringWorkout = p.showPRsDuringWorkout; showRepsFirst = p.showRepsFirst
             weightUnit = p.weightUnit; lengthUnit = p.lengthUnit
             notificationsEnabled = p.notificationsEnabled; restSound = p.restSound
-            appleHealthConnected = p.appleHealthConnected; googleHealthConnected = p.googleHealthConnected
+            appleHealthConnected = p.appleHealthConnected
         }
         isLoading = false
 
@@ -163,7 +162,7 @@ class AppState: ObservableObject {
             showPRsDuringWorkout: showPRsDuringWorkout, showRepsFirst: showRepsFirst,
             weightUnit: weightUnit, lengthUnit: lengthUnit,
             notificationsEnabled: notificationsEnabled, restSound: restSound,
-            appleHealthConnected: appleHealthConnected, googleHealthConnected: googleHealthConnected,
+            appleHealthConnected: appleHealthConnected,
             darkModePreference: darkModePreference.rawValue, calendarStartDay: calendarStartDay,
             logDisplayMode: logDisplayMode
         )
@@ -292,6 +291,28 @@ class AppState: ObservableObject {
         defer { isApplyingRemote = false }
         quickLogs = [:]
     }
+    /// §5.1 — Body tab and Account Details show the same age/sex fact under
+    /// different names (`bodyStats.age`/`.sex` vs `userProfile.birthday`/`.gender`).
+    /// Call after editing either side so both stay consistent.
+    func syncBodyAndProfile() {
+        let years = Calendar.current.dateComponents([.year], from: userProfile.birthday, to: Date()).year ?? bodyStats.age
+        bodyStats.age = years
+        if userProfile.gender == "Male" || userProfile.gender == "Female" {
+            bodyStats.sex = userProfile.gender
+        }
+    }
+
+    /// Called from the Body/Nutrition tab: age is edited as a raw number
+    /// there (no birthday picker), so back-derive an approximate birthday.
+    func syncProfileFromBodyStats() {
+        if let approx = Calendar.current.date(byAdding: .year, value: -bodyStats.age, to: Date()) {
+            userProfile.birthday = approx
+        }
+        if bodyStats.sex == "Male" || bodyStats.sex == "Female" {
+            userProfile.gender = bodyStats.sex
+        }
+    }
+
     func resetBodyStats() {
         isApplyingRemote = true
         defer { isApplyingRemote = false }
@@ -324,7 +345,7 @@ class AppState: ObservableObject {
         showPRsDuringWorkout = prefs.showPRsDuringWorkout; showRepsFirst = prefs.showRepsFirst
         weightUnit = prefs.weightUnit; lengthUnit = prefs.lengthUnit
         notificationsEnabled = prefs.notificationsEnabled; restSound = prefs.restSound
-        appleHealthConnected = prefs.appleHealthConnected; googleHealthConnected = prefs.googleHealthConnected
+        appleHealthConnected = prefs.appleHealthConnected
         if let pref = DarkModePreference(rawValue: prefs.darkModePreference) { darkModePreference = pref }
         calendarStartDay = prefs.calendarStartDay
         logDisplayMode = prefs.logDisplayMode
@@ -505,10 +526,10 @@ class AppState: ObservableObject {
     }
 
     // MARK: - Connected health apps
-    @Published var appleHealthConnected: Bool = true {
-        didSet { persistWorkoutPrefs() }
-    }
-    @Published var googleHealthConnected: Bool = false {
+    /// True only after the user has actually granted HealthKit authorization
+    /// (see `HealthKitService.requestAuthorization`) — never defaulted to
+    /// true, since that claimed a connection that didn't exist (§5.7).
+    @Published var appleHealthConnected: Bool = false {
         didSet { persistWorkoutPrefs() }
     }
 
@@ -569,6 +590,31 @@ class AppState: ObservableObject {
         default:
             return []
         }
+    }
+
+    /// §2.27 — write an in-workout exercise-list edit (add/remove/substitute)
+    /// back into the source Program or UserPlan custom workout, instead of
+    /// letting it live only in the session's detached in-memory copy. No-op
+    /// (returns false) if the workout has no resolvable source, e.g. an
+    /// empty/build-as-you-go session — those have nothing to save "back" into.
+    @discardableResult
+    func savePermanently(exercises: [Exercise], forWorkoutID workoutID: UUID, name: String) -> Bool {
+        if let programID = ProgramDatabase.shared.owningProgramID(forWorkout: workoutID),
+           var w = ProgramDatabase.shared.workout(id: workoutID) {
+            w.exercises = exercises
+            w.name = name
+            ProgramDatabase.shared.updateWorkout(w, in: programID)
+            return true
+        }
+        if let planID = UserPlanDatabase.shared.owningPlanID(forCustomWorkout: workoutID),
+           let plan = UserPlanDatabase.shared.plans.first(where: { $0.id == planID }),
+           var w = plan.customWorkouts.first(where: { $0.id == workoutID }) {
+            w.exercises = exercises
+            w.name = name
+            UserPlanDatabase.shared.updateCustomWorkout(w, in: planID)
+            return true
+        }
+        return false
     }
 
     /// Build the live session workout from the selected `Workout`: seeds empty
@@ -670,23 +716,17 @@ class AppState: ObservableObject {
             setOverride(DayOverride(kind: .logged, workoutId: session.workout.id), for: iso)
         }
 
-        // Update personal records
+        // Update personal records — append-only log (never delete) so
+        // history survives for per-exercise PR charting; "current best" is
+        // derived at read time (see `currentBestPRs`). A set counts as a new
+        // PR if it beats the existing best on either e1RM or raw weight, so
+        // a heavier-weight/lower-rep set that lowers e1RM is still recorded.
         for ex in session.workout.exercises {
             for s in ex.sets where s.done {
                 guard let w = s.weight, let r = s.reps, w > 0, r > 0 else { continue }
                 let e1rm = PersonalRecord.compute1RM(weight: w, reps: r)
-                let existing = personalRecords.first(where: {
-                    $0.exerciseName.lowercased() == ex.name.lowercased()
-                })
-                if let pr = existing {
-                    if e1rm > pr.estimated1RM {
-                        personalRecords.removeAll { $0.id == pr.id }
-                        personalRecords.append(PersonalRecord(
-                            exerciseName: ex.name, muscle: ex.primaryMuscle,
-                            weight: w, reps: r, date: Date(), estimated1RM: e1rm
-                        ))
-                    }
-                } else {
+                let best = bestPR(forExercise: ex.name)
+                if best == nil || e1rm > best!.estimated1RM || w > best!.weight {
                     personalRecords.append(PersonalRecord(
                         exerciseName: ex.name, muscle: ex.primaryMuscle,
                         weight: w, reps: r, date: Date(), estimated1RM: e1rm
@@ -729,6 +769,40 @@ class AppState: ObservableObject {
         return workoutLogs.filter { cal.isDate($0.date, inSameDayAs: date) }
     }
 
+    /// Real session history for an exercise, derived from `workoutLogs` — most
+    /// recent sessions first. Replaces `PlanExerciseDetail.history(for:)`'s
+    /// fabricated formula-generated data in the Exercise Library detail screen.
+    func realHistory(forExercise name: String, limit: Int = 5) -> [PlanExerciseDetail.HistSession] {
+        let fmt = DateFormatter()
+        fmt.locale = Locale(identifier: "en_US")
+        fmt.dateFormat = "MMM d, yyyy"
+
+        let matching = workoutLogs
+            .compactMap { log -> (Date, Exercise)? in
+                guard let ex = log.exercises.first(where: { $0.name.lowercased() == name.lowercased() }) else { return nil }
+                return (log.date, ex)
+            }
+            .sorted { $0.0 > $1.0 }
+            .prefix(limit)
+
+        return matching.map { date, ex in
+            let sets = ex.sets.filter { $0.done }.map {
+                PlanExerciseDetail.HistSet(weight: $0.weight ?? 0, reps: $0.reps ?? 0)
+            }
+            return PlanExerciseDetail.HistSession(date: fmt.string(from: date), sets: sets)
+        }
+    }
+
+    /// Current-best PR for an exercise, derived from the append-only
+    /// `personalRecords` log (highest e1RM wins; ties broken by heavier weight).
+    func bestPR(forExercise name: String) -> PersonalRecord? {
+        personalRecords
+            .filter { $0.exerciseName.lowercased() == name.lowercased() }
+            .max { a, b in
+                (a.estimated1RM, a.weight) < (b.estimated1RM, b.weight)
+            }
+    }
+
     // MARK: - Log day engine (mirrors combined/log.jsx dayInfo)
 
     /// Resolved info for a single calendar day in the Log tab.
@@ -742,10 +816,15 @@ class AppState: ObservableObject {
         var override: DayOverride?
     }
 
+    /// Day-key string, always Gregorian regardless of the device's calendar
+    /// identifier (Buddhist/Japanese/etc. would otherwise leak non-Gregorian
+    /// year numbers into this key, corrupting every dayOverrides/quickLogs
+    /// lookup keyed by it).
     static func iso(_ date: Date) -> String {
-        let cal = Calendar.current
+        var cal = Calendar(identifier: .gregorian)
+        cal.timeZone = .current
         let c = cal.dateComponents([.year, .month, .day], from: date)
-        return String(format: "%04d-%02d-%02d", c.year ?? 0, c.month ?? 0, c.day ?? 0)
+        return String(format: "%04d-%02d-%02d", c.year ?? 1970, c.month ?? 1, c.day ?? 1)
     }
 
     /// Compute the full state for a given date, applying program schedule + overrides.
@@ -777,9 +856,22 @@ class AppState: ObservableObject {
             case .edited:
                 break
             }
-            if let edited = ov.editedExercises, var w = workout {
-                w.exercises = edited
-                workout = w
+            if let edited = ov.editedExercises {
+                if var w = workout {
+                    w.exercises = edited
+                    workout = w
+                } else {
+                    // Workout lookup failed (e.g. `.added` referenced a
+                    // workout id no longer resolvable in any program/plan)
+                    // but the user still has an edited exercise list for
+                    // this day — synthesize a placeholder rather than
+                    // silently dropping their data.
+                    workout = Workout(id: ov.workoutId ?? UUID(),
+                                       name: "Custom Workout",
+                                       primaryMuscles: "",
+                                       estimatedMinutes: 0,
+                                       exercises: edited)
+                }
             }
         }
 

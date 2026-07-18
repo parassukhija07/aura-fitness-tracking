@@ -23,7 +23,9 @@ struct StatsView: View {
         appState.workoutLogs.flatMap { $0.exercises }.flatMap { $0.sets }.filter { $0.done }
             .reduce(0) { $0 + ($1.weight ?? 0) * Double($1.reps ?? 0) }
     }
-    var totalPRs: Int { appState.personalRecords.count }
+    /// Distinct exercises with a PR — `personalRecords` is an append-only
+    /// log, so raw count would overcount as history accumulates.
+    var totalPRs: Int { Set(appState.personalRecords.map { $0.exerciseName.lowercased() }).count }
 
     var strengthScore: Int {
         let muscleScores = [

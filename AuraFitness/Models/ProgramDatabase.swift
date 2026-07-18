@@ -30,6 +30,12 @@ final class ProgramDatabase: ObservableObject {
         return nil
     }
 
+    /// Which program (if any) owns a workout id — lets a caller resolve
+    /// where to write a permanent edit back to.
+    func owningProgramID(forWorkout id: UUID) -> UUID? {
+        programs.first { prog in prog.workouts.contains { $0.id == id } }?.id
+    }
+
     // All workouts across all programs (flat)
     var allWorkouts: [Workout] { programs.flatMap { $0.workouts } }
 
@@ -47,10 +53,16 @@ final class ProgramDatabase: ObservableObject {
         syncPush(updated)
     }
 
-    func deleteProgram(id: UUID) {
-        programs.removeAll { $0.id == id && !$0.isPredefined }
+    /// Returns `false` (no-op) if `id` refers to a predefined program —
+    /// those can't be deleted by policy. Callers should surface that to the
+    /// user (e.g. a toast) rather than failing silently.
+    @discardableResult
+    func deleteProgram(id: UUID) -> Bool {
+        guard let target = programs.first(where: { $0.id == id }), !target.isPredefined else { return false }
+        programs.removeAll { $0.id == id }
         persist()
         syncDelete(id: id)
+        return true
     }
 
     // MARK: Workout CRUD within a program
@@ -185,12 +197,25 @@ final class UserPlanDatabase: ObservableObject {
 
     var defaultPlan: UserPlan? { plans.first { $0.isDefault } }
 
+    /// Which plan (if any) owns a custom-workout id — lets a caller resolve
+    /// where to write a permanent edit back to.
+    func owningPlanID(forCustomWorkout id: UUID) -> UUID? {
+        plans.first { plan in plan.customWorkouts.contains { $0.id == id } }?.id
+    }
+
+    /// §3.1.1 — My Plans caps adopted plans at 3.
+    static let maxPlans = 3
+
     // MARK: Plan CRUD
-    func addPlan(_ plan: UserPlan) {
+    /// Returns `false` (no-op) if the plan cap (`maxPlans`) is already reached.
+    @discardableResult
+    func addPlan(_ plan: UserPlan) -> Bool {
+        guard plans.count < Self.maxPlans else { return false }
         plans.append(plan)
         if plans.count == 1 { setDefault(id: plan.id) }
         persist()
         syncPush(plan)
+        return true
     }
 
     func updatePlan(_ updated: UserPlan) {

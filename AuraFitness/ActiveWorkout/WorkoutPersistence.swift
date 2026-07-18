@@ -15,9 +15,11 @@ enum WorkoutPersistence {
 
     // MARK: - Restore
 
-    /// Per-exercise slice we persist & restore (matches the JSX restore: sets,
-    /// completed, note, pulley — matched by exercise `name` at the same index).
+    /// Per-exercise slice we persist & restore: sets, completed, note, pulley
+    /// — matched by stable exercise `id`, not position. `name` is kept only
+    /// as a fallback for blobs saved before `id` was added to this shape.
     private struct SavedExercise: Codable {
+        var id: UUID?
         var name: String
         var sets: [WorkoutSet]
         var completed: Bool
@@ -52,10 +54,22 @@ enum WorkoutPersistence {
             return
         }
 
+        // Match by stable `id` first (survives substitute/reorder/add/remove
+        // shifting positions); fall back to name-at-same-index only for blobs
+        // saved before `id` was persisted here.
+        let byID = Dictionary(saved.exercises.compactMap { sv in sv.id.map { ($0, sv) } }, uniquingKeysWith: { a, _ in a })
+
         for i in workout.exercises.indices {
-            guard i < saved.exercises.count,
-                  saved.exercises[i].name == workout.exercises[i].name else { continue }
-            let sv = saved.exercises[i]
+            let sv: SavedExercise?
+            if let match = byID[workout.exercises[i].id] {
+                sv = match
+            } else if i < saved.exercises.count, saved.exercises[i].id == nil,
+                      saved.exercises[i].name == workout.exercises[i].name {
+                sv = saved.exercises[i]
+            } else {
+                sv = nil
+            }
+            guard let sv else { continue }
             workout.exercises[i].sets = sv.sets
             workout.exercises[i].completed = sv.completed
             workout.exercises[i].note = sv.note
@@ -86,7 +100,7 @@ enum WorkoutPersistence {
             version: ActiveWorkoutSeed.version,
             workoutKey: workout.name,
             exercises: workout.exercises.map {
-                SavedExercise(name: $0.name, sets: $0.sets,
+                SavedExercise(id: $0.id, name: $0.name, sets: $0.sets,
                               completed: $0.completed, note: $0.note, pulley: $0.pulley)
             }
         )

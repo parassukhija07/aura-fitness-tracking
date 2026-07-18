@@ -14,6 +14,13 @@ struct NutritionView: View {
     private var cal: Double { stats.targetCalories }
     private var macros: MacroTargets { stats.macros }
 
+    private var weightChartData: [Double] {
+        appState.measurements
+            .sorted { $0.date < $1.date }
+            .compactMap { $0.weight }
+            .map { UnitFormatter.weightValue($0, unit: appState.weightUnit) }
+    }
+
     var body: some View {
         ScrollView {
             VStack(spacing: AuraSpacing.s4) {
@@ -63,14 +70,18 @@ struct NutritionView: View {
                         .background(Color.aura.accent)
                         .clipShape(Capsule())
                 }
-                RoundedRectangle(cornerRadius: AuraRadius.sm)
-                    .fill(Color.aura.fill)
-                    .frame(height: 110)
-                    .overlay {
-                        Text("Weight trend chart")
-                            .font(AuraFont.secondary())
-                            .foregroundColor(.aura.text3)
-                    }
+                if weightChartData.count >= 2 {
+                    AuraLineChart(data: weightChartData, height: 110, showArea: true, showDot: true)
+                } else {
+                    RoundedRectangle(cornerRadius: AuraRadius.sm)
+                        .fill(Color.aura.fill)
+                        .frame(height: 110)
+                        .overlay {
+                            Text("Log more measurements to see trend")
+                                .font(AuraFont.secondary())
+                                .foregroundColor(.aura.text3)
+                        }
+                }
             }
             .padding(AuraSpacing.s4)
         }
@@ -206,6 +217,7 @@ struct NutritionView: View {
                         editRow("Height (cm)", value: $appState.bodyStats.height, decimals: false)
                         editRow("Weight (kg)", value: $appState.bodyStats.weight, decimals: true)
                         editIntRow("Age", value: $appState.bodyStats.age)
+                            .onChange(of: appState.bodyStats.age) { _, _ in appState.syncProfileFromBodyStats() }
                         editRow("Target Weight (kg)", value: $appState.bodyStats.targetWeight, decimals: true)
                     }
                     .padding(AuraSpacing.s4)
@@ -217,6 +229,7 @@ struct NutritionView: View {
                         ForEach(["Male", "Female"], id: \.self) { sex in
                             Button {
                                 appState.bodyStats.sex = sex
+                                appState.syncProfileFromBodyStats()
                             } label: {
                                 Text(sex)
                                     .font(.system(size: 14, weight: .bold))

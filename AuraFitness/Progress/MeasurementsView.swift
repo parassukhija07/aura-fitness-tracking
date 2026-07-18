@@ -268,7 +268,15 @@ struct MeasurementsView: View {
     // MARK: Circumferences
     private var circumferencesCard: some View {
         VStack(alignment: .leading, spacing: AuraSpacing.s2) {
-            AuraSectionLabel(title: "Circumferences")
+            HStack {
+                AuraSectionLabel(title: "Circumferences")
+                Spacer()
+                Button { showHowTo = true } label: {
+                    Image(systemName: "questionmark.circle")
+                        .font(.system(size: 15, weight: .semibold))
+                        .foregroundColor(.aura.text3)
+                }
+            }
             AuraCard {
                 VStack(spacing: 0) {
                     let items: [(String, Double?)] = [
