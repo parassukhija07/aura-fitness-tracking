@@ -52,16 +52,26 @@
 		AA00001C000000000000004C /* WorkoutSessionState.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB00001C000000000000004C /* WorkoutSessionState.swift */; };
 		AA65380299159B488098A530 /* NotificationScheduler.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB65380299159B488098A530 /* NotificationScheduler.swift */; };
 		AA00001D000000000000004D /* PlanTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB00001D000000000000004D /* PlanTabView.swift */; };
-		AAA10000000000 /* PlanModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABA10000000000 /* PlanModels.swift */; };
-		AAA10000000001 /* PlanExerciseDetailData.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABA10000000001 /* PlanExerciseDetailData.swift */; };
-		AAA10000000002 /* PlanComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABA10000000002 /* PlanComponents.swift */; };
-		AAA10000000003 /* PlanSubtabViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABA10000000003 /* PlanSubtabViews.swift */; };
-		AAA10000000004 /* PlanSheets.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABA10000000004 /* PlanSheets.swift */; };
-		AAA10000000005 /* PlanExercisePickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABA10000000005 /* PlanExercisePickerView.swift */; };
-		AAA10000000006 /* PlanProgramViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABA10000000006 /* PlanProgramViews.swift */; };
-		AAA10000000007 /* PlanWorkoutEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABA10000000007 /* PlanWorkoutEditorView.swift */; };
-		AAA10000000008 /* PlanExerciseDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABA10000000008 /* PlanExerciseDetailView.swift */; };
-		AAA10000000009 /* PlanBodyMap.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABA10000000009 /* PlanBodyMap.swift */; };
+		8E4213DC4F2D4AA38BD07E93 /* PlanModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA874FECA3454BDE996478E8 /* PlanModels.swift */; };
+		00F9A57BA3BE4F249AFAC7CC /* PlanExerciseDetailData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A5A3265AEA24FD599D3EBA0 /* PlanExerciseDetailData.swift */; };
+		4A36DFD0F37D4722823C3938 /* PlanComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = ECF711C33D7641439F2CD2BD /* PlanComponents.swift */; };
+		3C1FD94A48ED4BB9AE32068B /* PlanSubtabViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1201BDAFC4C04FE1967A9969 /* PlanSubtabViews.swift */; };
+		66ABE8B35A6D4E2F8A38ABDE /* PlanSheets.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79968BBFFAB24C84B5AEA56F /* PlanSheets.swift */; };
+		07EDD830DA2343E3AB2FA011 /* PlanExercisePickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61AE6FC2AC904F8D963632AC /* PlanExercisePickerView.swift */; };
+		13AE805DFC634FA48D3591AF /* PlanProgramViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = F2F7122502C44780AC8C6713 /* PlanProgramViews.swift */; };
+		E5D31AB2AD9D49C3A6CA5C6C /* PlanWorkoutEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2865FC79E9954BE1A25B3411 /* PlanWorkoutEditorView.swift */; };
+		FF9914404E7E49F68C857B0D /* PlanExerciseDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9641805392374D16AAA3209E /* PlanExerciseDetailView.swift */; };
+		D1E6081F805C44EA80D37561 /* PlanBodyMap.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF6B6FD2015947908E6EE16B /* PlanBodyMap.swift */; };
+		CB01000000000000000A0001 /* MyPlansView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA01000000000000000A0001 /* MyPlansView.swift */; };
+		CB01000000000000000A0002 /* ProgramLibraryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA01000000000000000A0002 /* ProgramLibraryView.swift */; };
+		CB01000000000000000A0003 /* ProgramDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA01000000000000000A0003 /* ProgramDetailView.swift */; };
+		CB01000000000000000A0004 /* ProgramEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA01000000000000000A0004 /* ProgramEditorView.swift */; };
+		CB01000000000000000A0005 /* WorkoutLibraryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA01000000000000000A0005 /* WorkoutLibraryView.swift */; };
+		CB01000000000000000A0006 /* WorkoutEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA01000000000000000A0006 /* WorkoutEditorView.swift */; };
+		CB01000000000000000A0007 /* ExerciseLibraryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA01000000000000000A0007 /* ExerciseLibraryView.swift */; };
+		CB01000000000000000A0008 /* ExerciseDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA01000000000000000A0008 /* ExerciseDetailView.swift */; };
+		CB01000000000000000A0009 /* CreateExerciseView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA01000000000000000A0009 /* CreateExerciseView.swift */; };
+		CB01000000000000000A0010 /* SaveEditScopeSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA01000000000000000A0010 /* SaveEditScopeSheet.swift */; };
 		AA000027000000000000006F /* ProgressTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000027000000000000006F /* ProgressTabView.swift */; };
 		AA000028000000000000007C /* StatsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000028000000000000007C /* StatsView.swift */; };
 		AA000029000000000000007D /* ConsistencyHeatmapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000029000000000000007D /* ConsistencyHeatmapView.swift */; };
@@ -75,6 +85,9 @@
 		AA000031000000000000009D /* WorkoutSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000031000000000000009D /* WorkoutSettingsView.swift */; };
 		AA000032000000000000009E /* AccountDetailsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000032000000000000009E /* AccountDetailsView.swift */; };
 		AA000033000000000000009F /* ProfileSettingsScreens.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000033000000000000009F /* ProfileSettingsScreens.swift */; };
+		AAC1D4E5F60718293A4B5C05 /* CSVArchive.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABC1D4E5F60718293A4B5C05 /* CSVArchive.swift */; };
+		AAC1D4E5F60718293A4B5C06 /* CSVParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABC1D4E5F60718293A4B5C06 /* CSVParser.swift */; };
+		AAC1D4E5F60718293A4B5C07 /* DataImportService.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABC1D4E5F60718293A4B5C07 /* DataImportService.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -124,16 +137,26 @@
 		AB00001C000000000000004C /* WorkoutSessionState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutSessionState.swift; sourceTree = "<group>"; };
 		AB65380299159B488098A530 /* NotificationScheduler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationScheduler.swift; sourceTree = "<group>"; };
 		AB00001D000000000000004D /* PlanTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlanTabView.swift; sourceTree = "<group>"; };
-		ABA10000000000 /* PlanModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlanModels.swift; sourceTree = "<group>"; };
-		ABA10000000001 /* PlanExerciseDetailData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlanExerciseDetailData.swift; sourceTree = "<group>"; };
-		ABA10000000002 /* PlanComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlanComponents.swift; sourceTree = "<group>"; };
-		ABA10000000003 /* PlanSubtabViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlanSubtabViews.swift; sourceTree = "<group>"; };
-		ABA10000000004 /* PlanSheets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlanSheets.swift; sourceTree = "<group>"; };
-		ABA10000000005 /* PlanExercisePickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlanExercisePickerView.swift; sourceTree = "<group>"; };
-		ABA10000000006 /* PlanProgramViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlanProgramViews.swift; sourceTree = "<group>"; };
-		ABA10000000007 /* PlanWorkoutEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlanWorkoutEditorView.swift; sourceTree = "<group>"; };
-		ABA10000000008 /* PlanExerciseDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlanExerciseDetailView.swift; sourceTree = "<group>"; };
-		ABA10000000009 /* PlanBodyMap.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlanBodyMap.swift; sourceTree = "<group>"; };
+		DA874FECA3454BDE996478E8 /* PlanModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlanModels.swift; sourceTree = "<group>"; };
+		7A5A3265AEA24FD599D3EBA0 /* PlanExerciseDetailData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlanExerciseDetailData.swift; sourceTree = "<group>"; };
+		ECF711C33D7641439F2CD2BD /* PlanComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlanComponents.swift; sourceTree = "<group>"; };
+		1201BDAFC4C04FE1967A9969 /* PlanSubtabViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlanSubtabViews.swift; sourceTree = "<group>"; };
+		79968BBFFAB24C84B5AEA56F /* PlanSheets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlanSheets.swift; sourceTree = "<group>"; };
+		61AE6FC2AC904F8D963632AC /* PlanExercisePickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlanExercisePickerView.swift; sourceTree = "<group>"; };
+		F2F7122502C44780AC8C6713 /* PlanProgramViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlanProgramViews.swift; sourceTree = "<group>"; };
+		2865FC79E9954BE1A25B3411 /* PlanWorkoutEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlanWorkoutEditorView.swift; sourceTree = "<group>"; };
+		9641805392374D16AAA3209E /* PlanExerciseDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlanExerciseDetailView.swift; sourceTree = "<group>"; };
+		FF6B6FD2015947908E6EE16B /* PlanBodyMap.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlanBodyMap.swift; sourceTree = "<group>"; };
+		CA01000000000000000A0001 /* MyPlansView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyPlansView.swift; sourceTree = "<group>"; };
+		CA01000000000000000A0002 /* ProgramLibraryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgramLibraryView.swift; sourceTree = "<group>"; };
+		CA01000000000000000A0003 /* ProgramDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgramDetailView.swift; sourceTree = "<group>"; };
+		CA01000000000000000A0004 /* ProgramEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgramEditorView.swift; sourceTree = "<group>"; };
+		CA01000000000000000A0005 /* WorkoutLibraryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutLibraryView.swift; sourceTree = "<group>"; };
+		CA01000000000000000A0006 /* WorkoutEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutEditorView.swift; sourceTree = "<group>"; };
+		CA01000000000000000A0007 /* ExerciseLibraryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseLibraryView.swift; sourceTree = "<group>"; };
+		CA01000000000000000A0008 /* ExerciseDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseDetailView.swift; sourceTree = "<group>"; };
+		CA01000000000000000A0009 /* CreateExerciseView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateExerciseView.swift; sourceTree = "<group>"; };
+		CA01000000000000000A0010 /* SaveEditScopeSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SaveEditScopeSheet.swift; sourceTree = "<group>"; };
 		AB000027000000000000006F /* ProgressTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressTabView.swift; sourceTree = "<group>"; };
 		AB000028000000000000007C /* StatsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatsView.swift; sourceTree = "<group>"; };
 		AB000029000000000000007D /* ConsistencyHeatmapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConsistencyHeatmapView.swift; sourceTree = "<group>"; };
@@ -147,6 +170,9 @@
 		AB000031000000000000009D /* WorkoutSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutSettingsView.swift; sourceTree = "<group>"; };
 		AB000032000000000000009E /* AccountDetailsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountDetailsView.swift; sourceTree = "<group>"; };
 		AB000033000000000000009F /* ProfileSettingsScreens.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileSettingsScreens.swift; sourceTree = "<group>"; };
+		ABC1D4E5F60718293A4B5C05 /* CSVArchive.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CSVArchive.swift; sourceTree = "<group>"; };
+		ABC1D4E5F60718293A4B5C06 /* CSVParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CSVParser.swift; sourceTree = "<group>"; };
+		ABC1D4E5F60718293A4B5C07 /* DataImportService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataImportService.swift; sourceTree = "<group>"; };
 		ACPROD00000000000000000A /* AuraFitness.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AuraFitness.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -261,16 +287,26 @@
 			isa = PBXGroup;
 			children = (
 				AB00001D000000000000004D /* PlanTabView.swift */,
-				ABA10000000000 /* PlanModels.swift */,
-				ABA10000000001 /* PlanExerciseDetailData.swift */,
-				ABA10000000002 /* PlanComponents.swift */,
-				ABA10000000003 /* PlanSubtabViews.swift */,
-				ABA10000000004 /* PlanSheets.swift */,
-				ABA10000000005 /* PlanExercisePickerView.swift */,
-				ABA10000000006 /* PlanProgramViews.swift */,
-				ABA10000000007 /* PlanWorkoutEditorView.swift */,
-				ABA10000000008 /* PlanExerciseDetailView.swift */,
-				ABA10000000009 /* PlanBodyMap.swift */,
+				DA874FECA3454BDE996478E8 /* PlanModels.swift */,
+				7A5A3265AEA24FD599D3EBA0 /* PlanExerciseDetailData.swift */,
+				ECF711C33D7641439F2CD2BD /* PlanComponents.swift */,
+				1201BDAFC4C04FE1967A9969 /* PlanSubtabViews.swift */,
+				79968BBFFAB24C84B5AEA56F /* PlanSheets.swift */,
+				61AE6FC2AC904F8D963632AC /* PlanExercisePickerView.swift */,
+				F2F7122502C44780AC8C6713 /* PlanProgramViews.swift */,
+				2865FC79E9954BE1A25B3411 /* PlanWorkoutEditorView.swift */,
+				9641805392374D16AAA3209E /* PlanExerciseDetailView.swift */,
+				FF6B6FD2015947908E6EE16B /* PlanBodyMap.swift */,
+				CA01000000000000000A0001 /* MyPlansView.swift */,
+				CA01000000000000000A0002 /* ProgramLibraryView.swift */,
+				CA01000000000000000A0003 /* ProgramDetailView.swift */,
+				CA01000000000000000A0004 /* ProgramEditorView.swift */,
+				CA01000000000000000A0005 /* WorkoutLibraryView.swift */,
+				CA01000000000000000A0006 /* WorkoutEditorView.swift */,
+				CA01000000000000000A0007 /* ExerciseLibraryView.swift */,
+				CA01000000000000000A0008 /* ExerciseDetailView.swift */,
+				CA01000000000000000A0009 /* CreateExerciseView.swift */,
+				CA01000000000000000A0010 /* SaveEditScopeSheet.swift */,
 			);
 			path = Plan;
 			sourceTree = "<group>";
@@ -302,6 +338,9 @@
 				3D8FE47712C54B54A93D5F78 /* DataArchive.swift */,
 				5AEA826CEB9E4915BB1984C0 /* DataResetService.swift */,
 				AB16797C38CBD24BBD9E0E01 /* HealthKitService.swift */,
+				ABC1D4E5F60718293A4B5C05 /* CSVArchive.swift */,
+				ABC1D4E5F60718293A4B5C06 /* CSVParser.swift */,
+				ABC1D4E5F60718293A4B5C07 /* DataImportService.swift */,
 				ABD7B37CF9C0AE4B69B23611 /* AuraFitness.entitlements */,
 			);
 			path = Profile;
@@ -455,16 +494,26 @@
 				AA00001C000000000000004C /* WorkoutSessionState.swift in Sources */,
 				AA65380299159B488098A530 /* NotificationScheduler.swift in Sources */,
 				AA00001D000000000000004D /* PlanTabView.swift in Sources */,
-				AAA10000000000 /* PlanModels.swift in Sources */,
-				AAA10000000001 /* PlanExerciseDetailData.swift in Sources */,
-				AAA10000000002 /* PlanComponents.swift in Sources */,
-				AAA10000000003 /* PlanSubtabViews.swift in Sources */,
-				AAA10000000004 /* PlanSheets.swift in Sources */,
-				AAA10000000005 /* PlanExercisePickerView.swift in Sources */,
-				AAA10000000006 /* PlanProgramViews.swift in Sources */,
-				AAA10000000007 /* PlanWorkoutEditorView.swift in Sources */,
-				AAA10000000008 /* PlanExerciseDetailView.swift in Sources */,
-				AAA10000000009 /* PlanBodyMap.swift in Sources */,
+				8E4213DC4F2D4AA38BD07E93 /* PlanModels.swift in Sources */,
+				00F9A57BA3BE4F249AFAC7CC /* PlanExerciseDetailData.swift in Sources */,
+				4A36DFD0F37D4722823C3938 /* PlanComponents.swift in Sources */,
+				3C1FD94A48ED4BB9AE32068B /* PlanSubtabViews.swift in Sources */,
+				66ABE8B35A6D4E2F8A38ABDE /* PlanSheets.swift in Sources */,
+				07EDD830DA2343E3AB2FA011 /* PlanExercisePickerView.swift in Sources */,
+				13AE805DFC634FA48D3591AF /* PlanProgramViews.swift in Sources */,
+				E5D31AB2AD9D49C3A6CA5C6C /* PlanWorkoutEditorView.swift in Sources */,
+				FF9914404E7E49F68C857B0D /* PlanExerciseDetailView.swift in Sources */,
+				D1E6081F805C44EA80D37561 /* PlanBodyMap.swift in Sources */,
+				CB01000000000000000A0001 /* MyPlansView.swift in Sources */,
+				CB01000000000000000A0002 /* ProgramLibraryView.swift in Sources */,
+				CB01000000000000000A0003 /* ProgramDetailView.swift in Sources */,
+				CB01000000000000000A0004 /* ProgramEditorView.swift in Sources */,
+				CB01000000000000000A0005 /* WorkoutLibraryView.swift in Sources */,
+				CB01000000000000000A0006 /* WorkoutEditorView.swift in Sources */,
+				CB01000000000000000A0007 /* ExerciseLibraryView.swift in Sources */,
+				CB01000000000000000A0008 /* ExerciseDetailView.swift in Sources */,
+				CB01000000000000000A0009 /* CreateExerciseView.swift in Sources */,
+				CB01000000000000000A0010 /* SaveEditScopeSheet.swift in Sources */,
 				AA000027000000000000006F /* ProgressTabView.swift in Sources */,
 				AA000028000000000000007C /* StatsView.swift in Sources */,
 				AA000029000000000000007D /* ConsistencyHeatmapView.swift in Sources */,
@@ -486,13 +535,16 @@
 				8D33A0F1C2094AB78B2B8659 /* DataArchive.swift in Sources */,
 				3C776F2B48C74E23A00FABDA /* DataResetService.swift in Sources */,
 				AA59FEAF6AB35E46E6A39847 /* HealthKitService.swift in Sources */,
+				AAC1D4E5F60718293A4B5C05 /* CSVArchive.swift in Sources */,
+				AAC1D4E5F60718293A4B5C06 /* CSVParser.swift in Sources */,
+				AAC1D4E5F60718293A4B5C07 /* DataImportService.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin XCBuildConfiguration section */
-		ACBC000000000000000000A /* Debug */ = {
+		6602D9D1DE3440528E95F50C /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
@@ -554,7 +606,7 @@
 			};
 			name = Debug;
 		};
-		ACBC000000000000000000B /* Release */ = {
+		41D812BCDEC5436BB2D30973 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
@@ -609,7 +661,7 @@
 			};
 			name = Release;
 		};
-		ACBC000000000000000001A /* Debug */ = {
+		E3CB1C7DADFF46299AFE7755 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
@@ -641,7 +693,7 @@
 			};
 			name = Debug;
 		};
-		ACBC000000000000000001B /* Release */ = {
+		1E647E650E524128A72A8BF3 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
@@ -679,8 +731,8 @@
 		ACBCL0000000000000000B /* Build configuration list for PBXProject "AuraFitness" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				ACBC000000000000000000A /* Debug */,
-				ACBC000000000000000000B /* Release */,
+				6602D9D1DE3440528E95F50C /* Debug */,
+				41D812BCDEC5436BB2D30973 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
@@ -688,8 +740,8 @@
 		ACBCL0000000000000000A /* Build configuration list for PBXNativeTarget "AuraFitness" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				ACBC000000000000000001A /* Debug */,
-				ACBC000000000000000001B /* Release */,
+				E3CB1C7DADFF46299AFE7755 /* Debug */,
+				1E647E650E524128A72A8BF3 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

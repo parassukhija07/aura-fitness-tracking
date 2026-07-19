@@ -83,7 +83,7 @@ struct WeeklyVolumeView: View {
     // MARK: - Body
 
     var body: some View {
-        ScrollView {
+        AuraScreenScroll {
             VStack(spacing: AuraSpacing.s4) {
                 // Stat + toggle row
                 HStack(alignment: .top) {

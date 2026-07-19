@@ -79,9 +79,18 @@ final class SupabaseSyncService: ObservableObject {
 
     /// Enqueue a write-through upsert of one encodable row. Never throws into
     /// the caller; failures/offline silently enqueue to the durable queue.
+    ///
+    /// `stampLocalChange` runs BEFORE the `userID` guard so guest-mode edits
+    /// (no network push, `userID == nil`) are still timestamped locally. This
+    /// is load-bearing for guest -> sign-in migration: `pullAll`'s LWW
+    /// reconcile compares this local stamp against the remote row's
+    /// `updated_at` to decide whether a guest edit should win over an older
+    /// pre-existing cloud row. Without stamping while `uid` is nil, guest
+    /// edits would never carry a timestamp and could be silently overwritten
+    /// by older remote data on first sign-in.
     func push<T: Encodable>(_ value: T, id: String, table: Table) {
-        guard let uid = userID else { return }
         stampLocalChange(table: table, id: id)
+        guard let uid = userID else { return }
         guard let payloadData = try? JSONEncoder().encode(value),
               let payloadJSON = String(data: payloadData, encoding: .utf8) else { return }
 

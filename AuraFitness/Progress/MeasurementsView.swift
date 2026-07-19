@@ -60,7 +60,7 @@ struct MeasurementsView: View {
     }
 
     var body: some View {
-        ScrollView {
+        AuraScreenScroll(bottomClearance: 0) {
             VStack(spacing: AuraSpacing.s4) {
                 weightCard
                 compositionTiles

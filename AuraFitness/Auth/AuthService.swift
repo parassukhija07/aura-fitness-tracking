@@ -14,6 +14,7 @@ final class AuthService: ObservableObject {
         case signedOut
         case awaitingEmailConfirmation(email: String)
         case signedIn(userID: String, email: String)
+        case guest
     }
 
     @Published private(set) var sessionState: SessionState = .loading
@@ -21,8 +22,14 @@ final class AuthService: ObservableObject {
 
     let client: SupabaseClient
 
+    /// Persisted "Skip for now" flag — `true` while the user is browsing
+    /// without an account. Cleared on successful sign-in and on `signOut()`.
+    private let guestKey = "aura_guest_mode_v1"
+
     /// Convenience accessor for `SupabaseSyncService` — the current user's id,
-    /// or nil while signed out.
+    /// or nil while signed out OR in guest mode. Guest mode intentionally
+    /// returns nil here so every `SupabaseSyncService.push` early-returns and
+    /// stays local-only until the guest signs in.
     var userID: String? {
         if case let .signedIn(userID, _) = sessionState { return userID }
         return nil
@@ -43,13 +50,29 @@ final class AuthService: ObservableObject {
     /// Attempts to restore a persisted Keychain session on launch. Leaves
     /// `sessionState` at `.loading` until this resolves, so the app never
     /// flashes a login screen for an already-authed user.
+    ///
+    /// Precedence: a real Keychain session always beats guest mode — only
+    /// fall back to `.guest` (on the `catch` branch, i.e. no restorable
+    /// session) if the guest flag is set; otherwise `.signedOut`.
     func restoreSession() async {
         do {
             let session = try await client.auth.session
             await transitionToSignedIn(userID: session.user.id.uuidString, email: session.user.email ?? "")
         } catch {
-            sessionState = .signedOut
+            if UserDefaults.standard.bool(forKey: guestKey) {
+                sessionState = .guest
+            } else {
+                sessionState = .signedOut
+            }
         }
+    }
+
+    /// "Skip for now" — enters the app without an account. No network call;
+    /// simply persists the guest flag and flips the gate. `userID` stays nil
+    /// in this state, so every local store already works unauthenticated.
+    func continueAsGuest() {
+        UserDefaults.standard.set(true, forKey: guestKey)
+        sessionState = .guest
     }
 
     /// Sign-up requires email confirmation (R3) — success lands on
@@ -95,6 +118,9 @@ final class AuthService: ObservableObject {
             // Even if the network call fails, the SDK clears the local
             // Keychain session — proceed to the signed-out state either way.
         }
+        // A signed-out user is neither guest nor signed-in; clear the guest
+        // flag so they land back on the login form, not a silent guest session.
+        UserDefaults.standard.set(false, forKey: guestKey)
         sessionState = .signedOut
     }
 
@@ -116,7 +142,12 @@ final class AuthService: ObservableObject {
 
     /// Common path for restore + sign-in: flips to `.signedIn` and kicks off
     /// the first-login backfill/pull disambiguation (R4).
+    ///
+    /// Only reached on a SUCCESSFUL sign-in (restore or `signIn`), so the
+    /// guest flag is cleared here — never on a failed attempt, which would
+    /// otherwise strand the user with no way back to their guest data.
     private func transitionToSignedIn(userID: String, email: String) async {
+        UserDefaults.standard.set(false, forKey: guestKey)
         sessionState = .signedIn(userID: userID, email: email)
         await SupabaseSyncService.shared.onSignedIn(userID: userID)
     }

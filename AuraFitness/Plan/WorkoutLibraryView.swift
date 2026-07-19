@@ -39,7 +39,7 @@ struct WorkoutLibraryView: View {
                 .padding(.bottom, AuraSpacing.s2)
             }
 
-            ScrollView {
+            AuraScreenScroll {
                 LazyVStack(spacing: AuraSpacing.s3) {
                     ForEach(filtered) { workout in
                         Button { selectedWorkout = workout } label: { workoutCard(workout) }

@@ -47,7 +47,7 @@ struct PersonalRecordsView: View {
                 }
                 Spacer()
             } else {
-                ScrollView {
+                AuraScreenScroll {
                     VStack(spacing: AuraSpacing.s3) {
                         AuraCard {
                             VStack(spacing: 0) {

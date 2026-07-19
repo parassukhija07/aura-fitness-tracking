@@ -110,43 +110,16 @@ struct LogTabView: View {
             }
             .background(Color.aura.bg)
 
-            // Resume banner: inlined component with matching layout modifiers
+            // Resume banner (shell · resume): accent pill above the tab bar,
+            // bottom 96 / sides 14 per combined/log.jsx.
             if appState.workoutInProgress {
-                Button(action: {
+                ResumeBanner {
                     withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
                         appState.resumeWorkout()
                     }
-                }) {
-                    HStack(spacing: AuraSpacing.s2) {
-                        Image(systemName: "play.circle.fill")
-                            .font(.title3)
-                            .fontWeight(.semibold)
-                        
-                        Text("Resume Active Workout")
-                            .font(.body)
-                            .fontWeight(.medium)
-                        
-                        Spacer()
-                        
-                        Image(systemName: "chevron.right")
-                            .font(.subheadline)
-                            .opacity(0.7)
-                    }
-                    .padding(.vertical, AuraSpacing.s3)
-                    .padding(.horizontal, AuraSpacing.s4)
-                    .background(
-                        RoundedRectangle(cornerRadius: 14, style: .continuous)
-                            .fill(Color.blue.opacity(0.15))
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 14, style: .continuous)
-                                    .stroke(Color.blue.opacity(0.3), lineWidth: 1)
-                            )
-                    )
-                    .foregroundColor(.blue)
                 }
-                .buttonStyle(PlainButtonStyle()) // Avoid flash styling issues
                 .padding(.horizontal, 14)
-                .padding(.bottom, AuraSpacing.tabBarClearance)
+                .padding(.bottom, 96)
                 .transition(.move(edge: .bottom).combined(with: .opacity))
             }
             if let toast {

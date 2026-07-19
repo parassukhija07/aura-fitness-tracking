@@ -67,6 +67,16 @@ struct AccountDetailsView: View {
                     }
                     .buttonStyle(.plain)
                     Divider().padding(.leading, 64)
+                    // Visible + functional for guest users too — guest data is
+                    // local and fully exportable/importable; no gating on
+                    // authService.userID here.
+                    Button { sheet = .importData } label: {
+                        SettingsRowLabel(icon: "arrow.down", iconColor: .aura.green,
+                                         title: "Import Data",
+                                         subtitle: "Restore from a JSON or CSV export")
+                    }
+                    .buttonStyle(.plain)
+                    Divider().padding(.leading, 64)
                     Button { sheet = .reset } label: {
                         SettingsRowLabel(icon: "arrow.left.arrow.right", iconColor: .aura.text2,
                                          title: "Reset Data",
