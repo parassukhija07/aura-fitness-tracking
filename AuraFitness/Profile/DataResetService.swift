@@ -76,6 +76,11 @@ enum DataResetService {
             // New sync-infra keys cleared on full reset only.
             UserDefaults.standard.removeObject(forKey: "aura_sync_queue_v1")
             UserDefaults.standard.removeObject(forKey: "aura_local_ts_v1")
+
+            // Guest-mode flag — full reset also drops guest status so a
+            // post-reset relaunch shows the login screen, not a silent guest
+            // session. NOT removed in the workout-only branch.
+            UserDefaults.standard.removeObject(forKey: "aura_guest_mode_v1")
         }
 
         if alsoRemote {

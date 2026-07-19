@@ -1,280 +1,202 @@
 # IMPLEMENTATION SPEC
 
-Feature: H8 (scoped UP, full remote) — Introduce Supabase email/password auth (with email confirmation) AND full remote data sync of every user model to Supabase (keyed by `user_id`), plus real Export / Reset / Delete Account / Log Out replacing the stubs at `AuraFitness/Profile/ProfileSettingsScreens.swift`. This is the app's first network layer, first remote data, and first backend dependency.
-
----
+Audit finding **N2 (HIGH)** — Plan tab is a non-functional prototype mirror. This spec routes the real DB-backed Plan views into the live UI, defines the one missing type (`SaveEditScopeSheet`), and registers the orphaned files into the Xcode build target.
 
 ## ⚠️ OPEN QUESTIONS
 
-All five prior blocking questions are RESOLVED (see decisions below). Only genuinely-open, low-risk items remain — none block starting; the Coder proceeds with the stated defaults and flags in review if reality differs.
+None that block implementation. Two decisions were made with documented defaults (see ASSUMPTIONS). If the product owner disagrees with either, only the noted lines change.
 
-### RESOLVED decisions (locked)
-- **R1 — Data scope: FULL REMOTE SYNC.** Every user model migrates to Supabase tables keyed by `user_id`. Sync model = **local-first with write-through** (see ARCHITECTURE). NOT auth-only.
-- **R2 — Delete Account: Edge Function** `delete-account` using the `service_role` key (source written in this spec; user deploys).
-- **R3 — Email confirmation REQUIRED** on sign-up. Login blocked until confirmed.
-- **R4 — Pre-account local data is PRESERVED** and back-filled to Supabase on first login (one-time migration, not a wipe).
-- **R5 — Secrets via `Secrets.xcconfig` → Info.plist** (git-ignored).
-
-### STILL-OPEN (non-blocking — proceed with the stated default)
-- **O1 — Exact Postgres table names.** This spec uses snake_case `aura_*` table names (below). If the user's Supabase project has a naming convention, rename consistently in the SQL migration + the `table:` string constants in `SupabaseSyncService`. Default: use the names as written.
-- **O2 — `progress_photos` storage location.** `ProgressPhoto.imageData` is raw `Data` (`ProgressModels.swift:7`). Storing base64 blobs in a Postgres JSONB column is functional but heavy. Default for v1: store the row in `aura_progress_photos` with the image as base64 in the JSONB payload (simplest, matches every other table). **Flagged limitation:** if photo volume is large this should move to Supabase Storage buckets with a URL reference — OUT OF SCOPE this pass, noted for a follow-up. Proceed with base64-in-JSONB.
-- **O3 — Conflict resolution granularity.** v1 uses **last-write-wins per row via `updated_at`** (see limitations). This can silently drop a concurrent edit made on another device between pulls. Accepted for v1; NOT silently — surfaced here as a known limitation. No per-field merge.
-
----
+### ASSUMPTIONS (defaults chosen — safe to proceed)
+1. **Chosen direction = Option (a), executed as a low-risk hybrid.** We route `PlanTabView`'s four sub-tabs to the DB-backed views and register the 9 orphan files. We do **NOT** delete the mock `Plan*`-prefixed files in this pass. Reason: several mock files (`PlanModels.swift`, `PlanComponents.swift`, `PlanBodyMap.swift`, `PlanExerciseDetailData.swift`, `PlanSubtabViews.swift`, `PlanSheets.swift`, `PlanProgramViews.swift`, `PlanWorkoutEditorView.swift`, `PlanExerciseDetailView.swift`, `PlanExercisePickerView.swift`) are mutually interdependent and already in the build target; deleting them on a branch that has **no working local Xcode toolchain for verification** is high-risk. Instead we gut `PlanTabView.swift` so it renders the DB views, leaving the unused mock helper files compiling but unreferenced. Cleanup of the now-dead mock files is filed as a FOLLOW-UP below, not done here.
+2. **`SaveEditScopeSheet` "Add to My Plans" behavior:** In read-only `WorkoutEditorView` (context `.view`), tapping "Add to My Plans" opens `SaveEditScopeSheet`. Its `onJustToday` is passed `nil` by the caller (already the case at `WorkoutEditorView.swift:98`), so the sheet must render ONLY the "Permanently" branch when `onJustToday == nil`. The `onPermanently` closure currently calls `saveWorkout()`, which for `.view` context is a no-op (`WorkoutEditorView.swift:156-157`). That is acceptable for this pass — the button will dismiss without error. Making "Add to My Plans" actually copy the workout into the default plan is filed as a FOLLOW-UP (it requires product input on which plan to target). Do NOT change `WorkoutEditorView.saveWorkout()` behavior in this pass.
 
 ## 🏗️ ARCHITECTURE & PATTERNS
 
-### Sync model: local-first with write-through (v1)
-- **Local stores stay the source of truth for all UI reads.** No view is rearchitected. `ProgramDatabase.shared`, `UserPlanDatabase.shared`, `ExerciseDatabase.shared`, and `AppState`'s `@Published` collections continue to drive every screen exactly as today. This is deliberate: it avoids touching dozens of views and keeps the UI synchronous and offline-usable.
-- **Write-through:** every existing mutation that already calls `persist()` (or assigns a `@Published` with a `didSet` persister) additionally enqueues a **push** of the affected row(s) to Supabase. Pushes go through a central `SupabaseSyncService` that is fire-and-forget from the caller's perspective (never blocks UI, never throws into the store).
-- **Pull + reconcile:** on successful login and on app foreground/launch (while signed in), `SupabaseSyncService.pullAll()` fetches remote rows for the user and reconciles into the local stores using **last-write-wins by `updated_at`** (row-level). After reconcile, the stores re-`persist()` locally so disk matches.
-- **Offline queue:** mutations while offline (or on push failure) are appended to a durable local queue (`aura_sync_queue_v1` in UserDefaults). The queue flushes on the next successful network op (login, foreground pull, or a successful push). UI never waits on the network.
+- **Existing Patterns to Match:**
+  - `AuraFitness/Plan/MyPlansView.swift` — self-contained DB-backed view; owns its own sheets, uses `@StateObject private var planDB = UserPlanDatabase.shared`. This is the canonical style for the new subtab views.
+  - `AuraFitness/Plan/WorkoutEditorView.swift` — shows the exact `SaveEditScopeSheet(...)` call site to satisfy (lines 96-103).
+  - `AuraFitness/DesignSystem/AuraComponents.swift` — `AuraPrimaryButton`, `AuraTintedButton`, `AuraGrayButton`, `AuraCard`, `AuraChip`, `AuraBadge`, `AuraSectionLabel`, `AuraProgressBar`, `AuraListRow` all already exist and are in the build; reuse them, do NOT create new components.
+  - `AuraFitness.xcodeproj/project.pbxproj` — file registration format (three sync'd sections). Copy the shape of the existing Plan entries verbatim (lines 54-64, 129-139, 269-279, 466-476).
+  - `AuraFitness/ContentView.swift:50` — `case .plan: PlanTabView()` is the single mount point; leave it unchanged.
 
-### EXPLICITLY OUT OF SCOPE (state clearly to the user)
-- **No real-time / live multi-device sync.** There is NO Supabase Realtime subscription. Changes on device B appear on device A only after device A next pulls (launch/foreground). A user editing on two devices simultaneously can lose the older write (last-write-wins). This is a periodic pull + write-through push model, not live sync.
-- **No per-field conflict merge**, no operational transforms, no CRDTs. Row-level last-write-wins only.
-- **No offline auth for a brand-new device** (email confirm + first login require network); once a session exists in Keychain the app is fully usable offline (all reads are local).
+- **Core Strategy:** Keep `PlanTabView` as the tab shell (title bar + four filter chips). Replace each mock subtab body with the corresponding real DB-backed view. All four DB-backed subtab roots already read/write `ProgramDatabase.shared` / `UserPlanDatabase.shared` / `ExerciseDatabase.shared` (which are seeded on boot and Supabase-synced), so no data wiring is required beyond mounting them. Add the single missing `SaveEditScopeSheet` type so `WorkoutEditorView` compiles, then register all orphan files in the pbxproj.
 
-### Existing patterns to match
-- **Singletons:** `ProgramDatabase` / `UserPlanDatabase` / `ExerciseDatabase` (`AuraFitness/Models/ProgramDatabase.swift`, `ExerciseDatabase.swift`): `@MainActor final class ... : ObservableObject`, `static let shared`, private `storageKey`, `private func persist()`, `private init { load() }`. New services (`AuthService`, `SupabaseSyncService`) follow this shape.
-- **Root env injection:** `AuraFitnessApp.swift:5-11`.
-- **Settings UI building blocks + confirm sheets:** `ProfileSettingsScreens.swift` (`SettingsScreenScaffold`, `SettingsGroup`, `SettingsRowLabel`, `ProfileConfirmSheet`), toast pattern (`ToastCenter` + `.auraToast`), `AuraPrimaryButton` / `AuraGrayButton` / `AuraDangerButton`. Reuse for auth screens.
-- **All models are already `Codable`** (`ProgressModels.swift`, `LogDayModel.swift`, `WorkoutModels.swift`, `PlanModels.swift`, `ExerciseDatabase.swift`) — so each maps to a JSONB payload with zero new serialization code. This is why the schema below stores each struct as a JSONB `payload` column rather than fully-normalized columns: the structs contain nested arrays (`WorkoutLog.exercises: [Exercise]`, `QuickLog.exercises: [QuickLogExercise]`, `UserPlan.weekSchedule: [Int: UUID?]`) that would be painful and brittle to normalize, and the app never queries inside them server-side.
+## 🔎 GROUND-TRUTH FACTS (verified in current tree @ 05df5f4)
 
-### Core strategy
-`AuthService.shared` wraps `supabase-swift`'s `auth`. `ContentView` is gated behind `sessionState`. `SupabaseSyncService.shared` owns all table push/pull + the offline queue. Each local store gains thin `pushRow`/`applyRemote` hooks. The four `ProfileConfirmSheet` stubs get real bodies: Export (`ShareLink` over local JSON), Reset (`DataResetService` — local wipe + optional remote wipe), Delete (`AuthService.deleteAccount()` Edge Function + local+remote wipe), Log Out (`AuthService.signOut()`).
-
----
-
-## 🗄️ SUPABASE SCHEMA (SQL migration — file to create, see FILES TO CREATE)
-
-**Design rule:** one table per Codable model. Common columns on every table:
-- `id uuid primary key` — the model's own `id` (UUID) where it has one; for keyed dictionaries (dayOverrides/quickLogs keyed by ISO string) and singletons (BodyStats, UserProfile) see per-table notes.
-- `user_id uuid not null references auth.users(id) on delete cascade`
-- `payload jsonb not null` — the full `Codable` struct encoded as JSON.
-- `updated_at timestamptz not null default now()` — drives last-write-wins.
-- **RLS enabled on every table**, with a single policy per table: `using (auth.uid() = user_id) with check (auth.uid() = user_id)` for all of SELECT/INSERT/UPDATE/DELETE. No row is ever visible or writable across users.
-
-Tables (names per O1 default):
-
-| Table | Source model (file) | `id` semantics | Cardinality per user |
-|---|---|---|---|
-| `aura_workout_logs` | `WorkoutLog` (`ProgressModels.swift:13`) | model `id` uuid | many |
-| `aura_measurements` | `Measurement` (`ProgressModels.swift:23`) | model `id` uuid | many |
-| `aura_personal_records` | `PersonalRecord` (`ProgressModels.swift:137`) | model `id` uuid | many |
-| `aura_progress_photos` | `ProgressPhoto` (`ProgressModels.swift:4`) | model `id` uuid | many (see O2) |
-| `aura_programs` | `Program` (`ProgramDatabase.swift` / `WorkoutModels.swift`) | model `id` uuid | many |
-| `aura_plans` | `UserPlan` (`ProgramDatabase.swift` / `PlanModels.swift`) | model `id` uuid | many (≤3, L7) |
-| `aura_exercises` | `ExerciseEntry` (`ExerciseDatabase.swift:5`) | model `id` uuid | many |
-| `aura_day_overrides` | `DayOverride` (`LogDayModel.swift:7`) | **synthetic**: `iso` string is the natural key → PK `(user_id, day_iso text)`, no uuid | many, keyed by ISO date |
-| `aura_quick_logs` | `QuickLog` (`LogDayModel.swift:36`) | **synthetic**: PK `(user_id, day_iso text)` | many, keyed by ISO date |
-| `aura_body_stats` | `BodyStats` (`ProgressModels.swift:77`) | **singleton**: PK = `user_id` | exactly one |
-| `aura_user_profile` | `UserProfile` (`ProgressModels.swift:122`) | **singleton**: PK = `user_id` | exactly one |
-| `aura_preferences` | AppState pref scalars (see below) | **singleton**: PK = `user_id` | exactly one |
-
-Notes:
-- `aura_day_overrides` / `aura_quick_logs`: replace the `id uuid` column with `day_iso text not null`; composite PK `(user_id, day_iso)`. Payload is the `DayOverride` / `QuickLog` struct. The ISO key is `AppState.iso(date)` format `yyyy-MM-dd` (`AppState.swift:494-498`).
-- `aura_body_stats` / `aura_user_profile` / `aura_preferences`: singletons — PK is `user_id` itself (upsert on conflict `user_id`). Payload is the whole struct.
-- `aura_preferences` payload = the `WorkoutPrefs` blob defined at `AppState.swift:46-62` PLUS the three scalar prefs (`darkModePreference`, `calendarStartDay`, `logDisplayMode`). Mirror the existing `WorkoutPrefs` Codable shape so encoding is trivial.
-- Give every table `updated_at` a `before update` trigger to bump it to `now()` (SQL function `set_updated_at()`), so server-side writes also refresh the LWW timestamp.
-
----
+- The 9 orphaned DB-backed files exist on disk in `AuraFitness/Plan/` and are **NOT** in the pbxproj target:
+  | File on disk | Public struct(s) it defines |
+  |---|---|
+  | `MyPlansView.swift` | `MyPlansView`, `CreatePlanView`, `PlanScheduleEditorView` |
+  | `ProgramLibraryView.swift` | `ProgramLibraryView` |
+  | `ProgramDetailView.swift` | `ProgramDetailView` |
+  | `ProgramEditorView.swift` | `ProgramEditorView` (with `.Mode` = `.create` / `.edit(Program)`) |
+  | `WorkoutLibraryView.swift` | `WorkoutLibraryView` |
+  | `WorkoutEditorView.swift` | `WorkoutEditorView`, `enum WorkoutEditorContext` |
+  | `ExerciseLibraryView.swift` | `ExerciseLibraryTabView` (⚠️ struct name ≠ file name) |
+  | `ExerciseDetailView.swift` | `ExerciseEntryDetailView`, `ExerciseDetailView` (⚠️ two structs; struct name ≠ file name) |
+  | `CreateExerciseView.swift` | `CreateExerciseView` |
+- The pbxproj currently registers ONLY the 11 mock `Plan*` files. The `Plan` PBXGroup id is `ACGRP060000000000000000A` (children list ends at project.pbxproj line 279; group closes line 280).
+- The Sources build phase `files` list for the app target contains the Plan entries ending at project.pbxproj line 476.
+- `SaveEditScopeSheet` is **referenced but undefined** anywhere in the repo. Only call site: `WorkoutEditorView.swift:96-103`.
+- `ExercisePickerSheet` (used by `WorkoutEditorView.swift:91`) **already exists** and is in the build at `AuraFitness/ActiveWorkout/WorkoutOverviewView.swift:360`. Do not redefine it.
+- All model fields referenced by the orphan views exist in `AuraFitness/Models/WorkoutModels.swift` (`Program.style/.level/.daysPerWeek`, `Workout.primaryMuscles/.estimatedMinutes/.restBetweenSets/.restBetweenExercises`, `UserPlan.weekSchedule: [Int: UUID?]`, `ExerciseEntry` in `Models/ExerciseDatabase.swift`).
+- `syncPush` extensions on `Program`/`UserPlan`/`ExerciseEntry` exist in `AuraFitness/Sync/Syncable.swift` (already in build).
+- **Net conclusion:** once `SaveEditScopeSheet` exists and the 9 files are added to the target, every symbol the orphan files reference resolves. No other missing types.
 
 ## 📄 FILES TO CREATE
 
-### `supabase/migrations/0001_init_schema.sql`  (SQL — infra, allowed)
-- **Purpose:** Create all 12 tables above, enable RLS, add the per-table `user_id = auth.uid()` policies, the `set_updated_at()` trigger function + triggers. Written per Supabase migration convention.
-- Must be runnable via `supabase db push` (or pasted into the Supabase SQL editor). Document both in the deploy notes.
-- For singleton/composite tables, use the PKs described above. Add index `(user_id, updated_at)` on the multi-row tables to make pull queries efficient.
-
-### `supabase/functions/delete-account/index.ts`  (Deno / TypeScript — infra, allowed)
-- **Purpose:** Server-side account deletion using `service_role`. The anon client cannot delete an auth user; this runs privileged.
-- **Contract:**
-  - Method `POST`, requires `Authorization: Bearer <user JWT>` (attached automatically by the app's SDK call).
-  - Verify the JWT → resolve `uid`. Reject (401) if missing/invalid.
-  - Using a `service_role` Supabase admin client, call `auth.admin.deleteUser(uid)`. The `on delete cascade` FKs on every `aura_*` table wipe all remote user data automatically.
-  - Return `200 {"ok": true}` on success; `4xx/5xx {"error": "..."}` otherwise. Handle CORS (Supabase Edge Function standard headers).
-- **Source to write in the file** (standard Supabase Edge Function shape):
-  - `import { serve } from "https://deno.land/std/http/server.ts"` and `createClient` from `@supabase/supabase-js`.
-  - Read `SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY` from `Deno.env` (auto-injected in the Edge runtime — NOT hardcoded).
-  - Create an admin client with the service role key; a second client with the caller's JWT to identify the user (`auth.getUser(jwt)`), then `adminClient.auth.admin.deleteUser(user.id)`.
-- **Manual deploy step (user must run — planner/coder cannot):**
-  - `supabase functions deploy delete-account` (project linked via `supabase link`).
-  - Document that the function inherits the project's `SERVICE_ROLE_KEY` env automatically; no secret is committed.
-
-### `AuraFitness/Auth/AuthConfig.swift`
-- Reads `SUPABASE_URL` + `SUPABASE_ANON_KEY` from `Info.plist` (injected from `Secrets.xcconfig`). No literals. `fatalError` in DEBUG if missing; non-crashing config-error gate in RELEASE. (Same as prior revision.)
-- ```
-  enum AuthConfig {
-      static var supabaseURL: URL
-      static var supabaseAnonKey: String
-  }
+### `AuraFitness/Plan/SaveEditScopeSheet.swift`
+- **Purpose:** Minimal reusable confirmation sheet asking the user the SCOPE of an edit/add: "just today" vs "permanently". Must satisfy the exact call at `WorkoutEditorView.swift:96-103`.
+- **Exact required initializer contract (do not deviate — the call site is fixed):**
   ```
-
-### `AuraFitness/Auth/AuthService.swift`
-- **Purpose:** Auth + session single source of truth. SDK Keychain session persistence (do not roll custom).
-- ```
-  @MainActor
-  final class AuthService: ObservableObject {
-      static let shared = AuthService()
-      enum SessionState: Equatable { case loading; case signedOut; case awaitingEmailConfirmation(email: String); case signedIn(userID: String, email: String) }
-      @Published private(set) var sessionState: SessionState = .loading
-      @Published var lastError: String? = nil
-      let client: SupabaseClient        // built from AuthConfig
-      var userID: String?               // convenience for SupabaseSyncService
-
-      private init()
-      func restoreSession() async
-      func signUp(email: String, password: String) async -> Bool   // → .awaitingEmailConfirmation on success (R3)
-      func signIn(email: String, password: String) async -> Bool   // fails if email unconfirmed → surfaces message
-      func signOut() async
-      func deleteAccount() async -> Bool   // invoke("delete-account"); on success signOut
-  }
+  SaveEditScopeSheet(
+      onJustToday: (() -> Void)?,      // optional; when nil, hide the "Just Today" button
+      onPermanently: @escaping () -> Void
+  )
   ```
-- **R3 behavior:** `signUp` success sets `.awaitingEmailConfirmation(email:)`, NOT `.signedIn`. `signIn` for an unconfirmed account: map the SDK "Email not confirmed" error to a clear message ("Please confirm your email — check your inbox.") in `lastError`, keep `.signedOut`.
-- **First-login migration hook (R4):** on the transition INTO `.signedIn` (from restore or signIn), call `SupabaseSyncService.shared.onSignedIn(userID:)` (see below) which decides push-backfill vs pull.
-- Map SDK errors to human strings; never surface raw dumps.
-
-### `AuraFitness/Auth/AuthGateView.swift`
-- Pre-auth root. Shows splash while `.loading`; login/sign-up forms when `.signedOut`; a "Check your email to confirm your account" screen when `.awaitingEmailConfirmation` (with a "Resend"/"Back to login" affordance). Reuse `AuraPrimaryButton`, `ToastCenter`, and the field style from `AccountDetailsView.swift:121-135`. Errors → toast (match `ProfileTabView.swift:91-96`). This is a NEW screen above the tab bar.
-
-### `AuraFitness/Sync/SupabaseSyncService.swift`
-- **Purpose:** All table push/pull + the offline queue + first-login migration. Fire-and-forget from stores.
-- ```
-  @MainActor
-  final class SupabaseSyncService: ObservableObject {
-      static let shared = SupabaseSyncService()
-      enum Table: String { case workoutLogs = "aura_workout_logs", measurements = "aura_measurements", personalRecords = "aura_personal_records", progressPhotos = "aura_progress_photos", programs = "aura_programs", plans = "aura_plans", exercises = "aura_exercises", dayOverrides = "aura_day_overrides", quickLogs = "aura_quick_logs", bodyStats = "aura_body_stats", userProfile = "aura_user_profile", preferences = "aura_preferences" }
-
-      @Published private(set) var syncing = false
-      @Published private(set) var lastPullAt: Date? = nil
-
-      private init()
-
-      /// Enqueue a write-through upsert of one encodable row (fire-and-forget; queues on failure/offline).
-      func push<T: Encodable>(_ value: T, id: String, table: Table)
-      /// Enqueue a delete of one row by id.
-      func delete(id: String, table: Table)
-
-      /// Pull every table for the current user and reconcile into local stores (LWW by updated_at).
-      func pullAll() async
-
-      /// Called by AuthService on first sign-in this session. Detects an empty remote
-      /// (fresh account) → BACKFILL all local data up (R4). Otherwise → pullAll() reconcile.
-      func onSignedIn(userID: String) async
-
-      /// Flush the durable offline queue (aura_sync_queue_v1). Called after any successful net op.
-      func flushQueue() async
-  }
-  ```
-- **Queue durability:** `aura_sync_queue_v1` (UserDefaults) holds an ordered array of pending ops `{table, id, action(upsert|delete), payloadJSON, queuedAt}`. Coalesce duplicate (table,id) upserts (keep latest). Flush on: successful login, foreground pull, any successful push.
-- **Reconcile (LWW):** for each pulled row, compare remote `updated_at` to the local record's effective timestamp. Since local models mostly lack an `updated_at` field, track a parallel local `aura_local_ts_v1` map keyed by `table:id` updated on every local mutation; if absent, treat remote as authoritative on first pull. Newer wins; write the winner to the local store (which re-persists) and, if local won, push it up.
-- **onSignedIn / R4 backfill:** query counts across the user's tables. If ALL remote tables are empty for this user (fresh account) AND local stores are non-empty → push everything local up (backfill), stamping `updated_at = now()`. Otherwise run `pullAll()` reconcile (which still merges any local-only rows up via LWW). This makes pre-account local data survive and become the account's data.
-
-### `AuraFitness/Profile/DataArchive.swift`  (unchanged from prior revision — local JSON export)
-- `DataArchive` Codable aggregate of all collections + a `preferences` snapshot; `DataArchiveBuilder.writeTempFile(_:) -> URL?` for `ShareLink`. Export reads LOCAL stores (which are the source of truth), so it needs no network. (Full interface as in prior spec; unchanged.)
-
-### `AuraFitness/Profile/DataResetService.swift`
-- **Purpose:** Real `resetAll(workoutOnly:)`. Now also optionally clears REMOTE rows.
-- ```
-  enum DataResetService {
-      @MainActor static func resetAll(workoutOnly: Bool, appState: AppState, alsoRemote: Bool)
-  }
-  ```
-- Local wipe: identical UserDefaults key set + singleton reloads as documented in FILES TO MODIFY (see key enumeration below).
-- **Remote wipe (`alsoRemote == true`):** delete the corresponding tables' rows for the current user via `SupabaseSyncService` deletes (workout-data tables for `workoutOnly`, all tables for full reset). If offline, enqueue the deletes. Delete Account does NOT use this path — it relies on the Edge Function's `on delete cascade`.
-
-### `AuraFitness/Sync/Syncable.swift` (small helper, optional)
-- A tiny protocol/util giving each store a uniform `syncPush(_:)` call and a `stringID` for the row key, to keep the per-store hooks one-liners. Not required if the Coder inlines the `SupabaseSyncService.shared.push(...)` calls.
-
----
+- **Required behavior:**
+  - `struct SaveEditScopeSheet: View` with stored properties:
+    - `let onJustToday: (() -> Void)?`
+    - `let onPermanently: () -> Void`
+    - `@Environment(\.dismiss) private var dismiss`
+  - Body: a `VStack` (NOT wrapped in its own NavigationStack — the call site applies `.presentationDetents([.fraction(0.45)])`), containing:
+    - A title `Text("Apply changes")` using `AuraFont.cardTitle()` and `.foregroundColor(.aura.text)`.
+    - A subtitle `Text("Choose how to save this change.")` using `AuraFont.secondary()` and `.foregroundColor(.aura.text2)`.
+    - IF `onJustToday != nil`: an `AuraTintedButton(label: "Just for Today")` whose action calls `onJustToday?()` then `dismiss()`.
+    - An `AuraPrimaryButton(label: "Save Permanently", icon: "checkmark")` whose action calls `onPermanently()` then `dismiss()`.
+    - An `AuraGrayButton(label: "Cancel")` whose action calls `dismiss()`.
+  - Layout: `.padding(AuraSpacing.screenPad)`, `.frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)`, `.background(Color.aura.bgGrouped)`.
+- **Constraints:** Use ONLY existing design-system components (`AuraPrimaryButton`, `AuraTintedButton`, `AuraGrayButton`) and existing tokens (`Color.aura.*`, `AuraFont.*`, `AuraSpacing.*`). Do not add new dependencies. Keep it under ~50 lines.
 
 ## 📝 FILES TO MODIFY
 
-### `AuraFitness/AuraFitnessApp.swift` (14 lines)
-- Inject `AuthService.shared` and `SupabaseSyncService.shared` via `.environmentObject` alongside `appState`.
-- Gate: `.signedIn` → `ContentView`; `.awaitingEmailConfirmation`/`.signedOut` → `AuthGateView`; `.loading` → splash. Keep `.environmentObject(appState)` on the authed view.
-- On becoming active (`ScenePhase .active`) while signed in → `Task { await SupabaseSyncService.shared.pullAll() }` (foreground pull).
+### `AuraFitness/Plan/PlanTabView.swift`
+Goal: keep the tab shell (title + four filter chips) but render the DB-backed views in each subtab. Do this with the **smallest possible diff** so the mock helper types stay compiling.
 
-### `AuraFitness/Models/ProgramDatabase.swift`
-- **Write-through:** in `addProgram/updateProgram/deleteProgram/addWorkout/updateWorkout/deleteWorkout/addExercise/removeExercise/reorderExercises` (lines 32-90) — after each `persist()`, call `SupabaseSyncService.shared.push(program, id: program.id.uuidString, table: .programs)` for the affected program (or `.delete` for deletes). Simplest: push the whole affected `Program` row on any change (it's one JSONB row).
-- **Apply-remote:** add `func applyRemote(_ programs: [Program])` that replaces `self.programs` + `persist()` WITHOUT re-pushing (guard against push loop — add an `isApplyingRemote` flag like the existing `isLoading` guard in AppState at `AppState.swift:65`).
-- **Reset:** add public `resetToSeed()` (seed = `SeedData.programs`) and `hardReset()` (drop customs); both reassign `programs` + `persist()`.
-- Same set of additions to **`UserPlanDatabase`** (lines 122-258): write-through on every mutating method (`addPlan/updatePlan/deletePlan/setDefault/setWorkout/setRestDay/clearDay/addCustomWorkout/updateCustomWorkout/deleteCustomWorkout/addExercise/removeExercise/addPlan(from:)`), `applyRemote(_ plans:)`, `resetToSeed()` (re-seed default plan from `SeedData.programs.first` as boot does at lines 252-256 — never leave `plans` empty).
+- **KEEP unchanged:** the `import SwiftUI`, `struct PlanTabView`, `@EnvironmentObject var appState`, the `private enum Subtab` (myplans/programs/workouts/exercises + `.label`), `@State private var subtab: Subtab = .myplans`, and the `navbar` computed property (the title row + filter-chip `ScrollView`). The `PlanIconButton`/`PlanFilterChip` used by `navbar` live in the mock files and remain in the build, so `navbar` still compiles.
+- **DELETE these `@State` properties** (they backed the mock router and mock data and are no longer used): `schedule`, `workouts`, `modal`, `editingWk`, `viewingProg`, `editingProg`, `viewingEx`. Also delete `private var calStartSun`.
+- **REPLACE the entire `var body`** so it no longer does mock routing. New body:
+  ```
+  var body: some View {
+      VStack(spacing: 0) {
+          navbar
+          Group {
+              switch subtab {
+              case .myplans:   MyPlansView()
+              case .programs:  ProgramLibraryView()
+              case .workouts:  NavigationStack { WorkoutLibraryView() }
+              case .exercises: NavigationStack { ExerciseLibraryTabView() }
+              }
+          }
+          .frame(maxWidth: .infinity, maxHeight: .infinity)
+      }
+      .background(Color.aura.bg)
+  }
+  ```
+  Rationale for the per-case `NavigationStack` wrappers:
+  - `MyPlansView` and `ProgramLibraryView` **already contain their own `NavigationStack`** — do NOT wrap them (double nav bars). Mount bare.
+  - `WorkoutLibraryView` and `ExerciseLibraryTabView` use `.toolbar { ToolbarItem(.navigationBarTrailing) { + } }` and (for WorkoutLibraryView) `.navigationDestination(...)` but do **NOT** provide their own `NavigationStack` — they MUST be wrapped, or the toolbar `+` and push navigation silently do nothing.
+- **DELETE the now-unused shell/body/modal machinery** from `PlanTabView`: the `shell` computed property, `myPlansBody`, the `assignDay`/`makeRest`/`deleteWorkout` mutation funcs, and the `modalView(_:)` builder. These reference deleted `@State` and mock sheets (`AddPlanSheet`, `AssignSheet`, etc.); they must be removed so the file compiles.
+- **KEEP `navbar`.** After edits, `PlanTabView.swift` should contain only: imports, the struct, `appState`, `Subtab`, `subtab` state, `body`, and `navbar`. Nothing else.
+- **VERIFY after edit:** the only symbols `PlanTabView` now references outside itself are `MyPlansView`, `ProgramLibraryView`, `WorkoutLibraryView`, `ExerciseLibraryTabView`, `PlanIconButton`, `PlanFilterChip`, `Color.aura.bg`, `AuraFont`, `AuraSpacing`. `PlanIconButton`/`PlanFilterChip` are defined in the mock files that remain in the target.
 
-### `AuraFitness/Models/ExerciseDatabase.swift`
-- Write-through in `add/update/delete/toggleFavorite` (lines 80-100) → push the `ExerciseEntry` row (table `.exercises`). `applyRemote(_ entries:)`. Add `hardReset()` (`entries = Self.seedEntries(); persist()`, distinct from `resetToSeed()` at line 146 which preserves customs).
+> Do NOT modify any of the 9 orphan files. Do NOT modify `ContentView.swift`. Do NOT modify `WorkoutEditorView.swift` (its `SaveEditScopeSheet` call becomes valid once the new file exists).
 
-### `AuraFitness/Models/AppState.swift`
-- Every `@Published` collection with a persister `didSet` (`workoutLogs:181`, `dayOverrides:187`, `quickLogs:191`, `measurements:194`, `bodyStats:197`, `personalRecords:200`, `userProfile:203`, `progressPhotos:207`, and the pref scalars) additionally push through `SupabaseSyncService`:
-  - Row-collections (workoutLogs, measurements, personalRecords, progressPhotos): the `didSet` fires on whole-array assignment; to push only changed rows, add small helper mutators OR (simplest v1) diff old vs new in `didSet` and push added/changed rows + delete removed rows. Flag: whole-array `didSet` makes per-row diffing the cleanest correctness path — implement a `syncDiff(old:new:table:idOf:)` helper.
-  - Keyed dicts (dayOverrides, quickLogs): push per changed key using `day_iso` as the row id.
-  - Singletons (bodyStats, userProfile, preferences blob): upsert the single row on change.
-  - **Guard the push during `isLoading` and during remote-apply** (extend the existing `isLoading` guard at `AppState.swift:65,128,134`; add an `isApplyingRemote` flag) so pulling from Supabase doesn't immediately re-push.
-- Add `func applyRemote(...)` entry points AppState-side for each collection used by `SupabaseSyncService.pullAll()`.
-- The pref scalars (`weightUnit`…`googleHealthConnected`, `darkModePreference`, `calendarStartDay`, `logDisplayMode`) already funnel through `persistWorkoutPrefs()`/`persist()`; add a single `SupabaseSyncService.push(prefsBlob, id: userID, table: .preferences)` call there.
+### `AuraFitness.xcodeproj/project.pbxproj`  — register 10 files (9 orphans + `SaveEditScopeSheet.swift`)
 
-### `AuraFitness/ActiveWorkout/WorkoutPersistence.swift`
-- The live-workout blob (`aura_wk`/`aura_elapsed`/`aura_run_start`/`aura_pill`/`aura_wk_version`) is transient session state, **not synced** (an in-progress workout is device-local until saved; on save it becomes a `WorkoutLog` which IS synced). Document this explicitly — no push hooks here.
-- Extend `clearWorkout()` (lines 113-118) to also remove `aura_pill` + `aura_wk_version` (for the reset path), as in the prior revision.
+This project's build phases are **manually maintained** (no local Xcode). Static correctness is critical: each file needs THREE synchronized entries with matching 24-hex-uppercase UUIDs, and every UUID must be unique across the whole file. Use the exact UUIDs below (pre-generated, verified not to collide with existing ids in the file). Each file uses a distinct `buildID` (PBXBuildFile) and `fileID` (PBXFileReference) pair.
 
-### `AuraFitness/Profile/ProfileSettingsScreens.swift` — the stub site
-- Add `@EnvironmentObject var appState: AppState` + `@EnvironmentObject var authService: AuthService` to `ProfileConfirmSheet` (line 281). Verify BOTH presentation sites (`ProfileTabView.swift:87-89`, `AccountDetailsView.swift:113-115`) re-inject the environment onto the sheet content.
-- **`exportSheet` (318-334):** replace the flash button (329-331) with a `ShareLink` over `DataArchiveBuilder.writeTempFile(appState)` (built in `.task`, stored in `@State exportURL`). (Unchanged from prior revision.)
-- **`resetSheet` (337-382):**
-  - Workout-only (344-352) → `DataResetService.resetAll(workoutOnly: true, appState: appState, alsoRemote: true)`.
-  - Reset everything (355-377) → `DataResetService.resetAll(workoutOnly: false, appState: appState, alsoRemote: true)`. Recommend a confirmation alert before the full wipe.
-- **`destructiveSheet(delete:)` (385-418):**
-  - Delete (408-410): `Task { if await authService.deleteAccount() { DataResetService.resetAll(workoutOnly: false, appState: appState, alsoRemote: false) } else { flash(authService.lastError ?? "Delete failed") } }`. Remote data is wiped by the Edge Function's cascade, so `alsoRemote: false` here. Order: remote delete succeeds → local wipe → sign-out (auto-gates to login). On failure: no wipe, no sign-out, show error. Update copy (399-401) to reflect that this erases the account and all synced + local data.
-  - Log Out (412-414): `Task { await authService.signOut() }`. Do NOT wipe local data (it stays for the next login on this device and is already backed up remotely). Sign-out flips `sessionState` → gate shows login.
-  - Wrap async calls in `Task`, guard with `@State busy` to disable buttons in-flight.
+**UUID table (use verbatim):**
+| File | fileID (PBXFileReference) | buildID (PBXBuildFile) |
+|---|---|---|
+| MyPlansView.swift | `CA01000000000000000A0001` | `CB01000000000000000A0001` |
+| ProgramLibraryView.swift | `CA01000000000000000A0002` | `CB01000000000000000A0002` |
+| ProgramDetailView.swift | `CA01000000000000000A0003` | `CB01000000000000000A0003` |
+| ProgramEditorView.swift | `CA01000000000000000A0004` | `CB01000000000000000A0004` |
+| WorkoutLibraryView.swift | `CA01000000000000000A0005` | `CB01000000000000000A0005` |
+| WorkoutEditorView.swift | `CA01000000000000000A0006` | `CB01000000000000000A0006` |
+| ExerciseLibraryView.swift | `CA01000000000000000A0007` | `CB01000000000000000A0007` |
+| ExerciseDetailView.swift | `CA01000000000000000A0008` | `CB01000000000000000A0008` |
+| CreateExerciseView.swift | `CA01000000000000000A0009` | `CB01000000000000000A0009` |
+| SaveEditScopeSheet.swift | `CA01000000000000000A0010` | `CB01000000000000000A0010` |
 
-### `AuraFitness/Profile/AccountDetailsView.swift`
-- Same sheet is presented here (113-115) — ensure `appState` + `authService` are injected into `ProfileConfirmSheet`. No other change.
+**Step 1 — PBXBuildFile section.** Immediately AFTER project.pbxproj line 64 (the `PlanBodyMap.swift in Sources` build-file entry), insert these 10 lines (keep the leading two-tab indentation used by neighbors):
+```
+		CB01000000000000000A0001 /* MyPlansView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA01000000000000000A0001 /* MyPlansView.swift */; };
+		CB01000000000000000A0002 /* ProgramLibraryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA01000000000000000A0002 /* ProgramLibraryView.swift */; };
+		CB01000000000000000A0003 /* ProgramDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA01000000000000000A0003 /* ProgramDetailView.swift */; };
+		CB01000000000000000A0004 /* ProgramEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA01000000000000000A0004 /* ProgramEditorView.swift */; };
+		CB01000000000000000A0005 /* WorkoutLibraryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA01000000000000000A0005 /* WorkoutLibraryView.swift */; };
+		CB01000000000000000A0006 /* WorkoutEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA01000000000000000A0006 /* WorkoutEditorView.swift */; };
+		CB01000000000000000A0007 /* ExerciseLibraryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA01000000000000000A0007 /* ExerciseLibraryView.swift */; };
+		CB01000000000000000A0008 /* ExerciseDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA01000000000000000A0008 /* ExerciseDetailView.swift */; };
+		CB01000000000000000A0009 /* CreateExerciseView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA01000000000000000A0009 /* CreateExerciseView.swift */; };
+		CB01000000000000000A0010 /* SaveEditScopeSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA01000000000000000A0010 /* SaveEditScopeSheet.swift */; };
+```
 
-### `AuraFitness/ContentView.swift`
-- No structural change required (it renders only when signed-in). Optionally surface a subtle "syncing…" indicator bound to `SupabaseSyncService.syncing`. Not required for sign-off.
+**Step 2 — PBXFileReference section.** Immediately AFTER project.pbxproj line 139 (the `PlanBodyMap.swift` file-reference entry), insert these 10 lines:
+```
+		CA01000000000000000A0001 /* MyPlansView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyPlansView.swift; sourceTree = "<group>"; };
+		CA01000000000000000A0002 /* ProgramLibraryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgramLibraryView.swift; sourceTree = "<group>"; };
+		CA01000000000000000A0003 /* ProgramDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgramDetailView.swift; sourceTree = "<group>"; };
+		CA01000000000000000A0004 /* ProgramEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgramEditorView.swift; sourceTree = "<group>"; };
+		CA01000000000000000A0005 /* WorkoutLibraryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutLibraryView.swift; sourceTree = "<group>"; };
+		CA01000000000000000A0006 /* WorkoutEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutEditorView.swift; sourceTree = "<group>"; };
+		CA01000000000000000A0007 /* ExerciseLibraryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseLibraryView.swift; sourceTree = "<group>"; };
+		CA01000000000000000A0008 /* ExerciseDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseDetailView.swift; sourceTree = "<group>"; };
+		CA01000000000000000A0009 /* CreateExerciseView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateExerciseView.swift; sourceTree = "<group>"; };
+		CA01000000000000000A0010 /* SaveEditScopeSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SaveEditScopeSheet.swift; sourceTree = "<group>"; };
+```
+> Note: `path = <bareFileName>.swift` (no directory prefix) because the `Plan` group's `sourceTree` is `"<group>"` and its own `path = Plan` (project.pbxproj line 281). This matches every existing Plan entry. All 10 new files live in `AuraFitness/Plan/`, same folder as the existing Plan group members, so no per-file path prefix is needed.
 
----
+**Step 3 — `Plan` PBXGroup children.** Inside group `ACGRP060000000000000000A /* Plan */`, immediately AFTER project.pbxproj line 279 (`FF6B6FD2015947908E6EE16B /* PlanBodyMap.swift */,`) and BEFORE the closing `);` on line 280, insert these 10 lines:
+```
+				CA01000000000000000A0001 /* MyPlansView.swift */,
+				CA01000000000000000A0002 /* ProgramLibraryView.swift */,
+				CA01000000000000000A0003 /* ProgramDetailView.swift */,
+				CA01000000000000000A0004 /* ProgramEditorView.swift */,
+				CA01000000000000000A0005 /* WorkoutLibraryView.swift */,
+				CA01000000000000000A0006 /* WorkoutEditorView.swift */,
+				CA01000000000000000A0007 /* ExerciseLibraryView.swift */,
+				CA01000000000000000A0008 /* ExerciseDetailView.swift */,
+				CA01000000000000000A0009 /* CreateExerciseView.swift */,
+				CA01000000000000000A0010 /* SaveEditScopeSheet.swift */,
+```
+(Use three-tab indentation to match the existing children on lines 269-279.)
 
-## 📊 EXACT UserDefaults KEYS FOR LOCAL RESET (verified — enumerate literally)
+**Step 4 — Sources build phase `files` list.** Immediately AFTER project.pbxproj line 476 (`D1E6081F805C44EA80D37561 /* PlanBodyMap.swift in Sources */,`), insert these 10 lines (four-tab indentation to match neighbors):
+```
+				CB01000000000000000A0001 /* MyPlansView.swift in Sources */,
+				CB01000000000000000A0002 /* ProgramLibraryView.swift in Sources */,
+				CB01000000000000000A0003 /* ProgramDetailView.swift in Sources */,
+				CB01000000000000000A0004 /* ProgramEditorView.swift in Sources */,
+				CB01000000000000000A0005 /* WorkoutLibraryView.swift in Sources */,
+				CB01000000000000000A0006 /* WorkoutEditorView.swift in Sources */,
+				CB01000000000000000A0007 /* ExerciseLibraryView.swift in Sources */,
+				CB01000000000000000A0008 /* ExerciseDetailView.swift in Sources */,
+				CB01000000000000000A0009 /* CreateExerciseView.swift in Sources */,
+				CB01000000000000000A0010 /* SaveEditScopeSheet.swift in Sources */,
+```
 
-(Unchanged from prior revision — still needed for the local half of reset/delete.)
+**pbxproj validation checklist (do all before finishing):**
+- [ ] Exactly 10 new lines added in EACH of the 4 sections (40 lines total). If any section has ≠10, stop.
+- [ ] Every `CA0100...` id appears exactly TWICE (PBXFileReference def + one of: group child OR build-file `fileRef=`), and every `CB0100...` id appears exactly TWICE (PBXBuildFile def + Sources phase). Concretely: each `CA` id appears in Step 2 and Step 3 and is referenced by its `CB` twin in Step 1; each `CB` id appears in Step 1 and Step 4.
+- [ ] No pre-existing UUID in the file equals any `CA0100...`/`CB0100...` value (they were chosen to avoid the existing `AA..`, `AB..`, `AC..`, `DA..`, and random-hex ids — but grep to confirm).
+- [ ] Comment text between `/* */` exactly matches the real filename (e.g. `ExerciseLibraryView.swift`, NOT the struct name `ExerciseLibraryTabView`). Xcode ignores comments but a human reviewer relies on them.
+- [ ] Braces/commas balanced; the closing `);` of the Plan group and of the Sources `files` list are still present after your inserts.
 
-**WORKOUT-DATA keys (cleared in BOTH reset modes; matching remote tables also wiped when `alsoRemote`):**
-- `aura_program_db_v1` (`ProgramDatabase.swift:13`) → table `aura_programs`
-- `aura_plans_db_v1` (`ProgramDatabase.swift:128`) → `aura_plans`
-- `aura_wk`,`aura_elapsed`,`aura_run_start`,`aura_pill`,`aura_wk_version` (`WorkoutPersistence.swift:9-13`) → NOT synced
-- `aura_workout_logs_v1` (`AppState.swift:34`) → `aura_workout_logs`
-- `aura_day_overrides_v1` (`AppState.swift:35`) → `aura_day_overrides`
-- `aura_quick_logs_v1` (`AppState.swift:36`) → `aura_quick_logs`
-- `aura_personal_records_v1` (`AppState.swift:39`) → `aura_personal_records`
-- `aura_exercise_db_v1` (`ExerciseDatabase.swift:49`) → `aura_exercises` (reseed locally after clear)
+## 🗑️ FILES TO DELETE
 
-**PROFILE / MEASUREMENT / SETTINGS keys (full-reset ONLY; KEPT in workoutOnly):**
-- `aura_measurements_v1` (`AppState.swift:37`) → `aura_measurements`
-- `aura_body_stats_v1` (`AppState.swift:38`) → `aura_body_stats`
-- `aura_user_profile_v1` (`AppState.swift:40`) → `aura_user_profile`
-- `aura_progress_photos_v1` (`AppState.swift:41`) → `aura_progress_photos`
-- `aura_workout_prefs_v1` (`AppState.swift:42`) → `aura_preferences`
-- `aura_dark`,`aura_calstart`,`aura_logstat` (`AppState.swift:31-33`) → folded into `aura_preferences`
-- `aura_seeded_missed_v1` (dead key, `AppState.swift:28`) — remove opportunistically
-- **New sync-infra keys** (cleared on full reset): `aura_sync_queue_v1`, `aura_local_ts_v1`.
-
-**Post-clear reload (CRITICAL):** clearing a UserDefaults key does NOT update the in-memory `@Published` singletons — every reset MUST reassign store state via `resetToSeed()`/`hardReset()` and reset AppState collections to defaults; call `appState.exitWorkout()` (`AppState.swift:398`) first if a session is live; never leave `UserPlanDatabase.plans` empty (re-seed default plan).
-
----
+None in this pass. (See FOLLOW-UP.)
 
 ## 🛡️ EDGE CASES TO HANDLE
 
-- **Session restore flash:** `.loading` renders a splash, not the login form (authed users must not see a login flash each launch). Do not default to `.signedOut`.
-- **Email-unconfirmed login (R3):** `signIn` on an unconfirmed account must surface "confirm your email", not a raw SDK error, and keep the user on the gate.
-- **First-login backfill vs pull (R4):** `onSignedIn` must correctly distinguish a FRESH remote (empty → backfill local up) from a RETURNING user (non-empty → pull + LWW reconcile). Getting this wrong either loses pre-account data or clobbers cloud data. When in doubt, LWW merge (never blind-overwrite) so both directions are preserved.
-- **Push loop / echo:** applying pulled remote rows into local stores triggers their `persist()`/`didSet`, which must NOT re-push. Guard every store with an `isApplyingRemote` flag (mirror the `isLoading` guard at `AppState.swift:65`). Missing this creates an infinite push↔pull loop.
-- **Offline mutations:** every push is fire-and-forget; failures/offline enqueue to `aura_sync_queue_v1` and NEVER block or throw into the UI. Flush on next successful net op. Coalesce duplicate (table,id) upserts.
-- **Whole-array `didSet` on AppState collections:** assigning the entire array fires one `didSet`; naive "push everything" on every keystroke is wasteful and racy. Diff old vs new and push only changed/added rows + delete removed rows.
-- **Delete Account partial failure:** remote-delete (Edge Function) must SUCCEED before any local wipe or sign-out. On failure: no wipe, stay signed in, show error. Wrong order orphans an account with lost local data.
-- **Reset while a workout is live:** call `appState.exitWorkout()` before clearing keys so no stale session re-persists post-wipe.
-- **In-memory vs disk desync after reset:** reassign singleton `@Published` state (via new reset methods), don't just delete keys — otherwise the wiped data stays on screen.
-- **`progress_photos` size (O2):** base64 blobs in JSONB can be large and slow to push/pull; keep the temp-file export path off the main thread and consider batching/limiting photo sync. Flagged as a v1 limitation; Storage-bucket migration is a follow-up.
-- **LWW data loss (O3, out-of-scope realtime):** concurrent edits on two devices between pulls can silently drop the older write. This is an ACCEPTED v1 limitation of the periodic-pull + write-through model — communicated here, not hidden. No live subscription this pass.
+- **Missing NavigationStack → dead toolbar buttons.** `WorkoutLibraryView` and `ExerciseLibraryTabView` place a `+` button in `.toolbar` and (WorkoutLibraryView) use `.navigationDestination`. If mounted WITHOUT a `NavigationStack`, the `+` and row taps silently no-op. The spec's per-case wrapping in `PlanTabView.body` handles this. Do not add a NavigationStack around `MyPlansView`/`ProgramLibraryView` (they bring their own → double nav bar / stacked title bars).
+- **Empty plan state.** `UserPlanDatabase.load()` seeds a default plan from the first `SeedData.programs` entry on first launch, and `ProgramDatabase`/`ExerciseDatabase` seed themselves too — so all four subtabs render real content immediately, and `MyPlansView.defaultPlan` is non-nil. No empty-state crash. If `planDB.plans` is somehow empty, `MyPlansView` still renders (the `if let plan = planDB.defaultPlan` guard simply hides the week strip). No code change needed; just do not assume the list is non-empty anywhere new.
+- **`SaveEditScopeSheet` with `onJustToday == nil`.** The only current caller passes `nil`. The sheet MUST conditionally omit the "Just for Today" button (guard `if let onJustToday`), otherwise it would render a button that force-unwraps/does nothing. The "Permanently" and "Cancel" buttons must always render. Sheet must dismiss itself after either action (it owns `@Environment(\.dismiss)`).
+- **pbxproj UUID collision / desync (build-breaking, no local Xcode to catch it).** A duplicate UUID or a `fileRef`/`buildID` mismatch corrupts the project and fails CI opaquely. Follow the UUID table verbatim and run the validation checklist. This is the single highest-risk step.
+- **Struct-name vs file-name mismatch.** `ExerciseLibraryView.swift` defines `ExerciseLibraryTabView`; `ExerciseDetailView.swift` defines `ExerciseEntryDetailView` (+ legacy `ExerciseDetailView`). In `PlanTabView` reference the STRUCT name `ExerciseLibraryTabView`; in the pbxproj reference the FILE name `ExerciseLibraryView.swift`. Do not conflate them.
+
+## 🔁 FOLLOW-UPS (out of scope — file as separate tickets, do NOT do here)
+1. Delete the dead mock mirror files (`PlanModels.swift`, `PlanComponents.swift`, `PlanSubtabViews.swift`, `PlanSheets.swift`, `PlanProgramViews.swift`, `PlanExercisePickerView.swift`, `PlanWorkoutEditorView.swift`, `PlanExerciseDetailView.swift`, `PlanExerciseDetailData.swift`, `PlanBodyMap.swift`) and their pbxproj entries, once `PlanTabView` no longer references `PlanIconButton`/`PlanFilterChip` (extract those two into a small kept file first). Requires a separate compile-verification pass.
+2. Make `SaveEditScopeSheet` "Add to My Plans" actually copy the read-only workout into a chosen plan (needs product decision on target plan + `WorkoutEditorView.saveWorkout()` `.view` branch).

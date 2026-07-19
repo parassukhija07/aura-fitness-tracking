@@ -24,11 +24,11 @@ struct PlanProgramDetailView: View {
                         .padding(.top, 12)
 
                     Text(program.name)
-                        .font(.system(size: 24, weight: .heavy)).tracking(-0.48)
+                        .font(AuraFont.jakarta(24, .heavy)).tracking(-0.48)
                         .foregroundColor(.aura.text)
                         .padding(.top, 14).padding(.bottom, 4)
                     Text("A \(program.days)-day \(program.tag.lowercased()) split. \(program.level) level.")
-                        .font(.system(size: 13)).foregroundColor(.aura.text2)
+                        .font(AuraFont.jakarta(13)).foregroundColor(.aura.text2)
 
                     HStack(spacing: 6) {
                         chip("\(program.days) days/wk"); chip(program.level); chip(program.tag)
@@ -41,18 +41,18 @@ struct PlanProgramDetailView: View {
                             Button { onWorkout(w) } label: {
                                 HStack(spacing: AuraSpacing.s3) {
                                     Text("\(i + 1)")
-                                        .font(.system(size: 13, weight: .bold)).foregroundColor(.aura.accent)
+                                        .font(AuraFont.jakarta(13, .bold)).foregroundColor(.aura.accent)
                                         .frame(width: 30, height: 30)
                                         .background(Color.aura.accentSoft)
                                         .clipShape(RoundedRectangle(cornerRadius: 9))
                                     VStack(alignment: .leading, spacing: 2) {
-                                        Text(w.name).font(.system(size: 16, weight: .medium)).foregroundColor(.aura.text)
+                                        Text(w.name).font(AuraFont.jakarta(16, .medium)).foregroundColor(.aura.text)
                                         Text("\(w.exCount) exercises · \(w.muscles)")
                                             .font(AuraFont.secondary()).foregroundColor(.aura.text2)
                                     }
                                     Spacer()
                                     Image(systemName: "chevron.right")
-                                        .font(.system(size: 14, weight: .semibold)).foregroundColor(.aura.text3)
+                                        .font(AuraFont.jakarta(14, .semibold)).foregroundColor(.aura.text3)
                                 }
                                 .padding(.vertical, 11).padding(.horizontal, 14)
                                 .frame(maxWidth: .infinity)
@@ -63,7 +63,7 @@ struct PlanProgramDetailView: View {
                     }
 
                     HStack(alignment: .top, spacing: AuraSpacing.s3) {
-                        Image(systemName: "info.circle").foregroundColor(.aura.text2).font(.system(size: 18))
+                        Image(systemName: "info.circle").foregroundColor(.aura.text2).font(AuraFont.jakarta(18))
                         (Text("To edit a predefined program, add it to ").foregroundColor(.aura.text2)
                             + Text("My Plans").foregroundColor(.aura.text2).bold()
                             + Text(" first. Your edits stay on your copy.").foregroundColor(.aura.text2))
@@ -87,7 +87,7 @@ struct PlanProgramDetailView: View {
     }
 
     private func chip(_ t: String) -> some View {
-        Text(t).font(.system(size: 13, weight: .medium)).foregroundColor(.aura.text)
+        Text(t).font(AuraFont.jakarta(13, .medium)).foregroundColor(.aura.text)
             .padding(.horizontal, 12).padding(.vertical, 8)
             .background(Color.aura.fill).clipShape(Capsule())
     }
@@ -124,17 +124,17 @@ struct PlanProgramEditorView: View {
             ScrollView(showsIndicators: false) {
                 VStack(alignment: .leading, spacing: 0) {
                     TextField("Program name", text: $name)
-                        .font(.system(size: 24, weight: .heavy)).tracking(-0.48)
+                        .font(AuraFont.jakarta(24, .heavy)).tracking(-0.48)
                         .foregroundColor(.aura.text)
                         .padding(.top, 16).padding(.bottom, 4)
 
                     VStack(alignment: .leading, spacing: 8) {
-                        Text("DIFFICULTY · OPTIONAL").font(.system(size: 10, weight: .bold)).tracking(0.5)
+                        Text("DIFFICULTY · OPTIONAL").font(AuraFont.jakarta(10, .bold)).tracking(0.5)
                             .foregroundColor(.aura.text2)
                         HStack(spacing: 6) {
                             ForEach(levels, id: \.self) { l in
                                 Button { level = (level == l) ? nil : l } label: {
-                                    Text(l).font(.system(size: 12, weight: .bold))
+                                    Text(l).font(AuraFont.jakarta(12, .bold))
                                         .foregroundColor(level == l ? .white : .aura.text2)
                                         .frame(maxWidth: .infinity).padding(.vertical, 8)
                                         .background(level == l ? levelColor(l) : .aura.fill)
@@ -151,9 +151,9 @@ struct PlanProgramEditorView: View {
 
                     if dayWarn {
                         HStack(spacing: 8) {
-                            Image(systemName: "info.circle").font(.system(size: 16)).foregroundColor(.aura.accent)
+                            Image(systemName: "info.circle").font(AuraFont.jakarta(16)).foregroundColor(.aura.accent)
                             Text("Add workouts below before assigning days")
-                                .font(.system(size: 13, weight: .semibold)).foregroundColor(.aura.accent)
+                                .font(AuraFont.jakarta(13, .semibold)).foregroundColor(.aura.accent)
                         }
                         .padding(.horizontal, 12).padding(.vertical, 9)
                         .frame(maxWidth: .infinity, alignment: .leading)
@@ -230,17 +230,17 @@ struct PlanProgramEditorView: View {
             ZStack {
                 RoundedRectangle(cornerRadius: 10).fill(c.bg).frame(width: 38, height: 38)
                     .overlay(RoundedRectangle(cornerRadius: 10).stroke(c.border.opacity(0.35), lineWidth: 1.5))
-                Image(systemName: planWkIcon(w.wrappedValue.name)).font(.system(size: 17)).foregroundColor(c.tint)
+                Image(systemName: planWkIcon(w.wrappedValue.name)).font(AuraFont.jakarta(17)).foregroundColor(c.tint)
             }
             TextField("Workout name", text: w.name)
-                .font(.system(size: 15, weight: .bold)).foregroundColor(.aura.text)
+                .font(AuraFont.jakarta(15, .bold)).foregroundColor(.aura.text)
             Spacer()
             Button { onEditWorkout(w.wrappedValue) } label: {
-                Image(systemName: "chevron.right").font(.system(size: 16, weight: .semibold)).foregroundColor(.aura.text)
+                Image(systemName: "chevron.right").font(AuraFont.jakarta(16, .semibold)).foregroundColor(.aura.text)
                     .frame(width: 30, height: 30).background(Color.aura.fill.opacity(0.5)).clipShape(Circle())
             }
             Button { workouts.removeAll { $0.id == w.wrappedValue.id } } label: {
-                Image(systemName: "trash").font(.system(size: 14)).foregroundColor(.aura.red)
+                Image(systemName: "trash").font(AuraFont.jakarta(14)).foregroundColor(.aura.red)
                     .frame(width: 30, height: 30).background(Color.aura.fill.opacity(0.5)).clipShape(Circle())
             }
         }

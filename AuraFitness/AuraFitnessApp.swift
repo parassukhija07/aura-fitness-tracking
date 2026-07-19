@@ -29,6 +29,12 @@ struct AuraFitnessApp: App {
                 case .signedIn:
                     ContentView()
                         .environmentObject(appState)
+                case .guest:
+                    // Guest mode runs the exact same UI as .signedIn — every
+                    // store already works with no userID (SupabaseSyncService
+                    // push()/pull() no-op locally without one).
+                    ContentView()
+                        .environmentObject(appState)
                 default:
                     AuthGateView()
                         .environmentObject(authService)
@@ -44,6 +50,10 @@ struct AuraFitnessApp: App {
             }
         }
         .onChange(of: scenePhase) { _, phase in
+            // `authService.userID` is nil for guests, so this already
+            // correctly skips the foreground pull in guest mode — guest mode
+            // intentionally does not pull (there's nothing remote to fetch;
+            // guest data lives purely locally until the user signs in).
             guard phase == .active, authService.userID != nil else { return }
             Task { await SupabaseSyncService.shared.pullAll() }
         }

@@ -39,7 +39,7 @@ struct WorkoutLibraryView: View {
                 .padding(.bottom, AuraSpacing.s2)
             }
 
-            ScrollView {
+            AuraScreenScroll {
                 LazyVStack(spacing: AuraSpacing.s3) {
                     ForEach(filtered) { workout in
                         Button { selectedWorkout = workout } label: { workoutCard(workout) }
@@ -72,7 +72,7 @@ struct WorkoutLibraryView: View {
             HStack(spacing: AuraSpacing.s3) {
                 VStack(alignment: .leading, spacing: 6) {
                     Text(workout.name)
-                        .font(.system(size: 15, weight: .bold))
+                        .font(AuraFont.jakarta(15, .bold))
                         .foregroundColor(.aura.text)
                     HStack(spacing: AuraSpacing.s2) {
                         Label("\(workout.exercises.count) exercises", systemImage: "list.bullet")
@@ -88,7 +88,7 @@ struct WorkoutLibraryView: View {
                 }
                 Spacer()
                 Image(systemName: "chevron.right")
-                    .font(.system(size: 13))
+                    .font(AuraFont.jakarta(13))
                     .foregroundColor(.aura.text3)
             }
             .frame(maxWidth: .infinity, alignment: .leading)

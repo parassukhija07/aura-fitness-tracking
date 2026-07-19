@@ -66,17 +66,17 @@ struct ExerciseLoggingView: View {
         HStack {
             Button { session.activeView = .overview } label: {
                 Image(systemName: "chevron.left")
-                    .font(.system(size: 20, weight: .semibold))
+                    .font(AuraFont.jakarta(20, .semibold))
                     .foregroundColor(.aura.accent)
             }
             Spacer()
             VStack(spacing: 1) {
                 Text("EXERCISE \(exerciseIndex + 1)")
-                    .font(.system(size: 10, weight: .bold))
+                    .font(AuraFont.jakarta(10, .bold))
                     .tracking(1)
                     .foregroundColor(.aura.text3)
                 Text(ex.name)
-                    .font(.system(size: 14, weight: .bold))
+                    .font(AuraFont.jakarta(14, .bold))
                     .foregroundColor(.aura.text)
                     .lineLimit(1)
                     .frame(maxWidth: 160)
@@ -84,7 +84,7 @@ struct ExerciseLoggingView: View {
             Spacer()
             Button { showMenu = true } label: {
                 Image(systemName: "ellipsis")
-                    .font(.system(size: 20))
+                    .font(AuraFont.jakarta(20))
                     .foregroundColor(.aura.text)
                     .frame(width: 34, height: 34)
                     .background(Color.aura.fill.opacity(0.5))
@@ -109,7 +109,7 @@ struct ExerciseLoggingView: View {
                 )
                 .overlay(
                     Text("exercise demo")
-                        .font(.system(size: 11, design: .monospaced))
+                        .font(AuraFont.jakarta(11))
                         .foregroundColor(.aura.text3)
                 )
             Circle()
@@ -117,7 +117,7 @@ struct ExerciseLoggingView: View {
                 .frame(width: 52, height: 52)
                 .overlay(
                     Image(systemName: "play.fill")
-                        .font(.system(size: 20))
+                        .font(AuraFont.jakarta(20))
                         .foregroundColor(.black)
                         .offset(x: 2)
                 )
@@ -129,7 +129,7 @@ struct ExerciseLoggingView: View {
     private func nameAndChips(ex: Exercise) -> some View {
         VStack(alignment: .leading, spacing: 8) {
             Text(ex.name)
-                .font(.system(size: 24, weight: .heavy))
+                .font(AuraFont.jakarta(24, .heavy))
                 .foregroundColor(.aura.text)
             // Equipment chip (accent) + muscle group chips
             ScrollView(.horizontal, showsIndicators: false) {
@@ -144,7 +144,7 @@ struct ExerciseLoggingView: View {
 
     private func chip(_ text: String, accent: Bool) -> some View {
         Text(text)
-            .font(.system(size: 14, weight: .semibold))
+            .font(AuraFont.jakarta(14, .semibold))
             .foregroundColor(accent ? .aura.accent : .aura.text)
             .padding(.horizontal, 14).padding(.vertical, 7)
             .background(accent ? Color.aura.accentSoft : Color.aura.fill)
@@ -159,7 +159,7 @@ struct ExerciseLoggingView: View {
                 Image(systemName: "cable.connector")
                     .foregroundColor(.aura.text2)
                 Text("Pulley setup")
-                    .font(.system(size: 15, weight: .semibold))
+                    .font(AuraFont.jakarta(15, .semibold))
                     .foregroundColor(.aura.text)
             }
             Spacer()
@@ -200,15 +200,15 @@ struct ExerciseLoggingView: View {
     private func miniCard(icon: String, iconColor: Color, head: String, value: String, sub: String, highlighted: Bool) -> some View {
         VStack(alignment: .leading, spacing: 5) {
             HStack(spacing: 5) {
-                Image(systemName: icon).font(.system(size: 13)).foregroundColor(iconColor)
-                Text(head).font(.system(size: 11, weight: .bold)).foregroundColor(.aura.text2)
+                Image(systemName: icon).font(AuraFont.jakarta(13)).foregroundColor(iconColor)
+                Text(head).font(AuraFont.jakarta(11, .bold)).foregroundColor(.aura.text2)
             }
             Text(value)
-                .font(.system(size: 18, weight: .heavy))
+                .font(AuraFont.jakarta(18, .heavy))
                 .foregroundColor(highlighted ? .aura.accent : .aura.text)
                 .monospacedDigit()
             Text(sub)
-                .font(.system(size: 11))
+                .font(AuraFont.jakarta(11))
                 .foregroundColor(.aura.text3)
                 .lineLimit(2)
         }
@@ -228,13 +228,13 @@ struct ExerciseLoggingView: View {
         VStack(spacing: 0) {
             Button { withAnimation(.easeInOut(duration: 0.2)) { showWarmup.toggle() } } label: {
                 HStack(spacing: AuraSpacing.s2) {
-                    Image(systemName: "flame.fill").foregroundColor(.aura.accent).font(.system(size: 15))
+                    Image(systemName: "flame.fill").foregroundColor(.aura.accent).font(AuraFont.jakarta(15))
                     Text("Warm-up protocol")
-                        .font(.system(size: 15, weight: .bold)).foregroundColor(.aura.text)
+                        .font(AuraFont.jakarta(15, .bold)).foregroundColor(.aura.text)
                     Spacer()
-                    Text("\(ex.warmup.count) sets").font(.system(size: 12)).foregroundColor(.aura.text2)
+                    Text("\(ex.warmup.count) sets").font(AuraFont.jakarta(12)).foregroundColor(.aura.text2)
                     Image(systemName: "chevron.down")
-                        .font(.system(size: 14)).foregroundColor(.aura.text3)
+                        .font(AuraFont.jakarta(14)).foregroundColor(.aura.text3)
                         .rotationEffect(.degrees(showWarmup ? 180 : 0))
                 }
                 .padding(.horizontal, 16).padding(.vertical, 14)
@@ -245,14 +245,14 @@ struct ExerciseLoggingView: View {
                     ForEach(Array(ex.warmup.enumerated()), id: \.offset) { i, w in
                         HStack(spacing: 12) {
                             Text("W\(i + 1)")
-                                .font(.system(size: 12, weight: .heavy))
+                                .font(AuraFont.jakarta(12, .heavy))
                                 .foregroundColor(.aura.accent)
                                 .frame(width: 30, height: 24)
                                 .background(Color.aura.accentSoft)
                                 .clipShape(RoundedRectangle(cornerRadius: 7))
-                            Text("\(w.reps) reps").font(.system(size: 14, weight: .medium)).foregroundColor(.aura.text)
+                            Text("\(w.reps) reps").font(AuraFont.jakarta(14, .medium)).foregroundColor(.aura.text)
                             Spacer()
-                            Text(w.label).font(.system(size: 12)).foregroundColor(.aura.text2)
+                            Text(w.label).font(AuraFont.jakarta(12)).foregroundColor(.aura.text2)
                         }
                         .padding(.vertical, 8)
                         .overlay(Divider(), alignment: .top)
@@ -271,10 +271,10 @@ struct ExerciseLoggingView: View {
 
     private func formTip(_ hint: String) -> some View {
         HStack(alignment: .top, spacing: AuraSpacing.s3) {
-            Image(systemName: "lightbulb.fill").foregroundColor(.aura.accent).font(.system(size: 16))
+            Image(systemName: "lightbulb.fill").foregroundColor(.aura.accent).font(AuraFont.jakarta(16))
             VStack(alignment: .leading, spacing: 3) {
-                Text("Form tip").font(.system(size: 13, weight: .bold)).foregroundColor(.aura.text)
-                Text(hint).font(.system(size: 13)).foregroundColor(.aura.text2)
+                Text("Form tip").font(AuraFont.jakarta(13, .bold)).foregroundColor(.aura.text)
+                Text(hint).font(AuraFont.jakarta(13)).foregroundColor(.aura.text2)
                     .fixedSize(horizontal: false, vertical: true)
             }
         }
@@ -292,10 +292,10 @@ struct ExerciseLoggingView: View {
         let done = ex.sets.filter { $0.done }.count
         return VStack(spacing: 14) {
             HStack {
-                Text("Working sets").font(.system(size: 17, weight: .heavy)).foregroundColor(.aura.text)
+                Text("Working sets").font(AuraFont.jakarta(17, .heavy)).foregroundColor(.aura.text)
                 Spacer()
                 Text("\(done)/\(ex.sets.count) done")
-                    .font(.system(size: 12, weight: .bold)).foregroundColor(.aura.text2)
+                    .font(AuraFont.jakarta(12, .bold)).foregroundColor(.aura.text2)
                     .padding(.horizontal, 9).padding(.vertical, 4)
                     .background(Color.aura.fill).clipShape(Capsule())
             }
@@ -324,8 +324,8 @@ struct ExerciseLoggingView: View {
     private var addSetButton: some View {
         Button { session.onAddSet(to: exerciseIndex) } label: {
             HStack(spacing: 6) {
-                Image(systemName: "plus").font(.system(size: 15, weight: .semibold))
-                Text("Add set").font(.system(size: 15, weight: .bold))
+                Image(systemName: "plus").font(AuraFont.jakarta(15, .semibold))
+                Text("Add set").font(AuraFont.jakarta(15, .bold))
             }
             .foregroundColor(.aura.accent)
             .frame(maxWidth: .infinity)
@@ -350,11 +350,11 @@ struct ExerciseLoggingView: View {
             "Set \(ex.plannedSets + j + 1): \(UnitFormatter.weight(Double(h.weight) ?? 0, unit: appState.weightUnit)) × \(h.reps) reps"
         }.joined(separator: " · ")
         return HStack(alignment: .top, spacing: AuraSpacing.s3) {
-            Image(systemName: "info.circle.fill").foregroundColor(.aura.blue).font(.system(size: 16))
+            Image(systemName: "info.circle.fill").foregroundColor(.aura.blue).font(AuraFont.jakarta(16))
             VStack(alignment: .leading, spacing: 3) {
                 Text("\(extra.count) extra set\(extra.count > 1 ? "s" : "") last session")
-                    .font(.system(size: 13, weight: .bold)).foregroundColor(.aura.text)
-                Text(detail).font(.system(size: 12)).foregroundColor(.aura.text2)
+                    .font(AuraFont.jakarta(13, .bold)).foregroundColor(.aura.text)
+                Text(detail).font(AuraFont.jakarta(12)).foregroundColor(.aura.text2)
                     .fixedSize(horizontal: false, vertical: true)
             }
         }
@@ -376,7 +376,7 @@ struct ExerciseLoggingView: View {
                         get: { session.workout.exercises[exerciseIndex].note },
                         set: { session.workout.exercises[exerciseIndex].note = $0 }
                       ), axis: .vertical)
-                .font(.system(size: 14))
+                .font(AuraFont.jakarta(14))
                 .foregroundColor(.aura.text)
                 .lineLimit(3, reservesSpace: true)
                 .padding(13)

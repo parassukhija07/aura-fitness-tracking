@@ -60,7 +60,7 @@ struct MeasurementsView: View {
     }
 
     var body: some View {
-        ScrollView {
+        AuraScreenScroll(bottomClearance: 0) {
             VStack(spacing: AuraSpacing.s4) {
                 weightCard
                 compositionTiles
@@ -91,7 +91,7 @@ struct MeasurementsView: View {
                 HStack {
                     VStack(alignment: .leading, spacing: 2) {
                         Text("WEIGHT")
-                            .font(.system(size: 10, weight: .bold))
+                            .font(AuraFont.jakarta(10, .bold))
                             .foregroundColor(.aura.text3)
                             .tracking(0.5)
                         if let w = latest?.weight {
@@ -114,9 +114,9 @@ struct MeasurementsView: View {
                         let down = delta < 0
                         HStack(spacing: 3) {
                             Image(systemName: down ? "arrow.down" : "arrow.up")
-                                .font(.system(size: 11, weight: .bold))
+                                .font(AuraFont.jakarta(11, .bold))
                             Text(String(format: "%.1f %@ / 30d", abs(UnitFormatter.weightValue(delta, unit: appState.weightUnit)), appState.weightUnit))
-                                .font(.system(size: 12, weight: .bold))
+                                .font(AuraFont.jakarta(12, .bold))
                         }
                         .foregroundColor(down ? .aura.green : .aura.red)
                         .padding(.horizontal, 10)
@@ -185,7 +185,7 @@ struct MeasurementsView: View {
         AuraCard {
             VStack(alignment: .leading, spacing: 4) {
                 Text(label)
-                    .font(.system(size: 10, weight: .bold))
+                    .font(AuraFont.jakarta(10, .bold))
                     .foregroundColor(.aura.text3)
                     .tracking(0.4)
                 Text(value ?? "–")
@@ -194,9 +194,9 @@ struct MeasurementsView: View {
                 if let d = delta {
                     HStack(spacing: 2) {
                         Image(systemName: deltaDown ? "arrow.down" : "arrow.up")
-                            .font(.system(size: 10, weight: .bold))
+                            .font(AuraFont.jakarta(10, .bold))
                         Text(d)
-                            .font(.system(size: 11, weight: .semibold))
+                            .font(AuraFont.jakarta(11, .semibold))
                     }
                     .foregroundColor(deltaDown ? .aura.green : .aura.red)
                 }
@@ -210,14 +210,14 @@ struct MeasurementsView: View {
         VStack(spacing: 0) {
             HStack {
                 Text("How to Measure")
-                    .font(.system(size: 17, weight: .bold))
+                    .font(AuraFont.jakarta(17, .bold))
                     .foregroundColor(.aura.text)
                 Spacer()
                 Button {
                     showHowTo = false
                 } label: {
                     Image(systemName: "xmark")
-                        .font(.system(size: 16, weight: .semibold))
+                        .font(AuraFont.jakarta(16, .semibold))
                         .foregroundColor(.aura.text3)
                 }
             }
@@ -230,10 +230,10 @@ struct MeasurementsView: View {
                         VStack(alignment: .leading, spacing: AuraSpacing.s2) {
                             HStack(spacing: AuraSpacing.s2) {
                                 Image(systemName: "target")
-                                    .font(.system(size: 14, weight: .semibold))
+                                    .font(AuraFont.jakarta(14, .semibold))
                                     .foregroundColor(.aura.accent)
                                 Text(title)
-                                    .font(.system(size: 14, weight: .bold))
+                                    .font(AuraFont.jakarta(14, .bold))
                                     .foregroundColor(.aura.text)
                             }
                             Text(desc)
@@ -273,7 +273,7 @@ struct MeasurementsView: View {
                 Spacer()
                 Button { showHowTo = true } label: {
                     Image(systemName: "questionmark.circle")
-                        .font(.system(size: 15, weight: .semibold))
+                        .font(AuraFont.jakarta(15, .semibold))
                         .foregroundColor(.aura.text3)
                 }
             }
@@ -296,7 +296,7 @@ struct MeasurementsView: View {
                             Spacer()
                             if let v = val {
                                 Text(UnitFormatter.length(v, unit: appState.lengthUnit))
-                                    .font(.system(size: 15, weight: .semibold))
+                                    .font(AuraFont.jakarta(15, .semibold))
                                     .foregroundColor(.aura.text)
                             } else {
                                 Text("–")

@@ -1,39 +1,60 @@
 import SwiftUI
 
+// MARK: - My Plans subtab
+//
+// Mirrors plan/app.jsx `myplans`: gradient plan carousel → WeekStrip (7 day
+// tiles) → "Workouts in program" cards with edit/delete, all fed by
+// UserPlanDatabase/ProgramDatabase.
+
 struct MyPlansView: View {
     @EnvironmentObject var appState: AppState
     @StateObject private var planDB = UserPlanDatabase.shared
     @StateObject private var programDB = ProgramDatabase.shared
     @State private var showProgramLibrary = false
     @State private var showCreatePlan = false
+    @State private var showAddPlanOptions = false
     @State private var editingPlan: UserPlan? = nil
     @State private var planToDelete: UserPlan? = nil
     @State private var showDeleteAlert = false
+    @State private var editorTarget: WorkoutEditorTarget? = nil
+    @State private var workoutToDelete: Workout? = nil
+    @State private var showWorkoutDeleteAlert = false
+
+    /// Sheet payload: which workout to open in which editor context.
+    struct WorkoutEditorTarget: Identifiable {
+        let id = UUID()
+        let workout: Workout
+        let context: WorkoutEditorContext
+    }
+
+    // MARK: Derived
+
+    private var defaultPlan: UserPlan? { planDB.defaultPlan }
+
+    private var sourceProgram: Program? {
+        defaultPlan?.sourceProgramID.flatMap { programDB.program(id: $0) }
+    }
+
+    /// Workouts shown under "Workouts in program" for the active plan.
+    private var planWorkouts: [Workout] {
+        guard let plan = defaultPlan else { return [] }
+        return (sourceProgram?.workouts ?? []) + plan.customWorkouts
+    }
 
     var body: some View {
-        ScrollView {
+        AuraScreenScroll {
             VStack(alignment: .leading, spacing: 0) {
-                // Plan cards
-                AuraSectionLabel(title: "My Plans")
-                    .padding(.horizontal, AuraSpacing.screenPad)
+                planCarousel
+                    .padding(.top, AuraSpacing.s2)
 
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: AuraSpacing.s3) {
-                        ForEach(planDB.plans) { plan in
-                            planCard(plan: plan)
-                        }
-                        addPlanButton
-                    }
-                    .padding(.horizontal, AuraSpacing.screenPad)
-                    .padding(.vertical, AuraSpacing.s3)
-                }
+                if let plan = defaultPlan {
+                    weekStrip(plan: plan)
+                        .padding(.horizontal, 14)
+                        .padding(.top, AuraSpacing.s4)
 
-                // Week schedule for default plan
-                if let plan = planDB.defaultPlan {
-                    AuraSectionLabel(title: "This Week — \(plan.name)")
-                        .padding(.horizontal, AuraSpacing.screenPad)
-                    weekScheduleView(plan: plan)
-                        .padding(.horizontal, AuraSpacing.screenPad)
+                    workoutsInProgram
+                        .padding(.horizontal, 14)
+                        .padding(.top, AuraSpacing.s4)
                 }
 
                 AuraSectionLabel(title: "Options")
@@ -53,7 +74,6 @@ struct MyPlansView: View {
                 .background(Color.aura.surface)
                 .clipShape(RoundedRectangle(cornerRadius: AuraRadius.md))
                 .padding(.horizontal, AuraSpacing.screenPad)
-                .padding(.bottom, 40)
             }
         }
         .background(Color.aura.bgGrouped)
@@ -66,6 +86,16 @@ struct MyPlansView: View {
         .sheet(item: $editingPlan) { plan in
             PlanScheduleEditorView(plan: plan)
         }
+        .sheet(item: $editorTarget) { target in
+            NavigationStack {
+                WorkoutEditorView(workout: target.workout, context: target.context)
+            }
+        }
+        .confirmationDialog("Add Plan", isPresented: $showAddPlanOptions) {
+            Button("Browse Programs") { showProgramLibrary = true }
+            Button("Create Custom Plan") { showCreatePlan = true }
+            Button("Cancel", role: .cancel) {}
+        }
         .alert("Delete Plan", isPresented: $showDeleteAlert, presenting: planToDelete) { plan in
             Button("Delete", role: .destructive) {
                 planDB.deletePlan(id: plan.id)
@@ -74,42 +104,77 @@ struct MyPlansView: View {
         } message: { plan in
             Text("'\(plan.name)' will be permanently deleted.")
         }
+        .alert("Remove Workout", isPresented: $showWorkoutDeleteAlert, presenting: workoutToDelete) { w in
+            Button("Remove", role: .destructive) { deleteWorkout(w) }
+            Button("Cancel", role: .cancel) {}
+        } message: { w in
+            Text("'\(w.name)' will be removed from this plan.")
+        }
     }
 
-    // MARK: Plan card
-    @ViewBuilder
-    private func planCard(plan: UserPlan) -> some View {
-        let gradient = LinearGradient(
-            colors: plan.isDefault
-                ? [.aura.accent.opacity(0.85), .aura.accent.opacity(0.45)]
-                : [Color.aura.fill, Color.aura.fill],
-            startPoint: .topLeading, endPoint: .bottomTrailing
-        )
-        ZStack(alignment: .topLeading) {
-            RoundedRectangle(cornerRadius: AuraRadius.xl)
-                .fill(gradient)
-                .frame(width: 180, height: 120)
-                .overlay(
-                    RoundedRectangle(cornerRadius: AuraRadius.xl)
-                        .stroke(plan.isDefault ? Color.clear : Color.aura.separator, lineWidth: 1)
-                )
+    // MARK: Plan carousel (.plan-card)
 
-            VStack(alignment: .leading, spacing: 4) {
+    private var planCarousel: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 10) {
+                ForEach(Array(planDB.plans.enumerated()), id: \.element.id) { idx, plan in
+                    planCard(plan: plan, index: idx)
+                }
+                addPlanButton
+            }
+            .padding(.horizontal, 14)
+            .padding(.vertical, 2)
+        }
+    }
+
+    /// Gradient art per card: active = amber, others cycle blue/green
+    /// (mirrors .plan-card / .alt / .alt2).
+    private func planGradientColors(index: Int, isDefault: Bool) -> [Color] {
+        if isDefault { return [Color(hex: "#F59E0B"), Color(hex: "#C85A2C")] }
+        let alts: [[Color]] = [
+            [Color(hex: "#4A6FB5"), Color(hex: "#3D3A78")],
+            [Color(hex: "#3E8C6E"), Color(hex: "#2E6359")],
+        ]
+        return alts[index % alts.count]
+    }
+
+    private func planSubtitle(_ plan: UserPlan) -> String {
+        let days = plan.weekSchedule.values.compactMap { $0 }.count
+        let level = plan.sourceProgramID
+            .flatMap { programDB.program(id: $0) }?.level ?? "Custom"
+        return "\(days) days · \(level)"
+    }
+
+    @ViewBuilder
+    private func planCard(plan: UserPlan, index: Int) -> some View {
+        ZStack(alignment: .topLeading) {
+            RoundedRectangle(cornerRadius: AuraRadius.lg)
+                .fill(LinearGradient(colors: planGradientColors(index: index, isDefault: plan.isDefault),
+                                     startPoint: .topLeading, endPoint: .bottomTrailing))
+
+            VStack(alignment: .leading, spacing: 1) {
                 if plan.isDefault {
-                    AuraBadge(label: "Active", color: .white)
+                    HStack(spacing: 4) {
+                        Image(systemName: "checkmark").font(AuraFont.jakarta(11, .bold))
+                        Text("Active").font(AuraFont.jakarta(12, .bold))
+                    }
+                    .foregroundColor(.aura.accent)
+                    .padding(.horizontal, 8).padding(.vertical, 3)
+                    .background(Color.white)
+                    .clipShape(Capsule())
                 }
                 Spacer()
                 Text(plan.name)
-                    .font(.system(size: 15, weight: .bold))
-                    .foregroundColor(plan.isDefault ? .white : .aura.text)
+                    .font(AuraFont.jakarta(14, .heavy))
+                    .foregroundColor(.white)
                     .lineLimit(2)
-                Text("\(plan.weekSchedule.values.compactMap { $0 }.count) training days")
-                    .font(AuraFont.secondary())
-                    .foregroundColor(plan.isDefault ? .white.opacity(0.8) : .aura.text2)
+                Text(planSubtitle(plan))
+                    .font(AuraFont.jakarta(12))
+                    .foregroundColor(.white.opacity(0.85))
             }
-            .padding(AuraSpacing.s3)
-            .frame(width: 180, height: 120, alignment: .topLeading)
+            .padding(13)
         }
+        .frame(width: plan.isDefault ? 150 : 130, height: 120)
         .contextMenu {
             Button {
                 planDB.setDefault(id: plan.id)
@@ -130,77 +195,193 @@ struct MyPlansView: View {
     }
 
     private var addPlanButton: some View {
-        Button { showProgramLibrary = true } label: {
-            ZStack {
-                RoundedRectangle(cornerRadius: AuraRadius.xl)
+        Button { showAddPlanOptions = true } label: {
+            VStack(spacing: 6) {
+                Image(systemName: "plus").font(AuraFont.jakarta(22, .medium))
+                Text("New").font(AuraFont.jakarta(12, .bold))
+            }
+            .foregroundColor(.aura.text3)
+            .frame(width: 96, height: 120)
+            .overlay(
+                RoundedRectangle(cornerRadius: AuraRadius.lg)
                     .stroke(style: StrokeStyle(lineWidth: 2, dash: [6]))
                     .foregroundColor(.aura.separator)
-                    .frame(width: 160, height: 120)
-                VStack(spacing: 6) {
-                    Image(systemName: "plus")
-                        .font(.system(size: 22, weight: .medium))
-                        .foregroundColor(.aura.text3)
-                    Text("Add Plan")
-                        .font(AuraFont.secondary())
-                        .foregroundColor(.aura.text2)
-                }
-            }
+            )
         }
         .buttonStyle(.plain)
     }
 
-    // MARK: Week schedule
-    @ViewBuilder
-    private func weekScheduleView(plan: UserPlan) -> some View {
-        let days = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"]
-        VStack(spacing: AuraSpacing.s2) {
-            ForEach(0..<7, id: \.self) { i in
-                let entry = plan.weekSchedule[i]
-                let workout: Workout? = resolveWorkout(entry: entry, plan: plan)
-                let isToday = Calendar.current.component(.weekday, from: Date()) - 1 == i
+    // MARK: Week strip (7 day tiles)
 
-                HStack {
-                    Text(days[i])
-                        .font(.system(size: 13, weight: isToday ? .heavy : .bold))
-                        .foregroundColor(isToday ? .aura.accent : .aura.text2)
-                        .frame(width: 36, alignment: .leading)
+    private func weekStrip(plan: UserPlan) -> some View {
+        // weekSchedule keys: 0=Sun … 6=Sat; order honours the calendar-start pref.
+        let order = appState.calendarStartDay == 0 ? [0, 1, 2, 3, 4, 5, 6] : [1, 2, 3, 4, 5, 6, 0]
+        let labels = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"]
 
-                    if let w = workout {
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text(w.name)
-                                .font(AuraFont.secondary())
-                                .foregroundColor(.aura.text)
-                            Text("\(w.exercises.count) exercises · ~\(w.estimatedMinutes) min")
-                                .font(.system(size: 11))
-                                .foregroundColor(.aura.text3)
-                        }
-                        Spacer()
-                        AuraBadge(label: w.primaryMuscles.isEmpty ? "Training" : w.primaryMuscles, color: .aura.accent)
-                    } else if entry != nil {
-                        Text("Rest")
-                            .font(AuraFont.secondary())
-                            .foregroundColor(.aura.text3)
-                        Spacer()
-                        Image(systemName: "moon.zzz")
-                            .foregroundColor(.aura.text3)
-                            .font(.system(size: 12))
-                    } else {
-                        Text("Unplanned")
-                            .font(AuraFont.secondary())
-                            .foregroundColor(.aura.text3)
-                        Spacer()
-                    }
+        return VStack(alignment: .leading, spacing: 10) {
+            AuraSectionLabel(title: "This week").padding(.top, 0)
+            HStack(spacing: 4) {
+                ForEach(order, id: \.self) { day in
+                    dayTile(day: day, label: labels[day], plan: plan)
                 }
-                .padding(AuraSpacing.s3)
-                .background(isToday ? Color.aura.accentSoft : Color.aura.surface)
-                .clipShape(RoundedRectangle(cornerRadius: AuraRadius.sm))
-                .overlay(
-                    RoundedRectangle(cornerRadius: AuraRadius.sm)
-                        .stroke(isToday ? Color.aura.accent.opacity(0.4) : Color.clear, lineWidth: 1)
-                )
             }
         }
-        .padding(.bottom, 8)
+    }
+
+    @ViewBuilder
+    private func dayTile(day: Int, label: String, plan: UserPlan) -> some View {
+        let workout = resolveWorkout(entry: plan.weekSchedule[day], plan: plan)
+        let isRest = workout == nil
+        let c = planWkStyle(workout?.name)
+        let shortName = workout.map {
+            $0.name.replacingOccurrences(of: "workout", with: "", options: .caseInsensitive)
+                .trimmingCharacters(in: .whitespaces)
+                .components(separatedBy: " ").first ?? ""
+        } ?? "Rest"
+
+        Button { editingPlan = plan } label: {
+            VStack(spacing: 6) {
+                Text(label.uppercased())
+                    .font(AuraFont.jakarta(9, .bold))
+                    .tracking(0.6)
+                    .foregroundColor(isRest ? .aura.text3 : c.tint)
+                ZStack {
+                    RoundedRectangle(cornerRadius: 10)
+                        .fill(isRest ? Color.aura.fill : c.bg)
+                        .frame(width: 34, height: 34)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 10)
+                                .stroke(isRest ? Color.aura.separator2 : c.border.opacity(0.45), lineWidth: 1.5)
+                        )
+                    Image(systemName: isRest ? "moon.fill" : planWkIcon(workout?.name))
+                        .font(AuraFont.jakarta(isRest ? 14 : 16))
+                        .foregroundColor(isRest ? .aura.text3 : c.tint)
+                }
+                Text(shortName)
+                    .font(AuraFont.jakarta(8, .bold))
+                    .foregroundColor(isRest ? .aura.text3 : c.tint)
+                    .lineLimit(1)
+                    .frame(maxWidth: 34)
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 9)
+            .padding(.horizontal, 2)
+            .background(isRest ? Color.clear : c.bg)
+            .clipShape(RoundedRectangle(cornerRadius: 12))
+            .overlay(
+                RoundedRectangle(cornerRadius: 12)
+                    .stroke(isRest ? Color.aura.separator2 : c.border.opacity(0.35), lineWidth: 1.5)
+            )
+        }
+        .buttonStyle(.plain)
+    }
+
+    // MARK: Workouts in program
+
+    private var workoutsInProgram: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            HStack {
+                AuraSectionLabel(title: "Workouts in program").padding(.top, 0)
+                Spacer()
+                PlanIconButton(icon: "plus", size: 16, diameter: 28, accent: true) {
+                    addWorkout()
+                }
+            }
+            .padding(.bottom, 10)
+
+            VStack(spacing: 10) {
+                ForEach(planWorkouts) { w in
+                    workoutCard(w)
+                }
+            }
+        }
+    }
+
+    @ViewBuilder
+    private func workoutCard(_ w: Workout) -> some View {
+        let c = planWkStyle(w.name)
+        let muscles = w.primaryMuscles
+            .components(separatedBy: ", ")
+            .joined(separator: " · ")
+        HStack(spacing: 13) {
+            ZStack {
+                RoundedRectangle(cornerRadius: 14)
+                    .fill(c.bg)
+                    .frame(width: 46, height: 46)
+                    .overlay(RoundedRectangle(cornerRadius: 14).stroke(c.border.opacity(0.35), lineWidth: 1.5))
+                Image(systemName: planWkIcon(w.name))
+                    .font(AuraFont.jakarta(20)).foregroundColor(c.tint)
+            }
+            VStack(alignment: .leading, spacing: 4) {
+                Text(w.name).font(AuraFont.jakarta(15, .heavy)).foregroundColor(.aura.text)
+                Text(muscles.isEmpty ? "Custom" : muscles)
+                    .font(AuraFont.jakarta(12, .medium)).foregroundColor(c.tint)
+                    .lineLimit(1)
+            }
+            Spacer()
+            HStack(spacing: 5) {
+                Button { editWorkout(w) } label: {
+                    smallGlyph("pencil", color: .aura.text)
+                }
+                Button {
+                    workoutToDelete = w
+                    showWorkoutDeleteAlert = true
+                } label: {
+                    smallGlyph("trash", color: .aura.red)
+                }
+            }
+        }
+        .padding(.horizontal, 14)
+        .padding(.vertical, 12)
+        .background(Color.aura.surface)
+        .clipShape(RoundedRectangle(cornerRadius: AuraRadius.md))
+        .overlay(RoundedRectangle(cornerRadius: AuraRadius.md).stroke(Color.aura.separator2, lineWidth: 1))
+    }
+
+    private func smallGlyph(_ icon: String, color: Color) -> some View {
+        Image(systemName: icon)
+            .font(AuraFont.jakarta(14, .medium))
+            .foregroundColor(color)
+            .frame(width: 30, height: 30)
+            .background(Color.aura.fill.opacity(0.5))
+            .clipShape(Circle())
+    }
+
+    // MARK: Workout CRUD routing
+
+    private func editWorkout(_ w: Workout) {
+        guard let plan = defaultPlan else { return }
+        if plan.customWorkouts.contains(where: { $0.id == w.id }) {
+            editorTarget = WorkoutEditorTarget(workout: w, context: .editInPlan(planID: plan.id))
+        } else if let prog = sourceProgram {
+            editorTarget = WorkoutEditorTarget(workout: w, context: .editInProgram(programID: prog.id))
+        } else {
+            editorTarget = WorkoutEditorTarget(workout: w, context: .view)
+        }
+    }
+
+    private func addWorkout() {
+        guard let plan = defaultPlan else { return }
+        let blank = Workout(name: "", primaryMuscles: "", estimatedMinutes: 45, exercises: [])
+        if let prog = sourceProgram {
+            editorTarget = WorkoutEditorTarget(workout: blank, context: .createInProgram(programID: prog.id))
+        } else {
+            editorTarget = WorkoutEditorTarget(workout: blank, context: .createInPlan(planID: plan.id))
+        }
+    }
+
+    private func deleteWorkout(_ w: Workout) {
+        guard var plan = defaultPlan else { return }
+        if plan.customWorkouts.contains(where: { $0.id == w.id }) {
+            plan.customWorkouts.removeAll { $0.id == w.id }
+            // Clear any schedule slots pointing at the removed workout.
+            for (day, entry) in plan.weekSchedule where entry == w.id {
+                plan.weekSchedule.removeValue(forKey: day)
+            }
+            planDB.updatePlan(plan)
+        } else if let prog = sourceProgram {
+            programDB.deleteWorkout(id: w.id, from: prog.id)
+        }
     }
 
     private func resolveWorkout(entry: UUID??, plan: UserPlan) -> Workout? {
@@ -301,7 +482,7 @@ struct PlanScheduleEditorView: View {
     private func dayRow(dayIndex: Int, dayName: String, workout: Workout?, isRest: Bool) -> some View {
         VStack(alignment: .leading, spacing: 8) {
             Text(dayName)
-                .font(.system(size: 14, weight: .bold))
+                .font(AuraFont.jakarta(14, .bold))
                 .foregroundColor(.aura.text)
 
             if let w = workout {

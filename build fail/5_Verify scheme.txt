@@ -1,0 +1,8 @@
+﻿2026-07-18T11:00:29.5182880Z ##[group]Run gem install xcpretty --no-document || true
+2026-07-18T11:00:29.5183610Z [36;1mgem install xcpretty --no-document || true[0m
+2026-07-18T11:00:29.5243260Z shell: /bin/bash -e {0}
+2026-07-18T11:00:29.5243780Z env:
+2026-07-18T11:00:29.5244210Z   MD_APPLE_SDK_ROOT: /Applications/Xcode_15.4.app
+2026-07-18T11:00:29.5244680Z ##[endgroup]
+2026-07-18T11:00:30.1606120Z Successfully installed xcpretty-0.4.1
+2026-07-18T11:00:30.1607240Z 1 gem installed

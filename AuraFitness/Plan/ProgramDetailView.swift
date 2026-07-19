@@ -23,7 +23,7 @@ struct ProgramDetailView: View {
 
                         VStack(spacing: 8) {
                             Image(systemName: "dumbbell.fill")
-                                .font(.system(size: 36))
+                                .font(AuraFont.jakarta(36))
                                 .foregroundColor(.white)
                             Text(program.name)
                                 .font(AuraFont.cardTitle())
@@ -47,7 +47,7 @@ struct ProgramDetailView: View {
                     HStack(alignment: .top, spacing: AuraSpacing.s2) {
                         Image(systemName: "info.circle.fill")
                             .foregroundColor(.aura.blue)
-                            .font(.system(size: 14))
+                            .font(AuraFont.jakarta(14))
                         Text("Predefined programs must be added to My Plans before editing.")
                             .font(AuraFont.secondary())
                             .foregroundColor(.aura.text2)
@@ -63,7 +63,7 @@ struct ProgramDetailView: View {
                         VStack(alignment: .leading, spacing: 6) {
                             HStack {
                                 Text("Day \(i + 1)")
-                                    .font(.system(size: 12, weight: .bold))
+                                    .font(AuraFont.jakarta(12, .bold))
                                     .foregroundColor(.aura.text3)
                                 Spacer()
                                 Text("~\(workout.estimatedMinutes) min")
@@ -71,7 +71,7 @@ struct ProgramDetailView: View {
                                     .foregroundColor(.aura.text2)
                             }
                             Text(workout.name)
-                                .font(.system(size: 15, weight: .bold))
+                                .font(AuraFont.jakarta(15, .bold))
                                 .foregroundColor(.aura.text)
                             Text(workout.exercises.prefix(3).map { $0.name }.joined(separator: " · "))
                                 .font(AuraFont.secondary())

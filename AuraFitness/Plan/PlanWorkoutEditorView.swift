@@ -79,14 +79,14 @@ struct PlanWorkoutEditorView: View {
         VStack(spacing: 0) {
             PlanNavbar(title: wkName, onBack: onBack) {
                 Button { onBack() } label: {
-                    Text("Save").font(.system(size: 17, weight: .bold)).foregroundColor(.aura.accent)
+                    Text("Save").font(AuraFont.jakarta(17, .bold)).foregroundColor(.aura.accent)
                 }
             }
 
             ScrollView(showsIndicators: false) {
                 VStack(alignment: .leading, spacing: 0) {
                     VStack(alignment: .leading, spacing: 8) {
-                        Text("Workout name").font(.system(size: 13, weight: .semibold)).foregroundColor(.aura.text2)
+                        Text("Workout name").font(AuraFont.jakarta(13, .semibold)).foregroundColor(.aura.text2)
                         TextField("Workout name", text: $wkName)
                             .font(AuraFont.body())
                             .padding(.horizontal, 13).frame(height: 46)
@@ -123,7 +123,7 @@ struct PlanWorkoutEditorView: View {
 
                     Button { picker = PickerRoute(mode: .add, afterIdx: exercises.count - 1) } label: {
                         HStack(spacing: AuraSpacing.s2) {
-                            Image(systemName: "plus").font(.system(size: 18, weight: .semibold))
+                            Image(systemName: "plus").font(AuraFont.jakarta(18, .semibold))
                             Text("Add Exercise").font(AuraFont.body())
                         }
                         .foregroundColor(.aura.accent)
@@ -156,8 +156,8 @@ struct PlanWorkoutEditorView: View {
         HStack(spacing: 8) {
             Capsule().fill(Color.aura.accentSoft).frame(height: 2)
             HStack(spacing: 3) {
-                Image(systemName: "bolt.fill").font(.system(size: 11))
-                Text("SUPERSET").font(.system(size: 10, weight: .heavy))
+                Image(systemName: "bolt.fill").font(AuraFont.jakarta(11))
+                Text("SUPERSET").font(AuraFont.jakarta(10, .heavy))
             }
             .foregroundColor(.aura.accent)
             .padding(.horizontal, 9).padding(.vertical, 3)
@@ -177,11 +177,11 @@ struct PlanWorkoutEditorView: View {
         let dimmed = dragIndex != nil && dragIndex != i
 
         HStack(spacing: 10) {
-            Image(systemName: "line.3.horizontal").font(.system(size: 18))
+            Image(systemName: "line.3.horizontal").font(AuraFont.jakarta(18))
                 .foregroundColor(.aura.text3)
             VStack(alignment: .leading, spacing: 6) {
                 Button { openExDetail(i) } label: {
-                    Text(ex.name).font(.system(size: 15, weight: .bold)).foregroundColor(.aura.text)
+                    Text(ex.name).font(AuraFont.jakarta(15, .bold)).foregroundColor(.aura.text)
                         .multilineTextAlignment(.leading)
                 }
                 .buttonStyle(.plain)
@@ -190,8 +190,8 @@ struct PlanWorkoutEditorView: View {
                     cardChip("\(ex.reps) reps")
                     if isSSFirst {
                         HStack(spacing: 3) {
-                            Image(systemName: "bolt.fill").font(.system(size: 10))
-                            Text("SS").font(.system(size: 10, weight: .bold))
+                            Image(systemName: "bolt.fill").font(AuraFont.jakarta(10))
+                            Text("SS").font(AuraFont.jakarta(10, .bold))
                         }
                         .foregroundColor(.aura.accent)
                         .padding(.horizontal, 7).padding(.vertical, 2)
@@ -201,7 +201,7 @@ struct PlanWorkoutEditorView: View {
             }
             Spacer()
             Button { sheet = .menu(i) } label: {
-                Image(systemName: "ellipsis").font(.system(size: 18, weight: .semibold)).foregroundColor(.aura.text)
+                Image(systemName: "ellipsis").font(AuraFont.jakarta(18, .semibold)).foregroundColor(.aura.text)
                     .frame(width: 34, height: 34).background(Color.aura.fill.opacity(0.5)).clipShape(Circle())
             }
         }
@@ -219,7 +219,7 @@ struct PlanWorkoutEditorView: View {
     }
 
     private func cardChip(_ t: String) -> some View {
-        Text(t).font(.system(size: 12, weight: .medium)).foregroundColor(.aura.text)
+        Text(t).font(AuraFont.jakarta(12, .medium)).foregroundColor(.aura.text)
             .padding(.horizontal, 10).padding(.vertical, 4)
             .background(Color.aura.fill).clipShape(Capsule())
     }
@@ -234,11 +234,11 @@ struct PlanWorkoutEditorView: View {
             VStack(spacing: 0) {
                 // Sets stepper
                 HStack {
-                    Text("Sets").font(.system(size: 14, weight: .semibold)).foregroundColor(.aura.text)
+                    Text("Sets").font(AuraFont.jakarta(14, .semibold)).foregroundColor(.aura.text)
                     Spacer()
                     HStack(spacing: 10) {
                         stepBtn("minus", accent: false) { exercises[i].sets = max(1, exercises[i].sets - 1) }
-                        Text("\(exercises[i].sets)").font(.system(size: 17, weight: .heavy))
+                        Text("\(exercises[i].sets)").font(AuraFont.jakarta(17, .heavy))
                             .frame(minWidth: 24).foregroundColor(.aura.text)
                         stepBtn("plus", accent: true) { exercises[i].sets += 1 }
                     }
@@ -251,11 +251,11 @@ struct PlanWorkoutEditorView: View {
 
                 // Rep-range input
                 HStack {
-                    Text("Rep range").font(.system(size: 14, weight: .semibold)).foregroundColor(.aura.text)
+                    Text("Rep range").font(AuraFont.jakarta(14, .semibold)).foregroundColor(.aura.text)
                     Spacer()
                     TextField("", text: $exercises[i].reps)
                         .multilineTextAlignment(.center)
-                        .font(.system(size: 15, weight: .bold)).foregroundColor(.aura.text)
+                        .font(AuraFont.jakarta(15, .bold)).foregroundColor(.aura.text)
                         .frame(width: 80, height: 34)
                         .background(Color.aura.fill)
                         .clipShape(RoundedRectangle(cornerRadius: AuraRadius.xs))
@@ -301,7 +301,7 @@ struct PlanWorkoutEditorView: View {
 
     private func stepBtn(_ icon: String, accent: Bool, action: @escaping () -> Void) -> some View {
         Button(action: action) {
-            Image(systemName: icon).font(.system(size: 16, weight: .semibold))
+            Image(systemName: icon).font(AuraFont.jakarta(16, .semibold))
                 .foregroundColor(accent ? .aura.accent : .aura.text)
                 .frame(width: 32, height: 32)
                 .background(accent ? Color.aura.accentSoft : Color.aura.fill.opacity(0.5))
@@ -318,7 +318,7 @@ struct PlanWorkoutEditorView: View {
             VStack(alignment: .leading, spacing: 0) {
                 HStack(spacing: 10) {
                     badge("A", color: .aura.accent)
-                    Text(srcEx.name).font(.system(size: 14, weight: .bold)).foregroundColor(.aura.text)
+                    Text(srcEx.name).font(AuraFont.jakarta(14, .bold)).foregroundColor(.aura.text)
                 }
                 .padding(.horizontal, 12).padding(.vertical, 10)
                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -333,7 +333,7 @@ struct PlanWorkoutEditorView: View {
                 }
                 .padding(.bottom, 14)
 
-                Text("OR PAIR WITH EXISTING").font(.system(size: 11, weight: .bold)).tracking(0.4)
+                Text("OR PAIR WITH EXISTING").font(AuraFont.jakarta(11, .bold)).tracking(0.4)
                     .foregroundColor(.aura.text2).padding(.horizontal, 4).padding(.bottom, 10)
 
                 PlanList {
@@ -344,11 +344,11 @@ struct PlanWorkoutEditorView: View {
                             HStack(spacing: AuraSpacing.s3) {
                                 badge("B", color: .aura.blue, size: 26)
                                 VStack(alignment: .leading, spacing: 2) {
-                                    Text(e.name).font(.system(size: 16, weight: .medium)).foregroundColor(.aura.text)
+                                    Text(e.name).font(AuraFont.jakarta(16, .medium)).foregroundColor(.aura.text)
                                     Text("\(e.sets) sets · \(e.reps) reps").font(AuraFont.secondary()).foregroundColor(.aura.text2)
                                 }
                                 Spacer()
-                                Image(systemName: "chevron.right").font(.system(size: 14, weight: .semibold)).foregroundColor(.aura.text3)
+                                Image(systemName: "chevron.right").font(AuraFont.jakarta(14, .semibold)).foregroundColor(.aura.text3)
                             }
                             .padding(.vertical, 11).padding(.horizontal, 14).frame(maxWidth: .infinity)
                         }
@@ -364,7 +364,7 @@ struct PlanWorkoutEditorView: View {
     }
 
     private func badge(_ t: String, color: Color, size: CGFloat = 24) -> some View {
-        Text(t).font(.system(size: 10, weight: .heavy)).foregroundColor(.white)
+        Text(t).font(AuraFont.jakarta(10, .heavy)).foregroundColor(.white)
             .frame(width: size, height: size).background(color).clipShape(RoundedRectangle(cornerRadius: 6))
     }
 

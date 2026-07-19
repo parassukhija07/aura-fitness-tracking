@@ -34,10 +34,10 @@ struct PersonalRecordsView: View {
                 Spacer()
                 VStack(spacing: AuraSpacing.s3) {
                     Image(systemName: "trophy")
-                        .font(.system(size: 44))
+                        .font(AuraFont.jakarta(44))
                         .foregroundColor(.aura.text3)
                     Text("No personal records yet")
-                        .font(.system(size: 17, weight: .semibold))
+                        .font(AuraFont.jakarta(17, .semibold))
                         .foregroundColor(.aura.text2)
                     Text("Complete workouts to set your first PRs automatically.")
                         .font(AuraFont.secondary())
@@ -47,7 +47,7 @@ struct PersonalRecordsView: View {
                 }
                 Spacer()
             } else {
-                ScrollView {
+                AuraScreenScroll {
                     VStack(spacing: AuraSpacing.s3) {
                         AuraCard {
                             VStack(spacing: 0) {
@@ -63,7 +63,7 @@ struct PersonalRecordsView: View {
                         // Info hint
                         HStack(alignment: .top, spacing: AuraSpacing.s2) {
                             Image(systemName: "info.circle")
-                                .font(.system(size: 15))
+                                .font(AuraFont.jakarta(15))
                                 .foregroundColor(.aura.text3)
                                 .padding(.top, 1)
                             Text("New PRs are detected automatically while you log and celebrated mid-workout.")
@@ -99,20 +99,20 @@ struct PersonalRecordsView: View {
                     .frame(width: 36, height: 36)
                 Image(systemName: isTop ? "trophy.fill" : "medal.fill")
                     .foregroundColor(isTop ? .white : .aura.text2)
-                    .font(.system(size: 16))
+                    .font(AuraFont.jakarta(16))
             }
 
             // Name + date
             VStack(alignment: .leading, spacing: 2) {
                 Text(pr.exerciseName)
-                    .font(.system(size: 15, weight: .bold))
+                    .font(AuraFont.jakarta(15, .bold))
                     .foregroundColor(.aura.text)
                 Text("Set \(pr.date.formatted(date: .abbreviated, time: .omitted))")
                     .font(AuraFont.secondary())
                     .foregroundColor(.aura.text2)
                 if isTop {
                     Text("1RM est. \(UnitFormatter.weight(pr.estimated1RM, unit: appState.weightUnit))")
-                        .font(.system(size: 11, weight: .semibold))
+                        .font(AuraFont.jakarta(11, .semibold))
                         .foregroundColor(.aura.accent)
                 }
             }
@@ -126,12 +126,12 @@ struct PersonalRecordsView: View {
                         .font(AuraFont.statNum(size: 18))
                         .foregroundColor(.aura.text)
                     Text("×\(pr.reps)")
-                        .font(.system(size: 13, weight: .semibold))
+                        .font(AuraFont.jakarta(13, .semibold))
                         .foregroundColor(.aura.text2)
                 }
                 if !isTop {
                     Text("1RM ≈ \(UnitFormatter.weight(pr.estimated1RM, unit: appState.weightUnit))")
-                        .font(.system(size: 11, weight: .medium))
+                        .font(AuraFont.jakarta(11, .medium))
                         .foregroundColor(.aura.text3)
                 }
             }

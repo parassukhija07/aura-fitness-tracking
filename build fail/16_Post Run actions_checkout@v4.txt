@@ -1,0 +1,616 @@
+﻿2026-07-18T11:00:53.0686380Z ##[group]Run set -o pipefail
+2026-07-18T11:00:53.0686700Z [36;1mset -o pipefail[0m
+2026-07-18T11:00:53.0687030Z [36;1mif command -v xcpretty >/dev/null 2>&1; then[0m
+2026-07-18T11:00:53.0687320Z [36;1m  xcodebuild build \[0m
+2026-07-18T11:00:53.0687620Z [36;1m    -project AuraFitness.xcodeproj \[0m
+2026-07-18T11:00:53.0687920Z [36;1m    -scheme AuraFitness \[0m
+2026-07-18T11:00:53.0688110Z [36;1m    -configuration Release \[0m
+2026-07-18T11:00:53.0688320Z [36;1m    -destination 'generic/platform=iOS' \[0m
+2026-07-18T11:00:53.0688730Z [36;1m    -derivedDataPath $RUNNER_TEMP/DerivedData \[0m
+2026-07-18T11:00:53.0689030Z [36;1m    CODE_SIGNING_ALLOWED=NO \[0m
+2026-07-18T11:00:53.0689340Z [36;1m    CODE_SIGN_IDENTITY="" \[0m
+2026-07-18T11:00:53.0689590Z [36;1m    CODE_SIGNING_REQUIRED=NO \[0m
+2026-07-18T11:00:53.0689900Z [36;1m    | xcpretty[0m
+2026-07-18T11:00:53.0690110Z [36;1melse[0m
+2026-07-18T11:00:53.0690370Z [36;1m  xcodebuild build \[0m
+2026-07-18T11:00:53.0690560Z [36;1m    -project AuraFitness.xcodeproj \[0m
+2026-07-18T11:00:53.0690950Z [36;1m    -scheme AuraFitness \[0m
+2026-07-18T11:00:53.0691200Z [36;1m    -configuration Release \[0m
+2026-07-18T11:00:53.0691420Z [36;1m    -destination 'generic/platform=iOS' \[0m
+2026-07-18T11:00:53.0691840Z [36;1m    -derivedDataPath $RUNNER_TEMP/DerivedData \[0m
+2026-07-18T11:00:53.0692350Z [36;1m    CODE_SIGNING_ALLOWED=NO \[0m
+2026-07-18T11:00:53.0692690Z [36;1m    CODE_SIGN_IDENTITY="" \[0m
+2026-07-18T11:00:53.0692950Z [36;1m    CODE_SIGNING_REQUIRED=NO[0m
+2026-07-18T11:00:53.0693130Z [36;1mfi[0m
+2026-07-18T11:00:53.0946160Z shell: /bin/bash -e {0}
+2026-07-18T11:00:53.0946510Z env:
+2026-07-18T11:00:53.0946910Z   MD_APPLE_SDK_ROOT: /Applications/Xcode_15.4.app
+2026-07-18T11:00:53.0947250Z ##[endgroup]
+2026-07-18T11:00:54.1883880Z 2026-07-18 11:00:54.187 xcodebuild[17241:45543] warning:  The file reference for "LogDayModel.swift" is a member of multiple groups ("DesignSystem" and "Models"); this indicates a malformed project.  Only the membership in one of the groups will be preserved (but membership in targets will be unaffected).  If you want a reference to the same file in more than one group, please add another reference to the same path.
+2026-07-18T11:00:54.1889100Z 2026-07-18 11:00:54.188 xcodebuild[17241:45543] warning:  The file reference for "AuraFitness.app" is a member of multiple groups ("" and "Products"); this indicates a malformed project.  Only the membership in one of the groups will be preserved (but membership in targets will be unaffected).  If you want a reference to the same file in more than one group, please add another reference to the same path.
+2026-07-18T11:01:02.2682590Z ▸ Copying /Users/runner/work/_temp/DerivedData/Build/Products/Release-iphoneos/swift-crypto_Crypto.bundle/PrivacyInfo.xcprivacy
+2026-07-18T11:01:02.2780130Z ▸ Processing empty-swift-crypto_Crypto.plist
+2026-07-18T11:01:02.2883190Z ▸ Touching swift-crypto_Crypto.bundle (in target 'swift-crypto_Crypto' from project 'swift-crypto')
+2026-07-18T11:01:04.9544430Z 
+2026-07-18T11:01:04.9650970Z ❌  /Users/runner/work/_temp/DerivedData/SourcePackages/checkouts/xctest-dynamic-overlay/Sources/IssueReporting/Unimplemented.swift:4:17: duplicate attribute
+2026-07-18T11:01:04.9689150Z 
+2026-07-18T11:01:04.9689870Z     @concurrent @Sendable (repeat each Argument) async -> Result
+2026-07-18T11:01:04.9690740Z                 ^
+2026-07-18T11:01:04.9691140Z 
+2026-07-18T11:01:04.9691300Z 
+2026-07-18T11:01:04.9691470Z 
+2026-07-18T11:01:04.9692590Z ❌  /Users/runner/work/_temp/DerivedData/SourcePackages/checkouts/xctest-dynamic-overlay/Sources/IssueReporting/Unimplemented.swift:6:17: duplicate attribute
+2026-07-18T11:01:04.9695820Z 
+2026-07-18T11:01:04.9696160Z     @concurrent @Sendable (repeat each Argument) async throws -> Result
+2026-07-18T11:01:04.9696910Z                 ^
+2026-07-18T11:01:04.9697220Z 
+2026-07-18T11:01:04.9697310Z 
+2026-07-18T11:01:04.9697460Z 
+2026-07-18T11:01:04.9698650Z ❌  /Users/runner/work/_temp/DerivedData/SourcePackages/checkouts/xctest-dynamic-overlay/Sources/IssueReporting/Internal/AppHostWarning.swift:1:8: ambiguous implicit access level for import of 'Foundation'; it is imported as 'public' elsewhere
+2026-07-18T11:01:04.9709270Z 
+2026-07-18T11:01:04.9709440Z import Foundation
+2026-07-18T11:01:04.9709670Z        ^
+2026-07-18T11:01:04.9709820Z 
+2026-07-18T11:01:04.9709830Z 
+2026-07-18T11:01:04.9709830Z 
+2026-07-18T11:01:04.9710680Z ❌  /Users/runner/work/_temp/DerivedData/SourcePackages/checkouts/xctest-dynamic-overlay/Sources/IssueReporting/Internal/FailureObserver.swift:1:8: ambiguous implicit access level for import of 'Foundation'; it is imported as 'public' elsewhere
+2026-07-18T11:01:04.9711510Z 
+2026-07-18T11:01:04.9711580Z import Foundation
+2026-07-18T11:01:04.9711950Z ^
+2026-07-18T11:01:04.9712080Z 
+2026-07-18T11:01:04.9712080Z 
+2026-07-18T11:01:04.9712090Z 
+2026-07-18T11:01:04.9712790Z ❌  /Users/runner/work/_temp/DerivedData/SourcePackages/checkouts/xctest-dynamic-overlay/Sources/IssueReporting/Internal/LockIsolated.swift:1:8: ambiguous implicit access level for import of 'Foundation'; it is imported as 'public' elsewhere
+2026-07-18T11:01:04.9713570Z 
+2026-07-18T11:01:04.9713690Z import Foundation
+2026-07-18T11:01:04.9713890Z ^
+2026-07-18T11:01:04.9714040Z 
+2026-07-18T11:01:04.9714040Z 
+2026-07-18T11:01:04.9714570Z 
+2026-07-18T11:01:04.9715420Z ❌  /Users/runner/work/_temp/DerivedData/SourcePackages/checkouts/xctest-dynamic-overlay/Sources/IssueReporting/Internal/SwiftTesting.swift:1:8: ambiguous implicit access level for import of 'Foundation'; it is imported as 'public' elsewhere
+2026-07-18T11:01:04.9716200Z 
+2026-07-18T11:01:04.9716310Z import Foundation
+2026-07-18T11:01:04.9716500Z ^
+2026-07-18T11:01:04.9716650Z 
+2026-07-18T11:01:04.9716660Z 
+2026-07-18T11:01:04.9716660Z 
+2026-07-18T11:01:04.9717380Z ❌  /Users/runner/work/_temp/DerivedData/SourcePackages/checkouts/xctest-dynamic-overlay/Sources/IssueReporting/Internal/Warn.swift:4:10: ambiguous implicit access level for import of 'Foundation'; it is imported as 'public' elsewhere
+2026-07-18T11:01:04.9718090Z 
+2026-07-18T11:01:04.9718140Z   import Foundation
+2026-07-18T11:01:04.9718400Z ^
+2026-07-18T11:01:04.9718520Z 
+2026-07-18T11:01:04.9718520Z 
+2026-07-18T11:01:04.9718520Z 
+2026-07-18T11:01:04.9719170Z ❌  /Users/runner/work/_temp/DerivedData/SourcePackages/checkouts/xctest-dynamic-overlay/Sources/IssueReporting/IsTesting.swift:4:10: ambiguous implicit access level for import of 'Foundation'; it is imported as 'public' elsewhere
+2026-07-18T11:01:04.9719890Z 
+2026-07-18T11:01:04.9720030Z   import Foundation
+2026-07-18T11:01:04.9720220Z ^
+2026-07-18T11:01:04.9720340Z 
+2026-07-18T11:01:04.9720340Z 
+2026-07-18T11:01:04.9720340Z 
+2026-07-18T11:01:04.9721090Z ❌  /Users/runner/work/_temp/DerivedData/SourcePackages/checkouts/xctest-dynamic-overlay/Sources/IssueReporting/Internal/AppHostWarning.swift:1:8: ambiguous implicit access level for import of 'Foundation'; it is imported as 'public' elsewhere
+2026-07-18T11:01:04.9721830Z 
+2026-07-18T11:01:04.9721940Z import Foundation
+2026-07-18T11:01:04.9722160Z ^
+2026-07-18T11:01:04.9722270Z 
+2026-07-18T11:01:04.9722270Z 
+2026-07-18T11:01:04.9722270Z 
+2026-07-18T11:01:04.9723010Z ❌  /Users/runner/work/_temp/DerivedData/SourcePackages/checkouts/xctest-dynamic-overlay/Sources/IssueReporting/Internal/FailureObserver.swift:1:8: ambiguous implicit access level for import of 'Foundation'; it is imported as 'public' elsewhere
+2026-07-18T11:01:04.9723750Z 
+2026-07-18T11:01:04.9723800Z import Foundation
+2026-07-18T11:01:04.9724080Z ^
+2026-07-18T11:01:04.9724190Z 
+2026-07-18T11:01:04.9724190Z 
+2026-07-18T11:01:04.9724190Z 
+2026-07-18T11:01:04.9724870Z ❌  /Users/runner/work/_temp/DerivedData/SourcePackages/checkouts/xctest-dynamic-overlay/Sources/IssueReporting/Internal/LockIsolated.swift:1:8: ambiguous implicit access level for import of 'Foundation'; it is imported as 'public' elsewhere
+2026-07-18T11:01:04.9725630Z 
+2026-07-18T11:01:04.9725730Z import Foundation
+2026-07-18T11:01:04.9725970Z ^
+2026-07-18T11:01:04.9726040Z 
+2026-07-18T11:01:04.9726040Z 
+2026-07-18T11:01:04.9726240Z 
+2026-07-18T11:01:04.9726980Z ❌  /Users/runner/work/_temp/DerivedData/SourcePackages/checkouts/xctest-dynamic-overlay/Sources/IssueReporting/Internal/SwiftTesting.swift:1:8: ambiguous implicit access level for import of 'Foundation'; it is imported as 'public' elsewhere
+2026-07-18T11:01:04.9727730Z 
+2026-07-18T11:01:04.9727850Z import Foundation
+2026-07-18T11:01:04.9728040Z ^
+2026-07-18T11:01:04.9728150Z 
+2026-07-18T11:01:04.9728150Z 
+2026-07-18T11:01:04.9728150Z 
+2026-07-18T11:01:04.9728870Z ❌  /Users/runner/work/_temp/DerivedData/SourcePackages/checkouts/xctest-dynamic-overlay/Sources/IssueReporting/Internal/Warn.swift:4:10: ambiguous implicit access level for import of 'Foundation'; it is imported as 'public' elsewhere
+2026-07-18T11:01:04.9729570Z 
+2026-07-18T11:01:04.9729620Z   import Foundation
+2026-07-18T11:01:04.9729880Z ^
+2026-07-18T11:01:04.9730000Z 
+2026-07-18T11:01:04.9730010Z 
+2026-07-18T11:01:04.9730010Z 
+2026-07-18T11:01:04.9730640Z ❌  /Users/runner/work/_temp/DerivedData/SourcePackages/checkouts/xctest-dynamic-overlay/Sources/IssueReporting/IsTesting.swift:4:10: ambiguous implicit access level for import of 'Foundation'; it is imported as 'public' elsewhere
+2026-07-18T11:01:04.9731340Z 
+2026-07-18T11:01:04.9731440Z   import Foundation
+2026-07-18T11:01:04.9731770Z ^
+2026-07-18T11:01:04.9731880Z 
+2026-07-18T11:01:04.9731880Z 
+2026-07-18T11:01:04.9731890Z 
+2026-07-18T11:01:04.9732640Z ❌  /Users/runner/work/_temp/DerivedData/SourcePackages/checkouts/xctest-dynamic-overlay/Sources/IssueReporting/Internal/AppHostWarning.swift:1:8: ambiguous implicit access level for import of 'Foundation'; it is imported as 'public' elsewhere
+2026-07-18T11:01:04.9733370Z 
+2026-07-18T11:01:04.9733480Z import Foundation
+2026-07-18T11:01:04.9733650Z ^
+2026-07-18T11:01:04.9733770Z 
+2026-07-18T11:01:04.9733770Z 
+2026-07-18T11:01:04.9733770Z 
+2026-07-18T11:01:04.9734520Z ❌  /Users/runner/work/_temp/DerivedData/SourcePackages/checkouts/xctest-dynamic-overlay/Sources/IssueReporting/Internal/FailureObserver.swift:1:8: ambiguous implicit access level for import of 'Foundation'; it is imported as 'public' elsewhere
+2026-07-18T11:01:04.9735260Z 
+2026-07-18T11:01:04.9735380Z import Foundation
+2026-07-18T11:01:04.9735570Z ^
+2026-07-18T11:01:04.9735680Z 
+2026-07-18T11:01:04.9735680Z 
+2026-07-18T11:01:04.9735690Z 
+2026-07-18T11:01:04.9736430Z ❌  /Users/runner/work/_temp/DerivedData/SourcePackages/checkouts/xctest-dynamic-overlay/Sources/IssueReporting/Internal/LockIsolated.swift:1:8: ambiguous implicit access level for import of 'Foundation'; it is imported as 'public' elsewhere
+2026-07-18T11:01:04.9737090Z 
+2026-07-18T11:01:04.9737220Z import Foundation
+2026-07-18T11:01:04.9737440Z ^
+2026-07-18T11:01:04.9737510Z 
+2026-07-18T11:01:04.9737590Z 
+2026-07-18T11:01:04.9737590Z 
+2026-07-18T11:01:04.9738270Z ❌  /Users/runner/work/_temp/DerivedData/SourcePackages/checkouts/xctest-dynamic-overlay/Sources/IssueReporting/Internal/SwiftTesting.swift:1:8: ambiguous implicit access level for import of 'Foundation'; it is imported as 'public' elsewhere
+2026-07-18T11:01:04.9739020Z 
+2026-07-18T11:01:04.9739150Z import Foundation
+2026-07-18T11:01:04.9739330Z ^
+2026-07-18T11:01:04.9739490Z 
+2026-07-18T11:01:04.9739500Z 
+2026-07-18T11:01:04.9739500Z 
+2026-07-18T11:01:04.9740220Z ❌  /Users/runner/work/_temp/DerivedData/SourcePackages/checkouts/xctest-dynamic-overlay/Sources/IssueReporting/Internal/Warn.swift:4:10: ambiguous implicit access level for import of 'Foundation'; it is imported as 'public' elsewhere
+2026-07-18T11:01:04.9740930Z 
+2026-07-18T11:01:04.9741060Z   import Foundation
+2026-07-18T11:01:04.9741290Z ^
+2026-07-18T11:01:04.9741410Z 
+2026-07-18T11:01:04.9741410Z 
+2026-07-18T11:01:04.9741410Z 
+2026-07-18T11:01:04.9742110Z ❌  /Users/runner/work/_temp/DerivedData/SourcePackages/checkouts/xctest-dynamic-overlay/Sources/IssueReporting/IsTesting.swift:4:10: ambiguous implicit access level for import of 'Foundation'; it is imported as 'public' elsewhere
+2026-07-18T11:01:04.9742750Z 
+2026-07-18T11:01:04.9742850Z   import Foundation
+2026-07-18T11:01:04.9743220Z ^
+2026-07-18T11:01:04.9743280Z 
+2026-07-18T11:01:04.9743280Z 
+2026-07-18T11:01:04.9743280Z 
+2026-07-18T11:01:04.9744040Z ❌  /Users/runner/work/_temp/DerivedData/SourcePackages/checkouts/xctest-dynamic-overlay/Sources/IssueReporting/Internal/AppHostWarning.swift:1:8: ambiguous implicit access level for import of 'Foundation'; it is imported as 'public' elsewhere
+2026-07-18T11:01:04.9744770Z 
+2026-07-18T11:01:04.9744900Z import Foundation
+2026-07-18T11:01:04.9745090Z ^
+2026-07-18T11:01:04.9745200Z 
+2026-07-18T11:01:04.9745210Z 
+2026-07-18T11:01:04.9745210Z 
+2026-07-18T11:01:04.9746000Z ❌  /Users/runner/work/_temp/DerivedData/SourcePackages/checkouts/xctest-dynamic-overlay/Sources/IssueReporting/Internal/FailureObserver.swift:1:8: ambiguous implicit access level for import of 'Foundation'; it is imported as 'public' elsewhere
+2026-07-18T11:01:04.9746740Z 
+2026-07-18T11:01:04.9746800Z import Foundation
+2026-07-18T11:01:04.9747170Z ^
+2026-07-18T11:01:04.9747360Z 
+2026-07-18T11:01:04.9747370Z 
+2026-07-18T11:01:04.9747370Z 
+2026-07-18T11:01:04.9748130Z ❌  /Users/runner/work/_temp/DerivedData/SourcePackages/checkouts/xctest-dynamic-overlay/Sources/IssueReporting/Internal/LockIsolated.swift:1:8: ambiguous implicit access level for import of 'Foundation'; it is imported as 'public' elsewhere
+2026-07-18T11:01:04.9748960Z 
+2026-07-18T11:01:04.9749140Z import Foundation
+2026-07-18T11:01:04.9749380Z ^
+2026-07-18T11:01:04.9749440Z 
+2026-07-18T11:01:04.9749500Z 
+2026-07-18T11:01:04.9749500Z 
+2026-07-18T11:01:04.9750190Z ❌  /Users/runner/work/_temp/DerivedData/SourcePackages/checkouts/xctest-dynamic-overlay/Sources/IssueReporting/Internal/SwiftTesting.swift:1:8: ambiguous implicit access level for import of 'Foundation'; it is imported as 'public' elsewhere
+2026-07-18T11:01:04.9750920Z 
+2026-07-18T11:01:04.9751020Z import Foundation
+2026-07-18T11:01:04.9751210Z ^
+2026-07-18T11:01:04.9751340Z 
+2026-07-18T11:01:04.9751340Z 
+2026-07-18T11:01:04.9751340Z 
+2026-07-18T11:01:04.9752040Z ❌  /Users/runner/work/_temp/DerivedData/SourcePackages/checkouts/xctest-dynamic-overlay/Sources/IssueReporting/Internal/Warn.swift:4:10: ambiguous implicit access level for import of 'Foundation'; it is imported as 'public' elsewhere
+2026-07-18T11:01:04.9752750Z 
+2026-07-18T11:01:04.9752860Z   import Foundation
+2026-07-18T11:01:04.9753050Z ^
+2026-07-18T11:01:04.9753170Z 
+2026-07-18T11:01:04.9753170Z 
+2026-07-18T11:01:04.9753170Z 
+2026-07-18T11:01:04.9753880Z ❌  /Users/runner/work/_temp/DerivedData/SourcePackages/checkouts/xctest-dynamic-overlay/Sources/IssueReporting/IsTesting.swift:4:10: ambiguous implicit access level for import of 'Foundation'; it is imported as 'public' elsewhere
+2026-07-18T11:01:04.9754510Z 
+2026-07-18T11:01:04.9754620Z   import Foundation
+2026-07-18T11:01:04.9754860Z ^
+2026-07-18T11:01:04.9754920Z 
+2026-07-18T11:01:04.9754920Z 
+2026-07-18T11:01:04.9754920Z 
+2026-07-18T11:01:04.9755660Z ❌  /Users/runner/work/_temp/DerivedData/SourcePackages/checkouts/xctest-dynamic-overlay/Sources/IssueReporting/Internal/AppHostWarning.swift:1:8: ambiguous implicit access level for import of 'Foundation'; it is imported as 'public' elsewhere
+2026-07-18T11:01:04.9756390Z 
+2026-07-18T11:01:04.9756500Z import Foundation
+2026-07-18T11:01:04.9756830Z ^
+2026-07-18T11:01:04.9756950Z 
+2026-07-18T11:01:04.9756950Z 
+2026-07-18T11:01:04.9756960Z 
+2026-07-18T11:01:04.9757720Z ❌  /Users/runner/work/_temp/DerivedData/SourcePackages/checkouts/xctest-dynamic-overlay/Sources/IssueReporting/Internal/FailureObserver.swift:1:8: ambiguous implicit access level for import of 'Foundation'; it is imported as 'public' elsewhere
+2026-07-18T11:01:04.9758460Z 
+2026-07-18T11:01:04.9758510Z import Foundation
+2026-07-18T11:01:04.9758750Z ^
+2026-07-18T11:01:04.9758870Z 
+2026-07-18T11:01:04.9758870Z 
+2026-07-18T11:01:04.9758870Z 
+2026-07-18T11:01:04.9759550Z ❌  /Users/runner/work/_temp/DerivedData/SourcePackages/checkouts/xctest-dynamic-overlay/Sources/IssueReporting/Internal/LockIsolated.swift:1:8: ambiguous implicit access level for import of 'Foundation'; it is imported as 'public' elsewhere
+2026-07-18T11:01:04.9760450Z 
+2026-07-18T11:01:04.9760560Z import Foundation
+2026-07-18T11:01:04.9760800Z ^
+2026-07-18T11:01:04.9760870Z 
+2026-07-18T11:01:04.9760870Z 
+2026-07-18T11:01:04.9760870Z 
+2026-07-18T11:01:04.9761610Z ❌  /Users/runner/work/_temp/DerivedData/SourcePackages/checkouts/xctest-dynamic-overlay/Sources/IssueReporting/Internal/SwiftTesting.swift:1:8: ambiguous implicit access level for import of 'Foundation'; it is imported as 'public' elsewhere
+2026-07-18T11:01:04.9762340Z 
+2026-07-18T11:01:04.9762440Z import Foundation
+2026-07-18T11:01:04.9762660Z ^
+2026-07-18T11:01:04.9762790Z 
+2026-07-18T11:01:04.9762790Z 
+2026-07-18T11:01:04.9762800Z 
+2026-07-18T11:01:04.9763510Z ❌  /Users/runner/work/_temp/DerivedData/SourcePackages/checkouts/xctest-dynamic-overlay/Sources/IssueReporting/Internal/Warn.swift:4:10: ambiguous implicit access level for import of 'Foundation'; it is imported as 'public' elsewhere
+2026-07-18T11:01:04.9764220Z 
+2026-07-18T11:01:04.9764420Z   import Foundation
+2026-07-18T11:01:04.9764660Z ^
+2026-07-18T11:01:04.9764790Z 
+2026-07-18T11:01:04.9764790Z 
+2026-07-18T11:01:04.9764790Z 
+2026-07-18T11:01:04.9765500Z ❌  /Users/runner/work/_temp/DerivedData/SourcePackages/checkouts/xctest-dynamic-overlay/Sources/IssueReporting/IsTesting.swift:4:10: ambiguous implicit access level for import of 'Foundation'; it is imported as 'public' elsewhere
+2026-07-18T11:01:04.9766400Z 
+2026-07-18T11:01:04.9766460Z   import Foundation
+2026-07-18T11:01:04.9766610Z ^
+2026-07-18T11:01:04.9766680Z 
+2026-07-18T11:01:04.9766690Z 
+2026-07-18T11:01:04.9766690Z 
+2026-07-18T11:01:04.9767390Z ❌  /Users/runner/work/_temp/DerivedData/SourcePackages/checkouts/xctest-dynamic-overlay/Sources/IssueReporting/Internal/AppHostWarning.swift:1:8: ambiguous implicit access level for import of 'Foundation'; it is imported as 'public' elsewhere
+2026-07-18T11:01:04.9768080Z 
+2026-07-18T11:01:04.9768180Z import Foundation
+2026-07-18T11:01:04.9768740Z ^
+2026-07-18T11:01:04.9768810Z 
+2026-07-18T11:01:04.9768810Z 
+2026-07-18T11:01:04.9768820Z 
+2026-07-18T11:01:04.9769530Z ❌  /Users/runner/work/_temp/DerivedData/SourcePackages/checkouts/xctest-dynamic-overlay/Sources/IssueReporting/Internal/FailureObserver.swift:1:8: ambiguous implicit access level for import of 'Foundation'; it is imported as 'public' elsewhere
+2026-07-18T11:01:04.9770220Z 
+2026-07-18T11:01:04.9770270Z import Foundation
+2026-07-18T11:01:04.9847920Z ^
+2026-07-18T11:01:04.9848110Z 
+2026-07-18T11:01:04.9848120Z 
+2026-07-18T11:01:04.9848120Z 
+2026-07-18T11:01:04.9849050Z ❌  /Users/runner/work/_temp/DerivedData/SourcePackages/checkouts/xctest-dynamic-overlay/Sources/IssueReporting/Internal/LockIsolated.swift:1:8: ambiguous implicit access level for import of 'Foundation'; it is imported as 'public' elsewhere
+2026-07-18T11:01:04.9849770Z 
+2026-07-18T11:01:04.9849830Z import Foundation
+2026-07-18T11:01:04.9850410Z ^
+2026-07-18T11:01:04.9850480Z 
+2026-07-18T11:01:04.9850480Z 
+2026-07-18T11:01:04.9850480Z 
+2026-07-18T11:01:04.9851230Z ❌  /Users/runner/work/_temp/DerivedData/SourcePackages/checkouts/xctest-dynamic-overlay/Sources/IssueReporting/Internal/SwiftTesting.swift:1:8: ambiguous implicit access level for import of 'Foundation'; it is imported as 'public' elsewhere
+2026-07-18T11:01:04.9852810Z 
+2026-07-18T11:01:04.9854000Z import Foundation
+2026-07-18T11:01:04.9854220Z ^
+2026-07-18T11:01:04.9855310Z 
+2026-07-18T11:01:04.9855320Z 
+2026-07-18T11:01:04.9855320Z 
+2026-07-18T11:01:04.9856040Z ❌  /Users/runner/work/_temp/DerivedData/SourcePackages/checkouts/xctest-dynamic-overlay/Sources/IssueReporting/Internal/Warn.swift:4:10: ambiguous implicit access level for import of 'Foundation'; it is imported as 'public' elsewhere
+2026-07-18T11:01:04.9856750Z 
+2026-07-18T11:01:04.9856810Z   import Foundation
+2026-07-18T11:01:04.9857070Z ^
+2026-07-18T11:01:04.9857200Z 
+2026-07-18T11:01:04.9857200Z 
+2026-07-18T11:01:04.9857200Z 
+2026-07-18T11:01:04.9857850Z ❌  /Users/runner/work/_temp/DerivedData/SourcePackages/checkouts/xctest-dynamic-overlay/Sources/IssueReporting/IsTesting.swift:4:10: ambiguous implicit access level for import of 'Foundation'; it is imported as 'public' elsewhere
+2026-07-18T11:01:04.9859890Z 
+2026-07-18T11:01:04.9860820Z   import Foundation
+2026-07-18T11:01:04.9860990Z ^
+2026-07-18T11:01:04.9861050Z 
+2026-07-18T11:01:04.9861050Z 
+2026-07-18T11:01:04.9861060Z 
+2026-07-18T11:01:04.9861840Z ❌  /Users/runner/work/_temp/DerivedData/SourcePackages/checkouts/xctest-dynamic-overlay/Sources/IssueReporting/Internal/AppHostWarning.swift:1:8: ambiguous implicit access level for import of 'Foundation'; it is imported as 'public' elsewhere
+2026-07-18T11:01:04.9862550Z 
+2026-07-18T11:01:04.9862610Z import Foundation
+2026-07-18T11:01:04.9862840Z ^
+2026-07-18T11:01:04.9862970Z 
+2026-07-18T11:01:04.9862970Z 
+2026-07-18T11:01:04.9862970Z 
+2026-07-18T11:01:04.9863710Z ❌  /Users/runner/work/_temp/DerivedData/SourcePackages/checkouts/xctest-dynamic-overlay/Sources/IssueReporting/Internal/FailureObserver.swift:1:8: ambiguous implicit access level for import of 'Foundation'; it is imported as 'public' elsewhere
+2026-07-18T11:01:04.9864420Z 
+2026-07-18T11:01:04.9864480Z import Foundation
+2026-07-18T11:01:04.9864780Z ^
+2026-07-18T11:01:04.9864850Z 
+2026-07-18T11:01:04.9864860Z 
+2026-07-18T11:01:04.9864860Z 
+2026-07-18T11:01:04.9865560Z ❌  /Users/runner/work/_temp/DerivedData/SourcePackages/checkouts/xctest-dynamic-overlay/Sources/IssueReporting/Internal/LockIsolated.swift:1:8: ambiguous implicit access level for import of 'Foundation'; it is imported as 'public' elsewhere
+2026-07-18T11:01:04.9866540Z 
+2026-07-18T11:01:04.9866700Z import Foundation
+2026-07-18T11:01:04.9866840Z ^
+2026-07-18T11:01:04.9866980Z 
+2026-07-18T11:01:04.9866980Z 
+2026-07-18T11:01:04.9866990Z 
+2026-07-18T11:01:04.9867750Z ❌  /Users/runner/work/_temp/DerivedData/SourcePackages/checkouts/xctest-dynamic-overlay/Sources/IssueReporting/Internal/SwiftTesting.swift:1:8: ambiguous implicit access level for import of 'Foundation'; it is imported as 'public' elsewhere
+2026-07-18T11:01:04.9868550Z 
+2026-07-18T11:01:04.9868690Z import Foundation
+2026-07-18T11:01:04.9868890Z ^
+2026-07-18T11:01:04.9869030Z 
+2026-07-18T11:01:04.9869030Z 
+2026-07-18T11:01:04.9869030Z 
+2026-07-18T11:01:04.9869840Z ❌  /Users/runner/work/_temp/DerivedData/SourcePackages/checkouts/xctest-dynamic-overlay/Sources/IssueReporting/Internal/Warn.swift:4:10: ambiguous implicit access level for import of 'Foundation'; it is imported as 'public' elsewhere
+2026-07-18T11:01:04.9870690Z 
+2026-07-18T11:01:04.9870770Z   import Foundation
+2026-07-18T11:01:04.9871000Z ^
+2026-07-18T11:01:04.9871180Z 
+2026-07-18T11:01:04.9871190Z 
+2026-07-18T11:01:04.9871190Z 
+2026-07-18T11:01:04.9871910Z ❌  /Users/runner/work/_temp/DerivedData/SourcePackages/checkouts/xctest-dynamic-overlay/Sources/IssueReporting/IsTesting.swift:4:10: ambiguous implicit access level for import of 'Foundation'; it is imported as 'public' elsewhere
+2026-07-18T11:01:04.9872640Z 
+2026-07-18T11:01:04.9872770Z   import Foundation
+2026-07-18T11:01:04.9872970Z ^
+2026-07-18T11:01:04.9873110Z 
+2026-07-18T11:01:04.9873120Z 
+2026-07-18T11:01:04.9873120Z 
+2026-07-18T11:01:04.9873900Z ❌  /Users/runner/work/_temp/DerivedData/SourcePackages/checkouts/xctest-dynamic-overlay/Sources/IssueReporting/Internal/AppHostWarning.swift:1:8: ambiguous implicit access level for import of 'Foundation'; it is imported as 'public' elsewhere
+2026-07-18T11:01:04.9874700Z 
+2026-07-18T11:01:04.9874850Z import Foundation
+2026-07-18T11:01:04.9875120Z ^
+2026-07-18T11:01:04.9875260Z 
+2026-07-18T11:01:04.9875260Z 
+2026-07-18T11:01:04.9875260Z 
+2026-07-18T11:01:04.9876060Z ❌  /Users/runner/work/_temp/DerivedData/SourcePackages/checkouts/xctest-dynamic-overlay/Sources/IssueReporting/Internal/FailureObserver.swift:1:8: ambiguous implicit access level for import of 'Foundation'; it is imported as 'public' elsewhere
+2026-07-18T11:01:04.9876770Z 
+2026-07-18T11:01:04.9876930Z import Foundation
+2026-07-18T11:01:04.9877210Z ^
+2026-07-18T11:01:04.9877270Z 
+2026-07-18T11:01:04.9877270Z 
+2026-07-18T11:01:04.9877270Z 
+2026-07-18T11:01:04.9878030Z ❌  /Users/runner/work/_temp/DerivedData/SourcePackages/checkouts/xctest-dynamic-overlay/Sources/IssueReporting/Internal/LockIsolated.swift:1:8: ambiguous implicit access level for import of 'Foundation'; it is imported as 'public' elsewhere
+2026-07-18T11:01:04.9879120Z 
+2026-07-18T11:01:04.9879500Z import Foundation
+2026-07-18T11:01:04.9879810Z ^
+2026-07-18T11:01:04.9879980Z 
+2026-07-18T11:01:04.9879980Z 
+2026-07-18T11:01:04.9879980Z 
+2026-07-18T11:01:04.9880790Z ❌  /Users/runner/work/_temp/DerivedData/SourcePackages/checkouts/xctest-dynamic-overlay/Sources/IssueReporting/Internal/SwiftTesting.swift:1:8: ambiguous implicit access level for import of 'Foundation'; it is imported as 'public' elsewhere
+2026-07-18T11:01:04.9881740Z 
+2026-07-18T11:01:04.9881810Z import Foundation
+2026-07-18T11:01:04.9882010Z ^
+2026-07-18T11:01:04.9882150Z 
+2026-07-18T11:01:04.9882150Z 
+2026-07-18T11:01:04.9882150Z 
+2026-07-18T11:01:04.9882910Z ❌  /Users/runner/work/_temp/DerivedData/SourcePackages/checkouts/xctest-dynamic-overlay/Sources/IssueReporting/Internal/Warn.swift:4:10: ambiguous implicit access level for import of 'Foundation'; it is imported as 'public' elsewhere
+2026-07-18T11:01:04.9883610Z 
+2026-07-18T11:01:04.9883670Z   import Foundation
+2026-07-18T11:01:04.9883910Z ^
+2026-07-18T11:01:04.9883970Z 
+2026-07-18T11:01:04.9884240Z 
+2026-07-18T11:01:04.9884240Z 
+2026-07-18T11:01:04.9885020Z ❌  /Users/runner/work/_temp/DerivedData/SourcePackages/checkouts/xctest-dynamic-overlay/Sources/IssueReporting/IsTesting.swift:4:10: ambiguous implicit access level for import of 'Foundation'; it is imported as 'public' elsewhere
+2026-07-18T11:01:04.9885690Z 
+2026-07-18T11:01:04.9885750Z   import Foundation
+2026-07-18T11:01:04.9885970Z ^
+2026-07-18T11:01:04.9886100Z 
+2026-07-18T11:01:04.9886110Z 
+2026-07-18T11:01:04.9886110Z 
+2026-07-18T11:01:04.9886870Z ❌  /Users/runner/work/_temp/DerivedData/SourcePackages/checkouts/xctest-dynamic-overlay/Sources/IssueReporting/Internal/AppHostWarning.swift:1:8: ambiguous implicit access level for import of 'Foundation'; it is imported as 'public' elsewhere
+2026-07-18T11:01:04.9887620Z 
+2026-07-18T11:01:04.9887680Z import Foundation
+2026-07-18T11:01:04.9887940Z ^
+2026-07-18T11:01:04.9888080Z 
+2026-07-18T11:01:04.9888090Z 
+2026-07-18T11:01:04.9888090Z 
+2026-07-18T11:01:04.9888800Z ❌  /Users/runner/work/_temp/DerivedData/SourcePackages/checkouts/xctest-dynamic-overlay/Sources/IssueReporting/Internal/FailureObserver.swift:1:8: ambiguous implicit access level for import of 'Foundation'; it is imported as 'public' elsewhere
+2026-07-18T11:01:04.9889520Z 
+2026-07-18T11:01:04.9889660Z import Foundation
+2026-07-18T11:01:04.9889950Z ^
+2026-07-18T11:01:04.9890030Z 
+2026-07-18T11:01:04.9890030Z 
+2026-07-18T11:01:04.9890240Z 
+2026-07-18T11:01:04.9891380Z ❌  /Users/runner/work/_temp/DerivedData/SourcePackages/checkouts/xctest-dynamic-overlay/Sources/IssueReporting/Internal/LockIsolated.swift:1:8: ambiguous implicit access level for import of 'Foundation'; it is imported as 'public' elsewhere
+2026-07-18T11:01:04.9892170Z 
+2026-07-18T11:01:04.9892240Z import Foundation
+2026-07-18T11:01:04.9892370Z ^
+2026-07-18T11:01:04.9892500Z 
+2026-07-18T11:01:04.9892510Z 
+2026-07-18T11:01:04.9892510Z 
+2026-07-18T11:01:04.9893310Z ❌  /Users/runner/work/_temp/DerivedData/SourcePackages/checkouts/xctest-dynamic-overlay/Sources/IssueReporting/Internal/SwiftTesting.swift:1:8: ambiguous implicit access level for import of 'Foundation'; it is imported as 'public' elsewhere
+2026-07-18T11:01:04.9894110Z 
+2026-07-18T11:01:04.9894660Z import Foundation
+2026-07-18T11:01:04.9894970Z ^
+2026-07-18T11:01:04.9895110Z 
+2026-07-18T11:01:04.9895120Z 
+2026-07-18T11:01:04.9895120Z 
+2026-07-18T11:01:04.9895890Z ❌  /Users/runner/work/_temp/DerivedData/SourcePackages/checkouts/xctest-dynamic-overlay/Sources/IssueReporting/Internal/Warn.swift:4:10: ambiguous implicit access level for import of 'Foundation'; it is imported as 'public' elsewhere
+2026-07-18T11:01:04.9896690Z 
+2026-07-18T11:01:04.9896830Z   import Foundation
+2026-07-18T11:01:04.9897050Z ^
+2026-07-18T11:01:04.9897630Z 
+2026-07-18T11:01:04.9897630Z 
+2026-07-18T11:01:04.9897630Z 
+2026-07-18T11:01:04.9898940Z ❌  /Users/runner/work/_temp/DerivedData/SourcePackages/checkouts/xctest-dynamic-overlay/Sources/IssueReporting/IsTesting.swift:4:10: ambiguous implicit access level for import of 'Foundation'; it is imported as 'public' elsewhere
+2026-07-18T11:01:04.9900450Z 
+2026-07-18T11:01:04.9900630Z   import Foundation
+2026-07-18T11:01:04.9900820Z ^
+2026-07-18T11:01:04.9900950Z 
+2026-07-18T11:01:04.9900960Z 
+2026-07-18T11:01:04.9900960Z 
+2026-07-18T11:01:04.9901730Z ❌  /Users/runner/work/_temp/DerivedData/SourcePackages/checkouts/xctest-dynamic-overlay/Sources/IssueReporting/Internal/AppHostWarning.swift:1:8: ambiguous implicit access level for import of 'Foundation'; it is imported as 'public' elsewhere
+2026-07-18T11:01:04.9902680Z 
+2026-07-18T11:01:04.9902850Z import Foundation
+2026-07-18T11:01:04.9903470Z ^
+2026-07-18T11:01:04.9903550Z 
+2026-07-18T11:01:04.9903630Z 
+2026-07-18T11:01:04.9903630Z 
+2026-07-18T11:01:04.9904720Z ❌  /Users/runner/work/_temp/DerivedData/SourcePackages/checkouts/xctest-dynamic-overlay/Sources/IssueReporting/Internal/FailureObserver.swift:1:8: ambiguous implicit access level for import of 'Foundation'; it is imported as 'public' elsewhere
+2026-07-18T11:01:04.9905520Z 
+2026-07-18T11:01:04.9905950Z import Foundation
+2026-07-18T11:01:04.9906150Z ^
+2026-07-18T11:01:04.9906270Z 
+2026-07-18T11:01:04.9906270Z 
+2026-07-18T11:01:04.9906270Z 
+2026-07-18T11:01:04.9907390Z ❌  /Users/runner/work/_temp/DerivedData/SourcePackages/checkouts/xctest-dynamic-overlay/Sources/IssueReporting/Internal/LockIsolated.swift:1:8: ambiguous implicit access level for import of 'Foundation'; it is imported as 'public' elsewhere
+2026-07-18T11:01:04.9909020Z 
+2026-07-18T11:01:04.9909180Z import Foundation
+2026-07-18T11:01:04.9909450Z ^
+2026-07-18T11:01:04.9909510Z 
+2026-07-18T11:01:04.9909520Z 
+2026-07-18T11:01:04.9909520Z 
+2026-07-18T11:01:04.9910290Z ❌  /Users/runner/work/_temp/DerivedData/SourcePackages/checkouts/xctest-dynamic-overlay/Sources/IssueReporting/Internal/SwiftTesting.swift:1:8: ambiguous implicit access level for import of 'Foundation'; it is imported as 'public' elsewhere
+2026-07-18T11:01:04.9911040Z 
+2026-07-18T11:01:04.9911360Z import Foundation
+2026-07-18T11:01:04.9911660Z ^
+2026-07-18T11:01:04.9911820Z 
+2026-07-18T11:01:04.9911820Z 
+2026-07-18T11:01:04.9911820Z 
+2026-07-18T11:01:04.9912700Z ❌  /Users/runner/work/_temp/DerivedData/SourcePackages/checkouts/xctest-dynamic-overlay/Sources/IssueReporting/Internal/Warn.swift:4:10: ambiguous implicit access level for import of 'Foundation'; it is imported as 'public' elsewhere
+2026-07-18T11:01:04.9913500Z 
+2026-07-18T11:01:04.9913560Z   import Foundation
+2026-07-18T11:01:04.9913720Z ^
+2026-07-18T11:01:04.9913870Z 
+2026-07-18T11:01:04.9913870Z 
+2026-07-18T11:01:04.9913870Z 
+2026-07-18T11:01:04.9914580Z ❌  /Users/runner/work/_temp/DerivedData/SourcePackages/checkouts/xctest-dynamic-overlay/Sources/IssueReporting/IsTesting.swift:4:10: ambiguous implicit access level for import of 'Foundation'; it is imported as 'public' elsewhere
+2026-07-18T11:01:04.9915300Z 
+2026-07-18T11:01:04.9915410Z   import Foundation
+2026-07-18T11:01:04.9915660Z ^
+2026-07-18T11:01:04.9915730Z 
+2026-07-18T11:01:04.9915730Z 
+2026-07-18T11:01:04.9915730Z 
+2026-07-18T11:01:04.9916470Z ❌  /Users/runner/work/_temp/DerivedData/SourcePackages/checkouts/xctest-dynamic-overlay/Sources/IssueReporting/Internal/AppHostWarning.swift:1:8: ambiguous implicit access level for import of 'Foundation'; it is imported as 'public' elsewhere
+2026-07-18T11:01:04.9918490Z 
+2026-07-18T11:01:04.9918820Z import Foundation
+2026-07-18T11:01:04.9919100Z ^
+2026-07-18T11:01:04.9919250Z 
+2026-07-18T11:01:04.9919260Z 
+2026-07-18T11:01:04.9919260Z 
+2026-07-18T11:01:04.9920050Z ❌  /Users/runner/work/_temp/DerivedData/SourcePackages/checkouts/xctest-dynamic-overlay/Sources/IssueReporting/Internal/FailureObserver.swift:1:8: ambiguous implicit access level for import of 'Foundation'; it is imported as 'public' elsewhere
+2026-07-18T11:01:04.9921230Z 
+2026-07-18T11:01:04.9921390Z import Foundation
+2026-07-18T11:01:04.9921680Z ^
+2026-07-18T11:01:04.9921760Z 
+2026-07-18T11:01:04.9921760Z 
+2026-07-18T11:01:04.9921860Z 
+2026-07-18T11:01:04.9922600Z ❌  /Users/runner/work/_temp/DerivedData/SourcePackages/checkouts/xctest-dynamic-overlay/Sources/IssueReporting/Internal/LockIsolated.swift:1:8: ambiguous implicit access level for import of 'Foundation'; it is imported as 'public' elsewhere
+2026-07-18T11:01:04.9923900Z 
+2026-07-18T11:01:04.9924040Z import Foundation
+2026-07-18T11:01:04.9924350Z ^
+2026-07-18T11:01:04.9924430Z 
+2026-07-18T11:01:04.9924430Z 
+2026-07-18T11:01:04.9924430Z 
+2026-07-18T11:01:04.9925180Z ❌  /Users/runner/work/_temp/DerivedData/SourcePackages/checkouts/xctest-dynamic-overlay/Sources/IssueReporting/Internal/SwiftTesting.swift:1:8: ambiguous implicit access level for import of 'Foundation'; it is imported as 'public' elsewhere
+2026-07-18T11:01:04.9925880Z 
+2026-07-18T11:01:04.9925950Z import Foundation
+2026-07-18T11:01:04.9926180Z ^
+2026-07-18T11:01:04.9926270Z 
+2026-07-18T11:01:04.9926270Z 
+2026-07-18T11:01:04.9926280Z 
+2026-07-18T11:01:04.9926950Z ❌  /Users/runner/work/_temp/DerivedData/SourcePackages/checkouts/xctest-dynamic-overlay/Sources/IssueReporting/Internal/Warn.swift:4:10: ambiguous implicit access level for import of 'Foundation'; it is imported as 'public' elsewhere
+2026-07-18T11:01:04.9927880Z 
+2026-07-18T11:01:04.9927930Z   import Foundation
+2026-07-18T11:01:04.9928230Z ^
+2026-07-18T11:01:04.9928370Z 
+2026-07-18T11:01:04.9928370Z 
+2026-07-18T11:01:04.9928370Z 
+2026-07-18T11:01:04.9929070Z ❌  /Users/runner/work/_temp/DerivedData/SourcePackages/checkouts/xctest-dynamic-overlay/Sources/IssueReporting/IsTesting.swift:4:10: ambiguous implicit access level for import of 'Foundation'; it is imported as 'public' elsewhere
+2026-07-18T11:01:04.9929820Z 
+2026-07-18T11:01:04.9929940Z   import Foundation
+2026-07-18T11:01:04.9930210Z ^
+2026-07-18T11:01:04.9930270Z 
+2026-07-18T11:01:04.9930280Z 
+2026-07-18T11:01:04.9930280Z 
+2026-07-18T11:01:04.9931080Z ❌  /Users/runner/work/_temp/DerivedData/SourcePackages/checkouts/xctest-dynamic-overlay/Sources/IssueReporting/Internal/AppHostWarning.swift:1:8: ambiguous implicit access level for import of 'Foundation'; it is imported as 'public' elsewhere
+2026-07-18T11:01:04.9931770Z 
+2026-07-18T11:01:04.9931820Z import Foundation
+2026-07-18T11:01:04.9931950Z ^
+2026-07-18T11:01:04.9932010Z 
+2026-07-18T11:01:04.9932020Z 
+2026-07-18T11:01:04.9932020Z 
+2026-07-18T11:01:04.9932720Z ❌  /Users/runner/work/_temp/DerivedData/SourcePackages/checkouts/xctest-dynamic-overlay/Sources/IssueReporting/Internal/FailureObserver.swift:1:8: ambiguous implicit access level for import of 'Foundation'; it is imported as 'public' elsewhere
+2026-07-18T11:01:04.9933420Z 
+2026-07-18T11:01:04.9933550Z import Foundation
+2026-07-18T11:01:04.9933730Z ^
+2026-07-18T11:01:04.9933840Z 
+2026-07-18T11:01:04.9933840Z 
+2026-07-18T11:01:04.9933840Z 
+2026-07-18T11:01:04.9934580Z ❌  /Users/runner/work/_temp/DerivedData/SourcePackages/checkouts/xctest-dynamic-overlay/Sources/IssueReporting/Internal/LockIsolated.swift:1:8: ambiguous implicit access level for import of 'Foundation'; it is imported as 'public' elsewhere
+2026-07-18T11:01:04.9935310Z 
+2026-07-18T11:01:04.9935360Z import Foundation
+2026-07-18T11:01:04.9935490Z ^
+2026-07-18T11:01:04.9935560Z 
+2026-07-18T11:01:04.9935560Z 
+2026-07-18T11:01:04.9935560Z 
+2026-07-18T11:01:04.9936240Z ❌  /Users/runner/work/_temp/DerivedData/SourcePackages/checkouts/xctest-dynamic-overlay/Sources/IssueReporting/Internal/SwiftTesting.swift:1:8: ambiguous implicit access level for import of 'Foundation'; it is imported as 'public' elsewhere
+2026-07-18T11:01:04.9936930Z 
+2026-07-18T11:01:04.9937030Z import Foundation
+2026-07-18T11:01:04.9937260Z ^
+2026-07-18T11:01:04.9937330Z 
+2026-07-18T11:01:04.9937330Z 
+2026-07-18T11:01:04.9937340Z 
+2026-07-18T11:01:04.9938060Z ❌  /Users/runner/work/_temp/DerivedData/SourcePackages/checkouts/xctest-dynamic-overlay/Sources/IssueReporting/Internal/Warn.swift:4:10: ambiguous implicit access level for import of 'Foundation'; it is imported as 'public' elsewhere
+2026-07-18T11:01:04.9939100Z 
+2026-07-18T11:01:04.9939160Z   import Foundation
+2026-07-18T11:01:04.9939290Z ^
+2026-07-18T11:01:04.9939350Z 
+2026-07-18T11:01:04.9939360Z 
+2026-07-18T11:01:04.9939360Z 
+2026-07-18T11:01:04.9940060Z ❌  /Users/runner/work/_temp/DerivedData/SourcePackages/checkouts/xctest-dynamic-overlay/Sources/IssueReporting/IsTesting.swift:4:10: ambiguous implicit access level for import of 'Foundation'; it is imported as 'public' elsewhere
+2026-07-18T11:01:04.9940810Z 
+2026-07-18T11:01:04.9940870Z   import Foundation
+2026-07-18T11:01:04.9941030Z ^
+2026-07-18T11:01:04.9941110Z 
+2026-07-18T11:01:04.9941120Z 
+2026-07-18T11:01:04.9941120Z 
+2026-07-18T11:01:04.9941880Z ❌  /Users/runner/work/_temp/DerivedData/SourcePackages/checkouts/xctest-dynamic-overlay/Sources/IssueReporting/Internal/AppHostWarning.swift:1:8: ambiguous implicit access level for import of 'Foundation'; it is imported as 'public' elsewhere
+2026-07-18T11:01:04.9942670Z 
+2026-07-18T11:01:04.9942780Z import Foundation
+2026-07-18T11:01:04.9942910Z ^
+2026-07-18T11:01:04.9942980Z 
+2026-07-18T11:01:04.9942980Z 
+2026-07-18T11:01:04.9942980Z 
+2026-07-18T11:01:04.9943680Z ❌  /Users/runner/work/_temp/DerivedData/SourcePackages/checkouts/xctest-dynamic-overlay/Sources/IssueReporting/Internal/FailureObserver.swift:1:8: ambiguous implicit access level for import of 'Foundation'; it is imported as 'public' elsewhere
+2026-07-18T11:01:04.9944710Z 
+2026-07-18T11:01:04.9944790Z import Foundation
+2026-07-18T11:01:04.9944940Z ^
+2026-07-18T11:01:04.9945020Z 
+2026-07-18T11:01:04.9945030Z 
+2026-07-18T11:01:04.9945030Z 
+2026-07-18T11:01:04.9945780Z ❌  /Users/runner/work/_temp/DerivedData/SourcePackages/checkouts/xctest-dynamic-overlay/Sources/IssueReporting/Internal/LockIsolated.swift:1:8: ambiguous implicit access level for import of 'Foundation'; it is imported as 'public' elsewhere
+2026-07-18T11:01:04.9946510Z 
+2026-07-18T11:01:04.9946570Z import Foundation
+2026-07-18T11:01:04.9946700Z ^
+2026-07-18T11:01:04.9946770Z 
+2026-07-18T11:01:04.9946770Z 
+2026-07-18T11:01:04.9946770Z 
+2026-07-18T11:01:04.9947750Z ❌  /Users/runner/work/_temp/DerivedData/SourcePackages/checkouts/xctest-dynamic-overlay/Sources/IssueReporting/Internal/SwiftTesting.swift:1:8: ambiguous implicit access level for import of 'Foundation'; it is imported as 'public' elsewhere
+2026-07-18T11:01:04.9948510Z 
+2026-07-18T11:01:04.9948570Z import Foundation
+2026-07-18T11:01:04.9948700Z ^
+2026-07-18T11:01:04.9948770Z 
+2026-07-18T11:01:04.9948770Z 
+2026-07-18T11:01:04.9948770Z 
+2026-07-18T11:01:04.9950100Z ❌  /Users/runner/work/_temp/DerivedData/SourcePackages/checkouts/xctest-dynamic-overlay/Sources/IssueReporting/Internal/Warn.swift:4:10: ambiguous implicit access level for import of 'Foundation'; it is imported as 'public' elsewhere
+2026-07-18T11:01:04.9950790Z 
+2026-07-18T11:01:04.9950850Z   import Foundation
+2026-07-18T11:01:04.9950990Z ^
+2026-07-18T11:01:04.9951050Z 
+2026-07-18T11:01:04.9951050Z 
+2026-07-18T11:01:04.9951060Z 
+2026-07-18T11:01:04.9951740Z ❌  /Users/runner/work/_temp/DerivedData/SourcePackages/checkouts/xctest-dynamic-overlay/Sources/IssueReporting/IsTesting.swift:4:10: ambiguous implicit access level for import of 'Foundation'; it is imported as 'public' elsewhere
+2026-07-18T11:01:04.9952400Z 
+2026-07-18T11:01:04.9952470Z   import Foundation
+2026-07-18T11:01:04.9952620Z ^
+2026-07-18T11:01:04.9952690Z 
+2026-07-18T11:01:04.9952690Z 
+2026-07-18T11:01:04.9952690Z 
+2026-07-18T11:01:04.9953400Z ❌  /Users/runner/work/_temp/DerivedData/SourcePackages/checkouts/xctest-dynamic-overlay/Sources/IssueReporting/IssueReporters/DefaultReporter.swift:1:1: Access level on imports require '-enable-experimental-feature AccessLevelOnImport'
+2026-07-18T11:01:04.9954110Z 
+2026-07-18T11:01:04.9954180Z public import Foundation
+2026-07-18T11:01:04.9954330Z ^
+2026-07-18T11:01:04.9954390Z 
+2026-07-18T11:01:04.9954390Z 
+2026-07-18T11:01:04.9954400Z 
+2026-07-18T11:01:04.9955430Z ❌  /Users/runner/work/_temp/DerivedData/SourcePackages/checkouts/xctest-dynamic-overlay/Sources/IssueReporting/IssueReporters/DefaultReporter.swift:4:3: Access level on imports require '-enable-experimental-feature AccessLevelOnImport'
+2026-07-18T11:01:04.9956450Z 
+2026-07-18T11:01:04.9956510Z   public import os
+2026-07-18T11:01:04.9956640Z ^~~~~~~
+2026-07-18T11:01:04.9956720Z 
+2026-07-18T11:01:04.9956720Z 
+2026-07-18T11:01:05.9267700Z     Skipping duplicate build file in Compile Sources build phase: /Users/runner/work/aura-fitness-tracking/aura-fitness-tracking/AuraFitness/Models/LogDayModel.swift (in target 'AuraFitness' from project 'AuraFitness')
+2026-07-18T11:01:05.9272980Z ** BUILD FAILED **
+2026-07-18T11:01:05.9273150Z 
+2026-07-18T11:01:05.9273200Z 
+2026-07-18T11:01:05.9273350Z The following build commands failed:
+2026-07-18T11:01:05.9273950Z 	CompileSwift normal arm64 (in target 'IssueReporting' from project 'xctest-dynamic-overlay')
+2026-07-18T11:01:05.9285330Z 	SwiftCompile normal arm64 Compiling\ ErrorReporting.swift,\ AppHostWarning.swift,\ Deprecations.swift,\ FailureObserver.swift,\ LockIsolated.swift,\ Rethrows.swift,\ SwiftTesting.swift,\ UncheckedSendable.swift,\ Warn.swift,\ XCTest.swift,\ IsTesting.swift,\ IssueReporter.swift,\ BreakpointReporter.swift,\ DefaultReporter.swift,\ FatalErrorReporter.swift,\ IssueSeverity.swift,\ ReportIssue.swift,\ _Test.swift,\ TestContext.swift,\ Unimplemented.swift,\ WithExpectedIssue.swift,\ WithIssueContext.swift /Users/runner/work/_temp/DerivedData/SourcePackages/checkouts/xctest-dynamic-overlay/Sources/IssueReporting/ErrorReporting.swift /Users/runner/work/_temp/DerivedData/SourcePackages/checkouts/xctest-dynamic-overlay/Sources/IssueReporting/Internal/AppHostWarning.swift /Users/runner/work/_temp/DerivedData/SourcePackages/checkouts/xctest-dynamic-overlay/Sources/IssueReporting/Internal/Deprecations.swift /Users/runner/work/_temp/DerivedData/SourcePackages/checkouts/xctest-dynamic-overlay/Sources/IssueReporting/Internal/FailureObserver.swift /Users/runner/work/_temp/DerivedData/SourcePackages/checkouts/xctest-dynamic-overlay/Sources/IssueReporting/Internal/LockIsolated.swift /Users/runner/work/_temp/DerivedData/SourcePackages/checkouts/xctest-dynamic-overlay/Sources/IssueReporting/Internal/Rethrows.swift /Users/runner/work/_temp/DerivedData/SourcePackages/checkouts/xctest-dynamic-overlay/Sources/IssueReporting/Internal/SwiftTesting.swift /Users/runner/work/_temp/DerivedData/SourcePackages/checkouts/xctest-dynamic-overlay/Sources/IssueReporting/Internal/UncheckedSendable.swift /Users/runner/work/_temp/DerivedData/SourcePackages/checkouts/xctest-dynamic-overlay/Sources/IssueReporting/Internal/Warn.swift /Users/runner/work/_temp/DerivedData/SourcePackages/checkouts/xctest-dynamic-overlay/Sources/IssueReporting/Internal/XCTest.swift /Users/runner/work/_temp/DerivedData/SourcePackages/checkouts/xctest-dynamic-overlay/Sources/IssueReporting/IsTesting.swift /Users/runner/work/_temp/DerivedData/SourcePackages/checkouts/xctest-dynamic-overlay/Sources/IssueReporting/IssueReporter.swift /Users/runner/work/_temp/DerivedData/SourcePackages/checkouts/xctest-dynamic-overlay/Sources/IssueReporting/IssueReporters/BreakpointReporter.swift /Users/runner/work/_temp/DerivedData/SourcePackages/checkouts/xctest-dynamic-overlay/Sources/IssueReporting/IssueReporters/DefaultReporter.swift /Users/runner/work/_temp/DerivedData/SourcePackages/checkouts/xctest-dynamic-overlay/Sources/IssueReporting/IssueReporters/FatalErrorReporter.swift /Users/runner/work/_temp/DerivedData/SourcePackages/checkouts/xctest-dynamic-overlay/Sources/IssueReporting/IssueSeverity.swift /Users/runner/work/_temp/DerivedData/SourcePackages/checkouts/xctest-dynamic-overlay/Sources/IssueReporting/ReportIssue.swift /Users/runner/work/_temp/DerivedData/SourcePackages/checkouts/xctest-dynamic-overlay/Sources/IssueReporting/Symbolic\ Links/IssueReportingPackageSupport/_Test.swift /Users/runner/work/_temp/DerivedData/SourcePackages/checkouts/xctest-dynamic-overlay/Sources/IssueReporting/TestContext.swift /Users/runner/work/_temp/DerivedData/SourcePackages/checkouts/xctest-dynamic-overlay/Sources/IssueReporting/Unimplemented.swift /Users/runner/work/_temp/DerivedData/SourcePackages/checkouts/xctest-dynamic-overlay/Sources/IssueReporting/WithExpectedIssue.swift /Users/runner/work/_temp/DerivedData/SourcePackages/checkouts/xctest-dynamic-overlay/Sources/IssueReporting/WithIssueContext.swift (in target 'IssueReporting' from project 'xctest-dynamic-overlay')
+2026-07-18T11:01:05.9297500Z (2 failures)
+2026-07-18T11:01:05.9629510Z ##[error]Process completed with exit code 65.

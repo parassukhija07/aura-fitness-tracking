@@ -12,22 +12,22 @@ struct ResumeBanner: View {
         Button(action: onResume) {
             HStack(spacing: 12) {
                 Image(systemName: "bolt.fill")
-                    .font(.system(size: 20, weight: .semibold))
+                    .font(AuraFont.jakarta(20, .semibold))
                     .foregroundColor(.white)
 
                 VStack(alignment: .leading, spacing: 1) {
                     Text("Workout in progress")
-                        .font(.system(size: 15, weight: .heavy))
+                        .font(AuraFont.jakarta(15, .heavy))
                         .foregroundColor(.white)
                     Text("Tap to resume your session")
-                        .font(.system(size: 13, weight: .medium))
+                        .font(AuraFont.jakarta(13, .medium))
                         .foregroundColor(.white.opacity(0.85))
                 }
 
                 Spacer(minLength: 8)
 
                 Text("Resume")
-                    .font(.system(size: 13, weight: .bold))
+                    .font(AuraFont.jakarta(13, .bold))
                     .foregroundColor(.white)
                     .padding(.horizontal, 14)
                     .padding(.vertical, 7)

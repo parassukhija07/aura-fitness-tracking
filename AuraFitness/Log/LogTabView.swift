@@ -110,43 +110,17 @@ struct LogTabView: View {
             }
             .background(Color.aura.bg)
 
-            // Resume banner: inlined component with matching layout modifiers
+            // Resume banner (shell · resume): accent pill above the flat tab bar,
+            // sides 14 per combined/log.jsx. The bar is now in-flow (a bottom row
+            // in ContentView), so the banner sits just above the content edge.
             if appState.workoutInProgress {
-                Button(action: {
+                ResumeBanner {
                     withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
                         appState.resumeWorkout()
                     }
-                }) {
-                    HStack(spacing: AuraSpacing.s2) {
-                        Image(systemName: "play.circle.fill")
-                            .font(.title3)
-                            .fontWeight(.semibold)
-                        
-                        Text("Resume Active Workout")
-                            .font(.body)
-                            .fontWeight(.medium)
-                        
-                        Spacer()
-                        
-                        Image(systemName: "chevron.right")
-                            .font(.subheadline)
-                            .opacity(0.7)
-                    }
-                    .padding(.vertical, AuraSpacing.s3)
-                    .padding(.horizontal, AuraSpacing.s4)
-                    .background(
-                        RoundedRectangle(cornerRadius: 14, style: .continuous)
-                            .fill(Color.blue.opacity(0.15))
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 14, style: .continuous)
-                                    .stroke(Color.blue.opacity(0.3), lineWidth: 1)
-                            )
-                    )
-                    .foregroundColor(.blue)
                 }
-                .buttonStyle(PlainButtonStyle()) // Avoid flash styling issues
                 .padding(.horizontal, 14)
-                .padding(.bottom, AuraSpacing.tabBarClearance)
+                .padding(.bottom, 12)
                 .transition(.move(edge: .bottom).combined(with: .opacity))
             }
             if let toast {
@@ -169,7 +143,7 @@ struct LogTabView: View {
         HStack(alignment: .center) {
             VStack(alignment: .leading, spacing: 2) {
                 Text(navSub)
-                    .font(.system(size: 12, weight: .bold))
+                    .font(AuraFont.jakarta(12, .bold))
                     .foregroundColor(.aura.text2)
                 Text(navTitle)
                     .font(AuraFont.largeTitleStyle())
@@ -177,9 +151,11 @@ struct LogTabView: View {
             }
             Spacer()
             Button { sheet = .calendar(forLogPast: false) } label: {
-                Image(systemName: "calendar")
-                    .font(.system(size: 18, weight: .semibold))
-                    .foregroundColor(.aura.text)
+                // Design nav button uses the custom `calendar-day` glyph (calendar
+                // outline + filled inner day square), drawn as a Path to match
+                // icons.js exactly rather than SF Symbols.
+                CalendarDayIcon(color: .aura.text)
+                    .frame(width: 19, height: 19)
                     .frame(width: 34, height: 34)
                     .background(Color.aura.fill.opacity(0.5))
                     .clipShape(Circle())
@@ -194,29 +170,24 @@ struct LogTabView: View {
 
     private var weekBar: some View {
         VStack(spacing: 8) {
+            // aura.css `.between`: range label on the left, one contextual text
+            // button on the right (‹ This week / ‹ Prev week / Today ›). No
+            // circular arrows — week nav is a horizontal swipe on the strip.
             HStack {
-                HStack(spacing: 6) {
-                    Button { shiftWeek(-7) } label: {
-                        weekArrow("chevron.left", enabled: true)
-                    }
-                    Text(rangeLabel)
-                        .font(.system(size: 14, weight: .bold))
-                        .foregroundColor(.aura.text)
-                    Button { if !isCurrentWeek { shiftWeek(7) } } label: {
-                        weekArrow("chevron.right", enabled: !isCurrentWeek)
-                    }
-                    .disabled(isCurrentWeek)
-                }
+                Text(rangeLabel)
+                    .font(AuraFont.jakarta(14, .bold))
+                    .foregroundColor(.aura.text)
                 Spacer()
-                if !isCurrentWeek || !isToday {
+                if !(isCurrentWeek && isToday) {
                     Button { selected = today } label: {
-                        Text("Today ›")
-                            .font(.system(size: 12, weight: .bold))
+                        Text(weekButtonLabel)
+                            .font(AuraFont.jakarta(12, .bold))
                             .foregroundColor(.aura.accent)
                     }
+                    .buttonStyle(.plain)
                 }
             }
-            .padding(.horizontal, 2)
+            .padding(.horizontal, 6)
 
             HStack(spacing: 6) {
                 ForEach(weekDays, id: \.self) { d in
@@ -227,16 +198,22 @@ struct LogTabView: View {
         .padding(.horizontal, 14)
         .padding(.top, 6)
         .padding(.bottom, 12)
+        // Swipe the strip left/right to page weeks (replaces the circular arrows).
+        .contentShape(Rectangle())
+        .gesture(
+            DragGesture(minimumDistance: 24)
+                .onEnded { v in
+                    if v.translation.width < -24 { if !isCurrentWeek { shiftWeek(7) } }
+                    else if v.translation.width > 24 { shiftWeek(-7) }
+                }
+        )
     }
 
-    private func weekArrow(_ icon: String, enabled: Bool) -> some View {
-        Image(systemName: icon)
-            .font(.system(size: 15, weight: .semibold))
-            .foregroundColor(.aura.text)
-            .frame(width: 28, height: 28)
-            .background(Color.aura.fill.opacity(0.5))
-            .clipShape(Circle())
-            .opacity(enabled ? 1 : 0.28)
+    /// Right-hand contextual button label, matching the design's four variants.
+    private var weekButtonLabel: String {
+        if weekStart < todayWeekStart { return "‹ Prev week" }   // viewing a past week
+        if weekStart > todayWeekStart { return "‹ This week" }   // viewing a future week
+        return "Today ›"                                          // current week, off today
     }
 
     @ViewBuilder
@@ -249,10 +226,10 @@ struct LogTabView: View {
         Button { selected = d } label: {
             VStack(spacing: 3) {
                 Text(dowShort[dowIdx])
-                    .font(.system(size: 11, weight: .bold))
+                    .font(AuraFont.jakarta(11, .bold))
                     .foregroundColor(sel ? .white : .aura.text3)
                 Text("\(dayNum)")
-                    .font(.system(size: 16, weight: .bold))
+                    .font(AuraFont.jakarta(16, .bold))
                     .foregroundColor(sel ? .white : .aura.text)
                 Circle()
                     .fill(dotColor(di.state, selected: sel))
@@ -314,11 +291,11 @@ struct LogTabView: View {
                         .fill(empty ? Color.aura.accentSoft : Color.aura.fill)
                         .frame(width: 64, height: 64)
                     Image(systemName: empty ? "plus" : "moon.fill")
-                        .font(.system(size: 28, weight: .medium))
+                        .font(AuraFont.jakarta(28, .medium))
                         .foregroundColor(empty ? .aura.accent : .aura.text2)
                 }
                 Text(empty ? "Nothing planned" : "Rest Day")
-                    .font(.system(size: 22, weight: .heavy))
+                    .font(AuraFont.jakarta(22, .heavy))
                     .foregroundColor(.aura.text)
                 Text(empty
                      ? "No workout scheduled. Start something fresh or log a session you already did."
@@ -381,7 +358,7 @@ struct LogTabView: View {
                     HStack(alignment: .top) {
                         VStack(alignment: .leading, spacing: 2) {
                             Text(workout?.name ?? "")
-                                .font(.system(size: 22, weight: .heavy))
+                                .font(AuraFont.jakarta(22, .heavy))
                                 .foregroundColor(.aura.text)
                             Text("\(workout?.exercises.count ?? 0) exercises · \(workout?.primaryMuscles ?? "")")
                                 .font(AuraFont.secondary())
@@ -408,7 +385,7 @@ struct LogTabView: View {
         case .today:
             Button { sheet = .menu } label: {
                 Image(systemName: "ellipsis")
-                    .font(.system(size: 20, weight: .semibold))
+                    .font(AuraFont.jakarta(20, .semibold))
                     .foregroundColor(.aura.text)
                     .frame(width: 32, height: 32)
                     .background(Color.aura.fill.opacity(0.5))
@@ -420,7 +397,7 @@ struct LogTabView: View {
             stateGlyph("xmark.circle.fill", color: .aura.red)
         case .future:
             Text("View only")
-                .font(.system(size: 11, weight: .bold))
+                .font(AuraFont.jakarta(11, .bold))
                 .foregroundColor(.aura.text3)
                 .padding(.horizontal, 9).padding(.vertical, 5)
                 .background(Color.aura.fill).clipShape(Capsule())
@@ -430,7 +407,7 @@ struct LogTabView: View {
 
     private func stateGlyph(_ icon: String, color: Color) -> some View {
         Image(systemName: icon)
-            .font(.system(size: 22))
+            .font(AuraFont.jakarta(22))
             .foregroundColor(color)
             .frame(width: 32, height: 32)
             .background(color.opacity(0.13))
@@ -482,10 +459,10 @@ struct LogTabView: View {
         HStack(alignment: .top, spacing: AuraSpacing.s3) {
             Image(systemName: "info.circle.fill")
                 .foregroundColor(.aura.accent)
-                .font(.system(size: 18))
+                .font(AuraFont.jakarta(18))
             VStack(alignment: .leading, spacing: 3) {
                 Text("Future workouts are read-only")
-                    .font(.system(size: 14, weight: .bold))
+                    .font(AuraFont.jakarta(14, .bold))
                     .foregroundColor(.aura.text)
                 Text("To change this workout, edit your program in the Plans tab.")
                     .font(AuraFont.secondary())
@@ -506,8 +483,8 @@ struct LogTabView: View {
 
     private func badge(icon: String, text: String, color: Color) -> some View {
         HStack(spacing: 5) {
-            Image(systemName: icon).font(.system(size: 11, weight: .bold))
-            Text(text).font(.system(size: 12, weight: .bold))
+            Image(systemName: icon).font(AuraFont.jakarta(11, .bold))
+            Text(text).font(AuraFont.jakarta(12, .bold))
         }
         .foregroundColor(color)
         .padding(.horizontal, 9).padding(.vertical, 4)
@@ -526,17 +503,17 @@ struct LogTabView: View {
                 ForEach(Array(exercises.enumerated()), id: \.element.id) { i, e in
                     HStack(spacing: 12) {
                         Text("\(i + 1)")
-                            .font(.system(size: 12, weight: .bold))
+                            .font(AuraFont.jakarta(12, .bold))
                             .foregroundColor(.aura.text2)
                             .frame(width: 22, height: 22)
                             .background(Color.aura.fill)
                             .clipShape(RoundedRectangle(cornerRadius: 7))
                         VStack(alignment: .leading, spacing: 1) {
                             Text(e.name)
-                                .font(.system(size: 15, weight: .semibold))
+                                .font(AuraFont.jakarta(15, .semibold))
                                 .foregroundColor(.aura.text)
                             Text("\(e.plannedSets) sets · \(e.repRange) reps")
-                                .font(.system(size: 12.5))
+                                .font(AuraFont.jakarta(12.5))
                                 .foregroundColor(.aura.text2)
                         }
                         Spacer()
@@ -554,7 +531,7 @@ struct LogTabView: View {
         HStack(alignment: .top, spacing: AuraSpacing.s3) {
             Image(systemName: "info.circle")
                 .foregroundColor(.aura.text2)
-                .font(.system(size: 18))
+                .font(AuraFont.jakarta(18))
             Text(text)
                 .font(AuraFont.secondary())
                 .foregroundColor(.aura.text2)
@@ -573,7 +550,7 @@ struct LogTabView: View {
 
     private func toastView(_ msg: String) -> some View {
         Text(msg)
-            .font(.system(size: 13, weight: .semibold))
+            .font(AuraFont.jakarta(13, .semibold))
             .foregroundColor(.aura.bg)
             .padding(.horizontal, 16).padding(.vertical, 9)
             .background(Color.aura.text)
@@ -597,5 +574,49 @@ struct LogTabView: View {
         LogSheetsView(sheet: s, selected: $selected, parentSheet: $sheet, flash: flash)
             .environmentObject(appState)
             .presentationDragIndicator(.visible)
+    }
+}
+
+// MARK: - calendar-day glyph (exact port of icons.js 'calendar-day')
+
+/// The design's nav calendar icon: a rounded calendar outline with top ticks and
+/// header line, plus a *filled* inner day square — drawn in the 24×24 SVG space
+/// from `styles/icons.js` so it matches the prototype rather than an SF Symbol.
+///
+/// icons.js: rect(3.5,4.5,17,16,r3) · M8 2v4 · M16 2v4 · M3.5 9h17 · rect(7,12,4,4,r1) filled
+struct CalendarDayIcon: View {
+    var color: Color
+
+    private static func point(_ x: CGFloat, _ y: CGFloat, _ ox: CGFloat, _ oy: CGFloat, _ s: CGFloat) -> CGPoint {
+        CGPoint(x: ox + x * s, y: oy + y * s)
+    }
+
+    var body: some View {
+        GeometryReader { geo in
+            let s = min(geo.size.width, geo.size.height) / 24.0
+            let ox = (geo.size.width - 24 * s) / 2
+            let oy = (geo.size.height - 24 * s) / 2
+
+            ZStack {
+                // stroked outline
+                Path { p in
+                    p.addRoundedRect(in: CGRect(x: ox + 3.5 * s, y: oy + 4.5 * s,
+                                                width: 17 * s, height: 16 * s),
+                                     cornerSize: CGSize(width: 3 * s, height: 3 * s))
+                    p.move(to: Self.point(8, 2, ox, oy, s));  p.addLine(to: Self.point(8, 6, ox, oy, s))
+                    p.move(to: Self.point(16, 2, ox, oy, s)); p.addLine(to: Self.point(16, 6, ox, oy, s))
+                    p.move(to: Self.point(3.5, 9, ox, oy, s)); p.addLine(to: Self.point(20.5, 9, ox, oy, s))
+                }
+                .stroke(color, style: StrokeStyle(lineWidth: 1.7, lineCap: .round, lineJoin: .round))
+
+                // filled inner day square
+                Path { p in
+                    p.addRoundedRect(in: CGRect(x: ox + 7 * s, y: oy + 12 * s,
+                                                width: 4 * s, height: 4 * s),
+                                     cornerSize: CGSize(width: 1 * s, height: 1 * s))
+                }
+                .fill(color)
+            }
+        }
     }
 }

@@ -80,7 +80,7 @@ struct ProgramEditorView: View {
                                 }
                                 Spacer()
                                 Image(systemName: "chevron.right")
-                                    .font(.system(size: 12))
+                                    .font(AuraFont.jakarta(12))
                                     .foregroundColor(.aura.text3)
                             }
                         }

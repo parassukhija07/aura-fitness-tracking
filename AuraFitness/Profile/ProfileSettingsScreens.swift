@@ -1,4 +1,5 @@
 import SwiftUI
+import UniformTypeIdentifiers
 
 // MARK: - General
 
@@ -105,7 +106,7 @@ struct NotificationsSettingsView: View {
                                     .fill(Color.aura.blue)
                                     .frame(width: 32, height: 32)
                                 Image(systemName: "timer")
-                                    .font(.system(size: 14, weight: .semibold))
+                                    .font(AuraFont.jakarta(14, .semibold))
                                     .foregroundColor(.white)
                             }
                             Text(sound)
@@ -114,7 +115,7 @@ struct NotificationsSettingsView: View {
                             Spacer()
                             if appState.restSound == sound {
                                 Image(systemName: "checkmark")
-                                    .font(.system(size: 15, weight: .bold))
+                                    .font(AuraFont.jakarta(15, .bold))
                                     .foregroundColor(.aura.accent)
                             }
                         }
@@ -201,7 +202,7 @@ struct ConnectedAppsView: View {
 
             HStack(alignment: .top, spacing: AuraSpacing.s2) {
                 Image(systemName: "info.circle")
-                    .font(.system(size: 16))
+                    .font(AuraFont.jakarta(16))
                     .foregroundColor(.aura.text2)
                 Text("Aura syncs workouts and body weight both ways with your connected health app.")
                     .font(AuraFont.secondary())
@@ -292,8 +293,12 @@ struct ProfileConfirmSheet: View {
     @EnvironmentObject var authService: AuthService
 
     @State private var exportURL: URL? = nil
+    @State private var csvExportURL: URL? = nil
     @State private var busy = false
+    @State private var csvBusy = false
     @State private var showFullResetConfirm = false
+    @State private var showFileImporter = false
+    @State private var importBusy = false
 
     var body: some View {
         VStack(spacing: 0) {
@@ -318,20 +323,22 @@ struct ProfileConfirmSheet: View {
 
     private var detentHeight: CGFloat {
         switch kind {
-        case .export: return 320
-        case .reset:  return 360
-        case .delete: return 340
-        case .logout: return 320
+        case .export:     return 320
+        case .reset:      return 360
+        case .delete:     return 340
+        case .logout:     return 320
+        case .importData: return 360
         }
     }
 
     @ViewBuilder
     private var content: some View {
         switch kind {
-        case .export:  exportSheet
-        case .reset:   resetSheet
-        case .delete:  destructiveSheet(delete: true)
-        case .logout:  destructiveSheet(delete: false)
+        case .export:     exportSheet
+        case .reset:      resetSheet
+        case .delete:     destructiveSheet(delete: true)
+        case .logout:     destructiveSheet(delete: false)
+        case .importData: importSheet
         }
     }
 
@@ -339,7 +346,7 @@ struct ProfileConfirmSheet: View {
     private var exportSheet: some View {
         VStack(spacing: AuraSpacing.s3) {
             Text("Export Data")
-                .font(.system(size: 17, weight: .bold))
+                .font(AuraFont.jakarta(17, .bold))
                 .foregroundColor(.aura.text)
                 .padding(.bottom, AuraSpacing.s2)
             Text("Download a full copy of your workouts, measurements and settings as a JSON archive.")
@@ -351,7 +358,7 @@ struct ProfileConfirmSheet: View {
                 ShareLink(item: exportURL) {
                     HStack(spacing: AuraSpacing.s2) {
                         Image(systemName: "square.and.arrow.up")
-                            .font(.system(size: 16, weight: .semibold))
+                            .font(AuraFont.jakarta(16, .semibold))
                         Text("Export Archive")
                             .font(AuraFont.body())
                     }
@@ -367,6 +374,26 @@ struct ProfileConfirmSheet: View {
                     .disabled(true)
                     .opacity(0.6)
             }
+            if let csvExportURL {
+                ShareLink(item: csvExportURL) {
+                    HStack(spacing: AuraSpacing.s2) {
+                        Image(systemName: "tablecells")
+                            .font(AuraFont.jakarta(16, .semibold))
+                        Text("Export as CSV")
+                            .font(AuraFont.body())
+                    }
+                    .foregroundColor(.aura.text)
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 52)
+                    .background(Color.aura.fill)
+                    .clipShape(RoundedRectangle(cornerRadius: AuraRadius.md))
+                }
+                .simultaneousGesture(TapGesture().onEnded { flash("CSV export ready") })
+            } else {
+                AuraGrayButton(label: csvBusy ? "Preparing…" : "Export as CSV") {}
+                    .disabled(true)
+                    .opacity(0.6)
+            }
             AuraGrayButton(label: "Cancel") { dismiss() }
         }
         .task {
@@ -375,13 +402,59 @@ struct ProfileConfirmSheet: View {
             exportURL = await DataArchiveBuilder.writeTempFile(appState)
             busy = false
         }
+        .task {
+            guard csvExportURL == nil else { return }
+            csvBusy = true
+            csvExportURL = await CSVArchiveBuilder.writeTempZip(appState)
+            csvBusy = false
+        }
+    }
+
+    // Import
+    private var importSheet: some View {
+        VStack(spacing: AuraSpacing.s3) {
+            Text("Import Data")
+                .font(AuraFont.jakarta(17, .bold))
+                .foregroundColor(.aura.text)
+                .padding(.bottom, AuraSpacing.s2)
+            Text("Import a JSON archive or CSV files exported from Aura.")
+                .font(AuraFont.secondary())
+                .foregroundColor(.aura.text2)
+                .multilineTextAlignment(.center)
+                .padding(.bottom, AuraSpacing.s2)
+            AuraPrimaryButton(label: importBusy ? "Importing…" : "Choose File", isLoading: importBusy) {
+                showFileImporter = true
+            }
+            .disabled(importBusy)
+            .opacity(importBusy ? 0.6 : 1)
+            AuraGrayButton(label: "Cancel") { dismiss() }
+        }
+        .fileImporter(
+            isPresented: $showFileImporter,
+            allowedContentTypes: [.json, .commaSeparatedText, .zip],
+            allowsMultipleSelection: false
+        ) { result in
+            switch result {
+            case .success(let urls):
+                guard let url = urls.first else { return }
+                importBusy = true
+                Task {
+                    let summary = await DataImportService.importFile(at: url, appState: appState)
+                    importBusy = false
+                    dismiss()
+                    flash(summary)
+                }
+            case .failure:
+                flash("Couldn't read that file")
+            }
+        }
     }
 
     // Reset (two options)
     private var resetSheet: some View {
         VStack(spacing: AuraSpacing.s3) {
             Text("Reset Data")
-                .font(.system(size: 17, weight: .bold))
+                .font(AuraFont.jakarta(17, .bold))
                 .foregroundColor(.aura.text)
                 .padding(.bottom, AuraSpacing.s2)
             SettingsGroup {
@@ -407,7 +480,7 @@ struct ProfileConfirmSheet: View {
                                 .fill(Color.aura.red)
                                 .frame(width: 32, height: 32)
                             Image(systemName: "trash.fill")
-                                .font(.system(size: 14, weight: .semibold))
+                                .font(AuraFont.jakarta(14, .semibold))
                                 .foregroundColor(.white)
                         }
                         Text("Reset everything")
@@ -435,12 +508,12 @@ struct ProfileConfirmSheet: View {
                     .fill(Color.aura.red.opacity(0.12))
                     .frame(width: 52, height: 52)
                 Image(systemName: delete ? "trash.fill" : "person.fill")
-                    .font(.system(size: 22, weight: .semibold))
+                    .font(AuraFont.jakarta(22, .semibold))
                     .foregroundColor(.aura.red)
             }
             .padding(.top, AuraSpacing.s2)
             Text(delete ? "Delete account?" : "Log out?")
-                .font(.system(size: 18, weight: .bold))
+                .font(AuraFont.jakarta(18, .bold))
                 .foregroundColor(.aura.text)
             Text(delete
                  ? "This permanently erases your account and all synced + local data. This cannot be undone."

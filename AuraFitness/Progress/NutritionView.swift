@@ -22,7 +22,7 @@ struct NutritionView: View {
     }
 
     var body: some View {
-        ScrollView {
+        AuraScreenScroll(bottomClearance: 0) {
             VStack(spacing: AuraSpacing.s4) {
                 bodyWeightCard
                 detailsHeader
@@ -63,7 +63,7 @@ struct NutritionView: View {
                     }
                     Spacer()
                     Text("Target \(UnitFormatter.weight(stats.targetWeight, unit: appState.weightUnit))")
-                        .font(.system(size: 12, weight: .semibold))
+                        .font(AuraFont.jakarta(12, .semibold))
                         .foregroundColor(.white)
                         .padding(.horizontal, 8)
                         .padding(.vertical, 4)
@@ -93,7 +93,7 @@ struct NutritionView: View {
             Spacer()
             Button { showDetailsEdit = true } label: {
                 Text("Edit")
-                    .font(.system(size: 13, weight: .semibold))
+                    .font(AuraFont.jakarta(13, .semibold))
                     .foregroundColor(.aura.accent)
             }
         }
@@ -121,7 +121,7 @@ struct NutritionView: View {
                 .font(AuraFont.sectionLabel())
                 .foregroundColor(.aura.text3)
             Text(value)
-                .font(.system(size: 15, weight: .bold))
+                .font(AuraFont.jakarta(15, .bold))
                 .foregroundColor(.aura.text)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -198,12 +198,12 @@ struct NutritionView: View {
         VStack(spacing: 0) {
             HStack {
                 Text("Your Details")
-                    .font(.system(size: 17, weight: .bold))
+                    .font(AuraFont.jakarta(17, .bold))
                     .foregroundColor(.aura.text)
                 Spacer()
                 Button { showDetailsEdit = false } label: {
                     Image(systemName: "xmark")
-                        .font(.system(size: 16, weight: .semibold))
+                        .font(AuraFont.jakarta(16, .semibold))
                         .foregroundColor(.aura.text3)
                 }
             }
@@ -232,7 +232,7 @@ struct NutritionView: View {
                                 appState.syncProfileFromBodyStats()
                             } label: {
                                 Text(sex)
-                                    .font(.system(size: 14, weight: .bold))
+                                    .font(AuraFont.jakarta(14, .bold))
                                     .foregroundColor(stats.sex == sex ? .white : .aura.text2)
                                     .frame(maxWidth: .infinity)
                                     .padding(.vertical, 10)
@@ -250,12 +250,12 @@ struct NutritionView: View {
                             } label: {
                                 HStack {
                                     Text(level)
-                                        .font(.system(size: 14, weight: .semibold))
+                                        .font(AuraFont.jakarta(14, .semibold))
                                         .foregroundColor(stats.activityLevel == level ? .aura.accent : .aura.text)
                                     Spacer()
                                     if stats.activityLevel == level {
                                         Image(systemName: "checkmark")
-                                            .font(.system(size: 14, weight: .bold))
+                                            .font(AuraFont.jakarta(14, .bold))
                                             .foregroundColor(.aura.accent)
                                     }
                                 }
@@ -282,7 +282,7 @@ struct NutritionView: View {
             TextField(label, value: value, format: decimals ? .number.precision(.fractionLength(1)) : .number.precision(.fractionLength(0)))
                 .keyboardType(.decimalPad)
                 .multilineTextAlignment(.trailing)
-                .font(.system(size: 15, weight: .bold))
+                .font(AuraFont.jakarta(15, .bold))
                 .foregroundColor(.aura.accent)
                 .frame(width: 90)
         }
@@ -295,7 +295,7 @@ struct NutritionView: View {
             TextField(label, value: value, format: .number)
                 .keyboardType(.numberPad)
                 .multilineTextAlignment(.trailing)
-                .font(.system(size: 15, weight: .bold))
+                .font(AuraFont.jakarta(15, .bold))
                 .foregroundColor(.aura.accent)
                 .frame(width: 90)
         }
@@ -332,7 +332,7 @@ struct NutritionView: View {
                 }
                 Spacer()
                 Text(value)
-                    .font(.system(size: 15, weight: .bold))
+                    .font(AuraFont.jakarta(15, .bold))
                     .foregroundColor(color)
             }
             AuraProgressBar(value: fraction, color: color, height: 5)

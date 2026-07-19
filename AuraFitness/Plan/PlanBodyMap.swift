@@ -96,7 +96,7 @@ struct PlanBodyMap: View {
                 Text("FRONT").frame(maxWidth: .infinity)
                 Text("BACK").frame(maxWidth: .infinity)
             }
-            .font(.system(size: 7, weight: .bold))
+            .font(AuraFont.jakarta(7, .bold))
             .tracking(0.6)
             .foregroundColor(.aura.text3)
         }

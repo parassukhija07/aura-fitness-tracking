@@ -20,6 +20,10 @@ struct AuthGateView: View {
                 // AuraFitnessApp gates ContentView on .signedIn directly; this
                 // branch is effectively unreachable but kept exhaustive.
                 splash
+            case .guest:
+                // AuraFitnessApp gates ContentView on .guest directly too;
+                // this branch is effectively unreachable but kept exhaustive.
+                splash
             }
         }
         .background(Color.aura.bg.ignoresSafeArea())
@@ -28,7 +32,7 @@ struct AuthGateView: View {
     private var splash: some View {
         VStack(spacing: AuraSpacing.s3) {
             Image(systemName: "figure.strengthtraining.traditional")
-                .font(.system(size: 44, weight: .bold))
+                .font(AuraFont.jakarta(44, .bold))
                 .foregroundColor(.aura.accent)
             ProgressView()
         }
@@ -56,10 +60,10 @@ private struct AuthFormView: View {
 
                 VStack(spacing: AuraSpacing.s2) {
                     Image(systemName: "figure.strengthtraining.traditional")
-                        .font(.system(size: 40, weight: .bold))
+                        .font(AuraFont.jakarta(40, .bold))
                         .foregroundColor(.aura.accent)
                     Text("Aura Fitness")
-                        .font(.system(size: 24, weight: .heavy))
+                        .font(AuraFont.jakarta(24, .heavy))
                         .foregroundColor(.aura.text)
                     Text(mode == .login ? "Log in to sync your workouts" : "Create an account to get started")
                         .font(AuraFont.secondary())
@@ -85,6 +89,15 @@ private struct AuthFormView: View {
                     Text(mode == .login ? "Don't have an account? Sign up" : "Already have an account? Log in")
                         .font(AuraFont.secondary())
                         .foregroundColor(.aura.accent)
+                }
+                .padding(.top, AuraSpacing.s2)
+
+                Button {
+                    authService.continueAsGuest()
+                } label: {
+                    Text("Skip for now — use as guest")
+                        .font(AuraFont.secondary())
+                        .foregroundColor(.aura.text2)
                 }
                 .padding(.top, AuraSpacing.s2)
 
@@ -145,10 +158,10 @@ private struct AwaitingConfirmationView: View {
         VStack(spacing: AuraSpacing.s4) {
             Spacer()
             Image(systemName: "envelope.badge.fill")
-                .font(.system(size: 44, weight: .semibold))
+                .font(AuraFont.jakarta(44, .semibold))
                 .foregroundColor(.aura.accent)
             Text("Check your email")
-                .font(.system(size: 20, weight: .bold))
+                .font(AuraFont.jakarta(20, .bold))
                 .foregroundColor(.aura.text)
             Text("We sent a confirmation link to \(email). Confirm your account, then log in below.")
                 .font(AuraFont.secondary())
