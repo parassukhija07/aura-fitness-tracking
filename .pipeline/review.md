@@ -1,31 +1,33 @@
 # FINAL ARCHITECTURE REVIEW
 
-## VERDICT
-NEEDS WORK
+## ⚖️ VERDICT
+SHIP
 
-## DIFF ANALYSIS
-The actual git diff / working-tree matches the Coder's stated file list. All 10 new files exist (Auth/, Sync/, Profile/DataArchive.swift, Profile/DataResetService.swift, Secrets.xcconfig.template, supabase/*). All 11 modified files were touched. No unauthorized/out-of-spec file modifications detected (the formatVolume hits in StatsView/WeeklyVolumeView/WorkoutOverviewView are pre-existing H7 display helpers, unrelated to the old export stub). Secrets handling verified clean: AuraFitness/Secrets.xcconfig is git-ignored (git check-ignore confirms), no hardcoded URL/anon key anywhere, AuthConfig reads Info.plist, Edge Function reads Deno.env. RLS covers every one of the 12 tables with an owner-only auth.uid() = user_id policy for all commands. Edge Function verifies the caller JWT via auth.getUser(jwt) and deletes only the resolved uid (no user id read from request body). The pbxproj diff is structurally balanced. Good work overall, but several correctness defects block a SHIP.
+## 🔍 DIFF ANALYSIS
+The actual `git diff` matches the Coder's `changes.md` and the Tester's `test-results.md` precisely. Verified independently, not trusting the handoff docs:
 
-## QUALITY & SECURITY AUDIT
-- Strengths:
-  - RLS + Edge Function security is correct: every table scoped to auth.uid(), JWT verified server-side, deletion keyed to the token's uid (not request body), cascade FKs wipe remote data.
-  - Secrets are properly externalized and gitignored; no credentials committed.
-  - Offline-queue coalescing (enqueue de-dupes by table+id+action) and whole-array didSet diffing (syncDiff/jsonEqual) are genuinely implemented, not just commented.
+- **`AuraFitness/Plan/PlanTabView.swift`** — `+4 / -110`. Body reduced to the exact spec-mandated `switch` mounting `MyPlansView()` / `ProgramLibraryView()` bare and `WorkoutLibraryView()` / `ExerciseLibraryTabView()` each in their own `NavigationStack`. All mock router state (`schedule`, `workouts`, `modal`, `editingWk`, `viewingProg`, `editingProg`, `viewingEx`, `calStartSun`) and dead machinery (`shell`, `myPlansBody`, `assignDay`/`makeRest`/`deleteWorkout`, `modalView(_:)`) removed. No dangling reference to any deleted symbol remains in code.
+- **`AuraFitness/Plan/SaveEditScopeSheet.swift`** — new, 38 lines, matches the spec contract byte-for-intent.
+- **`AuraFitness.xcodeproj/project.pbxproj`** — `+40 / -0`, purely additive across all four required sections.
 
-- Vulnerabilities/Flaws:
-  1. RESET DOES NOT CLEAR IN-MEMORY DATA (high). AppState.applyRemote*([]) UNION-merges the empty argument into existing state, so passing [] is a no-op: the arrays are reassigned to their current contents, NOT cleared. DataResetService.resetAll therefore wipes UserDefaults keys but leaves workoutLogs/measurements/PRs/photos/dayOverrides/quickLogs on screen and re-persisted by didSet. The whole reset feature is defeated. applyRemoteDayOverrides([:])/applyRemoteQuickLogs([:]) have the same merge-not-replace defect.
-  2. FULL RESET LEAVES CUSTOM PROGRAMS & EXERCISES (high). DataResetService calls ProgramDatabase.resetToSeed() and ExerciseDatabase.resetToSeed() for BOTH modes; both PRESERVE customs by design. The spec mandated hardReset() for the full-wipe path. hardReset() was written on both stores but is never called anywhere (dead code). So "Reset everything"/Delete Account keep all custom programs and custom exercises.
-  3. APPSTATEBRIDGE NIL-RACE ON COLD LAUNCH (high). AuthService.shared is instantiated during AuraFitnessApp's @StateObject init and immediately fires restoreSession -> transitionToSignedIn -> onSignedIn -> pullAll/backfill. AppStateBridge.shared is only set later in .onAppear. For a returning user, pullAll() (line 320) and backfillLocalToRemote (line 242) can run while AppStateBridge.shared == nil and silently return, so on cold launch NONE of the AppState-owned collections pull or backfill; only programs/plans/exercises do. Backfill runs once per sign-in, so a fresh account's pre-existing local logs/measurements may never reach the server (foreground pull later only partially recovers visibility, not the one-shot backfill).
-  4. LWW TIMESTAMP / RE-PUSH GAP (medium). When a remote row wins in reconcile, applyRemote* never calls stampLocalChange, so aura_local_ts_v1 keeps the stale local timestamp for that id. And when a LOCAL row is newer (localTs > remote), reconcile just continues and never re-pushes the local winner (the toRepush array is explicitly discarded: _ = toRepush), so the spec's "if local won, push it up" is not implemented; an offline device can fail to propagate its newer edit until the row is touched again.
-  5. PBXPROJ UUID LENGTH INCONSISTENCY (medium, over-flagged per instructions). Every pre-existing identifier is exactly 24 chars; the new build/file-ref IDs are 22 chars (AAH8000000000000000001) and ABH8SECRETSXCCFG0000001 is 23. Xcode is usually tolerant, and I confirmed no collisions and correct section placement (all sections balanced and cross-referenced). But given zero compile verification and blast radius, normalize to 24 hex chars and open in Xcode to confirm load + supabase-swift resolution before trusting it.
-  6. INFOPLIST_KEY_* PASSTHROUGH UNVERIFIED (medium). INFOPLIST_KEY_SUPABASE_URL/ANON_KEY were added to both configs, but arbitrary INFOPLIST_KEY_* suffixes may not flow into the generated Info.plist; if they do not, AuthConfig hits its DEBUG fatalError / RELEASE invalid-config gate at first launch. A documented fallback exists but this is unverified.
+**Unauthorized modifications:** None in code. The other files reported by `git status` (`.pipeline/*.md`, and `bash.exe.stackdump`) are pipeline bookkeeping / an unrelated shell crash artifact — not part of the fix and not shipping code. No orphan source file, `ContentView.swift`, or `WorkoutEditorView.swift` was touched (confirmed empty diff on all 10 protected files).
 
-- Test Integrity: Not independently re-run (no toolchain). The Coder's "Tester focus areas" correctly name the echo guard, backfill-vs-pull, delete ordering, and coalescing. But any test claiming reset "clears data" and passing would be a FALSE GREEN, because the in-memory clear is a no-op (flaw #1). Treat green reset/backfill tests with suspicion until #1 and #3 are fixed.
+## 🛡️ QUALITY & SECURITY AUDIT
 
-## ACTION ITEMS
-- AuraFitness/Models/AppState.swift: applyRemote* are union-merge helpers and must NOT double as the reset mechanism. Add explicit clear entry points (or have DataResetService assign empty collections directly under the isApplyingRemote guard) so reset actually empties workoutLogs, measurements, personalRecords, progressPhotos, dayOverrides, quickLogs in memory.
-- AuraFitness/Profile/DataResetService.swift: For the full-reset path call ProgramDatabase.hardReset() and ExerciseDatabase.hardReset() (drop customs) instead of resetToSeed(). Confirm custom programs/exercises are gone from memory after "Reset everything."
-- AuraFitness/AuraFitnessApp.swift / AuraFitness/Auth/AuthService.swift: Fix the bridge race. Set AppStateBridge.shared = appState BEFORE AuthService.shared can drive onSignedIn/pullAll (assign the bridge in the App initializer before referencing AuthService.shared, or gate restoreSession until the bridge is set). Ensure the one-shot backfill never runs with a nil bridge.
-- AuraFitness/Sync/SupabaseSyncService.swift: In reconcile/reconcileKeyed, actually re-push local-wins (implement the discarded toRepush) and call stampLocalChange when a remote row is applied so the timestamp map stays consistent with disk.
-- AuraFitness.xcodeproj/project.pbxproj: Normalize the 8 new identifiers to canonical 24-hex-char UUIDs and open in Xcode to confirm the project loads and supabase-swift resolves. Verify INFOPLIST_KEY_SUPABASE_* actually surface in the generated Info.plist (or switch to explicit custom Info.plist entries) so AuthConfig does not dead-end at launch.
+- **Strengths:**
+  - The highest-risk item — the hand-edited pbxproj with no Xcode to verify — is genuinely correct. I independently confirmed: each `CA…` fileID appears exactly 3× (FileReference def + group child + `fileRef=` in its build-file twin), each `CB…` buildID appears exactly 2× (PBXBuildFile def + Sources phase); **zero** collision with any pre-existing UUID in the HEAD version; braces balanced 200/200 and parens 37/37; and the `Plan` group's closing `);` / `path = Plan;` / `sourceTree` block plus the Sources-phase list are intact at both insertion seams. All 10 registered files exist on disk in `AuraFitness/Plan/`.
+  - The deviation (navbar `+`-button removal) was executed cleanly, not as a half-fix — see Test Integrity.
 
+- **Vulnerabilities/Flaws:** No blocking flaws. Two pre-existing / cosmetic notes, neither a ship blocker:
+  - `PlanTabView.swift:5-8` retains a stale doc-comment describing the old mock router (`viewingEx → editingWk → …`). Dead documentation, zero compile impact. Clean up in a follow-up.
+  - The `+`-button removal is a real, intentional behavior change to the Plan tab (no more global "add" affordance in the navbar). It is coordinator-approved and defensible (each subtab owns its own create flow), but it IS a UX change a human should be consciously aware of before merge, not a pure refactor.
+
+- **Test Integrity:** The Tester's PASS is honest and appropriately caveated. With no local Xcode/Simulator, no runtime/UI test was possible; the Tester correctly framed this as static symbol-resolution only and did the adversarial work — spot-checking all 8 other orphan files' external symbols (not just trusting the spec's "only `SaveEditScopeSheet` is missing" claim), verifying the `NavigationStack` wrapping decision by reading each target view's root, and confirming the pbxproj fan-out counts. I re-ran the load-bearing checks myself and they hold. The one imprecision the Tester flagged (spec wrongly said `MyPlansView` contains its own root `NavigationStack` — it does not, it only uses `.sheet`s) is real but functionally harmless: `MyPlansView` does no root push-navigation, so mounting it bare is correct and produces no dead-toolbar or double-nav-bar. Honest catch, correctly judged non-blocking.
+
+  Caveat carried forward to the human: because no compiler ran, "SHIP" here means **statically sound and structurally safe to merge**; first CI/Xcode build is still the true final gate. Given the prior branch rollback was caused by a bad pbxproj edit, note that THIS pbxproj edit was scrutinized specifically for that failure mode and is clean.
+
+## 🛠️ ACTION ITEMS
+None required for ship. Optional follow-ups (already tracked in the spec, do NOT block merge):
+- `AuraFitness/Plan/PlanTabView.swift`: remove the stale line 5-8 router doc-comment for clarity.
+- Confirm on first available CI/Xcode run that all 10 newly-registered files compile and link (static-only pass could not execute a build).
+- Product/coordinator to consciously acknowledge the Plan navbar no longer has a global `+` button.

@@ -62,6 +62,16 @@
 		E5D31AB2AD9D49C3A6CA5C6C /* PlanWorkoutEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2865FC79E9954BE1A25B3411 /* PlanWorkoutEditorView.swift */; };
 		FF9914404E7E49F68C857B0D /* PlanExerciseDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9641805392374D16AAA3209E /* PlanExerciseDetailView.swift */; };
 		D1E6081F805C44EA80D37561 /* PlanBodyMap.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF6B6FD2015947908E6EE16B /* PlanBodyMap.swift */; };
+		CB01000000000000000A0001 /* MyPlansView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA01000000000000000A0001 /* MyPlansView.swift */; };
+		CB01000000000000000A0002 /* ProgramLibraryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA01000000000000000A0002 /* ProgramLibraryView.swift */; };
+		CB01000000000000000A0003 /* ProgramDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA01000000000000000A0003 /* ProgramDetailView.swift */; };
+		CB01000000000000000A0004 /* ProgramEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA01000000000000000A0004 /* ProgramEditorView.swift */; };
+		CB01000000000000000A0005 /* WorkoutLibraryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA01000000000000000A0005 /* WorkoutLibraryView.swift */; };
+		CB01000000000000000A0006 /* WorkoutEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA01000000000000000A0006 /* WorkoutEditorView.swift */; };
+		CB01000000000000000A0007 /* ExerciseLibraryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA01000000000000000A0007 /* ExerciseLibraryView.swift */; };
+		CB01000000000000000A0008 /* ExerciseDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA01000000000000000A0008 /* ExerciseDetailView.swift */; };
+		CB01000000000000000A0009 /* CreateExerciseView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA01000000000000000A0009 /* CreateExerciseView.swift */; };
+		CB01000000000000000A0010 /* SaveEditScopeSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA01000000000000000A0010 /* SaveEditScopeSheet.swift */; };
 		AA000027000000000000006F /* ProgressTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000027000000000000006F /* ProgressTabView.swift */; };
 		AA000028000000000000007C /* StatsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000028000000000000007C /* StatsView.swift */; };
 		AA000029000000000000007D /* ConsistencyHeatmapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000029000000000000007D /* ConsistencyHeatmapView.swift */; };
@@ -137,6 +147,16 @@
 		2865FC79E9954BE1A25B3411 /* PlanWorkoutEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlanWorkoutEditorView.swift; sourceTree = "<group>"; };
 		9641805392374D16AAA3209E /* PlanExerciseDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlanExerciseDetailView.swift; sourceTree = "<group>"; };
 		FF6B6FD2015947908E6EE16B /* PlanBodyMap.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlanBodyMap.swift; sourceTree = "<group>"; };
+		CA01000000000000000A0001 /* MyPlansView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyPlansView.swift; sourceTree = "<group>"; };
+		CA01000000000000000A0002 /* ProgramLibraryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgramLibraryView.swift; sourceTree = "<group>"; };
+		CA01000000000000000A0003 /* ProgramDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgramDetailView.swift; sourceTree = "<group>"; };
+		CA01000000000000000A0004 /* ProgramEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgramEditorView.swift; sourceTree = "<group>"; };
+		CA01000000000000000A0005 /* WorkoutLibraryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutLibraryView.swift; sourceTree = "<group>"; };
+		CA01000000000000000A0006 /* WorkoutEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutEditorView.swift; sourceTree = "<group>"; };
+		CA01000000000000000A0007 /* ExerciseLibraryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseLibraryView.swift; sourceTree = "<group>"; };
+		CA01000000000000000A0008 /* ExerciseDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseDetailView.swift; sourceTree = "<group>"; };
+		CA01000000000000000A0009 /* CreateExerciseView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateExerciseView.swift; sourceTree = "<group>"; };
+		CA01000000000000000A0010 /* SaveEditScopeSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SaveEditScopeSheet.swift; sourceTree = "<group>"; };
 		AB000027000000000000006F /* ProgressTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressTabView.swift; sourceTree = "<group>"; };
 		AB000028000000000000007C /* StatsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatsView.swift; sourceTree = "<group>"; };
 		AB000029000000000000007D /* ConsistencyHeatmapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConsistencyHeatmapView.swift; sourceTree = "<group>"; };
@@ -277,6 +297,16 @@
 				2865FC79E9954BE1A25B3411 /* PlanWorkoutEditorView.swift */,
 				9641805392374D16AAA3209E /* PlanExerciseDetailView.swift */,
 				FF6B6FD2015947908E6EE16B /* PlanBodyMap.swift */,
+				CA01000000000000000A0001 /* MyPlansView.swift */,
+				CA01000000000000000A0002 /* ProgramLibraryView.swift */,
+				CA01000000000000000A0003 /* ProgramDetailView.swift */,
+				CA01000000000000000A0004 /* ProgramEditorView.swift */,
+				CA01000000000000000A0005 /* WorkoutLibraryView.swift */,
+				CA01000000000000000A0006 /* WorkoutEditorView.swift */,
+				CA01000000000000000A0007 /* ExerciseLibraryView.swift */,
+				CA01000000000000000A0008 /* ExerciseDetailView.swift */,
+				CA01000000000000000A0009 /* CreateExerciseView.swift */,
+				CA01000000000000000A0010 /* SaveEditScopeSheet.swift */,
 			);
 			path = Plan;
 			sourceTree = "<group>";
@@ -474,6 +504,16 @@
 				E5D31AB2AD9D49C3A6CA5C6C /* PlanWorkoutEditorView.swift in Sources */,
 				FF9914404E7E49F68C857B0D /* PlanExerciseDetailView.swift in Sources */,
 				D1E6081F805C44EA80D37561 /* PlanBodyMap.swift in Sources */,
+				CB01000000000000000A0001 /* MyPlansView.swift in Sources */,
+				CB01000000000000000A0002 /* ProgramLibraryView.swift in Sources */,
+				CB01000000000000000A0003 /* ProgramDetailView.swift in Sources */,
+				CB01000000000000000A0004 /* ProgramEditorView.swift in Sources */,
+				CB01000000000000000A0005 /* WorkoutLibraryView.swift in Sources */,
+				CB01000000000000000A0006 /* WorkoutEditorView.swift in Sources */,
+				CB01000000000000000A0007 /* ExerciseLibraryView.swift in Sources */,
+				CB01000000000000000A0008 /* ExerciseDetailView.swift in Sources */,
+				CB01000000000000000A0009 /* CreateExerciseView.swift in Sources */,
+				CB01000000000000000A0010 /* SaveEditScopeSheet.swift in Sources */,
 				AA000027000000000000006F /* ProgressTabView.swift in Sources */,
 				AA000028000000000000007C /* StatsView.swift in Sources */,
 				AA000029000000000000007D /* ConsistencyHeatmapView.swift in Sources */,

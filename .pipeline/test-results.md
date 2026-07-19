@@ -1,199 +1,77 @@
-STATUS: PASS
-
 # TEST EXECUTION REPORT
 
-## STATUS
+## 📊 STATUS
 PASS
 
-## ENVIRONMENT NOTE
-This is a Windows machine — no `xcodebuild` (Xcode) toolchain is available, so a real
-`xcodebuild build`/`xcodebuild test` could not be executed here (CI runs on macOS 15 /
-Xcode 16.1, per `.github/workflows/ci.yml`). Verification fell back to:
-(a) `swiftc -parse` syntax-only checks (Swift 6.3.2 toolchain for Windows was available),
-(b) manual/static code review tracing types, optionals, control flow, and cross-referencing
-every symbol used against its actual declaration in the repo, and
-(c) structural validation of `project.pbxproj` (grep for all 4 required registration-entry
-types per new file, and a scan for duplicate object IDs).
-This is NOT a substitute for a real Xcode compile — flagging this limitation explicitly.
+## 🧪 TESTS IMPLEMENTED
+No Xcode toolchain is available on this machine (`xcodebuild`/`swift build` cannot run), per the task constraints. Verification was performed as static, adversarial symbol-resolution and structural analysis — reading every touched/added file in full and cross-referencing every external symbol against its real definition. This is the equivalent of a manual "type-check by hand" pass. Specific checks performed:
 
-## CHECKS PERFORMED AND RESULTS
+- `AuraFitness/Plan/SaveEditScopeSheet.swift`:
+  - Confirmed initializer `SaveEditScopeSheet(onJustToday: (() -> Void)?, onPermanently: @escaping () -> Void)` exactly matches the real call site read directly from `AuraFitness/Plan/WorkoutEditorView.swift:96-103` (`SaveEditScopeSheet(onJustToday: nil, onPermanently: { saveWorkout() })`, chained with `.presentationDetents`/`.presentationDragIndicator` on the `.sheet` modifier, not on the view itself — correct, since the spec required a bare `VStack`, not a `NavigationStack`).
+  - Confirmed `if let onJustToday` conditionally renders the "Just for Today" `AuraTintedButton`; `AuraPrimaryButton("Save Permanently", icon: "checkmark")` and `AuraGrayButton("Cancel")` always render; all three dismiss via `@Environment(\.dismiss)` after firing their closures.
+  - Verified every symbol used resolves with matching signatures by grepping their real definitions: `AuraPrimaryButton(label:icon:action:)`, `AuraTintedButton(label:action:)`, `AuraGrayButton(label:action:)` in `AuraFitness/DesignSystem/AuraComponents.swift`; `AuraFont.cardTitle()`, `AuraFont.secondary()` in `AuraFitness/DesignSystem/AuraTypography.swift`; `AuraSpacing.s3`, `AuraSpacing.screenPad` in `AuraFitness/DesignSystem/AuraSpacing.swift`; `Color.aura.text`, `.text2`, `.bgGrouped` in `AuraFitness/DesignSystem/AuraColors.swift`.
+  - Brace balance of the file: 7 open / 7 close.
 
-### 1. pbxproj registration for CSVArchive.swift / CSVParser.swift / DataImportService.swift — PASS
-Grepped `AuraFitness.xcodeproj/project.pbxproj` and confirmed all 4 required entry types
-exist for all 3 new files, with consistent, cross-matching UUIDs throughout:
-- PBXBuildFile: lines 78-80 (`AAC1D4E5F60718293A4B5C05/06/07`)
-- PBXFileReference: lines 153-155 (`ABC1D4E5F60718293A4B5C05/06/07`)
-- PBXGroup (`Profile` group, `ACGRP080000000000000000A`): lines 311-313
-- PBXSourcesBuildPhase (the single, only Sources phase in the file, for the app's only
-  `PBXNativeTarget`): lines 498-500
-Scanned all `isa = ...` object definitions in the file for duplicate object IDs — none found.
-`git diff --stat HEAD -- AuraFitness.xcodeproj/project.pbxproj` shows exactly 12 insertions,
-0 deletions — a clean, purely additive change matching 3 files x 4 entries, consistent with
-the coder's claim and with no collateral damage to existing entries.
+- `AuraFitness/Plan/PlanTabView.swift`:
+  - Read in full (59 lines). Confirmed it contains only: import, struct, `appState`, `Subtab` enum, `subtab` state, `body`, `navbar` — matching the spec's post-edit shape exactly.
+  - Confirmed the `body` switch mounts `MyPlansView()` and `ProgramLibraryView()` bare, and `WorkoutLibraryView()`/`ExerciseLibraryTabView()` each wrapped in their own `NavigationStack` — verified this is the *correct* choice by reading all four target files: `MyPlansView.swift` and `ProgramLibraryView.swift` do NOT use push navigation at their root (`MyPlansView`'s body is a bare `ScrollView` using only `.sheet`s, each of which independently wraps its own sheet content in `NavigationStack`; `ProgramLibraryView`'s body itself opens with `NavigationStack { ... }` and owns a `.toolbar`), while `WorkoutLibraryView.swift` and `ExerciseLibraryView.swift` (defining `ExerciseLibraryTabView`) use `.toolbar`/`.navigationDestination(item:)` with no `NavigationStack` of their own — so they require the wrapper `PlanTabView` provides, or the toolbar `+` and push navigation would silently no-op. Confirmed via grep for `NavigationStack` in each of the four files individually.
+  - Confirmed via grep that none of the deleted `@State` identifiers (`modal`, `schedule`, `workouts`, `editingWk`, `viewingProg`, `editingProg`, `viewingEx`, `calStartSun`, `PlanIconButton`) remain anywhere in the file — the sole remaining hit was a stray line-7 comment (`viewingEx → editingWk → editingProg → viewingProg → (sub-tab shell)`) describing the old architecture; this is dead documentation only, not code, and has zero compile impact.
+  - Confirmed all four mounted struct names (`MyPlansView`, `ProgramLibraryView`, `WorkoutLibraryView`, `ExerciseLibraryTabView`) match the real `struct` declarations in their respective files exactly (grepped each).
+  - Confirmed `PlanFilterChip(label:active:action:)` used by `navbar` matches its real definition in `AuraFitness/Plan/PlanComponents.swift:251` (a mock file remaining in the build target, as intended).
+  - Confirmed `Color.aura.bg`, `AuraFont.largeTitleStyle()`, `AuraFont.largeTitleTracking` all resolve.
+  - Brace/paren balance: 17/17 braces, 24/24 parens.
+  - Confirmed the navbar `+` button removal (deviation from spec, coordinator-approved) leaves valid, balanced Swift — the `HStack` still closes correctly with only `Text` + `Spacer()`.
 
-### 2. SupabaseSyncService.swift — stampLocalChange ordering — PASS
-`AuraFitness/Sync/SupabaseSyncService.swift:91-93`:
-```swift
-func push<T: Encodable>(_ value: T, id: String, table: Table) {
-    stampLocalChange(table: table, id: id)      // line 92 — runs unconditionally
-    guard let uid = userID else { return }       // line 93 — early-return AFTER stamping
+- `AuraFitness.xcodeproj/project.pbxproj`:
+  - Confirmed via `git diff --stat` against HEAD: exactly `+40 insertions, 0 deletions` — purely additive, matching the changes.md claim precisely.
+  - Located and read all 4 touched regions directly (not trusting line numbers from the spec blindly — re-grepped current positions): PBXBuildFile block at lines 65-74, PBXFileReference block at lines 150-159, Plan-group children at lines 300-309, Sources-phase files list at lines 507-516.
+  - Verified UUID fan-out by direct count: `grep -c` for `CA01000000000000000A00` → 30 total occurrences (10 unique IDs × 3: FileReference def + group child + `fileRef=` inside its PBXBuildFile twin); `grep -c` for `CB01000000000000000A00` → 20 total occurrences (10 unique IDs × 2: PBXBuildFile def + Sources-phase entry). Both match the expected multiplicities exactly, with no orphaned or duplicated IDs.
+  - Verified each PBXBuildFile's `fileRef =` value points to the correct matching `CA...` id/filename pair (all 10 lines read directly, e.g. `CB...0007 ... fileRef = CA...0007 /* ExerciseLibraryView.swift */`).
+  - Verified comment text uses real filenames, not struct names (e.g. `CA01000000000000000A0007 /* ExerciseLibraryView.swift */`, not `ExerciseLibraryTabView`; `CA01000000000000000A0008 /* ExerciseDetailView.swift */`, not `ExerciseEntryDetailView`).
+  - Verified zero collision with pre-existing UUIDs: extracted the HEAD (pre-change) version of the pbxproj via `git show HEAD:...` and grepped it for the same 20 new UUID patterns — 0 matches, confirming they are genuinely new.
+  - Verified overall file structural integrity: whole-file brace count 200 open / 200 close (baseline HEAD version: 180/180 — the +20 delta is exactly the 20 new `{...}` dictionary pairs from the 10 new PBXBuildFile + 10 new PBXFileReference entries, as expected); confirmed the `Plan` PBXGroup's closing `);` / `path = Plan;` / `sourceTree` block is intact immediately after the 10 inserted children, and the Sources-phase list continues uninterrupted into subsequent pre-existing entries (`ProgressTabView.swift in Sources`, etc.) with nothing truncated. File ends correctly with a properly closed root dictionary and `rootObject` reference.
+
+- Spot-check of the other 8 orphan files now entering the build target (verifying the spec's claim that ONLY `SaveEditScopeSheet` was missing, rather than trusting it):
+  - `ProgramDetailView.swift`: `planDB.addPlan(from:startDay:)` resolves to `UserPlanDatabase.addPlan(from:name:startDay:)` (confirmed this method lives in `UserPlanDatabase`, not `ProgramDatabase`, despite both classes living in the same `ProgramDatabase.swift` file); `program.sourceProgramID`, `appState.calendarStartDay` all resolve.
+  - `ProgramEditorView.swift`: `Mode.create`/`.edit(Program)`, `programDB.addProgram/updateProgram/deleteProgram`, `Workout: Identifiable` (confirmed, required for `.sheet(item: $editingWorkout)`) all resolve.
+  - `WorkoutLibraryView.swift`: `programDB.allWorkouts`, `Workout: Identifiable` (required for `.navigationDestination(item:)`), all `Aura*`/`Color.aura.*` tokens resolve.
+  - `ExerciseDetailView.swift` (defines `ExerciseEntryDetailView` + `ExerciseDetailView`): every `ExerciseEntry` field used (`category`, `equipment`, `musclesTargeted`, `type`, `difficulty`, `repRange`, `youtubeURL`, `proTips`, `warmupProtocol`, `isCable`, `pulley`, `isCustom`, `notes`, `isFavorite`) confirmed present on the real `ExerciseEntry` struct in `AuraFitness/Models/ExerciseDatabase.swift`; `WarmupStep`/`ExerciseWarmupProtocol` confirmed defined there too; `db.entry(id:)`, `db.entry(named:)`, `db.toggleFavorite(id:)` all resolve; legacy `Exercise` fields (`equipment`, `primaryMuscle`, `difficulty`, `hint`, `muscleGroups`) confirmed on `AuraFitness/Models/WorkoutModels.swift`'s `Exercise` struct; `AuraFont.sectionLabel()`/`.sectionLabelStyle()` confirmed in `AuraTypography.swift`.
+  - `CreateExerciseView.swift`: `ExerciseEntry` memberwise init call matches struct field list/order requirements (labeled args, so order-independent); `db.add(_:)` confirmed on `ExerciseDatabase`.
+  - `ExerciseLibraryView.swift` (defines `ExerciseLibraryTabView`): `db.filtered(category:equipment:query:)` confirmed on `ExerciseDatabase` with matching parameter labels/defaults.
+  - `MyPlansView.swift` (defines `MyPlansView`, `CreatePlanView`, `PlanScheduleEditorView`): `UserPlan.weekSchedule: [Int: UUID?]` confirmed, and all double-optional (`UUID??`) unwrap patterns in the file are consistent with that declared type; `AuraListRow(iconName:iconColor:title:action:)`, `AuraBadge(label:color:)`, `Color.aura.separator`/`.accentSoft`/`.fill` all confirmed.
+  - No additional missing types or symbol mismatches found beyond the one the spec already identified (`SaveEditScopeSheet`).
+
+- `AuraFitness/ContentView.swift:50` — confirmed `case .plan: PlanTabView()` is untouched, is the only reference to `PlanTabView()` in the codebase, and correctly matches `PlanTabView`'s zero-argument initializer (implicit memberwise/default init, since `PlanTabView` has no stored non-default properties besides the `@EnvironmentObject`).
+
+## 📝 EXECUTION LOG
 ```
-Confirmed `stampLocalChange` (line 92) executes before the `guard let uid = userID else { return }`
-(line 93) inside `push(_:id:table:)`. This is the single load-bearing fix required by spec
-section "MERGE / UPLOAD STRATEGY" point 4 — guest edits are now timestamped locally even
-though no network push occurs, which is what lets `pullAll`'s LWW reconcile treat guest rows
-as newer-than-remote on later sign-in.
-
-### 3. AuthService.swift — PASS
-`AuraFitness/Auth/AuthService.swift`:
-- Line 17: `case guest` added to `enum SessionState: Equatable`.
-- Lines 73-76: `continueAsGuest()` sets `UserDefaults.standard.set(true, forKey: guestKey)` and
-  `sessionState = .guest`, no network call.
-- Lines 57-68 (`restoreSession`): tries the real Keychain session first; only on the `catch`
-  branch checks the guest flag (`.guest` if set, else `.signedOut`) — correct precedence
-  (real session > guest > signed-out).
-- Line 150 (`transitionToSignedIn`, the sole path reached by both restore-success and
-  `signIn`-success): clears the guest flag on SUCCESS only.
-- Lines 102-111 (`signIn` catch/failure branch): sets `lastError`, sets `sessionState = .signedOut`,
-  does NOT touch the guest flag — confirmed a failed sign-in does not strand/clear a guest.
-- Line 123 (`signOut()`): clears the guest flag (`UserDefaults.standard.set(false, forKey: guestKey)`)
-  before setting `sessionState = .signedOut`.
-- `userID` (lines 33-36) returns nil for `.guest` (falls through to `return nil`), unchanged.
-
-### 4. AuraFitnessApp.swift — PASS
-`AuraFitness/AuraFitnessApp.swift:32-37`: `.guest` case added to the root gate switch, routing
-to `ContentView().environmentObject(appState)` identically to `.signedIn`. `default:` still
-falls through to `AuthGateView()`. Comment added at lines 53-56 on the `scenePhase` pull guard
-explaining that `authService.userID == nil` already correctly skips foreground pulls for guests
-— no logic change needed there, confirmed correct as-is.
-
-### 5. DataResetService.swift — PASS
-`AuraFitness/Profile/DataResetService.swift:80-83`: `aura_guest_mode_v1` removal is nested
-inside the `if !workoutOnly { ... }` block (starts line 56), alongside `aura_sync_queue_v1`/
-`aura_local_ts_v1` (lines 77-78) — i.e. full-reset only. Confirmed NOT present in the
-workout-only branch (lines 35-41, which only touches program/exercise/plan reset calls).
-
-### 6. CSV column schemas (CSVArchive.swift) vs spec.md — PASS
-Manually cross-checked all 5 header rows in `AuraFitness/Profile/CSVArchive.swift`
-(`workoutHistoryCSV` L54-58, `programsCSV` L88-94, `customWorkoutsCSV` L128-133,
-`customExercisesCSV` L163-167, `measurementsCSV` L194-197) against the spec's literal
-"CSV SCHEMAS" section, column-by-column, name-for-name, in order. All 5 match exactly.
-Also cross-checked that every model field referenced (`Program`, `Workout`, `Exercise`,
-`WorkoutLog`, `WorkoutSet`, `ExerciseEntry`, `Measurement` — in `AuraFitness/Models/
-WorkoutModels.swift`, `ProgressModels.swift`, `ExerciseDatabase.swift`) actually exists with
-the exact name/type used (e.g. `Program.description`, `Workout.restBetweenSets`,
-`ExerciseEntry.musclesTargeted: [String]`, `Measurement.bodyFatPct: Double?`) — no invented
-properties found. Boolean fields serialize as literal `"true"`/`"false"` (`field(_ b: Bool)`,
-line 42); numeric optionals serialize as empty string on nil, not "0" (lines 34-41),
-matching the spec's "Numeric optionals... empty string when nil" rule. `DataImportService.
-Col` (the reader-side column-index table, lines 205-233) independently encodes the identical
-column order for all 5 schemas — cross-verified consistent with the writer side.
-
-### 7. CSVParser.swift RFC-4180 logic — PASS (manual trace, swiftc -parse clean)
-Traced the state machine in `AuraFitness/Profile/CSVParser.swift` by hand against 5 cases:
-- Quoted field with embedded comma (`"Hello, World",42`) → parses to one field, correct.
-- Doubled-quote escaping (`"She said ""hi""",1`) → decodes to `She said "hi"`, correct.
-- Embedded literal newline inside a quoted field → appended into the field without ending
-  the row (only unquoted `\n` ends a row) — correct per RFC-4180.
-- CRLF row separators (`a,b\r\nc,d\r\n`) → bare `\r` swallowed outside quotes, `\n` ends the
-  row — correct, matches `CSVArchiveBuilder`'s `\r\n` row joiner.
-  `swiftc -parse` produced zero output (no syntax errors) for this file.
-
-### 8. Test-target-not-wired-into-pbxproj claim — CONFIRMED PRE-EXISTING, not introduced by this change
-- `project.pbxproj` contains exactly one `PBXNativeTarget` (the `AuraFitness` app target) and
-  exactly one `PBXSourcesBuildPhase` — no `AuraFitnessTests` target, no test-bundle product,
-  anywhere in the file.
-- `git log --diff-filter=A -- AuraFitnessTests/PersistenceRoundTripTests.swift` shows it was
-  added in commit `3c3d38f` ("feat: persist AppState user-data collections across relaunch
-  (C3)") — a prior, unrelated commit — and was never subsequently wired into a test target.
-- `.github/workflows/ci.yml` only invokes `xcodebuild build`, never `xcodebuild test`.
-- The current diff's only pbxproj change is the 12-line additive Sources/FileReference/
-  BuildFile/Group registration for the 3 new app-target files (verified in check #1) — it does
-  not add, remove, or touch any test-target-related object.
-- Conclusion: this is a genuine, pre-existing repo condition, correctly and transparently
-  flagged by the coder, not a regression introduced in this change. `CSVRoundTripTests.swift`
-  is well-formed (parses cleanly via `swiftc -parse`, covers all fixtures required by the
-  spec: nil-vs-zero measurements, custom exercise, program with 1 workout/2 exercises,
-  workout-history log with 2 exercises x 2 sets each, CSV escaping of a comma+quote name, and
-  an embedded-newline parser case) but genuinely cannot be executed via `xcodebuild test`
-  until a test target is added out-of-band — this is outside the scope of the current feature
-  diff.
-
-## ADDITIONAL SPOT-CHECKS
-- `DataImportService.swift` store-CRUD calls (`ProgramDatabase.shared.program(id:)`,
-  `.addProgram`, `.updateProgram`, `.plans`, `.addCustomWorkout`, `.updateCustomWorkout`,
-  `ExerciseDatabase.shared.entry(id:)`, `.add`, `.update`, `.delete`) all verified to exist
-  with matching signatures in `AuraFitness/Models/ProgramDatabase.swift` and
-  `ExerciseDatabase.swift`.
-- `Exercise`, `ExerciseEntry`, `ExerciseWarmupProtocol`, `Workout`, `Program` memberwise-init
-  parameter names/types used in `DataImportService.swift` and `CSVRoundTripTests.swift` all
-  verified against the actual struct declarations — no invented properties.
-- `.fileImporter` wiring in `ProfileSettingsScreens.swift` uses
-  `allowedContentTypes: [.json, .commaSeparatedText, .zip]`, `allowsMultipleSelection: false`,
-  matching spec's MOBILE CONCERNS section; `import UniformTypeIdentifiers` present at file top.
-- Security-scoped resource handling (`startAccessingSecurityScopedResource()` /
-  `stopAccessingSecurityScopedResource()` via `defer`) present at the top of
-  `DataImportService.importFile` (lines 50-51), before any file read.
-- "Skip for now — use as guest" button correctly placed in `AuthGateView.swift` below the
-  existing sign-up/login toggle button, styled with `AuraFont.secondary()` /
-  `.aura.text2`, calling `authService.continueAsGuest()`.
-- Import/Export rows in `AccountDetailsView.swift` are siblings, both ungated on
-  `authService.userID`, per spec.
-
-## EXECUTION LOG
-```
-$ which xcodebuild
-(not found — Windows environment, no Xcode toolchain)
-
-$ swiftc --version
-Swift version 6.3.2 (swift-6.3.2-RELEASE)
-Target: x86_64-unknown-windows-msvc
-
-$ swiftc -parse AuraFitness/Profile/CSVParser.swift
-(no output — clean)
-
-$ swiftc -parse AuraFitness/Profile/CSVArchive.swift
-(no output — clean)
-
-$ swiftc -parse AuraFitness/Profile/DataImportService.swift
-(no output — clean)
-
-$ swiftc -parse AuraFitness/Auth/AuthService.swift
-$ swiftc -parse AuraFitness/AuraFitnessApp.swift
-$ swiftc -parse AuraFitness/Auth/AuthGateView.swift
-$ swiftc -parse AuraFitness/Profile/DataResetService.swift
-$ swiftc -parse AuraFitness/Sync/SupabaseSyncService.swift
-$ swiftc -parse AuraFitness/Profile/ProfileTabView.swift
-$ swiftc -parse AuraFitness/Profile/AccountDetailsView.swift
-$ swiftc -parse AuraFitness/Profile/ProfileSettingsScreens.swift
-$ swiftc -parse AuraFitnessTests/CSVRoundTripTests.swift
-(all clean — zero syntax errors across all modified/new Swift files)
-
-$ grep -n "CSVArchive.swift\|CSVParser.swift\|DataImportService.swift" AuraFitness.xcodeproj/project.pbxproj
-78:  ... PBXBuildFile ... CSVArchive.swift
-79:  ... PBXBuildFile ... CSVParser.swift
-80:  ... PBXBuildFile ... DataImportService.swift
-153: ... PBXFileReference ... CSVArchive.swift
-154: ... PBXFileReference ... CSVParser.swift
-155: ... PBXFileReference ... DataImportService.swift
-311-313: ... Profile PBXGroup children ... (all 3)
-498-500: ... PBXSourcesBuildPhase files ... (all 3)
-(all 4 entry types x 3 files = 12 confirmed matches)
-
 $ git diff --stat HEAD -- AuraFitness.xcodeproj/project.pbxproj
-1 file changed, 12 insertions(+)
+ AuraFitness.xcodeproj/project.pbxproj | 40 +++++++++++++++++++++++++++++++++++
+ 1 file changed, 40 insertions(+)
 
-$ git log --diff-filter=A --oneline -- AuraFitnessTests/PersistenceRoundTripTests.swift
-3c3d38f feat: persist AppState user-data collections across relaunch (C3)
+$ grep -c "CA01000000000000000A00" AuraFitness.xcodeproj/project.pbxproj
+30
+$ grep -c "CB01000000000000000A00" AuraFitness.xcodeproj/project.pbxproj
+20
+
+$ (brace/paren balance, PlanTabView.swift)      open=17 close=17 | parens open=24 close=24
+$ (brace balance, SaveEditScopeSheet.swift)     open=7  close=7
+$ (brace/paren balance, project.pbxproj, HEAD)  open=180 close=180
+$ (brace/paren balance, project.pbxproj, working tree) open=200 close=200 | parens open=37 close=37
+
+$ grep -n "NavigationStack" MyPlansView.swift       → lines 221, 269 (inside .sheet content only, not body root)
+$ grep -n "NavigationStack" ProgramLibraryView.swift → line 23 (wraps body root)
+$ grep -n "NavigationStack" WorkoutLibraryView.swift → no matches
+$ grep -n "NavigationStack" ExerciseLibraryView.swift → no matches
+
+$ grep -n "PlanTabView\(\)" AuraFitness/**/*.swift
+AuraFitness/ContentView.swift:50:        case .plan:     PlanTabView()
 ```
 
-## BLOCKERS
-None. No FAIL conditions found. The pbxproj registration for all 3 new files is complete
-across all 4 required entry types (this was the primary, highest-risk check given this
-repo's history of CI breaks from partial pbxproj registration). The load-bearing
-`stampLocalChange` ordering fix, guest-mode state machine, root-gate routing, reset-key
-scoping, CSV schema fidelity, and CSV parser correctness all check out under static/manual
-review and `swiftc -parse` syntax validation. The only caveat is environmental: this machine
-cannot run a real `xcodebuild build`/`test`, so full type-checking against the iOS SDK,
-SwiftUI, Supabase, and the `Compression` framework was not possible here — that risk should
-be considered residual until CI (macOS/Xcode 16.1) actually runs this build.
+## 🛑 BLOCKERS (If Failed)
+N/A — no blocking defects found.
+
+### Notes (non-blocking, informational only)
+- `PlanTabView.swift` line 7 retains a stale doc-comment describing the old "5 pieces of state act like a tiny router" mock-routing architecture (`viewingEx → editingWk → editingProg → viewingProg`). All of those identifiers are gone from the actual code — this is dead documentation, not a compile hazard, but should be cleaned up in a follow-up for clarity.
+- The spec's line 76/97 assertion that "`MyPlansView` and `ProgramLibraryView` already contain their own `NavigationStack`" is only precisely true for `ProgramLibraryView` (whose body root opens with `NavigationStack {`). `MyPlansView`'s body root is a bare `ScrollView` with no top-level `NavigationStack` — it only uses `.sheet` presentations, each of which independently supplies its own `NavigationStack` for the sheet's content. This distinction doesn't matter functionally here because `MyPlansView` never performs push navigation (no `NavigationLink`/`.navigationDestination` at its root), so mounting it bare (as done) is still correct and produces no double-nav-bar or dead-toolbar issue. Flagging only because the spec's stated reasoning was imprecise, not because the implementation is wrong.
+- No functional/behavioral (UI-level) test execution was possible since there is no local Xcode/Simulator toolchain on this machine; this report is a static, symbol-level verification only, as scoped by the task.
