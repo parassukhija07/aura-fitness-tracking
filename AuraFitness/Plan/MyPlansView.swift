@@ -11,7 +11,7 @@ struct MyPlansView: View {
     @State private var showDeleteAlert = false
 
     var body: some View {
-        ScrollView {
+        AuraScreenScroll {
             VStack(alignment: .leading, spacing: 0) {
                 // Plan cards
                 AuraSectionLabel(title: "My Plans")
@@ -53,7 +53,6 @@ struct MyPlansView: View {
                 .background(Color.aura.surface)
                 .clipShape(RoundedRectangle(cornerRadius: AuraRadius.md))
                 .padding(.horizontal, AuraSpacing.screenPad)
-                .padding(.bottom, 40)
             }
         }
         .background(Color.aura.bgGrouped)

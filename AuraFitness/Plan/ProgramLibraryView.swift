@@ -1,6 +1,9 @@
 import SwiftUI
 
 struct ProgramLibraryView: View {
+    /// True when hosted as the Plan tab's Programs subtab (no Done button,
+    /// list clears the floating tab bar). False when presented as a sheet.
+    var embedded: Bool = false
     @EnvironmentObject var appState: AppState
     @StateObject private var programDB = ProgramDatabase.shared
     @StateObject private var planDB = UserPlanDatabase.shared
@@ -50,13 +53,20 @@ struct ProgramLibraryView: View {
                         .listRowBackground(Color.aura.surface)
                 }
                 .listStyle(.insetGrouped)
+                .safeAreaInset(edge: .bottom) {
+                    if embedded {
+                        Color.clear.frame(height: AuraSpacing.tabBarClearance - 34)
+                    }
+                }
             }
             .background(Color.aura.bgGrouped)
             .navigationTitle("Program Library")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("Done") { dismiss() }
+                if !embedded {
+                    ToolbarItem(placement: .cancellationAction) {
+                        Button("Done") { dismiss() }
+                    }
                 }
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button { showCreateProgram = true } label: {

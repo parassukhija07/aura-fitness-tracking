@@ -257,7 +257,7 @@ enum PlanMusclePalette {
         case "Chest":     return (grad("#F3D9B8", "#EBC089"), Color(hex: "#9C5A12"))
         case "Back":      return (grad("#CFD9EE", "#B0C2E6"), Color(hex: "#2C4C8E"))
         case "Shoulders": return (grad("#DAD3EE", "#C6BBE6"), Color(hex: "#4C3A8E"))
-        case "Biceps", "Triceps":
+        case "Biceps", "Triceps", "Arms":
                           return (grad("#C9E9D2", "#A8DDB8"), Color(hex: "#1F6E3A"))
         case "Legs":      return (grad("#F3CFC2", "#EBB0A0"), Color(hex: "#8E3A27"))
         case "Core":      return (grad("#F3C9C5", "#EBA8A2"), Color(hex: "#8E2C26"))

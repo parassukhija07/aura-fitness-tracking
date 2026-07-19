@@ -66,7 +66,7 @@ struct ExerciseLibraryTabView: View {
 
             Divider()
 
-            ScrollView {
+            AuraScreenScroll {
                 LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: AuraSpacing.s3) {
                     ForEach(filtered) { entry in
                         Button { selectedEntry = entry } label: { exerciseCell(entry) }

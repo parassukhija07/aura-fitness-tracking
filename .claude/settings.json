@@ -25,7 +25,14 @@
       "Bash(mv /tmp/pbx_nobom.txt AuraFitness.xcodeproj/project.pbxproj)",
       "Bash(plutil -lint AuraFitness.xcodeproj/project.pbxproj)",
       "Bash(rtk gh *)",
-      "WebSearch"
+      "WebSearch",
+      "Bash(git commit -m ' *)",
+      "Bash(powershell -Command \"Get-Item 'C:\\\\Users\\\\muska\\\\.claude\\\\settings.json' -Force | Select-Object FullName, Attributes, IsReadOnly, Length\")",
+      "Bash(powershell -Command ' *)",
+      "Bash(powershell -Command \"Get-Acl 'C:\\\\Users\\\\muska\\\\.claude\\\\settings.json' | Format-List Owner; Get-Acl 'C:\\\\Users\\\\muska\\\\.claude\\\\settings.json' | Select-Object -ExpandProperty Access | Format-Table IdentityReference, FileSystemRights, AccessControlType -AutoSize\")",
+      "Bash(powershell -Command 'Get-Process | Where-Object { $_.ProcessName -match '\\\\''claude|node'\\\\'' } | Select-Object Id, ProcessName, Path')",
+      "Bash(unzip -o \"App onboarding \\(9\\).zip\" -d \"C:/Users/muska/AppData/Local/Temp/claude/c--Users-muska-OneDrive-Documents-App-Development-Aura-Fitness-Tracker/58850254-f3c7-425f-84c0-2cf0b480883a/scratchpad/onboarding\")",
+      "Bash(rtk diff *)"
     ]
   }
 }

@@ -54,7 +54,7 @@ struct ProfileTabView: View {
 
     var body: some View {
         NavigationStack {
-            ScrollView {
+            AuraScreenScroll {
                 VStack(spacing: AuraSpacing.s4) {
                     identityCard
                     statTiles
@@ -68,11 +68,23 @@ struct ProfileTabView: View {
                 }
                 .padding(.horizontal, AuraSpacing.s4)
                 .padding(.top, AuraSpacing.s3)
-                .padding(.bottom, AuraSpacing.tabBarClearance)
             }
             .background(Color.aura.bgGrouped.ignoresSafeArea())
-            .navigationTitle("Profile")
-            .navigationBarTitleDisplayMode(.large)
+            .toolbar(.hidden, for: .navigationBar)
+            .safeAreaInset(edge: .top, spacing: 0) {
+                // Custom large-title navbar (nav-title-lg · 30/800), matching Log/Plan.
+                HStack {
+                    Text("Profile")
+                        .font(AuraFont.largeTitleStyle())
+                        .tracking(AuraFont.largeTitleTracking)
+                        .foregroundColor(.aura.text)
+                    Spacer()
+                }
+                .padding(.horizontal, 14)
+                .padding(.top, AuraSpacing.s1)
+                .padding(.bottom, AuraSpacing.s2)
+                .background(Color.aura.bgGrouped)
+            }
             .navigationDestination(for: ProfileScreen.self) { screen in
                 switch screen {
                 case .general:       GeneralSettingsView()
