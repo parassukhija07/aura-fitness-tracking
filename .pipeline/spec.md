@@ -1,280 +1,400 @@
 # IMPLEMENTATION SPEC
 
-Feature: H8 (scoped UP, full remote) — Introduce Supabase email/password auth (with email confirmation) AND full remote data sync of every user model to Supabase (keyed by `user_id`), plus real Export / Reset / Delete Account / Log Out replacing the stubs at `AuraFitness/Profile/ProfileSettingsScreens.swift`. This is the app's first network layer, first remote data, and first backend dependency.
+Feature 1: Guest mode + local-to-cloud migration on first sign-in.
+Feature 2: Round-trippable CSV templates for all 5 backup categories.
+
+This spec is grounded in the real repo. Every path below was verified to exist (or is a
+new sibling of a verified file). The Coder must not invent additional files or types.
 
 ---
 
 ## ⚠️ OPEN QUESTIONS
 
-All five prior blocking questions are RESOLVED (see decisions below). Only genuinely-open, low-risk items remain — none block starting; the Coder proceeds with the stated defaults and flags in review if reality differs.
+These are genuine blocking ambiguities. Where an answer is needed to proceed, a **DEFAULT
+DECISION** is stated so the Coder is never blocked — implement the default unless a human
+overrides it before coding.
 
-### RESOLVED decisions (locked)
-- **R1 — Data scope: FULL REMOTE SYNC.** Every user model migrates to Supabase tables keyed by `user_id`. Sync model = **local-first with write-through** (see ARCHITECTURE). NOT auth-only.
-- **R2 — Delete Account: Edge Function** `delete-account` using the `service_role` key (source written in this spec; user deploys).
-- **R3 — Email confirmation REQUIRED** on sign-up. Login blocked until confirmed.
-- **R4 — Pre-account local data is PRESERVED** and back-filled to Supabase on first login (one-time migration, not a wipe).
-- **R5 — Secrets via `Secrets.xcconfig` → Info.plist** (git-ignored).
+1. **CSV vs existing JSON archive — is CSV a REPLACEMENT or an ADDITION?**
+   The existing export (`DataArchive.swift` + `ProfileSettingsScreens.swift` export sheet)
+   produces a single JSON file via `ShareLink`. Feature 2 asks for CSVs.
+   **DEFAULT DECISION:** ADD CSV export/import alongside the existing JSON archive. Do NOT
+   remove or alter the JSON path. CSV is a second export option (5 CSV files, zipped) and a
+   new import option. The JSON archive remains the loss-less full backup (it carries binary
+   progress-photo blobs and preferences that do not belong in CSV).
 
-### STILL-OPEN (non-blocking — proceed with the stated default)
-- **O1 — Exact Postgres table names.** This spec uses snake_case `aura_*` table names (below). If the user's Supabase project has a naming convention, rename consistently in the SQL migration + the `table:` string constants in `SupabaseSyncService`. Default: use the names as written.
-- **O2 — `progress_photos` storage location.** `ProgressPhoto.imageData` is raw `Data` (`ProgressModels.swift:7`). Storing base64 blobs in a Postgres JSONB column is functional but heavy. Default for v1: store the row in `aura_progress_photos` with the image as base64 in the JSONB payload (simplest, matches every other table). **Flagged limitation:** if photo volume is large this should move to Supabase Storage buckets with a URL reference — OUT OF SCOPE this pass, noted for a follow-up. Proceed with base64-in-JSONB.
-- **O3 — Conflict resolution granularity.** v1 uses **last-write-wins per row via `updated_at`** (see limitations). This can silently drop a concurrent edit made on another device between pulls. Accepted for v1; NOT silently — surfaced here as a known limitation. No per-field merge.
+2. **Round-trip fidelity limit.** `WorkoutLog.exercises` and `Program.workouts[].exercises`
+   are deeply nested (`Exercise` has `sets`, `warmup`, `history`, `lastPR`, `target`).
+   A flat CSV cannot losslessly represent arbitrary nesting without a serialization convention.
+   **DEFAULT DECISION:** CSV is row-per-set for workout history and row-per-exercise for
+   programs/custom-workouts, using the explicit column schemas in section "CSV SCHEMAS" below.
+   Fields not present as columns are NOT round-tripped through CSV (they are only in the JSON
+   archive). This is acceptable because CSV's stated purpose is the 5 human-readable data
+   categories, not a byte-exact clone.
+
+3. **Guest sign-in conflict when the account already has cloud data.** A guest accumulates
+   local data, then signs into an EXISTING account that already has rows in Supabase.
+   **DEFAULT DECISION (stated explicitly, kept simple):** UNION-MERGE, local-wins-on-id-collision
+   is NOT used; instead reuse the existing engine — see "MERGE / UPLOAD STRATEGY". No new
+   conflict UI. All local guest rows keep their existing UUIDs and are pushed up; the existing
+   `SupabaseSyncService.onSignedIn` reconcile (LWW by `updated_at`) decides per-row winners.
+   Distinct ids (the normal case for guest-created data) never collide, so both sets survive.
+
+If a human wants different behavior for (1)/(3), flag before coding. Otherwise proceed with defaults.
 
 ---
 
 ## 🏗️ ARCHITECTURE & PATTERNS
 
-### Sync model: local-first with write-through (v1)
-- **Local stores stay the source of truth for all UI reads.** No view is rearchitected. `ProgramDatabase.shared`, `UserPlanDatabase.shared`, `ExerciseDatabase.shared`, and `AppState`'s `@Published` collections continue to drive every screen exactly as today. This is deliberate: it avoids touching dozens of views and keeps the UI synchronous and offline-usable.
-- **Write-through:** every existing mutation that already calls `persist()` (or assigns a `@Published` with a `didSet` persister) additionally enqueues a **push** of the affected row(s) to Supabase. Pushes go through a central `SupabaseSyncService` that is fire-and-forget from the caller's perspective (never blocks UI, never throws into the store).
-- **Pull + reconcile:** on successful login and on app foreground/launch (while signed in), `SupabaseSyncService.pullAll()` fetches remote rows for the user and reconciles into the local stores using **last-write-wins by `updated_at`** (row-level). After reconcile, the stores re-`persist()` locally so disk matches.
-- **Offline queue:** mutations while offline (or on push failure) are appended to a durable local queue (`aura_sync_queue_v1` in UserDefaults). The queue flushes on the next successful network op (login, foreground pull, or a successful push). UI never waits on the network.
+- **Existing patterns to match (copy style/shape from these EXACT files):**
+  - Singleton store shape (`@MainActor final class ... : ObservableObject { static let shared }`):
+    `AuraFitness/Models/ProgramDatabase.swift`, `AuraFitness/Models/ExerciseDatabase.swift`,
+    `AuraFitness/Sync/SupabaseSyncService.swift`.
+  - Export builder writing a temp file off-main-thread for `ShareLink`:
+    `AuraFitness/Profile/DataArchive.swift` (`DataArchiveBuilder.writeTempFile`).
+  - Auth session state machine + first-login hook:
+    `AuraFitness/Auth/AuthService.swift` (`SessionState`, `transitionToSignedIn` → `SupabaseSyncService.shared.onSignedIn`).
+  - Root gate switch on `authService.sessionState`:
+    `AuraFitness/AuraFitnessApp.swift` (`switch authService.sessionState { case .signedIn: ContentView() ... default: AuthGateView() }`).
+  - Pre-auth screen UI + `AuraPrimaryButton` / `AuraGrayButton` usage:
+    `AuraFitness/Auth/AuthGateView.swift`.
+  - Reset / key-enumeration authority (source of truth for every UserDefaults key):
+    `AuraFitness/Profile/DataResetService.swift`.
+  - Local→cloud backfill already exists:
+    `AuraFitness/Sync/SupabaseSyncService.swift` (`onSignedIn`, `backfillLocalToRemote`, `hasAnyLocalData`).
 
-### EXPLICITLY OUT OF SCOPE (state clearly to the user)
-- **No real-time / live multi-device sync.** There is NO Supabase Realtime subscription. Changes on device B appear on device A only after device A next pulls (launch/foreground). A user editing on two devices simultaneously can lose the older write (last-write-wins). This is a periodic pull + write-through push model, not live sync.
-- **No per-field conflict merge**, no operational transforms, no CRDTs. Row-level last-write-wins only.
-- **No offline auth for a brand-new device** (email confirm + first login require network); once a session exists in Keychain the app is fully usable offline (all reads are local).
-
-### Existing patterns to match
-- **Singletons:** `ProgramDatabase` / `UserPlanDatabase` / `ExerciseDatabase` (`AuraFitness/Models/ProgramDatabase.swift`, `ExerciseDatabase.swift`): `@MainActor final class ... : ObservableObject`, `static let shared`, private `storageKey`, `private func persist()`, `private init { load() }`. New services (`AuthService`, `SupabaseSyncService`) follow this shape.
-- **Root env injection:** `AuraFitnessApp.swift:5-11`.
-- **Settings UI building blocks + confirm sheets:** `ProfileSettingsScreens.swift` (`SettingsScreenScaffold`, `SettingsGroup`, `SettingsRowLabel`, `ProfileConfirmSheet`), toast pattern (`ToastCenter` + `.auraToast`), `AuraPrimaryButton` / `AuraGrayButton` / `AuraDangerButton`. Reuse for auth screens.
-- **All models are already `Codable`** (`ProgressModels.swift`, `LogDayModel.swift`, `WorkoutModels.swift`, `PlanModels.swift`, `ExerciseDatabase.swift`) — so each maps to a JSONB payload with zero new serialization code. This is why the schema below stores each struct as a JSONB `payload` column rather than fully-normalized columns: the structs contain nested arrays (`WorkoutLog.exercises: [Exercise]`, `QuickLog.exercises: [QuickLogExercise]`, `UserPlan.weekSchedule: [Int: UUID?]`) that would be painful and brittle to normalize, and the app never queries inside them server-side.
-
-### Core strategy
-`AuthService.shared` wraps `supabase-swift`'s `auth`. `ContentView` is gated behind `sessionState`. `SupabaseSyncService.shared` owns all table push/pull + the offline queue. Each local store gains thin `pushRow`/`applyRemote` hooks. The four `ProfileConfirmSheet` stubs get real bodies: Export (`ShareLink` over local JSON), Reset (`DataResetService` — local wipe + optional remote wipe), Delete (`AuthService.deleteAccount()` Edge Function + local+remote wipe), Log Out (`AuthService.signOut()`).
-
----
-
-## 🗄️ SUPABASE SCHEMA (SQL migration — file to create, see FILES TO CREATE)
-
-**Design rule:** one table per Codable model. Common columns on every table:
-- `id uuid primary key` — the model's own `id` (UUID) where it has one; for keyed dictionaries (dayOverrides/quickLogs keyed by ISO string) and singletons (BodyStats, UserProfile) see per-table notes.
-- `user_id uuid not null references auth.users(id) on delete cascade`
-- `payload jsonb not null` — the full `Codable` struct encoded as JSON.
-- `updated_at timestamptz not null default now()` — drives last-write-wins.
-- **RLS enabled on every table**, with a single policy per table: `using (auth.uid() = user_id) with check (auth.uid() = user_id)` for all of SELECT/INSERT/UPDATE/DELETE. No row is ever visible or writable across users.
-
-Tables (names per O1 default):
-
-| Table | Source model (file) | `id` semantics | Cardinality per user |
-|---|---|---|---|
-| `aura_workout_logs` | `WorkoutLog` (`ProgressModels.swift:13`) | model `id` uuid | many |
-| `aura_measurements` | `Measurement` (`ProgressModels.swift:23`) | model `id` uuid | many |
-| `aura_personal_records` | `PersonalRecord` (`ProgressModels.swift:137`) | model `id` uuid | many |
-| `aura_progress_photos` | `ProgressPhoto` (`ProgressModels.swift:4`) | model `id` uuid | many (see O2) |
-| `aura_programs` | `Program` (`ProgramDatabase.swift` / `WorkoutModels.swift`) | model `id` uuid | many |
-| `aura_plans` | `UserPlan` (`ProgramDatabase.swift` / `PlanModels.swift`) | model `id` uuid | many (≤3, L7) |
-| `aura_exercises` | `ExerciseEntry` (`ExerciseDatabase.swift:5`) | model `id` uuid | many |
-| `aura_day_overrides` | `DayOverride` (`LogDayModel.swift:7`) | **synthetic**: `iso` string is the natural key → PK `(user_id, day_iso text)`, no uuid | many, keyed by ISO date |
-| `aura_quick_logs` | `QuickLog` (`LogDayModel.swift:36`) | **synthetic**: PK `(user_id, day_iso text)` | many, keyed by ISO date |
-| `aura_body_stats` | `BodyStats` (`ProgressModels.swift:77`) | **singleton**: PK = `user_id` | exactly one |
-| `aura_user_profile` | `UserProfile` (`ProgressModels.swift:122`) | **singleton**: PK = `user_id` | exactly one |
-| `aura_preferences` | AppState pref scalars (see below) | **singleton**: PK = `user_id` | exactly one |
-
-Notes:
-- `aura_day_overrides` / `aura_quick_logs`: replace the `id uuid` column with `day_iso text not null`; composite PK `(user_id, day_iso)`. Payload is the `DayOverride` / `QuickLog` struct. The ISO key is `AppState.iso(date)` format `yyyy-MM-dd` (`AppState.swift:494-498`).
-- `aura_body_stats` / `aura_user_profile` / `aura_preferences`: singletons — PK is `user_id` itself (upsert on conflict `user_id`). Payload is the whole struct.
-- `aura_preferences` payload = the `WorkoutPrefs` blob defined at `AppState.swift:46-62` PLUS the three scalar prefs (`darkModePreference`, `calendarStartDay`, `logDisplayMode`). Mirror the existing `WorkoutPrefs` Codable shape so encoding is trivial.
-- Give every table `updated_at` a `before update` trigger to bump it to `now()` (SQL function `set_updated_at()`), so server-side writes also refresh the LWW timestamp.
-
----
-
-## 📄 FILES TO CREATE
-
-### `supabase/migrations/0001_init_schema.sql`  (SQL — infra, allowed)
-- **Purpose:** Create all 12 tables above, enable RLS, add the per-table `user_id = auth.uid()` policies, the `set_updated_at()` trigger function + triggers. Written per Supabase migration convention.
-- Must be runnable via `supabase db push` (or pasted into the Supabase SQL editor). Document both in the deploy notes.
-- For singleton/composite tables, use the PKs described above. Add index `(user_id, updated_at)` on the multi-row tables to make pull queries efficient.
-
-### `supabase/functions/delete-account/index.ts`  (Deno / TypeScript — infra, allowed)
-- **Purpose:** Server-side account deletion using `service_role`. The anon client cannot delete an auth user; this runs privileged.
-- **Contract:**
-  - Method `POST`, requires `Authorization: Bearer <user JWT>` (attached automatically by the app's SDK call).
-  - Verify the JWT → resolve `uid`. Reject (401) if missing/invalid.
-  - Using a `service_role` Supabase admin client, call `auth.admin.deleteUser(uid)`. The `on delete cascade` FKs on every `aura_*` table wipe all remote user data automatically.
-  - Return `200 {"ok": true}` on success; `4xx/5xx {"error": "..."}` otherwise. Handle CORS (Supabase Edge Function standard headers).
-- **Source to write in the file** (standard Supabase Edge Function shape):
-  - `import { serve } from "https://deno.land/std/http/server.ts"` and `createClient` from `@supabase/supabase-js`.
-  - Read `SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY` from `Deno.env` (auto-injected in the Edge runtime — NOT hardcoded).
-  - Create an admin client with the service role key; a second client with the caller's JWT to identify the user (`auth.getUser(jwt)`), then `adminClient.auth.admin.deleteUser(user.id)`.
-- **Manual deploy step (user must run — planner/coder cannot):**
-  - `supabase functions deploy delete-account` (project linked via `supabase link`).
-  - Document that the function inherits the project's `SERVICE_ROLE_KEY` env automatically; no secret is committed.
-
-### `AuraFitness/Auth/AuthConfig.swift`
-- Reads `SUPABASE_URL` + `SUPABASE_ANON_KEY` from `Info.plist` (injected from `Secrets.xcconfig`). No literals. `fatalError` in DEBUG if missing; non-crashing config-error gate in RELEASE. (Same as prior revision.)
-- ```
-  enum AuthConfig {
-      static var supabaseURL: URL
-      static var supabaseAnonKey: String
-  }
-  ```
-
-### `AuraFitness/Auth/AuthService.swift`
-- **Purpose:** Auth + session single source of truth. SDK Keychain session persistence (do not roll custom).
-- ```
-  @MainActor
-  final class AuthService: ObservableObject {
-      static let shared = AuthService()
-      enum SessionState: Equatable { case loading; case signedOut; case awaitingEmailConfirmation(email: String); case signedIn(userID: String, email: String) }
-      @Published private(set) var sessionState: SessionState = .loading
-      @Published var lastError: String? = nil
-      let client: SupabaseClient        // built from AuthConfig
-      var userID: String?               // convenience for SupabaseSyncService
-
-      private init()
-      func restoreSession() async
-      func signUp(email: String, password: String) async -> Bool   // → .awaitingEmailConfirmation on success (R3)
-      func signIn(email: String, password: String) async -> Bool   // fails if email unconfirmed → surfaces message
-      func signOut() async
-      func deleteAccount() async -> Bool   // invoke("delete-account"); on success signOut
-  }
-  ```
-- **R3 behavior:** `signUp` success sets `.awaitingEmailConfirmation(email:)`, NOT `.signedIn`. `signIn` for an unconfirmed account: map the SDK "Email not confirmed" error to a clear message ("Please confirm your email — check your inbox.") in `lastError`, keep `.signedOut`.
-- **First-login migration hook (R4):** on the transition INTO `.signedIn` (from restore or signIn), call `SupabaseSyncService.shared.onSignedIn(userID:)` (see below) which decides push-backfill vs pull.
-- Map SDK errors to human strings; never surface raw dumps.
-
-### `AuraFitness/Auth/AuthGateView.swift`
-- Pre-auth root. Shows splash while `.loading`; login/sign-up forms when `.signedOut`; a "Check your email to confirm your account" screen when `.awaitingEmailConfirmation` (with a "Resend"/"Back to login" affordance). Reuse `AuraPrimaryButton`, `ToastCenter`, and the field style from `AccountDetailsView.swift:121-135`. Errors → toast (match `ProfileTabView.swift:91-96`). This is a NEW screen above the tab bar.
-
-### `AuraFitness/Sync/SupabaseSyncService.swift`
-- **Purpose:** All table push/pull + the offline queue + first-login migration. Fire-and-forget from stores.
-- ```
-  @MainActor
-  final class SupabaseSyncService: ObservableObject {
-      static let shared = SupabaseSyncService()
-      enum Table: String { case workoutLogs = "aura_workout_logs", measurements = "aura_measurements", personalRecords = "aura_personal_records", progressPhotos = "aura_progress_photos", programs = "aura_programs", plans = "aura_plans", exercises = "aura_exercises", dayOverrides = "aura_day_overrides", quickLogs = "aura_quick_logs", bodyStats = "aura_body_stats", userProfile = "aura_user_profile", preferences = "aura_preferences" }
-
-      @Published private(set) var syncing = false
-      @Published private(set) var lastPullAt: Date? = nil
-
-      private init()
-
-      /// Enqueue a write-through upsert of one encodable row (fire-and-forget; queues on failure/offline).
-      func push<T: Encodable>(_ value: T, id: String, table: Table)
-      /// Enqueue a delete of one row by id.
-      func delete(id: String, table: Table)
-
-      /// Pull every table for the current user and reconcile into local stores (LWW by updated_at).
-      func pullAll() async
-
-      /// Called by AuthService on first sign-in this session. Detects an empty remote
-      /// (fresh account) → BACKFILL all local data up (R4). Otherwise → pullAll() reconcile.
-      func onSignedIn(userID: String) async
-
-      /// Flush the durable offline queue (aura_sync_queue_v1). Called after any successful net op.
-      func flushQueue() async
-  }
-  ```
-- **Queue durability:** `aura_sync_queue_v1` (UserDefaults) holds an ordered array of pending ops `{table, id, action(upsert|delete), payloadJSON, queuedAt}`. Coalesce duplicate (table,id) upserts (keep latest). Flush on: successful login, foreground pull, any successful push.
-- **Reconcile (LWW):** for each pulled row, compare remote `updated_at` to the local record's effective timestamp. Since local models mostly lack an `updated_at` field, track a parallel local `aura_local_ts_v1` map keyed by `table:id` updated on every local mutation; if absent, treat remote as authoritative on first pull. Newer wins; write the winner to the local store (which re-persists) and, if local won, push it up.
-- **onSignedIn / R4 backfill:** query counts across the user's tables. If ALL remote tables are empty for this user (fresh account) AND local stores are non-empty → push everything local up (backfill), stamping `updated_at = now()`. Otherwise run `pullAll()` reconcile (which still merges any local-only rows up via LWW). This makes pre-account local data survive and become the account's data.
-
-### `AuraFitness/Profile/DataArchive.swift`  (unchanged from prior revision — local JSON export)
-- `DataArchive` Codable aggregate of all collections + a `preferences` snapshot; `DataArchiveBuilder.writeTempFile(_:) -> URL?` for `ShareLink`. Export reads LOCAL stores (which are the source of truth), so it needs no network. (Full interface as in prior spec; unchanged.)
-
-### `AuraFitness/Profile/DataResetService.swift`
-- **Purpose:** Real `resetAll(workoutOnly:)`. Now also optionally clears REMOTE rows.
-- ```
-  enum DataResetService {
-      @MainActor static func resetAll(workoutOnly: Bool, appState: AppState, alsoRemote: Bool)
-  }
-  ```
-- Local wipe: identical UserDefaults key set + singleton reloads as documented in FILES TO MODIFY (see key enumeration below).
-- **Remote wipe (`alsoRemote == true`):** delete the corresponding tables' rows for the current user via `SupabaseSyncService` deletes (workout-data tables for `workoutOnly`, all tables for full reset). If offline, enqueue the deletes. Delete Account does NOT use this path — it relies on the Edge Function's `on delete cascade`.
-
-### `AuraFitness/Sync/Syncable.swift` (small helper, optional)
-- A tiny protocol/util giving each store a uniform `syncPush(_:)` call and a `stringID` for the row key, to keep the per-store hooks one-liners. Not required if the Coder inlines the `SupabaseSyncService.shared.push(...)` calls.
+- **Core strategy:**
+  - **Feature 1:** Guest mode is a THIRD terminal auth state (`.guest`) alongside `.signedIn`.
+    The entire app already runs against LOCAL stores (all UI reads local; sync is fire-and-forget),
+    so guest mode is simply: skip the login screen, set a persisted `aura_guest_mode_v1` flag, and
+    render `ContentView` without a `userID`. Every existing local store already works with no
+    `userID` (`SupabaseSyncService.push` early-returns `guard let uid = userID else { return }`).
+    On first successful sign-in from guest, the ALREADY-EXISTING `onSignedIn` → `backfillLocalToRemote`
+    / `pullAll` path performs the local-to-cloud migration with zero new merge logic.
+  - **Feature 2:** New `CSVArchive` builder + parser, invoked from the existing Export sheet
+    (new "Export as CSV" button) and a new "Import Data" sheet (file picker). Reuses the same
+    local stores that `DataArchiveBuilder` reads and the same store CRUD methods for import.
 
 ---
 
 ## 📝 FILES TO MODIFY
 
-### `AuraFitness/AuraFitnessApp.swift` (14 lines)
-- Inject `AuthService.shared` and `SupabaseSyncService.shared` via `.environmentObject` alongside `appState`.
-- Gate: `.signedIn` → `ContentView`; `.awaitingEmailConfirmation`/`.signedOut` → `AuthGateView`; `.loading` → splash. Keep `.environmentObject(appState)` on the authed view.
-- On becoming active (`ScenePhase .active`) while signed in → `Task { await SupabaseSyncService.shared.pullAll() }` (foreground pull).
+### `AuraFitness/Auth/AuthService.swift`
+- **Changes:**
+  - Add case `case guest` to `enum SessionState: Equatable`.
+  - Add persisted guest flag. Add `private let guestKey = "aura_guest_mode_v1"`.
+  - Add `func continueAsGuest()`: sets `UserDefaults.standard.set(true, forKey: guestKey)` and
+    `sessionState = .guest`. No network. Must be `@MainActor` (class already is).
+  - In `restoreSession()`: BEFORE trying `client.auth.session`, if
+    `UserDefaults.standard.bool(forKey: guestKey) == true` AND there is no restorable session,
+    set `sessionState = .guest` and return. Order: try Keychain session first (a real session
+    always beats guest); on the `catch` branch, check the guest flag → `.guest` if set, else `.signedOut`.
+  - In `signIn(...)` and `signUp→signIn` success path (i.e. `transitionToSignedIn`): after a
+    successful sign-in, clear the guest flag: `UserDefaults.standard.set(false, forKey: guestKey)`.
+    (Migration itself is already triggered inside `transitionToSignedIn` via `onSignedIn`.)
+  - In `signOut()`: also clear the guest flag (a signed-out user is neither guest nor signed-in;
+    they return to `.signedOut` / the login form).
+  - `userID` computed property stays as-is (returns nil for `.guest`) — this is what makes every
+    `SupabaseSyncService.push` a local-only no-op while in guest mode.
 
-### `AuraFitness/Models/ProgramDatabase.swift`
-- **Write-through:** in `addProgram/updateProgram/deleteProgram/addWorkout/updateWorkout/deleteWorkout/addExercise/removeExercise/reorderExercises` (lines 32-90) — after each `persist()`, call `SupabaseSyncService.shared.push(program, id: program.id.uuidString, table: .programs)` for the affected program (or `.delete` for deletes). Simplest: push the whole affected `Program` row on any change (it's one JSONB row).
-- **Apply-remote:** add `func applyRemote(_ programs: [Program])` that replaces `self.programs` + `persist()` WITHOUT re-pushing (guard against push loop — add an `isApplyingRemote` flag like the existing `isLoading` guard in AppState at `AppState.swift:65`).
-- **Reset:** add public `resetToSeed()` (seed = `SeedData.programs`) and `hardReset()` (drop customs); both reassign `programs` + `persist()`.
-- Same set of additions to **`UserPlanDatabase`** (lines 122-258): write-through on every mutating method (`addPlan/updatePlan/deletePlan/setDefault/setWorkout/setRestDay/clearDay/addCustomWorkout/updateCustomWorkout/deleteCustomWorkout/addExercise/removeExercise/addPlan(from:)`), `applyRemote(_ plans:)`, `resetToSeed()` (re-seed default plan from `SeedData.programs.first` as boot does at lines 252-256 — never leave `plans` empty).
+### `AuraFitness/AuraFitnessApp.swift`
+- **Changes:**
+  - Extend the root `switch authService.sessionState`: add `case .guest: ContentView().environmentObject(appState)`
+    (identical to the `.signedIn` arm). The `default:` arm continues to show `AuthGateView()`.
+  - In the `.onChange(of: scenePhase)` foreground-pull block, the existing
+    `guard phase == .active, authService.userID != nil else { return }` already correctly SKIPS the
+    pull for guests (`userID == nil`). No change needed there — but add a code comment stating that
+    guest mode intentionally does not pull.
 
-### `AuraFitness/Models/ExerciseDatabase.swift`
-- Write-through in `add/update/delete/toggleFavorite` (lines 80-100) → push the `ExerciseEntry` row (table `.exercises`). `applyRemote(_ entries:)`. Add `hardReset()` (`entries = Self.seedEntries(); persist()`, distinct from `resetToSeed()` at line 146 which preserves customs).
+### `AuraFitness/Auth/AuthGateView.swift`
+- **Changes:**
+  - Add a `.guest` arm to the `switch authService.sessionState` (mirror the existing `.signedIn`
+    comment: unreachable because `AuraFitnessApp` gates it directly; keep `splash` for exhaustiveness).
+  - In `AuthFormView.body`, below the existing "Don't have an account? Sign up" button, add a
+    tertiary `Button` labeled **"Skip for now — use as guest"** styled like the existing accent link
+    (`AuraFont.secondary()`, `.foregroundColor(.aura.text2)`). Its action calls
+    `authService.continueAsGuest()`.
+  - No new dependencies; reuse existing `AuraSpacing`, `AuraFont`, `.aura.*` colors.
 
-### `AuraFitness/Models/AppState.swift`
-- Every `@Published` collection with a persister `didSet` (`workoutLogs:181`, `dayOverrides:187`, `quickLogs:191`, `measurements:194`, `bodyStats:197`, `personalRecords:200`, `userProfile:203`, `progressPhotos:207`, and the pref scalars) additionally push through `SupabaseSyncService`:
-  - Row-collections (workoutLogs, measurements, personalRecords, progressPhotos): the `didSet` fires on whole-array assignment; to push only changed rows, add small helper mutators OR (simplest v1) diff old vs new in `didSet` and push added/changed rows + delete removed rows. Flag: whole-array `didSet` makes per-row diffing the cleanest correctness path — implement a `syncDiff(old:new:table:idOf:)` helper.
-  - Keyed dicts (dayOverrides, quickLogs): push per changed key using `day_iso` as the row id.
-  - Singletons (bodyStats, userProfile, preferences blob): upsert the single row on change.
-  - **Guard the push during `isLoading` and during remote-apply** (extend the existing `isLoading` guard at `AppState.swift:65,128,134`; add an `isApplyingRemote` flag) so pulling from Supabase doesn't immediately re-push.
-- Add `func applyRemote(...)` entry points AppState-side for each collection used by `SupabaseSyncService.pullAll()`.
-- The pref scalars (`weightUnit`…`googleHealthConnected`, `darkModePreference`, `calendarStartDay`, `logDisplayMode`) already funnel through `persistWorkoutPrefs()`/`persist()`; add a single `SupabaseSyncService.push(prefsBlob, id: userID, table: .preferences)` call there.
+### `AuraFitness/Profile/ProfileSettingsScreens.swift`
+- **Changes:**
+  - In `enum` of sheet `kind` (the one with `.export/.reset/.delete/.logout`), add `case importData`.
+  - Add a matching `detentHeight` value for `.importData` (use `360`).
+  - Add a `content` switch arm: `case .importData: importSheet`.
+  - Extend `exportSheet`: add a second button **"Export as CSV"** beneath the existing JSON
+    `ShareLink`. It builds via `CSVArchiveBuilder.writeTempZip(appState)` (new, section below) and
+    wraps the resulting `URL` in a `ShareLink`. Follow the EXACT `.task { exportURL = await ... }`
+    + `ShareLink(item:)` pattern already used for JSON. Use a separate `@State private var csvExportURL: URL?`.
+  - Add `importSheet` (new computed view): explains "Import a JSON archive or CSV files exported
+    from Aura." with a single button **"Choose File"** that presents a `.fileImporter`
+    (see MOBILE CONCERNS for allowed content types). On selection, calls
+    `DataImportService.importFile(at:appState:)` (new). Show the returned summary via the existing
+    `flash(...)` helper (e.g. "Imported 42 workouts, 3 programs").
+  - Add an entry point to open the import sheet: in whatever Settings list row group currently
+    opens the export sheet, add a sibling row "Import Data" that sets the sheet kind to `.importData`.
+    (The Coder must locate the row that triggers `.export` in this same file and mirror it.)
+  - For guest users, the export/import rows must be VISIBLE and functional (guest data is local and
+    fully exportable). No gating on `authService.userID` for these rows.
 
-### `AuraFitness/ActiveWorkout/WorkoutPersistence.swift`
-- The live-workout blob (`aura_wk`/`aura_elapsed`/`aura_run_start`/`aura_pill`/`aura_wk_version`) is transient session state, **not synced** (an in-progress workout is device-local until saved; on save it becomes a `WorkoutLog` which IS synced). Document this explicitly — no push hooks here.
-- Extend `clearWorkout()` (lines 113-118) to also remove `aura_pill` + `aura_wk_version` (for the reset path), as in the prior revision.
-
-### `AuraFitness/Profile/ProfileSettingsScreens.swift` — the stub site
-- Add `@EnvironmentObject var appState: AppState` + `@EnvironmentObject var authService: AuthService` to `ProfileConfirmSheet` (line 281). Verify BOTH presentation sites (`ProfileTabView.swift:87-89`, `AccountDetailsView.swift:113-115`) re-inject the environment onto the sheet content.
-- **`exportSheet` (318-334):** replace the flash button (329-331) with a `ShareLink` over `DataArchiveBuilder.writeTempFile(appState)` (built in `.task`, stored in `@State exportURL`). (Unchanged from prior revision.)
-- **`resetSheet` (337-382):**
-  - Workout-only (344-352) → `DataResetService.resetAll(workoutOnly: true, appState: appState, alsoRemote: true)`.
-  - Reset everything (355-377) → `DataResetService.resetAll(workoutOnly: false, appState: appState, alsoRemote: true)`. Recommend a confirmation alert before the full wipe.
-- **`destructiveSheet(delete:)` (385-418):**
-  - Delete (408-410): `Task { if await authService.deleteAccount() { DataResetService.resetAll(workoutOnly: false, appState: appState, alsoRemote: false) } else { flash(authService.lastError ?? "Delete failed") } }`. Remote data is wiped by the Edge Function's cascade, so `alsoRemote: false` here. Order: remote delete succeeds → local wipe → sign-out (auto-gates to login). On failure: no wipe, no sign-out, show error. Update copy (399-401) to reflect that this erases the account and all synced + local data.
-  - Log Out (412-414): `Task { await authService.signOut() }`. Do NOT wipe local data (it stays for the next login on this device and is already backed up remotely). Sign-out flips `sessionState` → gate shows login.
-  - Wrap async calls in `Task`, guard with `@State busy` to disable buttons in-flight.
-
-### `AuraFitness/Profile/AccountDetailsView.swift`
-- Same sheet is presented here (113-115) — ensure `appState` + `authService` are injected into `ProfileConfirmSheet`. No other change.
-
-### `AuraFitness/ContentView.swift`
-- No structural change required (it renders only when signed-in). Optionally surface a subtle "syncing…" indicator bound to `SupabaseSyncService.syncing`. Not required for sign-off.
-
----
-
-## 📊 EXACT UserDefaults KEYS FOR LOCAL RESET (verified — enumerate literally)
-
-(Unchanged from prior revision — still needed for the local half of reset/delete.)
-
-**WORKOUT-DATA keys (cleared in BOTH reset modes; matching remote tables also wiped when `alsoRemote`):**
-- `aura_program_db_v1` (`ProgramDatabase.swift:13`) → table `aura_programs`
-- `aura_plans_db_v1` (`ProgramDatabase.swift:128`) → `aura_plans`
-- `aura_wk`,`aura_elapsed`,`aura_run_start`,`aura_pill`,`aura_wk_version` (`WorkoutPersistence.swift:9-13`) → NOT synced
-- `aura_workout_logs_v1` (`AppState.swift:34`) → `aura_workout_logs`
-- `aura_day_overrides_v1` (`AppState.swift:35`) → `aura_day_overrides`
-- `aura_quick_logs_v1` (`AppState.swift:36`) → `aura_quick_logs`
-- `aura_personal_records_v1` (`AppState.swift:39`) → `aura_personal_records`
-- `aura_exercise_db_v1` (`ExerciseDatabase.swift:49`) → `aura_exercises` (reseed locally after clear)
-
-**PROFILE / MEASUREMENT / SETTINGS keys (full-reset ONLY; KEPT in workoutOnly):**
-- `aura_measurements_v1` (`AppState.swift:37`) → `aura_measurements`
-- `aura_body_stats_v1` (`AppState.swift:38`) → `aura_body_stats`
-- `aura_user_profile_v1` (`AppState.swift:40`) → `aura_user_profile`
-- `aura_progress_photos_v1` (`AppState.swift:41`) → `aura_progress_photos`
-- `aura_workout_prefs_v1` (`AppState.swift:42`) → `aura_preferences`
-- `aura_dark`,`aura_calstart`,`aura_logstat` (`AppState.swift:31-33`) → folded into `aura_preferences`
-- `aura_seeded_missed_v1` (dead key, `AppState.swift:28`) — remove opportunistically
-- **New sync-infra keys** (cleared on full reset): `aura_sync_queue_v1`, `aura_local_ts_v1`.
-
-**Post-clear reload (CRITICAL):** clearing a UserDefaults key does NOT update the in-memory `@Published` singletons — every reset MUST reassign store state via `resetToSeed()`/`hardReset()` and reset AppState collections to defaults; call `appState.exitWorkout()` (`AppState.swift:398`) first if a session is live; never leave `UserPlanDatabase.plans` empty (re-seed default plan).
+### `AuraFitness/Profile/DataArchive.swift`
+- **Changes:** None to the struct. Add nothing here. (CSV lives in a new file to keep this file
+  the single JSON-archive authority.)
 
 ---
 
-## 🛡️ EDGE CASES TO HANDLE
+## 📄 FILES TO CREATE
 
-- **Session restore flash:** `.loading` renders a splash, not the login form (authed users must not see a login flash each launch). Do not default to `.signedOut`.
-- **Email-unconfirmed login (R3):** `signIn` on an unconfirmed account must surface "confirm your email", not a raw SDK error, and keep the user on the gate.
-- **First-login backfill vs pull (R4):** `onSignedIn` must correctly distinguish a FRESH remote (empty → backfill local up) from a RETURNING user (non-empty → pull + LWW reconcile). Getting this wrong either loses pre-account data or clobbers cloud data. When in doubt, LWW merge (never blind-overwrite) so both directions are preserved.
-- **Push loop / echo:** applying pulled remote rows into local stores triggers their `persist()`/`didSet`, which must NOT re-push. Guard every store with an `isApplyingRemote` flag (mirror the `isLoading` guard at `AppState.swift:65`). Missing this creates an infinite push↔pull loop.
-- **Offline mutations:** every push is fire-and-forget; failures/offline enqueue to `aura_sync_queue_v1` and NEVER block or throw into the UI. Flush on next successful net op. Coalesce duplicate (table,id) upserts.
-- **Whole-array `didSet` on AppState collections:** assigning the entire array fires one `didSet`; naive "push everything" on every keystroke is wasteful and racy. Diff old vs new and push only changed/added rows + delete removed rows.
-- **Delete Account partial failure:** remote-delete (Edge Function) must SUCCEED before any local wipe or sign-out. On failure: no wipe, stay signed in, show error. Wrong order orphans an account with lost local data.
-- **Reset while a workout is live:** call `appState.exitWorkout()` before clearing keys so no stale session re-persists post-wipe.
-- **In-memory vs disk desync after reset:** reassign singleton `@Published` state (via new reset methods), don't just delete keys — otherwise the wiped data stays on screen.
-- **`progress_photos` size (O2):** base64 blobs in JSONB can be large and slow to push/pull; keep the temp-file export path off the main thread and consider batching/limiting photo sync. Flagged as a v1 limitation; Storage-bucket migration is a follow-up.
-- **LWW data loss (O3, out-of-scope realtime):** concurrent edits on two devices between pulls can silently drop the older write. This is an ACCEPTED v1 limitation of the periodic-pull + write-through model — communicated here, not hidden. No live subscription this pass.
+### `AuraFitness/Profile/CSVArchive.swift`
+- **Purpose:** Build the 5 CSV files from local stores and zip them for `ShareLink`. Mirrors
+  `DataArchiveBuilder.writeTempFile` (off-main-thread, returns `URL?`, nil on failure).
+- **Signatures/Interfaces:**
+  ```swift
+  enum CSVArchiveBuilder {
+      /// Writes 5 CSV files into a temp folder, zips them, returns the zip URL.
+      /// Returns nil on failure so the caller degrades gracefully.
+      @MainActor static func writeTempZip(_ appState: AppState) async -> URL?
+
+      /// Individual category serializers (pure, testable, no I/O).
+      /// Each returns a full CSV string INCLUDING the header row.
+      static func workoutHistoryCSV(_ logs: [WorkoutLog]) -> String
+      static func programsCSV(_ programs: [Program]) -> String          // custom (isPredefined == false) only
+      static func customWorkoutsCSV(_ plans: [UserPlan]) -> String       // plan.customWorkouts flattened
+      static func customExercisesCSV(_ entries: [ExerciseEntry]) -> String // isCustom == true only
+      static func measurementsCSV(_ measurements: [Measurement]) -> String
+  }
+  ```
+- **Rules:**
+  - Zip filename: `AuraFitness-CSV-Export-<epoch>.zip`. Inner files named exactly:
+    `workout_history.csv`, `programs.csv`, `custom_workouts.csv`, `custom_exercises.csv`,
+    `body_measurements.csv`.
+  - Zipping: use `Foundation`'s `FileManager` + Apple's `NSFileCoordinator` `.forUploading` trick to
+    zip a directory (no third-party dependency). If the Coder cannot zip without a dependency,
+    **DEFAULT DECISION:** produce 5 separate CSV files and return a folder URL is NOT allowed by
+    `ShareLink(item:)` for multiple files cleanly — so fall back to a single combined CSV bundle is
+    also not desired. Use `NSFileCoordinator(filePresenter: nil).coordinate(readingItemAt: folderURL, options: .forUploading, ...)` which yields a single `.zip` URL. This is a stdlib-only zip and MUST be used.
+  - CSV escaping: RFC-4180. Any field containing `,` `"` newline is wrapped in double quotes and
+    internal `"` doubled. Provide one shared `csvField(_ s: String) -> String` helper.
+  - Dates: ISO-8601 (`yyyy-MM-dd'T'HH:mm:ssZ`) using a single shared `ISO8601DateFormatter`, matching
+    `DataArchiveBuilder`'s `.iso8601` JSON strategy so JSON and CSV agree.
+  - Numeric optionals (`Double?`, `Int?`): empty string when nil (NOT "0", so round-trip distinguishes
+    "no value" from "zero").
+
+### `AuraFitness/Profile/CSVParser.swift`
+- **Purpose:** Parse a single CSV string into `[[String]]` rows, RFC-4180 compliant (handles quoted
+  fields, embedded commas/newlines/escaped quotes). Pure, no I/O, unit-testable.
+- **Signatures/Interfaces:**
+  ```swift
+  enum CSVParser {
+      /// Returns rows of fields. First row is the header. Throws on malformed quoting.
+      static func parse(_ text: String) throws -> [[String]]
+      enum CSVError: Error { case malformed(line: Int) }
+  }
+  ```
+
+### `AuraFitness/Profile/DataImportService.swift`
+- **Purpose:** Single entry point for importing either a JSON archive OR a CSV file/zip. Maps parsed
+  rows back into the real stores using their existing CRUD (so sync + persistence fire correctly).
+- **Signatures/Interfaces:**
+  ```swift
+  @MainActor
+  enum DataImportService {
+      struct ImportSummary { var workouts = 0; var programs = 0; var customWorkouts = 0
+                             var customExercises = 0; var measurements = 0; var skipped = 0 }
+
+      /// Detects file type by extension/UTType, routes to the right importer,
+      /// returns a human summary string for the toast. Never throws into UI —
+      /// returns a summary with a failure note on error.
+      static func importFile(at url: URL, appState: AppState) async -> String
+
+      // Internal, per-category (each MERGE-not-replace; see IMPORT SEMANTICS):
+      static func importJSONArchive(_ data: Data, appState: AppState) -> ImportSummary
+      static func importWorkoutHistory(_ rows: [[String]], appState: AppState) -> Int
+      static func importPrograms(_ rows: [[String]]) -> Int
+      static func importCustomWorkouts(_ rows: [[String]]) -> Int
+      static func importCustomExercises(_ rows: [[String]]) -> Int
+      static func importMeasurements(_ rows: [[String]], appState: AppState) -> Int
+  }
+  ```
+- **IMPORT SEMANTICS (must be implemented exactly):**
+  - **Security-scoped resource:** files from `.fileImporter` require
+    `let ok = url.startAccessingSecurityScopedResource()` before reading and
+    `defer { if ok { url.stopAccessingSecurityScopedResource() } }`. Failing to do this makes the
+    read silently return empty on-device.
+  - **Zip:** if the picked file is a `.zip`, unzip to a temp dir (reuse the `NSFileCoordinator`
+    approach in reverse, or `Archive`-free: iterate expected inner filenames). Then import each
+    inner CSV by filename → category. Unknown inner files are skipped (count into `skipped`).
+  - **Row → store mapping:**
+    - Workout history rows → group by `workout_log_id`; reconstruct a `WorkoutLog` per group with an
+      `Exercise` per distinct `exercise_name` within the group and a `WorkoutSet` per row. Append via
+      `appState.workoutLogs.append(...)` ONLY if a log with that id does not already exist (dedupe by id).
+    - Programs rows → group by `program_id`; build `Program(isPredefined: false)` with `Workout`s and
+      `Exercise`s; call `ProgramDatabase.shared.addProgram(_:)` if id absent, else `updateProgram(_:)`.
+    - Custom-workout rows → group by `custom_workout_id`; each row is one exercise. Attach to the plan
+      identified by `plan_id`; if the plan id is unknown locally, skip the group (count into `skipped`)
+      — do NOT fabricate a plan.
+    - Custom-exercise rows → build `ExerciseEntry(isCustom: true)`; `ExerciseDatabase.shared.add(_:)`
+      if id absent else `update(_:)`.
+    - Measurement rows → build `Measurement`; append to `appState.measurements` if id absent.
+  - **ID handling:** if a CSV `*_id` field is blank or not a valid UUID, generate a fresh `UUID()` so
+    the row is imported as new (never crash on bad ids).
+  - Use the store CRUD methods (`addProgram`, `add`, etc.) rather than mutating internal arrays, so
+    write-through sync + persistence run automatically for signed-in users, and local persistence runs
+    for guests.
+
+### `AuraFitnessTests/CSVRoundTripTests.swift`
+- **Purpose:** Prove round-trip: build CSV from a fixture, parse it back, assert equality on the
+  columns that CSV is responsible for (per section (2) fidelity limit). Mirror the existing
+  `AuraFitnessTests/PersistenceRoundTripTests.swift` style.
+- Cover at minimum: measurements (with nil vs 0 distinction), one custom exercise, one custom program
+  with one workout/two exercises, one workout-history log with 2 exercises × 2 sets, and CSV escaping
+  of a name containing a comma and a quote.
+
+---
+
+## 🗄️ DATA MODEL / SCHEMA
+
+### Guest-mode local flag
+- **Key:** `aura_guest_mode_v1` (UserDefaults, `Bool`).
+- **Semantics:** `true` ⇔ user chose "Skip for now" and has not since signed in. Set by
+  `continueAsGuest()`, cleared by successful sign-in and by `signOut()`.
+- **Precedence on launch (`restoreSession`):** real Keychain session > guest flag > signed-out.
+- **NOTE for the Coder:** add `aura_guest_mode_v1` to `DataResetService.resetAll` full-reset key
+  removal list (the `!workoutOnly` block, alongside `aura_sync_queue_v1` / `aura_local_ts_v1`), so
+  "Reset everything" also drops guest status. Do NOT remove it in the workout-only branch.
+
+### CSV schemas (literal — column names, types, one example row each)
+
+Conventions: types are logical (all serialized as CSV text). `UUID` = 36-char lowercased UUID string.
+`ISO8601` = `2026-07-19T14:32:05Z`. Empty cell = nil/absent. Booleans = `true`/`false`.
+
+#### 1. `workout_history.csv` (historical workout data — ROW PER SET)
+Columns:
+`workout_log_id (UUID), log_date (ISO8601), workout_name (String), duration_seconds (Int), session_notes (String), exercise_name (String), primary_muscle (String), equipment (String), set_index (Int), set_type (String: normal|drop|restPause|failure|partials), weight (Double?), reps (Int?), done (Bool), set_note (String)`
+
+Example row:
+```
+3f1a2b7c-0e11-4a5b-9c33-2d4e6f8a1b22,2026-07-15T18:20:00Z,Push Day A,3480,Felt strong,Barbell Bench Press,Chest,Barbell,0,normal,80.0,8,true,
+```
+
+#### 2. `programs.csv` (custom programs — ROW PER EXERCISE within a workout within a program)
+Only programs with `isPredefined == false` are exported.
+Columns:
+`program_id (UUID), program_name (String), days_per_week (Int), level (String), style (String), program_description (String), workout_id (UUID), workout_name (String), workout_order (Int), estimated_minutes (Int), rest_between_sets (Int), rest_between_exercises (Int), exercise_id (UUID), exercise_name (String), primary_muscle (String), equipment (String), rep_range (String), planned_sets (Int), exercise_order (Int)`
+
+Example row:
+```
+a11b0000-1111-2222-3333-444455556666,My PPL,6,Intermediate,Hypertrophy,Custom split,b22c0000-1111-2222-3333-444455556666,Push A,0,58,60,90,c33d0000-1111-2222-3333-444455556666,Barbell Bench Press,Chest,Barbell,6–8,4,0
+```
+
+#### 3. `custom_workouts.csv` (custom workouts living inside UserPlan.customWorkouts — ROW PER EXERCISE)
+Columns:
+`plan_id (UUID), plan_name (String), custom_workout_id (UUID), workout_name (String), estimated_minutes (Int), rest_between_sets (Int), rest_between_exercises (Int), exercise_id (UUID), exercise_name (String), primary_muscle (String), equipment (String), rep_range (String), planned_sets (Int), exercise_order (Int)`
+
+Example row:
+```
+d44e0000-aaaa-bbbb-cccc-000011112222,My Plan,e55f0000-aaaa-bbbb-cccc-000011112222,Leg Burner,55,60,90,f66a0000-aaaa-bbbb-cccc-000011112222,Barbell Squat,Legs,Barbell,6–8,4,0
+```
+
+#### 4. `custom_exercises.csv` (user-created exercises — ROW PER EXERCISE, `isCustom == true` only)
+`musclesTargeted` and `proTips` are `[String]`: serialize as `|`-joined single cell.
+Columns:
+`exercise_id (UUID), name (String), category (String), equipment (String), muscles_targeted (String, pipe-joined), type (String), difficulty (String), rep_range (String), youtube_url (String), image_url (String), pro_tips (String, pipe-joined), is_cable (Bool), pulley (String: single|double), planned_sets (Int), notes (String), is_favorite (Bool)`
+
+Example row:
+```
+0a1b2c3d-4e5f-6071-8293-a4b5c6d7e8f9,My Cable Row,Back,Cable,Latissimus Dorsi|Biceps Brachii,Machine,Intermediate,10–12,,,Keep chest up|Squeeze at the back,true,double,3,From my coach,false
+```
+
+#### 5. `body_measurements.csv` (historical body measurements — ROW PER MEASUREMENT)
+Columns:
+`measurement_id (UUID), date (ISO8601), weight (Double?), body_fat_pct (Double?), neck (Double?), chest (Double?), waist (Double?), hips (Double?), arms (Double?), thighs (Double?), shoulders (Double?)`
+
+Example row:
+```
+9f8e7d6c-5b4a-3210-fedc-ba9876543210,2026-07-01T08:00:00Z,78.4,14.2,38.0,104.0,82.0,,40.5,60.0,
+```
+
+**Unit note:** weights/lengths are stored raw in the user's current units (kg/cm or lb/in per
+`RemotePrefs.weightUnit`/`lengthUnit`). CSV does NOT convert units. Add a code comment stating that
+importing under a different unit preference will not auto-convert (matches JSON archive behavior).
+
+---
+
+## 🔀 MERGE / UPLOAD STRATEGY (guest → sign-in)
+
+**Chosen strategy (explicit, simple, reuses existing engine — no new merge code):**
+
+1. When a guest signs in, `AuthService.transitionToSignedIn` runs (already wired) and calls
+   `SupabaseSyncService.shared.onSignedIn(userID:)`.
+2. `onSignedIn` already does exactly what's needed:
+   - `isRemoteEmpty(uid)` && `hasAnyLocalData()` → **`backfillLocalToRemote(uid)`**: pushes ALL local
+     guest rows up (programs, plans, exercises, workoutLogs, measurements, PRs, photos, dayOverrides,
+     quickLogs, bodyStats, userProfile, preferences). This is the fresh-account guest→cloud migration.
+   - Otherwise → **`pullAll()`**: LWW reconcile by `updated_at`. Guest local rows have distinct UUIDs
+     from any pre-existing cloud rows, so the union-merge `applyRemote*` helpers keep BOTH. Any local
+     row with a newer `aura_local_ts_v1` stamp is re-pushed; remote-newer rows are applied locally.
+3. **Conflict handling (existing-account case):** same-id collisions are resolved by LWW
+   (`updated_at` vs `aura_local_ts_v1`) — no user-facing prompt. Because guest data is created offline
+   with fresh UUIDs, real collisions are effectively impossible; the practical result is a UNION of
+   guest data and account data. This is the intended, simplest correct behavior.
+4. **The only NEW requirement for guest→cloud correctness:** guest mutations must be stamped so LWW
+   treats them as "recent local edits" rather than losing to older remote rows.
+   - **Verified gap:** `SupabaseSyncService.push()` calls `stampLocalChange(...)` but early-returns
+     BEFORE stamping when `userID == nil` (guest). So guest edits are never timestamped.
+   - **REQUIRED CHANGE in `AuraFitness/Sync/SupabaseSyncService.swift`:** in `push(_:id:table:)`, move
+     `stampLocalChange(table:id:)` to run **before** the `guard let uid = userID else { return }` so
+     that guest-mode edits ARE timestamped locally even though no network push occurs. This guarantees
+     that on later sign-in, `pullAll`'s reconcile sees guest rows as newer-than-remote (their stamp
+     time > any older remote `updated_at`) and pushes them up instead of overwriting them.
+     (This is the single load-bearing fix; without it, a guest who signs into a pre-existing account
+     could have guest edits silently lost to older cloud rows.)
+
+No new "migration" class is needed. Do not write one.
+
+---
+
+## 📱 MOBILE-SPECIFIC CONCERNS (must be handled)
+
+- **Offline guest sign-in:** if the network is down when a guest taps Sign In, `AuthService.signIn`
+  already surfaces "No network connection." and stays on `.signedOut`. The guest flag must NOT be
+  cleared on a FAILED sign-in (only on success) — otherwise a failed attempt would strand the user on
+  the login screen with no way back to their guest data. Verify the flag clear is inside the success
+  branch only.
+- **Offline after successful sign-in:** `backfillLocalToRemote`/`pullAll` push through the existing
+  durable offline queue (`aura_sync_queue_v1`); failures enqueue and flush later. No special handling
+  needed — but do NOT block the UI on migration; `onSignedIn` is already `async` and fire-and-forget
+  from the gate's perspective.
+- **Large export files (photo-heavy):** CSV export EXCLUDES progress-photo binary blobs entirely
+  (photos are not one of the 5 CSV categories), so CSV stays small. The JSON archive keeps photos
+  (already noted as a size concern in `DataArchive.swift`). Build both off the main thread via
+  `Task.detached` exactly like `DataArchiveBuilder`. Never encode on the main thread.
+- **iOS share sheet (export):** reuse `ShareLink(item: URL)` exactly as the existing export sheet does.
+  The CSV zip and JSON file are both temp-directory URLs.
+- **iOS file picker (import):** use SwiftUI `.fileImporter(isPresented:allowedContentTypes:onCompletion:)`
+  with `allowedContentTypes: [.json, .commaSeparatedText, .zip]` (import `UniformTypeIdentifiers`).
+  `allowsMultipleSelection: false`.
+- **Security-scoped URLs:** MANDATORY `startAccessingSecurityScopedResource()` /
+  `stopAccessingSecurityScopedResource()` around every read of a picked file (see DataImportService).
+- **Malformed import file:** `CSVParser.parse` throws on bad quoting; `DataImportService.importFile`
+  must catch and return a friendly summary string ("Couldn't read that file") rather than crash.
+- **Import responsiveness:** parse + map on a background `Task`, then apply store mutations on
+  `@MainActor` (the stores are `@MainActor`). Show the "Preparing…"/busy state on the button, mirroring
+  the export sheet's `busy` flag.
+- **Guest + reset interaction:** confirm `aura_guest_mode_v1` is cleared on full reset (see DATA MODEL
+  note) so a post-reset relaunch shows the login screen, not a silent guest session.
+
+---
+
+## ✅ ACCEPTANCE CRITERIA (Coder self-check)
+
+1. Fresh install → login screen shows a "Skip for now — use as guest" option; tapping it enters the
+   app; force-quit + relaunch returns to the app in guest mode (not the login screen).
+2. Guest creates a custom program, logs a workout, adds a measurement → all persist locally and survive
+   relaunch with no network.
+3. Guest signs into a brand-new account → all guest data appears in Supabase (backfill path).
+4. Guest signs into an existing account that already has cloud data → both datasets are present after
+   sync (union), nothing lost.
+5. Export as CSV produces a zip with exactly the 5 named files, each with the exact header row above.
+6. Importing that same zip on a fresh install reproduces the workouts/programs/custom-workouts/custom-
+   exercises/measurements (per the section-(2) fidelity limit); re-importing is idempotent (dedupe by id).
+7. Existing JSON archive export/import path is unchanged and still works.
+8. `CSVRoundTripTests` pass.

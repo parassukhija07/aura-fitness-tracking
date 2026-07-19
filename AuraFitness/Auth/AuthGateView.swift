@@ -20,6 +20,10 @@ struct AuthGateView: View {
                 // AuraFitnessApp gates ContentView on .signedIn directly; this
                 // branch is effectively unreachable but kept exhaustive.
                 splash
+            case .guest:
+                // AuraFitnessApp gates ContentView on .guest directly too;
+                // this branch is effectively unreachable but kept exhaustive.
+                splash
             }
         }
         .background(Color.aura.bg.ignoresSafeArea())
@@ -85,6 +89,15 @@ private struct AuthFormView: View {
                     Text(mode == .login ? "Don't have an account? Sign up" : "Already have an account? Log in")
                         .font(AuraFont.secondary())
                         .foregroundColor(.aura.accent)
+                }
+                .padding(.top, AuraSpacing.s2)
+
+                Button {
+                    authService.continueAsGuest()
+                } label: {
+                    Text("Skip for now — use as guest")
+                        .font(AuraFont.secondary())
+                        .foregroundColor(.aura.text2)
                 }
                 .padding(.top, AuraSpacing.s2)
 

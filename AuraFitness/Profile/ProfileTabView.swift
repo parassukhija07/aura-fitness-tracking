@@ -7,7 +7,7 @@ enum ProfileScreen: Hashable {
 
 /// Which confirm sheet is open on Profile.
 enum ProfileSheet: Identifiable {
-    case export, reset, delete, logout
+    case export, reset, delete, logout, importData
     var id: Int { hashValue }
 }
 
