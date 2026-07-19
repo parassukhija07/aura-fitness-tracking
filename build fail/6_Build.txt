@@ -1,0 +1,81 @@
+﻿2026-07-18T11:00:30.1672080Z ##[group]Run xcodebuild -list -project AuraFitness.xcodeproj
+2026-07-18T11:00:30.1672770Z [36;1mxcodebuild -list -project AuraFitness.xcodeproj[0m
+2026-07-18T11:00:30.1722860Z shell: /bin/bash -e {0}
+2026-07-18T11:00:30.1723310Z env:
+2026-07-18T11:00:30.1723710Z   MD_APPLE_SDK_ROOT: /Applications/Xcode_15.4.app
+2026-07-18T11:00:30.1724210Z ##[endgroup]
+2026-07-18T11:00:31.4442890Z Command line invocation:
+2026-07-18T11:00:31.4444150Z     /Applications/Xcode_15.4.app/Contents/Developer/usr/bin/xcodebuild -list -project AuraFitness.xcodeproj
+2026-07-18T11:00:31.4444820Z 
+2026-07-18T11:00:31.4445030Z User defaults from command line:
+2026-07-18T11:00:31.4445390Z     IDEPackageSupportUseBuiltinSCM = YES
+2026-07-18T11:00:31.4445710Z 
+2026-07-18T11:00:32.3522720Z 2026-07-18 11:00:32.351 xcodebuild[16233:42269] warning:  The file reference for "LogDayModel.swift" is a member of multiple groups ("DesignSystem" and "Models"); this indicates a malformed project.  Only the membership in one of the groups will be preserved (but membership in targets will be unaffected).  If you want a reference to the same file in more than one group, please add another reference to the same path.
+2026-07-18T11:00:32.3747980Z 2026-07-18 11:00:32.374 xcodebuild[16233:42269] warning:  The file reference for "AuraFitness.app" is a member of multiple groups ("" and "Products"); this indicates a malformed project.  Only the membership in one of the groups will be preserved (but membership in targets will be unaffected).  If you want a reference to the same file in more than one group, please add another reference to the same path.
+2026-07-18T11:00:39.3255040Z Resolve Package Graph
+2026-07-18T11:00:39.6222190Z 
+2026-07-18T11:00:39.6356470Z Fetching from https://github.com/supabase/supabase-swift
+2026-07-18T11:00:40.6373290Z 
+2026-07-18T11:00:45.6500920Z Fetching from https://github.com/pointfreeco/xctest-dynamic-overlay
+2026-07-18T11:00:46.3290140Z 
+2026-07-18T11:00:46.3293150Z Fetching from https://github.com/pointfreeco/swift-concurrency-extras
+2026-07-18T11:00:46.3313920Z 
+2026-07-18T11:00:46.3360760Z Fetching from https://github.com/pointfreeco/swift-clocks
+2026-07-18T11:00:46.8112500Z 
+2026-07-18T11:00:46.8114650Z Fetching from https://github.com/apple/swift-http-types.git
+2026-07-18T11:00:46.8115600Z 
+2026-07-18T11:00:46.8124230Z Fetching from https://github.com/apple/swift-crypto.git
+2026-07-18T11:00:47.9246020Z 
+2026-07-18T11:00:49.8377940Z Fetching from https://github.com/apple/swift-asn1.git
+2026-07-18T11:00:50.2901930Z 
+2026-07-18T11:00:50.6821040Z Creating working copy of package ‘swift-http-types’
+2026-07-18T11:00:50.7035970Z 
+2026-07-18T11:00:50.7036840Z Checking out 1.5.1 of package ‘swift-http-types’
+2026-07-18T11:00:50.7360880Z 
+2026-07-18T11:00:50.7437950Z Creating working copy of package ‘xctest-dynamic-overlay’
+2026-07-18T11:00:50.7622450Z 
+2026-07-18T11:00:50.7623210Z Checking out 1.10.1 of package ‘xctest-dynamic-overlay’
+2026-07-18T11:00:50.7961900Z 
+2026-07-18T11:00:50.8038060Z Creating working copy of package ‘swift-asn1’
+2026-07-18T11:00:50.8214910Z 
+2026-07-18T11:00:50.8215670Z Checking out 1.4.0 of package ‘swift-asn1’
+2026-07-18T11:00:50.8671650Z 
+2026-07-18T11:00:50.8749710Z Creating working copy of package ‘swift-clocks’
+2026-07-18T11:00:50.8937350Z 
+2026-07-18T11:00:50.8937850Z Checking out 1.0.6 of package ‘swift-clocks’
+2026-07-18T11:00:50.9127790Z 
+2026-07-18T11:00:50.9208750Z Creating working copy of package ‘swift-concurrency-extras’
+2026-07-18T11:00:50.9442650Z 
+2026-07-18T11:00:50.9443660Z Checking out 1.4.0 of package ‘swift-concurrency-extras’
+2026-07-18T11:00:50.9645030Z 
+2026-07-18T11:00:50.9734620Z Creating working copy of package ‘swift-crypto’
+2026-07-18T11:00:51.0022020Z 
+2026-07-18T11:00:51.0066500Z Checking out 3.15.1 of package ‘swift-crypto’
+2026-07-18T11:00:51.2543200Z 
+2026-07-18T11:00:51.2621160Z Creating working copy of package ‘supabase-swift’
+2026-07-18T11:00:51.3009980Z 
+2026-07-18T11:00:51.3010620Z Checking out 2.49.0 of package ‘supabase-swift’
+2026-07-18T11:00:51.4014390Z 
+2026-07-18T11:00:53.0425640Z 
+2026-07-18T11:00:53.0426100Z Resolved source packages:
+2026-07-18T11:00:53.0426840Z   swift-clocks: https://github.com/pointfreeco/swift-clocks @ 1.0.6
+2026-07-18T11:00:53.0427740Z   swift-crypto: https://github.com/apple/swift-crypto.git @ 3.15.1
+2026-07-18T11:00:53.0435250Z   swift-asn1: https://github.com/apple/swift-asn1.git @ 1.4.0
+2026-07-18T11:00:53.0437570Z   xctest-dynamic-overlay: https://github.com/pointfreeco/xctest-dynamic-overlay @ 1.10.1
+2026-07-18T11:00:53.0438220Z   swift-concurrency-extras: https://github.com/pointfreeco/swift-concurrency-extras @ 1.4.0
+2026-07-18T11:00:53.0438820Z   Supabase: https://github.com/supabase/supabase-swift @ 2.49.0
+2026-07-18T11:00:53.0439370Z   swift-http-types: https://github.com/apple/swift-http-types.git @ 1.5.1
+2026-07-18T11:00:53.0439880Z 
+2026-07-18T11:00:53.0470920Z Information about project "AuraFitness":
+2026-07-18T11:00:53.0471290Z     Targets:
+2026-07-18T11:00:53.0471440Z         AuraFitness
+2026-07-18T11:00:53.0471530Z 
+2026-07-18T11:00:53.0471620Z     Build Configurations:
+2026-07-18T11:00:53.0471810Z         Debug
+2026-07-18T11:00:53.0471950Z         Release
+2026-07-18T11:00:53.0472120Z 
+2026-07-18T11:00:53.0472380Z     If no build configuration is specified and -scheme is not passed then "Release" is used.
+2026-07-18T11:00:53.0472950Z 
+2026-07-18T11:00:53.0473050Z     Schemes:
+2026-07-18T11:00:53.0473290Z         AuraFitness
+2026-07-18T11:00:53.0473390Z 

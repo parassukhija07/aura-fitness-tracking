@@ -1,0 +1,31 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(rtk ls *)",
+      "Bash(rtk wc *)",
+      "Bash(python -c ' *)",
+      "Bash(rtk read *)",
+      "Bash(rm -f .pipeline/*.md)",
+      "Bash(python3 -c ' *)",
+      "Bash(swiftc -parse AuraFitness/Profile/DataImportService.swift)",
+      "Bash(swiftc -parse AuraFitness/Profile/CSVArchive.swift)",
+      "Bash(swiftc -parse AuraFitness/Profile/CSVParser.swift)",
+      "Bash(swiftc -parse AuraFitnessTests/CSVRoundTripTests.swift)",
+      "Bash(swiftc --version)",
+      "Bash(echo \"===EXIT $?===\")",
+      "Bash(cat)",
+      "Bash(cp \"/c/Users/muska/AppData/Local/Temp/claude/c--Users-muska-OneDrive-Documents-App-Development-Aura-Fitness-Tracker/46e6c057-1404-4424-aa56-44c68e5e3bf4/scratchpad/review_content.txt\" \"/c/Users/muska/OneDrive/Documents/App Development/Aura Fitness Tracker/.pipeline/review.md\")",
+      "Bash(python3 -c \"print\\('py ok'\\)\")",
+      "Bash(python -c \"print\\('py ok'\\)\")",
+      "Bash(awk '{print length}')",
+      "Bash(python3 -c \"import uuid; print\\(uuid.uuid4\\(\\).hex[:24].upper\\(\\)\\)\")",
+      "Bash(powershell -Command \"[guid]::NewGuid\\(\\).ToString\\('N'\\).Substring\\(0,24\\).ToUpper\\(\\)\")",
+      "Bash(python3 -)",
+      "Bash(xxd AuraFitness.xcodeproj/project.pbxproj)",
+      "Bash(mv /tmp/pbx_nobom.txt AuraFitness.xcodeproj/project.pbxproj)",
+      "Bash(plutil -lint AuraFitness.xcodeproj/project.pbxproj)",
+      "Bash(rtk gh *)",
+      "WebSearch"
+    ]
+  }
+}
