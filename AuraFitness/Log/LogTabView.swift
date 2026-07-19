@@ -587,12 +587,15 @@ struct LogTabView: View {
 struct CalendarDayIcon: View {
     var color: Color
 
+    private static func point(_ x: CGFloat, _ y: CGFloat, _ ox: CGFloat, _ oy: CGFloat, _ s: CGFloat) -> CGPoint {
+        CGPoint(x: ox + x * s, y: oy + y * s)
+    }
+
     var body: some View {
         GeometryReader { geo in
             let s = min(geo.size.width, geo.size.height) / 24.0
             let ox = (geo.size.width - 24 * s) / 2
             let oy = (geo.size.height - 24 * s) / 2
-            func P(_ x: CGFloat, _ y: CGFloat) -> CGPoint { CGPoint(x: ox + x * s, y: oy + y * s) }
 
             ZStack {
                 // stroked outline
@@ -600,9 +603,9 @@ struct CalendarDayIcon: View {
                     p.addRoundedRect(in: CGRect(x: ox + 3.5 * s, y: oy + 4.5 * s,
                                                 width: 17 * s, height: 16 * s),
                                      cornerSize: CGSize(width: 3 * s, height: 3 * s))
-                    p.move(to: P(8, 2));  p.addLine(to: P(8, 6))
-                    p.move(to: P(16, 2)); p.addLine(to: P(16, 6))
-                    p.move(to: P(3.5, 9)); p.addLine(to: P(20.5, 9))
+                    p.move(to: Self.point(8, 2, ox, oy, s));  p.addLine(to: Self.point(8, 6, ox, oy, s))
+                    p.move(to: Self.point(16, 2, ox, oy, s)); p.addLine(to: Self.point(16, 6, ox, oy, s))
+                    p.move(to: Self.point(3.5, 9, ox, oy, s)); p.addLine(to: Self.point(20.5, 9, ox, oy, s))
                 }
                 .stroke(color, style: StrokeStyle(lineWidth: 1.7, lineCap: .round, lineJoin: .round))
 
