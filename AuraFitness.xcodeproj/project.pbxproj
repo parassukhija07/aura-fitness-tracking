@@ -18,6 +18,12 @@
 		AA59FEAF6AB35E46E6A39847 /* HealthKitService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB16797C38CBD24BBD9E0E01 /* HealthKitService.swift */; };
 		CDFC6024797645AEA88AE07C /* Supabase in Frameworks */ = {isa = PBXBuildFile; productRef = 864C1DE126BD4F349BBC6DA2 /* Supabase */; };
 		AA000002000000000000002B /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000002000000000000002B /* ContentView.swift */; };
+		AAA55E70000000000000001B /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = ABA55E70000000000000001B /* Assets.xcassets */; };
+		AAF0700100000000000000F1 /* PlusJakartaSans-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = ABF0700100000000000000F1 /* PlusJakartaSans-Regular.ttf */; };
+		AAF0700200000000000000F1 /* PlusJakartaSans-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = ABF0700200000000000000F1 /* PlusJakartaSans-Medium.ttf */; };
+		AAF0700300000000000000F1 /* PlusJakartaSans-SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = ABF0700300000000000000F1 /* PlusJakartaSans-SemiBold.ttf */; };
+		AAF0700400000000000000F1 /* PlusJakartaSans-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = ABF0700400000000000000F1 /* PlusJakartaSans-Bold.ttf */; };
+		AAF0700500000000000000F1 /* PlusJakartaSans-ExtraBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = ABF0700500000000000000F1 /* PlusJakartaSans-ExtraBold.ttf */; };
 		AA000003000000000000003B /* AuraColors.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000003000000000000003B /* AuraColors.swift */; };
 		AA000004000000000000004B /* AuraTypography.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000004000000000000004B /* AuraTypography.swift */; };
 		AA000005000000000000005B /* AuraSpacing.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000005000000000000005B /* AuraSpacing.swift */; };
@@ -103,6 +109,12 @@
 		ABD7B37CF9C0AE4B69B23611 /* AuraFitness.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = AuraFitness.entitlements; sourceTree = "<group>"; };
 		BF07BF8539F741408786E738 /* Secrets.xcconfig.template */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Secrets.xcconfig.template; sourceTree = "<group>"; };
 		AB000002000000000000002B /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		ABA55E70000000000000001B /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		ABF0700100000000000000F1 /* PlusJakartaSans-Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "PlusJakartaSans-Regular.ttf"; sourceTree = "<group>"; };
+		ABF0700200000000000000F1 /* PlusJakartaSans-Medium.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "PlusJakartaSans-Medium.ttf"; sourceTree = "<group>"; };
+		ABF0700300000000000000F1 /* PlusJakartaSans-SemiBold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "PlusJakartaSans-SemiBold.ttf"; sourceTree = "<group>"; };
+		ABF0700400000000000000F1 /* PlusJakartaSans-Bold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "PlusJakartaSans-Bold.ttf"; sourceTree = "<group>"; };
+		ABF0700500000000000000F1 /* PlusJakartaSans-ExtraBold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "PlusJakartaSans-ExtraBold.ttf"; sourceTree = "<group>"; };
 		AB000003000000000000003B /* AuraColors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuraColors.swift; sourceTree = "<group>"; };
 		AB000004000000000000004B /* AuraTypography.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuraTypography.swift; sourceTree = "<group>"; };
 		AB000005000000000000005B /* AuraSpacing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuraSpacing.swift; sourceTree = "<group>"; };
@@ -209,6 +221,7 @@
 			children = (
 				AB000001000000000000001B /* AuraFitnessApp.swift */,
 				AB000002000000000000002B /* ContentView.swift */,
+				ABA55E70000000000000001B /* Assets.xcassets */,
 				BF07BF8539F741408786E738 /* Secrets.xcconfig.template */,
 				ACGRP020000000000000000A /* DesignSystem */,
 				ACGRP030000000000000000A /* Models */,
@@ -219,8 +232,21 @@
 				ACGRP080000000000000000A /* Profile */,
 				ACGRP090000000000000000A /* Auth */,
 				ACGRP0A0000000000000000A /* Sync */,
+				ACGRPF070000000000000F01 /* Fonts */,
 			);
 			path = AuraFitness;
+			sourceTree = "<group>";
+		};
+		ACGRPF070000000000000F01 /* Fonts */ = {
+			isa = PBXGroup;
+			children = (
+				ABF0700100000000000000F1 /* PlusJakartaSans-Regular.ttf */,
+				ABF0700200000000000000F1 /* PlusJakartaSans-Medium.ttf */,
+				ABF0700300000000000000F1 /* PlusJakartaSans-SemiBold.ttf */,
+				ABF0700400000000000000F1 /* PlusJakartaSans-Bold.ttf */,
+				ABF0700500000000000000F1 /* PlusJakartaSans-ExtraBold.ttf */,
+			);
+			path = Fonts;
 			sourceTree = "<group>";
 		};
 		ACGRP020000000000000000A /* DesignSystem */ = {
@@ -448,6 +474,12 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				AAA55E70000000000000001B /* Assets.xcassets in Resources */,
+				AAF0700100000000000000F1 /* PlusJakartaSans-Regular.ttf in Resources */,
+				AAF0700200000000000000F1 /* PlusJakartaSans-Medium.ttf in Resources */,
+				AAF0700300000000000000F1 /* PlusJakartaSans-SemiBold.ttf in Resources */,
+				AAF0700400000000000000F1 /* PlusJakartaSans-Bold.ttf in Resources */,
+				AAF0700500000000000000F1 /* PlusJakartaSans-ExtraBold.ttf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -680,6 +712,7 @@
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = UIInterfaceOrientationPortrait;
+				INFOPLIST_KEY_UIAppFonts = "PlusJakartaSans-Regular.ttf PlusJakartaSans-Medium.ttf PlusJakartaSans-SemiBold.ttf PlusJakartaSans-Bold.ttf PlusJakartaSans-ExtraBold.ttf";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -712,6 +745,7 @@
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = UIInterfaceOrientationPortrait;
+				INFOPLIST_KEY_UIAppFonts = "PlusJakartaSans-Regular.ttf PlusJakartaSans-Medium.ttf PlusJakartaSans-SemiBold.ttf PlusJakartaSans-Bold.ttf PlusJakartaSans-ExtraBold.ttf";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",

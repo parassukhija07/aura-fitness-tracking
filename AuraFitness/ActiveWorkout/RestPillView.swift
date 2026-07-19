@@ -34,14 +34,14 @@ struct RestPillView: View {
                     .frame(width: 34, height: 34)
                     .rotationEffect(.degrees(-90))
                 Image(systemName: "timer")
-                    .font(.system(size: 12))
+                    .font(AuraFont.jakarta(12))
                     .foregroundColor(.aura.accent)
             }
 
             // Timer
             VStack(alignment: .leading, spacing: 0) {
                 Text("REST")
-                    .font(.system(size: 9, weight: .bold))
+                    .font(AuraFont.jakarta(9, .bold))
                     .foregroundColor(.aura.text2)
                 Text(session.restFormatted)
                     .font(AuraFont.statNum(size: 18))
@@ -54,7 +54,7 @@ struct RestPillView: View {
                 session.addRestTime(15)
             } label: {
                 Text("+15")
-                    .font(.system(size: 12, weight: .bold))
+                    .font(AuraFont.jakarta(12, .bold))
                     .foregroundColor(.aura.text)
                     .frame(width: 32, height: 28)
                     .background(Color.aura.fill)
@@ -67,7 +67,7 @@ struct RestPillView: View {
                 session.pauseResumeRest()
             } label: {
                 Image(systemName: session.restRunning ? "pause.fill" : "play.fill")
-                    .font(.system(size: 12))
+                    .font(AuraFont.jakarta(12))
                     .foregroundColor(.aura.text)
                     .frame(width: 28, height: 28)
                     .background(Color.aura.fill)
@@ -80,7 +80,7 @@ struct RestPillView: View {
                 session.dismissRest()
             } label: {
                 Image(systemName: "xmark")
-                    .font(.system(size: 12, weight: .semibold))
+                    .font(AuraFont.jakarta(12, .semibold))
                     .foregroundColor(.aura.text)
                     .frame(width: 28, height: 28)
                     .background(Color.aura.fill)

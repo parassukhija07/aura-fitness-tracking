@@ -70,8 +70,8 @@ struct PlanProgramsBody: View {
                                 freq = nil; level = nil; type = nil
                             } label: {
                                 HStack(spacing: 4) {
-                                    Image(systemName: "xmark").font(.system(size: 11, weight: .bold))
-                                    Text("Clear").font(.system(size: 12, weight: .bold))
+                                    Image(systemName: "xmark").font(AuraFont.jakarta(11, .bold))
+                                    Text("Clear").font(AuraFont.jakarta(12, .bold))
                                 }
                                 .foregroundColor(.white)
                                 .padding(.horizontal, 10).padding(.vertical, 6)
@@ -120,14 +120,14 @@ struct PlanProgramsBody: View {
                 HStack(spacing: 6) {
                     Text("\(p.daysPerWeek) days/wk"); dot(); Text(p.level); dot(); Text(p.style)
                 }
-                .font(.system(size: 13))
+                .font(AuraFont.jakarta(13))
                 .foregroundColor(.aura.text2)
                 .lineLimit(1)
             ),
             trailing: {
                 if addedProgramIDs.contains(p.id) {
                     HStack(spacing: 5) {
-                        Image(systemName: "checkmark").font(.system(size: 12, weight: .bold))
+                        Image(systemName: "checkmark").font(AuraFont.jakarta(12, .bold))
                         Text("Added").font(AuraFont.badge())
                     }
                     .foregroundColor(.aura.accent)
@@ -136,7 +136,7 @@ struct PlanProgramsBody: View {
                     .clipShape(Capsule())
                 } else {
                     Image(systemName: "chevron.right")
-                        .font(.system(size: 14, weight: .semibold)).foregroundColor(.aura.text3)
+                        .font(AuraFont.jakarta(14, .semibold)).foregroundColor(.aura.text3)
                 }
             },
             action: { onProgram(p) }
@@ -160,12 +160,12 @@ struct PlanProgramsBody: View {
                     } label: {
                         HStack {
                             Text(o)
-                                .font(.system(size: 16, weight: isSel ? .bold : .medium))
+                                .font(AuraFont.jakarta(16, isSel ? .bold : .medium))
                                 .foregroundColor(isSel ? .aura.accent : .aura.text)
                             Spacer()
                             if isSel {
                                 Image(systemName: "checkmark.circle.fill")
-                                    .font(.system(size: 20)).foregroundColor(.aura.accent)
+                                    .font(AuraFont.jakarta(20)).foregroundColor(.aura.accent)
                             }
                         }
                         .padding(.vertical, 11).padding(.horizontal, 14)
@@ -226,12 +226,12 @@ struct PlanWorkoutsBody: View {
                                 title: w.name,
                                 meta: AnyView(
                                     Text("\(w.exercises.count) exercises · \(w.primaryMuscles)")
-                                        .font(.system(size: 13)).foregroundColor(.aura.text2)
+                                        .font(AuraFont.jakarta(13)).foregroundColor(.aura.text2)
                                         .lineLimit(1)
                                 ),
                                 trailing: {
                                     Image(systemName: "chevron.right")
-                                        .font(.system(size: 14, weight: .semibold)).foregroundColor(.aura.text3)
+                                        .font(AuraFont.jakarta(14, .semibold)).foregroundColor(.aura.text3)
                                 },
                                 action: { onEdit(w) }
                             )

@@ -31,7 +31,7 @@ struct AuraPrimaryButton: View {
             HStack(spacing: AuraSpacing.s2) {
                 if let icon = icon {
                     Image(systemName: icon)
-                        .font(.system(size: 16, weight: .semibold))
+                        .font(AuraFont.jakarta(16, .semibold))
                 }
                 Text(label)
                     .font(AuraFont.body())
@@ -56,7 +56,7 @@ struct AuraTintedButton: View {
             HStack(spacing: AuraSpacing.s2) {
                 if let icon = icon {
                     Image(systemName: icon)
-                        .font(.system(size: 15, weight: .semibold))
+                        .font(AuraFont.jakarta(15, .semibold))
                 }
                 Text(label)
                     .font(AuraFont.body())
@@ -81,7 +81,7 @@ struct AuraGrayButton: View {
             HStack(spacing: AuraSpacing.s2) {
                 if let icon = icon {
                     Image(systemName: icon)
-                        .font(.system(size: 15, weight: .medium))
+                        .font(AuraFont.jakarta(15, .medium))
                 }
                 Text(label)
                     .font(AuraFont.body())
@@ -106,7 +106,7 @@ struct AuraDangerButton: View {
             HStack(spacing: AuraSpacing.s2) {
                 if let icon = icon {
                     Image(systemName: icon)
-                        .font(.system(size: 15, weight: .semibold))
+                        .font(AuraFont.jakarta(15, .semibold))
                 }
                 Text(label)
                     .font(AuraFont.body())
@@ -268,7 +268,7 @@ struct AuraListRow: View {
                             .fill(iconColor.opacity(0.15))
                             .frame(width: 36, height: 36)
                         Image(systemName: icon)
-                            .font(.system(size: 16, weight: .semibold))
+                            .font(AuraFont.jakarta(16, .semibold))
                             .foregroundColor(iconColor)
                     }
                 }
@@ -290,7 +290,7 @@ struct AuraListRow: View {
                 }
                 if showChevron {
                     Image(systemName: "chevron.right")
-                        .font(.system(size: 13, weight: .semibold))
+                        .font(AuraFont.jakarta(13, .semibold))
                         .foregroundColor(.aura.text3)
                 }
             }
@@ -343,7 +343,7 @@ struct ToastOverlay: View {
     var body: some View {
         if let message {
             Text(message)
-                .font(.system(size: 13, weight: .semibold))
+                .font(AuraFont.jakarta(13, .semibold))
                 .foregroundColor(.aura.bg)
                 .padding(.horizontal, 16)
                 .padding(.vertical, 9)
@@ -395,7 +395,7 @@ struct AuraStepper: View {
                 value = max(range.lowerBound, value - step)
             }
             Text(display)
-                .font(.system(size: 15, weight: .semibold))
+                .font(AuraFont.jakarta(15, .semibold))
                 .foregroundColor(.aura.text)
                 .frame(minWidth: 64)
                 .monospacedDigit()
@@ -411,7 +411,7 @@ struct AuraStepper: View {
     private func stepButton(_ symbol: String, enabled: Bool, _ action: @escaping () -> Void) -> some View {
         Button(action: action) {
             Image(systemName: symbol)
-                .font(.system(size: 13, weight: .bold))
+                .font(AuraFont.jakarta(13, .bold))
                 .foregroundColor(enabled ? .aura.text : .aura.text3)
                 .frame(width: 36, height: 34)
                 .contentShape(Rectangle())
@@ -492,7 +492,7 @@ struct AuraToast: View {
         HStack(spacing: AuraSpacing.s2) {
             if let icon {
                 Image(systemName: icon)
-                    .font(.system(size: 14, weight: .semibold))
+                    .font(AuraFont.jakarta(14, .semibold))
                     .foregroundColor(color)
             }
             Text(message)

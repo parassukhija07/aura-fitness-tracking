@@ -18,9 +18,9 @@ struct WorkoutSummaryView: View {
 
                     VStack(spacing: 8) {
                         Text("🔥")
-                            .font(.system(size: 48))
+                            .font(AuraFont.jakarta(48))
                         Text("Workout Complete")
-                            .font(.system(size: 26, weight: .heavy))
+                            .font(AuraFont.jakarta(26, .heavy))
                             .foregroundColor(.white)
                         Text("\(session.workout.name)")
                             .font(AuraFont.secondary())
@@ -48,10 +48,10 @@ struct WorkoutSummaryView: View {
                         HStack(spacing: AuraSpacing.s3) {
                             Image(systemName: "trophy.fill")
                                 .foregroundColor(.aura.accent)
-                                .font(.system(size: 18))
+                                .font(AuraFont.jakarta(18))
                             VStack(alignment: .leading, spacing: 2) {
                                 Text("\(session.newPRsCount) new personal record\(session.newPRsCount > 1 ? "s" : "")!")
-                                    .font(.system(size: 14, weight: .bold))
+                                    .font(AuraFont.jakarta(14, .bold))
                                     .foregroundColor(.aura.text)
                                 Text("Logged to your Progress tab.")
                                     .font(AuraFont.secondary())
@@ -77,7 +77,7 @@ struct WorkoutSummaryView: View {
                                 HStack {
                                     VStack(alignment: .leading, spacing: 2) {
                                         Text(ex.name)
-                                            .font(.system(size: 15, weight: .semibold))
+                                            .font(AuraFont.jakarta(15, .semibold))
                                             .foregroundColor(.aura.text)
                                         let d = ex.sets.filter { $0.done }.count
                                         let vol = ex.sets.filter { $0.done }.reduce(0.0) { $0 + ($1.weight ?? 0) * Double($1.reps ?? 0) }
@@ -88,7 +88,7 @@ struct WorkoutSummaryView: View {
                                     Spacer()
                                     Image(systemName: "checkmark.circle.fill")
                                         .foregroundColor(.aura.green)
-                                        .font(.system(size: 20))
+                                        .font(AuraFont.jakarta(20))
                                 }
                                 .padding(.horizontal, AuraSpacing.s4)
                                 .padding(.vertical, 12)

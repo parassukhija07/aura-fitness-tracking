@@ -18,7 +18,7 @@ struct ConsistencyHeatmapView: View {
                 // Header
                 HStack {
                     Text("Consistency")
-                        .font(.system(size: 16, weight: .bold))
+                        .font(AuraFont.jakarta(16, .bold))
                         .foregroundColor(.aura.text)
                     Spacer()
                     HStack(spacing: 6) {
@@ -26,18 +26,18 @@ struct ConsistencyHeatmapView: View {
                             displayedMonth = calendar.date(byAdding: .month, value: -1, to: displayedMonth) ?? displayedMonth
                         } label: {
                             Image(systemName: "chevron.left")
-                                .font(.system(size: 12, weight: .semibold))
+                                .font(AuraFont.jakarta(12, .semibold))
                                 .foregroundColor(.aura.accent)
                                 .frame(width: 28, height: 28)
                         }
                         Text(displayedMonth.formatted(.dateTime.month(.abbreviated).year()))
-                            .font(.system(size: 12, weight: .bold))
+                            .font(AuraFont.jakarta(12, .bold))
                             .foregroundColor(.aura.text2)
                         Button {
                             displayedMonth = calendar.date(byAdding: .month, value: 1, to: displayedMonth) ?? displayedMonth
                         } label: {
                             Image(systemName: "chevron.right")
-                                .font(.system(size: 12, weight: .semibold))
+                                .font(AuraFont.jakarta(12, .semibold))
                                 .foregroundColor(.aura.accent)
                                 .frame(width: 28, height: 28)
                         }
@@ -48,7 +48,7 @@ struct ConsistencyHeatmapView: View {
                 HStack(spacing: 4) {
                     ForEach(dayLabels, id: \.self) { d in
                         Text(d)
-                            .font(.system(size: 9, weight: .bold))
+                            .font(AuraFont.jakarta(9, .bold))
                             .foregroundColor(.aura.text3)
                             .frame(maxWidth: .infinity)
                     }
@@ -68,18 +68,18 @@ struct ConsistencyHeatmapView: View {
                 // Footer: active count + legend
                 HStack {
                     Text("\(activeDaysCount) active days")
-                        .font(.system(size: 11, weight: .semibold))
+                        .font(AuraFont.jakarta(11, .semibold))
                         .foregroundColor(.aura.text2)
                     Spacer()
                     HStack(spacing: 4) {
                         Text("Less")
-                            .font(.system(size: 10))
+                            .font(AuraFont.jakarta(10))
                             .foregroundColor(.aura.text3)
                         ForEach(0..<5, id: \.self) { level in
                             legendCell(level: level)
                         }
                         Text("More")
-                            .font(.system(size: 10))
+                            .font(AuraFont.jakarta(10))
                             .foregroundColor(.aura.text3)
                     }
                 }

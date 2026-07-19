@@ -32,7 +32,7 @@ struct AuthGateView: View {
     private var splash: some View {
         VStack(spacing: AuraSpacing.s3) {
             Image(systemName: "figure.strengthtraining.traditional")
-                .font(.system(size: 44, weight: .bold))
+                .font(AuraFont.jakarta(44, .bold))
                 .foregroundColor(.aura.accent)
             ProgressView()
         }
@@ -60,10 +60,10 @@ private struct AuthFormView: View {
 
                 VStack(spacing: AuraSpacing.s2) {
                     Image(systemName: "figure.strengthtraining.traditional")
-                        .font(.system(size: 40, weight: .bold))
+                        .font(AuraFont.jakarta(40, .bold))
                         .foregroundColor(.aura.accent)
                     Text("Aura Fitness")
-                        .font(.system(size: 24, weight: .heavy))
+                        .font(AuraFont.jakarta(24, .heavy))
                         .foregroundColor(.aura.text)
                     Text(mode == .login ? "Log in to sync your workouts" : "Create an account to get started")
                         .font(AuraFont.secondary())
@@ -158,10 +158,10 @@ private struct AwaitingConfirmationView: View {
         VStack(spacing: AuraSpacing.s4) {
             Spacer()
             Image(systemName: "envelope.badge.fill")
-                .font(.system(size: 44, weight: .semibold))
+                .font(AuraFont.jakarta(44, .semibold))
                 .foregroundColor(.aura.accent)
             Text("Check your email")
-                .font(.system(size: 20, weight: .bold))
+                .font(AuraFont.jakarta(20, .bold))
                 .foregroundColor(.aura.text)
             Text("We sent a confirmation link to \(email). Confirm your account, then log in below.")
                 .font(AuraFont.secondary())

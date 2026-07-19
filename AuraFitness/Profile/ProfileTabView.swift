@@ -118,7 +118,7 @@ struct ProfileTabView: View {
                 AvatarCircle(initials: initials, size: 60, fontSize: 22)
                 VStack(alignment: .leading, spacing: 2) {
                     Text("\(profile.firstName) \(profile.lastName)")
-                        .font(.system(size: 19, weight: .bold))
+                        .font(AuraFont.jakarta(19, .bold))
                         .foregroundColor(.aura.text)
                     Text(identitySubtitle)
                         .font(AuraFont.secondary())
@@ -126,7 +126,7 @@ struct ProfileTabView: View {
                 }
                 Spacer()
                 Image(systemName: "chevron.right")
-                    .font(.system(size: 14, weight: .semibold))
+                    .font(AuraFont.jakarta(14, .semibold))
                     .foregroundColor(.aura.text3)
             }
             .padding(AuraSpacing.s4)
@@ -200,7 +200,7 @@ struct AvatarCircle: View {
 
     var body: some View {
         Text(initials)
-            .font(.system(size: fontSize, weight: .heavy))
+            .font(AuraFont.jakarta(fontSize, .heavy))
             .foregroundColor(.white)
             .frame(width: size, height: size)
             .background(
@@ -239,7 +239,7 @@ struct SettingsRowLabel: View {
                     .fill(iconColor)
                     .frame(width: 32, height: 32)
                 Image(systemName: icon)
-                    .font(.system(size: 14, weight: .semibold))
+                    .font(AuraFont.jakarta(14, .semibold))
                     .foregroundColor(.white)
             }
             VStack(alignment: .leading, spacing: 2) {
@@ -255,7 +255,7 @@ struct SettingsRowLabel: View {
             Spacer()
             if showChevron {
                 Image(systemName: "chevron.right")
-                    .font(.system(size: 13, weight: .semibold))
+                    .font(AuraFont.jakarta(13, .semibold))
                     .foregroundColor(.aura.text3)
             }
         }
@@ -271,7 +271,7 @@ struct SettingsSectionLabel: View {
     let title: String
     var body: some View {
         Text(title.uppercased())
-            .font(.system(size: 12, weight: .semibold))
+            .font(AuraFont.jakarta(12, .semibold))
             .foregroundColor(.aura.text2)
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.top, AuraSpacing.s4)
@@ -295,7 +295,7 @@ struct SettingsControlRow<Trailing: View>: View {
                         .fill(iconColor)
                         .frame(width: 32, height: 32)
                     Image(systemName: iconName)
-                        .font(.system(size: 14, weight: .semibold))
+                        .font(AuraFont.jakarta(14, .semibold))
                         .foregroundColor(.white)
                 }
             }

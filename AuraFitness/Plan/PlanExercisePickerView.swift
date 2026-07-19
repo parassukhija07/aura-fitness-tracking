@@ -46,7 +46,7 @@ struct PlanExercisePickerView: View {
                 if mode == .sub, let replacingName {
                     (Text("Replacing ").foregroundColor(.aura.text2)
                         + Text(replacingName).foregroundColor(.aura.text).bold())
-                        .font(.system(size: 12, weight: .semibold))
+                        .font(AuraFont.jakarta(12, .semibold))
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding(.bottom, 7)
                 }

@@ -25,7 +25,7 @@ struct SetRowView: View {
                 // Set number / type button
                 Button { showTypeMenu = true } label: {
                     Text(set.type == .normal ? "\(setIndex + 1)" : set.type.shortLabel)
-                        .font(.system(size: 16, weight: .heavy))
+                        .font(AuraFont.jakarta(16, .heavy))
                         .foregroundColor(set.type == .normal ? .aura.text : set.type.color)
                         .frame(width: 40, height: 48)
                         .background(Color.aura.fill)
@@ -48,7 +48,7 @@ struct SetRowView: View {
                 // Done check
                 Button { toggleDone() } label: {
                     Image(systemName: "checkmark")
-                        .font(.system(size: 16, weight: .bold))
+                        .font(AuraFont.jakarta(16, .bold))
                         .foregroundColor(set.done ? .white : .aura.text3)
                         .frame(width: 48, height: 48)
                         .background(set.done ? Color.aura.green : Color.aura.fill)
@@ -61,7 +61,7 @@ struct SetRowView: View {
                     session.onDeleteSet(exerciseIndex: exerciseIndex, setIndex: setIndex)
                 } label: {
                     Image(systemName: "trash")
-                        .font(.system(size: 16))
+                        .font(AuraFont.jakarta(16))
                         .foregroundColor(.aura.red)
                         .frame(width: 48, height: 48)
                         .background(Color.aura.red.opacity(0.12))
@@ -75,11 +75,11 @@ struct SetRowView: View {
                 HStack(spacing: 9) {
                     Color.clear.frame(width: 40)
                     Text(UnitFormatter.weight(Double(h.weight) ?? 0, unit: appState.weightUnit))
-                        .font(.system(size: 11, weight: .bold))
+                        .font(AuraFont.jakarta(11, .bold))
                         .foregroundColor(.aura.text3)
                         .frame(maxWidth: .infinity)
                     Text("\(h.reps) reps")
-                        .font(.system(size: 11, weight: .bold))
+                        .font(AuraFont.jakarta(11, .bold))
                         .foregroundColor(.aura.text3)
                         .frame(maxWidth: .infinity)
                     Color.clear.frame(width: 48)
@@ -109,11 +109,11 @@ struct SetRowView: View {
             TextField(placeholder, text: text)
                 .keyboardType(.decimalPad)
                 .multilineTextAlignment(.center)
-                .font(.system(size: 18, weight: .heavy))
+                .font(AuraFont.jakarta(18, .heavy))
                 .foregroundColor(.aura.text)
                 .onChange(of: text.wrappedValue) { _, _ in onBlur() }
             Text(label)
-                .font(.system(size: 9, weight: .bold))
+                .font(AuraFont.jakarta(9, .bold))
                 .foregroundColor(.aura.text3)
                 .textCase(.uppercase)
         }
@@ -174,7 +174,7 @@ struct SetTypeMenuSheet: View {
                     Button { onSelect(type) } label: {
                         HStack(spacing: AuraSpacing.s3) {
                             Text(type.shortLabel.isEmpty ? "N" : type.shortLabel)
-                                .font(.system(size: 12, weight: .heavy))
+                                .font(AuraFont.jakarta(12, .heavy))
                                 .foregroundColor(.white)
                                 .frame(width: 28, height: 28)
                                 .background(type.color)
@@ -185,11 +185,11 @@ struct SetTypeMenuSheet: View {
                             Spacer()
                             if type == currentType {
                                 Image(systemName: "checkmark")
-                                    .font(.system(size: 14, weight: .semibold))
+                                    .font(AuraFont.jakarta(14, .semibold))
                                     .foregroundColor(.aura.accent)
                             } else {
                                 Image(systemName: "chevron.right")
-                                    .font(.system(size: 14))
+                                    .font(AuraFont.jakarta(14))
                                     .foregroundColor(.aura.text3)
                             }
                         }

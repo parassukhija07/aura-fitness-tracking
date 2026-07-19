@@ -18,7 +18,7 @@ struct AccountDetailsView: View {
                 VStack(spacing: AuraSpacing.s2) {
                     AvatarCircle(initials: initials, size: 78, fontSize: 28)
                     Button("Change photo") { toast.flash("Photo picker") }
-                        .font(.system(size: 14, weight: .bold))
+                        .font(AuraFont.jakarta(14, .bold))
                         .foregroundColor(.aura.accent)
                 }
                 .frame(maxWidth: .infinity)
@@ -93,7 +93,7 @@ struct AccountDetailsView: View {
                                     .fill(Color.aura.red)
                                     .frame(width: 32, height: 32)
                                 Image(systemName: "trash.fill")
-                                    .font(.system(size: 14, weight: .semibold))
+                                    .font(AuraFont.jakarta(14, .semibold))
                                     .foregroundColor(.white)
                             }
                             Text("Delete Account")
@@ -135,7 +135,7 @@ struct AccountDetailsView: View {
     private func field(_ label: String, text: Binding<String>, keyboard: UIKeyboardType = .default) -> some View {
         VStack(alignment: .leading, spacing: 6) {
             Text(label)
-                .font(.system(size: 12, weight: .semibold))
+                .font(AuraFont.jakarta(12, .semibold))
                 .foregroundColor(.aura.text2)
             TextField(label, text: text)
                 .font(AuraFont.body())
@@ -151,7 +151,7 @@ struct AccountDetailsView: View {
     private func numberField(_ label: String, value: Binding<Double>) -> some View {
         VStack(alignment: .leading, spacing: 6) {
             Text(label)
-                .font(.system(size: 12, weight: .semibold))
+                .font(AuraFont.jakarta(12, .semibold))
                 .foregroundColor(.aura.text2)
             TextField(label, value: value, format: .number)
                 .font(AuraFont.body())
@@ -167,7 +167,7 @@ struct AccountDetailsView: View {
     private func dateField(_ label: String, date: Binding<Date>) -> some View {
         VStack(alignment: .leading, spacing: 6) {
             Text(label)
-                .font(.system(size: 12, weight: .semibold))
+                .font(AuraFont.jakarta(12, .semibold))
                 .foregroundColor(.aura.text2)
             DatePicker("", selection: date, displayedComponents: .date)
                 .labelsHidden()
@@ -183,7 +183,7 @@ struct AccountDetailsView: View {
     private func selectField(_ label: String, selection: Binding<String>, options: [String]) -> some View {
         VStack(alignment: .leading, spacing: 6) {
             Text(label)
-                .font(.system(size: 12, weight: .semibold))
+                .font(AuraFont.jakarta(12, .semibold))
                 .foregroundColor(.aura.text2)
             Menu {
                 Picker(label, selection: selection) {
@@ -196,7 +196,7 @@ struct AccountDetailsView: View {
                         .foregroundColor(.aura.text)
                     Spacer()
                     Image(systemName: "chevron.up.chevron.down")
-                        .font(.system(size: 12, weight: .semibold))
+                        .font(AuraFont.jakarta(12, .semibold))
                         .foregroundColor(.aura.text3)
                 }
                 .padding(.horizontal, AuraSpacing.s3)

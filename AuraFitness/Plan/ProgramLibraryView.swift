@@ -55,7 +55,8 @@ struct ProgramLibraryView: View {
                 .listStyle(.insetGrouped)
                 .safeAreaInset(edge: .bottom) {
                     if embedded {
-                        Color.clear.frame(height: AuraSpacing.tabBarClearance - 34)
+                        // Flat tab bar is in-flow now; only a small gap is needed.
+                        Color.clear.frame(height: AuraSpacing.s2)
                     }
                 }
             }
@@ -93,13 +94,13 @@ struct ProgramLibraryView: View {
                     .fill(levelColor(program.level).opacity(0.15))
                     .frame(width: 44, height: 44)
                 Image(systemName: "dumbbell.fill")
-                    .font(.system(size: 18))
+                    .font(AuraFont.jakarta(18))
                     .foregroundColor(levelColor(program.level))
             }
             VStack(alignment: .leading, spacing: 4) {
                 HStack {
                     Text(program.name)
-                        .font(.system(size: 15, weight: .bold))
+                        .font(AuraFont.jakarta(15, .bold))
                         .foregroundColor(.aura.text)
                     if isAdded { AuraBadge(label: "Added", color: .aura.green) }
                     if !program.isPredefined { AuraBadge(label: "Custom", color: .aura.purple) }
@@ -116,7 +117,7 @@ struct ProgramLibraryView: View {
             }
             Spacer()
             Image(systemName: "chevron.right")
-                .font(.system(size: 13))
+                .font(AuraFont.jakarta(13))
                 .foregroundColor(.aura.text3)
         }
         .padding(.vertical, 4)

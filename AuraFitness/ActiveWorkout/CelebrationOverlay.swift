@@ -14,11 +14,11 @@ struct CelebrationOverlay: View {
 
                 VStack(spacing: AuraSpacing.s2) {
                     Text(celeb.emoji)
-                        .font(.system(size: 56))
+                        .font(AuraFont.jakarta(56))
                         .scaleEffect(emojiScale)
 
                     Text(celeb.title)
-                        .font(.system(size: 22, weight: .heavy))
+                        .font(AuraFont.jakarta(22, .heavy))
                         .foregroundColor(.aura.text)
 
                     Text(celeb.message)

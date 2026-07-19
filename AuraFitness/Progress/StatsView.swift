@@ -229,7 +229,7 @@ struct StatsView: View {
                     }
                     Spacer()
                     Image(systemName: "chevron.right")
-                        .font(.system(size: 14, weight: .semibold))
+                        .font(AuraFont.jakarta(14, .semibold))
                         .foregroundColor(.aura.text3)
                 }
                 .padding(AuraSpacing.s4)
@@ -266,7 +266,7 @@ struct StatsView: View {
                             .clipShape(Capsule())
                         if score < 500 {
                             Text("\(score * 100 / next)% to \(next)")
-                                .font(.system(size: 10, weight: .semibold))
+                                .font(AuraFont.jakarta(10, .semibold))
                                 .foregroundColor(.aura.text2)
                         }
                     }
@@ -276,11 +276,11 @@ struct StatsView: View {
                             VStack(spacing: 2) {
                                 HStack {
                                     Text(muscle)
-                                        .font(.system(size: 10, weight: .semibold))
+                                        .font(AuraFont.jakarta(10, .semibold))
                                         .foregroundColor(.aura.text2)
                                     Spacer()
                                     Text("\(score)")
-                                        .font(.system(size: 10, weight: .bold))
+                                        .font(AuraFont.jakarta(10, .bold))
                                         .foregroundColor(.aura.accent)
                                 }
                                 AuraProgressBar(value: Double(score - 100) / Double(500 - 100), height: 3)
@@ -309,7 +309,7 @@ struct StatsView: View {
                             .font(AuraFont.statNum(size: 32))
                             .foregroundColor(.aura.text)
                         Text("%")
-                            .font(.system(size: 16, weight: .bold))
+                            .font(AuraFont.jakarta(16, .bold))
                             .foregroundColor(.aura.text3)
                     }
                     .padding(.vertical, 2)
@@ -329,11 +329,11 @@ struct StatsView: View {
                             VStack(spacing: 2) {
                                 HStack {
                                     Text(muscle)
-                                        .font(.system(size: 10, weight: .semibold))
+                                        .font(AuraFont.jakarta(10, .semibold))
                                         .foregroundColor(.aura.text2)
                                     Spacer()
                                     Text("\(pct)%")
-                                        .font(.system(size: 10, weight: .bold))
+                                        .font(AuraFont.jakarta(10, .bold))
                                         .foregroundColor(.aura.accent)
                                 }
                                 AuraProgressBar(value: Double(pct) / 100.0, height: 3)
@@ -354,7 +354,7 @@ struct StatsView: View {
                 .font(AuraFont.statNum(size: 32))
                 .foregroundColor(.aura.text3)
             Text(message)
-                .font(.system(size: 11, weight: .medium))
+                .font(AuraFont.jakarta(11, .medium))
                 .foregroundColor(.aura.text3)
                 .fixedSize(horizontal: false, vertical: true)
         }
@@ -383,7 +383,7 @@ struct StatsView: View {
                         }
                     }
                     Text("sets per muscle group")
-                        .font(.system(size: 10))
+                        .font(AuraFont.jakarta(10))
                         .foregroundColor(.aura.text3)
                         .frame(maxWidth: .infinity, alignment: .center)
                 }
@@ -422,7 +422,7 @@ struct StatsView: View {
                         showExerciseSearch = true
                     } label: {
                         Image(systemName: "arrow.left.arrow.right")
-                            .font(.system(size: 14, weight: .semibold))
+                            .font(AuraFont.jakarta(14, .semibold))
                             .foregroundColor(.white)
                             .frame(width: 30, height: 30)
                             .background(Color.aura.accent)
@@ -438,7 +438,7 @@ struct StatsView: View {
                         .padding(.vertical, AuraSpacing.s6)
                 } else {
                     Text(selectedExerciseName)
-                        .font(.system(size: 15, weight: .bold))
+                        .font(AuraFont.jakarta(15, .bold))
                         .foregroundColor(.aura.text)
                         .lineLimit(1)
 
@@ -448,7 +448,7 @@ struct StatsView: View {
                                 selectedMetric = metric
                             } label: {
                                 Text(metricLabel(metric))
-                                    .font(.system(size: 11, weight: .bold))
+                                    .font(AuraFont.jakarta(11, .bold))
                                     .foregroundColor(selectedMetric == metric ? .white : .aura.text2)
                                     .frame(maxWidth: .infinity)
                                     .padding(.vertical, 7)
@@ -475,9 +475,9 @@ struct StatsView: View {
                                     let delta = current - first
                                     HStack(spacing: 4) {
                                         Image(systemName: delta >= 0 ? "arrow.up" : "arrow.down")
-                                            .font(.system(size: 12, weight: .semibold))
+                                            .font(AuraFont.jakarta(12, .semibold))
                                         Text("\(delta >= 0 ? "+" : "−")\(trendValueLabel(abs(delta)))")
-                                            .font(.system(size: 11, weight: .bold))
+                                            .font(AuraFont.jakarta(11, .bold))
                                     }
                                     .foregroundColor(delta >= 0 ? .aura.green : .aura.red)
                                     .padding(.horizontal, 8)
@@ -511,7 +511,7 @@ struct StatsView: View {
                                 selectedRange = range
                             } label: {
                                 Text(range.uppercased())
-                                    .font(.system(size: 12, weight: .bold))
+                                    .font(AuraFont.jakarta(12, .bold))
                                     .foregroundColor(selectedRange == range ? .aura.text : .aura.text3)
                                     .frame(maxWidth: .infinity)
                                     .padding(.vertical, 6)
@@ -602,7 +602,7 @@ private struct ExerciseTrendPicker: View {
                                     Spacer()
                                     if name == selected {
                                         Image(systemName: "checkmark.circle.fill")
-                                            .font(.system(size: 18))
+                                            .font(AuraFont.jakarta(18))
                                             .foregroundColor(.aura.accent)
                                     }
                                 }

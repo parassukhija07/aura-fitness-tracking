@@ -49,7 +49,7 @@ struct ProgressPhotosView: View {
                     if photos.isEmpty {
                         VStack(spacing: AuraSpacing.s3) {
                             Image(systemName: "photo.stack")
-                                .font(.system(size: 40))
+                                .font(AuraFont.jakarta(40))
                                 .foregroundColor(.aura.text3)
                             Text("No photos yet")
                                 .font(AuraFont.body())
@@ -71,7 +71,7 @@ struct ProgressPhotosView: View {
                                             .aspectRatio(3/4, contentMode: .fit)
                                             .clipped()
                                         Text(photo.date.formatted(date: .abbreviated, time: .omitted))
-                                            .font(.system(size: 9, weight: .bold))
+                                            .font(AuraFont.jakarta(9, .bold))
                                             .foregroundColor(.white)
                                             .padding(4)
                                             .background(Color.black.opacity(0.45))
@@ -176,7 +176,7 @@ struct ProgressPhotosView: View {
                         )
                     VStack(spacing: AuraSpacing.s2) {
                         Image(systemName: "plus.circle")
-                            .font(.system(size: 28))
+                            .font(AuraFont.jakarta(28))
                             .foregroundColor(.aura.text3)
                         Text(label)
                             .font(AuraFont.secondary())
@@ -187,7 +187,7 @@ struct ProgressPhotosView: View {
                 // Label pill at bottom
                 if image != nil {
                     Text(label)
-                        .font(.system(size: 11, weight: .bold))
+                        .font(AuraFont.jakarta(11, .bold))
                         .foregroundColor(.white)
                         .padding(.horizontal, 10)
                         .padding(.vertical, 4)
@@ -207,7 +207,7 @@ struct ProgressPhotosView: View {
             HStack {
                 VStack(alignment: .leading, spacing: 3) {
                     Text(weeksDiff(first.date, latest.date))
-                        .font(.system(size: 15, weight: .bold))
+                        .font(AuraFont.jakarta(15, .bold))
                         .foregroundColor(.aura.text)
                     if let fw = first.weight, let lw = latest.weight {
                         let delta = lw - fw
@@ -223,7 +223,7 @@ struct ProgressPhotosView: View {
                 } label: {
                     HStack(spacing: 4) {
                         Image(systemName: "square.and.arrow.up")
-                            .font(.system(size: 13))
+                            .font(AuraFont.jakarta(13))
                         Text("Share")
                             .font(AuraFont.secondary())
                     }

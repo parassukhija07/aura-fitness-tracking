@@ -155,8 +155,8 @@ struct MyPlansView: View {
             VStack(alignment: .leading, spacing: 1) {
                 if plan.isDefault {
                     HStack(spacing: 4) {
-                        Image(systemName: "checkmark").font(.system(size: 11, weight: .bold))
-                        Text("Active").font(.system(size: 12, weight: .bold))
+                        Image(systemName: "checkmark").font(AuraFont.jakarta(11, .bold))
+                        Text("Active").font(AuraFont.jakarta(12, .bold))
                     }
                     .foregroundColor(.aura.accent)
                     .padding(.horizontal, 8).padding(.vertical, 3)
@@ -165,11 +165,11 @@ struct MyPlansView: View {
                 }
                 Spacer()
                 Text(plan.name)
-                    .font(.system(size: 14, weight: .heavy))
+                    .font(AuraFont.jakarta(14, .heavy))
                     .foregroundColor(.white)
                     .lineLimit(2)
                 Text(planSubtitle(plan))
-                    .font(.system(size: 12))
+                    .font(AuraFont.jakarta(12))
                     .foregroundColor(.white.opacity(0.85))
             }
             .padding(13)
@@ -197,8 +197,8 @@ struct MyPlansView: View {
     private var addPlanButton: some View {
         Button { showAddPlanOptions = true } label: {
             VStack(spacing: 6) {
-                Image(systemName: "plus").font(.system(size: 22, weight: .medium))
-                Text("New").font(.system(size: 12, weight: .bold))
+                Image(systemName: "plus").font(AuraFont.jakarta(22, .medium))
+                Text("New").font(AuraFont.jakarta(12, .bold))
             }
             .foregroundColor(.aura.text3)
             .frame(width: 96, height: 120)
@@ -242,7 +242,7 @@ struct MyPlansView: View {
         Button { editingPlan = plan } label: {
             VStack(spacing: 6) {
                 Text(label.uppercased())
-                    .font(.system(size: 9, weight: .bold))
+                    .font(AuraFont.jakarta(9, .bold))
                     .tracking(0.6)
                     .foregroundColor(isRest ? .aura.text3 : c.tint)
                 ZStack {
@@ -254,11 +254,11 @@ struct MyPlansView: View {
                                 .stroke(isRest ? Color.aura.separator2 : c.border.opacity(0.45), lineWidth: 1.5)
                         )
                     Image(systemName: isRest ? "moon.fill" : planWkIcon(workout?.name))
-                        .font(.system(size: isRest ? 14 : 16))
+                        .font(AuraFont.jakarta(isRest ? 14 : 16))
                         .foregroundColor(isRest ? .aura.text3 : c.tint)
                 }
                 Text(shortName)
-                    .font(.system(size: 8, weight: .bold))
+                    .font(AuraFont.jakarta(8, .bold))
                     .foregroundColor(isRest ? .aura.text3 : c.tint)
                     .lineLimit(1)
                     .frame(maxWidth: 34)
@@ -310,12 +310,12 @@ struct MyPlansView: View {
                     .frame(width: 46, height: 46)
                     .overlay(RoundedRectangle(cornerRadius: 14).stroke(c.border.opacity(0.35), lineWidth: 1.5))
                 Image(systemName: planWkIcon(w.name))
-                    .font(.system(size: 20)).foregroundColor(c.tint)
+                    .font(AuraFont.jakarta(20)).foregroundColor(c.tint)
             }
             VStack(alignment: .leading, spacing: 4) {
-                Text(w.name).font(.system(size: 15, weight: .heavy)).foregroundColor(.aura.text)
+                Text(w.name).font(AuraFont.jakarta(15, .heavy)).foregroundColor(.aura.text)
                 Text(muscles.isEmpty ? "Custom" : muscles)
-                    .font(.system(size: 12, weight: .medium)).foregroundColor(c.tint)
+                    .font(AuraFont.jakarta(12, .medium)).foregroundColor(c.tint)
                     .lineLimit(1)
             }
             Spacer()
@@ -340,7 +340,7 @@ struct MyPlansView: View {
 
     private func smallGlyph(_ icon: String, color: Color) -> some View {
         Image(systemName: icon)
-            .font(.system(size: 14, weight: .medium))
+            .font(AuraFont.jakarta(14, .medium))
             .foregroundColor(color)
             .frame(width: 30, height: 30)
             .background(Color.aura.fill.opacity(0.5))
@@ -482,7 +482,7 @@ struct PlanScheduleEditorView: View {
     private func dayRow(dayIndex: Int, dayName: String, workout: Workout?, isRest: Bool) -> some View {
         VStack(alignment: .leading, spacing: 8) {
             Text(dayName)
-                .font(.system(size: 14, weight: .bold))
+                .font(AuraFont.jakarta(14, .bold))
                 .foregroundColor(.aura.text)
 
             if let w = workout {

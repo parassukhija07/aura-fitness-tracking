@@ -78,14 +78,14 @@ struct AssignSheet: View {
                     Button { onAssign(w.id) } label: {
                         HStack {
                             VStack(alignment: .leading, spacing: 2) {
-                                Text(w.name).font(.system(size: 15, weight: .bold))
+                                Text(w.name).font(AuraFont.jakarta(15, .bold))
                                     .foregroundColor(isCur ? .aura.accent : .aura.text)
                                 Text("\(w.exCount) ex · \(w.muscles)")
-                                    .font(.system(size: 12)).foregroundColor(.aura.text2)
+                                    .font(AuraFont.jakarta(12)).foregroundColor(.aura.text2)
                             }
                             Spacer()
                             Image(systemName: isCur ? "checkmark.circle.fill" : "chevron.right")
-                                .font(.system(size: isCur ? 20 : 14, weight: .semibold))
+                                .font(AuraFont.jakarta(isCur ? 20 : 14, .semibold))
                                 .foregroundColor(isCur ? .aura.accent : .aura.text3)
                         }
                         .padding(14)
@@ -198,7 +198,7 @@ struct CreateWorkoutSheet: View {
         PlanSheet(title: "New Workout", onClose: nil) {
             VStack(alignment: .leading, spacing: 0) {
                 VStack(alignment: .leading, spacing: 8) {
-                    Text("Workout name").font(.system(size: 13, weight: .semibold)).foregroundColor(.aura.text2)
+                    Text("Workout name").font(AuraFont.jakarta(13, .semibold)).foregroundColor(.aura.text2)
                     TextField("e.g. Push Day A", text: $name)
                         .font(AuraFont.body())
                         .padding(.horizontal, 13).frame(height: 46)
@@ -207,7 +207,7 @@ struct CreateWorkoutSheet: View {
                 }
                 .padding(.bottom, 16)
 
-                Text("ICON").font(.system(size: 10, weight: .bold)).tracking(0.5)
+                Text("ICON").font(AuraFont.jakarta(10, .bold)).tracking(0.5)
                     .foregroundColor(.aura.text2).padding(.bottom, 10)
 
                 LazyVGrid(columns: cols, spacing: 8) {
@@ -215,9 +215,9 @@ struct CreateWorkoutSheet: View {
                         let sel = icon == ic.icon
                         Button { icon = ic.icon } label: {
                             VStack(spacing: 5) {
-                                Image(systemName: ic.icon).font(.system(size: 20))
+                                Image(systemName: ic.icon).font(AuraFont.jakarta(20))
                                     .foregroundColor(sel ? .aura.accent : ic.color)
-                                Text(ic.label).font(.system(size: 9, weight: .bold))
+                                Text(ic.label).font(AuraFont.jakarta(9, .bold))
                                     .foregroundColor(sel ? .aura.accent : .aura.text3)
                             }
                             .frame(maxWidth: .infinity)

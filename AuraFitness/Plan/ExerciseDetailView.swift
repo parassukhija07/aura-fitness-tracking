@@ -25,7 +25,7 @@ struct ExerciseEntryDetailView: View {
                         } label: {
                             VStack(spacing: 6) {
                                 Text(tab)
-                                    .font(.system(size: 14, weight: selectedTab == tab ? .bold : .medium))
+                                    .font(AuraFont.jakarta(14, selectedTab == tab ? .bold : .medium))
                                     .foregroundColor(selectedTab == tab ? .aura.accent : .aura.text2)
                                 Rectangle()
                                     .fill(selectedTab == tab ? Color.aura.accent : Color.clear)
@@ -95,7 +95,7 @@ struct ExerciseEntryDetailView: View {
                             .frame(width: 56, height: 56)
                         Image(systemName: "play.fill")
                             .foregroundColor(.white)
-                            .font(.system(size: 22))
+                            .font(AuraFont.jakarta(22))
                     }
                     Text("Watch Demo")
                         .font(AuraFont.secondary())
@@ -106,7 +106,7 @@ struct ExerciseEntryDetailView: View {
                             .fill(categoryColor(entry.category).opacity(0.15))
                             .frame(width: 64, height: 64)
                         Text(entry.category.prefix(2).uppercased())
-                            .font(.system(size: 26, weight: .heavy))
+                            .font(AuraFont.jakarta(26, .heavy))
                             .foregroundColor(categoryColor(entry.category))
                     }
                 }
@@ -193,7 +193,7 @@ struct ExerciseEntryDetailView: View {
                                     .fill(Color.aura.accent.opacity(0.15))
                                     .frame(width: 32, height: 32)
                                 Text("\(i + 1)")
-                                    .font(.system(size: 14, weight: .bold))
+                                    .font(AuraFont.jakarta(14, .bold))
                                     .foregroundColor(.aura.accent)
                             }
                             VStack(alignment: .leading, spacing: 4) {
@@ -238,7 +238,7 @@ struct ExerciseEntryDetailView: View {
                         Image(systemName: "flame.fill")
                             .foregroundColor(.aura.accent)
                         Text(entry.warmupProtocol.type)
-                            .font(.system(size: 15, weight: .bold))
+                            .font(AuraFont.jakarta(15, .bold))
                             .foregroundColor(.aura.text)
                     }
 
@@ -260,7 +260,7 @@ struct ExerciseEntryDetailView: View {
                 HStack(alignment: .top, spacing: AuraSpacing.s3) {
                     Image(systemName: "lightbulb.fill")
                         .foregroundColor(.aura.accent)
-                        .font(.system(size: 16))
+                        .font(AuraFont.jakarta(16))
                     VStack(alignment: .leading, spacing: 3) {
                         Text("Warmup Principle")
                             .font(AuraFont.sectionLabel())
@@ -286,22 +286,22 @@ struct ExerciseEntryDetailView: View {
                     .fill(Color.aura.blue.opacity(0.15))
                     .frame(width: 32, height: 32)
                 Text("S\(step.set)")
-                    .font(.system(size: 11, weight: .bold))
+                    .font(AuraFont.jakarta(11, .bold))
                     .foregroundColor(.aura.blue)
             }
             VStack(alignment: .leading, spacing: 2) {
                 HStack {
                     Text(step.intensity)
-                        .font(.system(size: 13, weight: .bold))
+                        .font(AuraFont.jakarta(13, .bold))
                         .foregroundColor(.aura.text)
                     Spacer()
                     Text("× \(step.reps) reps")
-                        .font(.system(size: 13, weight: .medium))
+                        .font(AuraFont.jakarta(13, .medium))
                         .foregroundColor(.aura.accent)
                 }
                 if !step.description.isEmpty {
                     Text(step.description)
-                        .font(.system(size: 11))
+                        .font(AuraFont.jakarta(11))
                         .foregroundColor(.aura.text3)
                 }
             }
@@ -313,10 +313,10 @@ struct ExerciseEntryDetailView: View {
     private func infoCell(label: String, icon: String) -> some View {
         VStack(spacing: 4) {
             Image(systemName: icon)
-                .font(.system(size: 14))
+                .font(AuraFont.jakarta(14))
                 .foregroundColor(.aura.text2)
             Text(label)
-                .font(.system(size: 11, weight: .medium))
+                .font(AuraFont.jakarta(11, .medium))
                 .foregroundColor(.aura.text2)
                 .multilineTextAlignment(.center)
                 .lineLimit(2)
@@ -328,10 +328,10 @@ struct ExerciseEntryDetailView: View {
     private func statCell(label: String, value: String) -> some View {
         VStack(spacing: 3) {
             Text(value)
-                .font(.system(size: 17, weight: .bold))
+                .font(AuraFont.jakarta(17, .bold))
                 .foregroundColor(.aura.text)
             Text(label)
-                .font(.system(size: 11))
+                .font(AuraFont.jakarta(11))
                 .foregroundColor(.aura.text3)
         }
         .frame(maxWidth: .infinity)
@@ -375,7 +375,7 @@ struct ExerciseDetailView: View {
                             VStack(spacing: 8) {
                                 ZStack {
                                     Circle().fill(Color.black.opacity(0.5)).frame(width: 56, height: 56)
-                                    Image(systemName: "play.fill").foregroundColor(.white).font(.system(size: 22))
+                                    Image(systemName: "play.fill").foregroundColor(.white).font(AuraFont.jakarta(22))
                                 }
                                 Text("Exercise Demo").font(AuraFont.secondary()).foregroundColor(.aura.text3)
                             }
@@ -397,7 +397,7 @@ struct ExerciseDetailView: View {
                         if !exercise.hint.isEmpty {
                             AuraCard {
                                 HStack(alignment: .top, spacing: AuraSpacing.s3) {
-                                    Image(systemName: "lightbulb.fill").foregroundColor(.aura.accent).font(.system(size: 16))
+                                    Image(systemName: "lightbulb.fill").foregroundColor(.aura.accent).font(AuraFont.jakarta(16))
                                     VStack(alignment: .leading, spacing: 3) {
                                         Text("Pro Tip").font(AuraFont.sectionLabel()).foregroundColor(.aura.text3)
                                         Text(exercise.hint).font(AuraFont.secondary()).foregroundColor(.aura.text2).fixedSize(horizontal: false, vertical: true)
@@ -436,8 +436,8 @@ struct ExerciseDetailView: View {
     @ViewBuilder
     private func infoCell(label: String, icon: String) -> some View {
         VStack(spacing: 4) {
-            Image(systemName: icon).font(.system(size: 14)).foregroundColor(.aura.text2)
-            Text(label).font(.system(size: 11, weight: .medium)).foregroundColor(.aura.text2).multilineTextAlignment(.center).lineLimit(2)
+            Image(systemName: icon).font(AuraFont.jakarta(14)).foregroundColor(.aura.text2)
+            Text(label).font(AuraFont.jakarta(11, .medium)).foregroundColor(.aura.text2).multilineTextAlignment(.center).lineLimit(2)
         }
         .frame(maxWidth: .infinity)
     }
