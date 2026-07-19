@@ -143,8 +143,7 @@ private struct HeatCell: View {
     private let calendar = Calendar.current
 
     var body: some View {
-        GeometryReader { geo in
-            let size = geo.size.width
+        GeometryReader { _ in
             ZStack {
                 if intensityLevel == -1 {
                     // Rest: hatched pattern via Canvas

@@ -49,11 +49,19 @@ final class HealthKitService {
     }
 
     /// Writes a completed workout as a generic HealthKit workout entry.
-    func saveWorkout(start: Date, durationSeconds: Int) {
+    func saveWorkout(start: Date, durationSeconds: Int) async {
         guard isAvailable else { return }
         let end = start.addingTimeInterval(TimeInterval(durationSeconds))
-        let workout = HKWorkout(activityType: .traditionalStrengthTraining, start: start, end: end)
-        store.save(workout) { _, _ in }
+        let configuration = HKWorkoutConfiguration()
+        configuration.activityType = .traditionalStrengthTraining
+        let builder = HKWorkoutBuilder(healthStore: store, configuration: configuration, device: .local())
+        do {
+            try await builder.beginCollection(at: start)
+            try await builder.endCollection(at: end)
+            try await builder.finishWorkout()
+        } catch {
+            // Best-effort write; HealthKit sync failure shouldn't surface to the user.
+        }
     }
 
     /// Reads the most recent body-weight sample, if any, converted to kg.

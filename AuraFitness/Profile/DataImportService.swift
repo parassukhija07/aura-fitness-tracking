@@ -567,7 +567,13 @@ enum MinimalZipReader {
         let result: Int? = compressed.withUnsafeBytes { (srcPtr: UnsafeRawBufferPointer) -> Int? in
             guard let srcBase = srcPtr.bindMemory(to: UInt8.self).baseAddress else { return nil }
 
-            var stream = compression_stream()
+            var stream = compression_stream(
+                dst_ptr: UnsafeMutablePointer<UInt8>(mutating: srcBase),
+                dst_size: 0,
+                src_ptr: srcBase,
+                src_size: 0,
+                state: nil
+            )
             let status = compression_stream_init(&stream, COMPRESSION_STREAM_DECODE, COMPRESSION_ZLIB)
             guard status == COMPRESSION_STATUS_OK else { return nil }
             defer { compression_stream_destroy(&stream) }
