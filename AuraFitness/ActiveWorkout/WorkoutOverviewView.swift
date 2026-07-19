@@ -7,10 +7,19 @@ struct WorkoutOverviewView: View {
 
     @State private var exerciseMenu: Int? = nil
     @State private var modal: WorkoutModal? = nil
+    /// Read-only exercise detail pushed when the card's *name* is tapped
+    /// (design: `setExDetail(lookupWkEx(e))` — distinct from tapping the
+    /// card body, which opens the logger).
+    @State private var detailName: String? = nil
 
     var body: some View {
         Group {
-            if session.workout.exercises.isEmpty {
+            if let name = detailName {
+                PlanExerciseDetailView(
+                    exercise: PlanData.libExercise(named: name),
+                    onBack: { detailName = nil }
+                )
+            } else if session.workout.exercises.isEmpty {
                 EmptyOverviewView(showEndSheet: $showEndSheet,
                                   onAdd: { modal = .addExercise(forSupersetExIdx: nil) })
             } else {
@@ -128,9 +137,10 @@ struct WorkoutOverviewView: View {
 
                 VStack(alignment: .leading, spacing: 4) {
                     HStack {
-                        // Tapping the name opens the exercise (design opens detail)
+                        // Tapping the name opens the read-only exercise detail
+                        // (design: setExDetail); the card body opens the logger.
                         Button {
-                            openExercise(index: index, isSSFirst: isSSFirst, isSSSecond: isSSSecond)
+                            detailName = exercise.name
                         } label: {
                             Text(exercise.name)
                                 .font(AuraFont.jakarta(16, .bold))
@@ -247,8 +257,6 @@ struct ExerciseMenuSheet: View {
         exercise?.supersetGroupID != nil
     }
 
-    @State private var showNote = false
-
     var body: some View {
         VStack(spacing: 0) {
             SheetGrabber()
@@ -277,34 +285,9 @@ struct ExerciseMenuSheet: View {
                 menuRow(icon: "plus.circle.fill", color: .aura.green, title: "Add Exercise After") {
                     triggerModal(.addExercise(forSupersetExIdx: nil))
                 }
-                Divider().padding(.leading, 56)
-                menuRow(icon: "note.text", color: .aura.text2, title: "Add Note") {
-                    withAnimation { showNote.toggle() }
-                }
-
-                if showNote, let _ = exercise {
-                    HStack(spacing: AuraSpacing.s2) {
-                        Image(systemName: "note.text")
-                            .font(AuraFont.jakarta(13))
-                            .foregroundColor(.aura.text3)
-                            .frame(width: 36)
-                        TextField("Note for this exercise…",
-                                  text: Binding(
-                                    get: { session.workout.exercises[exerciseIndex].note },
-                                    set: { session.workout.exercises[exerciseIndex].note = $0 }
-                                  ))
-                        .font(AuraFont.secondary())
-                        .foregroundColor(.aura.text)
-                        .submitLabel(.done)
-                    }
-                    .padding(.horizontal, AuraSpacing.s4)
-                    .padding(.vertical, 12)
-                    .transition(.opacity.combined(with: .move(edge: .top)))
-                }
             }
             .background(Color.aura.surface).clipShape(RoundedRectangle(cornerRadius: AuraRadius.md))
             .padding(.horizontal, AuraSpacing.screenPad)
-            .animation(.easeInOut(duration: 0.18), value: showNote)
 
             // Danger zone
             VStack(spacing: 0) {

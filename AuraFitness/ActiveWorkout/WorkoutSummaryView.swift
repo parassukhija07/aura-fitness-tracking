@@ -9,20 +9,22 @@ struct WorkoutSummaryView: View {
             VStack(spacing: 0) {
                 // Gradient hero
                 ZStack {
+                    // Design .summary-hero: linear-gradient(160deg, accent,
+                    // oklch(0.66 0.17 45)) — accent into a deeper warm orange.
                     LinearGradient(
-                        colors: [Color.aura.accent.opacity(0.9), Color.aura.accent.opacity(0.4)],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
+                        colors: [Color.aura.accent, Color(hex: "#D9660E")],
+                        startPoint: .top,
+                        endPoint: .bottom
                     )
                     .frame(height: 220)
 
                     VStack(spacing: 8) {
                         Text("🔥")
-                            .font(AuraFont.jakarta(48))
+                            .font(AuraFont.jakarta(46))
                         Text("Workout Complete")
                             .font(AuraFont.jakarta(26, .heavy))
                             .foregroundColor(.white)
-                        Text("\(session.workout.name)")
+                        Text(session.workout.program.map { "\(session.workout.name) · \($0)" } ?? session.workout.name)
                             .font(AuraFont.secondary())
                             .foregroundColor(.white.opacity(0.85))
                     }

@@ -7,6 +7,9 @@ struct ExerciseLoggingView: View {
     @State private var showWarmup = true
     @State private var showMenu = false
     @State private var modal: WorkoutModal? = nil
+    /// Read-only exercise detail pushed when the title is tapped
+    /// (design: onClick on the `h2` → onExerciseDetail).
+    @State private var detailName: String? = nil
 
     var exercise: Exercise? {
         session.workout.exercises.indices.contains(exerciseIndex)
@@ -14,7 +17,12 @@ struct ExerciseLoggingView: View {
     }
 
     var body: some View {
-        if let ex = exercise {
+        if let name = detailName {
+            PlanExerciseDetailView(
+                exercise: PlanData.libExercise(named: name),
+                onBack: { detailName = nil }
+            )
+        } else if let ex = exercise {
             content(ex: ex)
         } else {
             Color.aura.bg.ignoresSafeArea()
@@ -128,9 +136,13 @@ struct ExerciseLoggingView: View {
 
     private func nameAndChips(ex: Exercise) -> some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text(ex.name)
-                .font(AuraFont.jakarta(24, .heavy))
-                .foregroundColor(.aura.text)
+            Button { detailName = ex.name } label: {
+                Text(ex.name)
+                    .font(AuraFont.jakarta(24, .heavy))
+                    .foregroundColor(.aura.text)
+                    .multilineTextAlignment(.leading)
+            }
+            .buttonStyle(.plain)
             // Equipment chip (accent) + muscle group chips
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: AuraSpacing.s2) {

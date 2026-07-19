@@ -98,7 +98,7 @@ struct SetRowView: View {
                 session.onSetTypeChange(exerciseIndex: exerciseIndex, setIndex: setIndex, type: type)
                 showTypeMenu = false
             }
-            .presentationDetents([.fraction(0.5)])
+            .presentationDetents([.fraction(0.58)])
             .presentationDragIndicator(.visible)
         }
     }
@@ -183,15 +183,11 @@ struct SetTypeMenuSheet: View {
                                 .font(AuraFont.body())
                                 .foregroundColor(.aura.text)
                             Spacer()
-                            if type == currentType {
-                                Image(systemName: "checkmark")
-                                    .font(AuraFont.jakarta(14, .semibold))
-                                    .foregroundColor(.aura.accent)
-                            } else {
-                                Image(systemName: "chevron.right")
-                                    .font(AuraFont.jakarta(14))
-                                    .foregroundColor(.aura.text3)
-                            }
+                            // Design shows a plain chevron on every row (no
+                            // current-selection check).
+                            Image(systemName: "chevron.right")
+                                .font(AuraFont.jakarta(14))
+                                .foregroundColor(.aura.text3)
                         }
                         .padding(.horizontal, AuraSpacing.s4)
                         .padding(.vertical, 13)

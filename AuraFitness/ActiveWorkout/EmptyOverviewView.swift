@@ -167,16 +167,21 @@ struct EmptyOverviewView: View {
     }
 
     private func catCard(_ opt: WorkoutExerciseOption) -> some View {
-        Button { addAndStart(opt) } label: {
+        let mc = ActiveWorkoutData.muscleColor(opt.muscle)
+        return Button { addAndStart(opt) } label: {
             VStack(alignment: .leading, spacing: 7) {
                 RoundedRectangle(cornerRadius: AuraRadius.sm)
-                    .fill(ActiveWorkoutData.muscleColor(opt.muscle).opacity(0.18))
+                    // Design THUMB: soft diagonal two-stop gradient per muscle
+                    // (linear-gradient(145deg, lighter, darker)).
+                    .fill(LinearGradient(
+                        colors: [mc.opacity(0.14), mc.opacity(0.28)],
+                        startPoint: .topLeading, endPoint: .bottomTrailing))
                     .aspectRatio(4.0/3.0, contentMode: .fit)
                     .overlay(
                         Text(opt.muscle.uppercased())
                             .font(AuraFont.jakarta(11, .heavy))
                             .tracking(1)
-                            .foregroundColor(ActiveWorkoutData.muscleColor(opt.muscle))
+                            .foregroundColor(mc)
                     )
                 Text(opt.name).font(AuraFont.jakarta(13, .bold)).foregroundColor(.aura.text)
                     .lineLimit(1)
