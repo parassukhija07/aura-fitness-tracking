@@ -39,7 +39,24 @@ jobs:
 
       - name: Install xcpretty
         run: gem install xcpretty --no-document || true
+      
+      - name: Generate Secrets.xcconfig
+        run: |
+          echo "SUPABASE_URL = ${{ secrets.SUPABASE_URL }}" > AuraFitness/Secrets.xcconfig
+          echo "SUPABASE_ANON_KEY = ${{ secrets.SUPABASE_ANON_KEY }}" >> AuraFitness/Secrets.xcconfig
 
+      - name: Link JSON to Xcode Project
+        run: |
+          gem install xcodeproj
+          ruby -e "
+          require 'xcodeproj'
+          project = Xcodeproj::Project.open('AuraFitness.xcodeproj')
+          target = project.targets.first
+          file = project.new_file('gym_exercise_library.json')
+          target.resources_build_phase.add_file_reference(file)
+          project.save
+          "
+          
       - name: Verify scheme
         run: xcodebuild -list -project AuraFitness.xcodeproj
 
