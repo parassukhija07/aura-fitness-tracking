@@ -56,7 +56,36 @@ jobs:
           target.resources_build_phase.add_file_reference(file)
           project.save
           "
+      - name: Fix Missing Swift Files and Duplicates
+        run: |
+          gem install xcodeproj
+          ruby -e "
+          require 'xcodeproj'
+          project = Xcodeproj::Project.open('AuraFitness.xcodeproj')
+          target = project.targets.first
+
+          # 1. Fix the duplicate SaveEditScopeSheet.swift warning
+          duplicates = target.source_build_phase.files.select { |f| f.file_ref && f.file_ref.path && f.file_ref.path.include?('SaveEditScopeSheet.swift') }
+          if duplicates.count > 1
+            target.source_build_phase.remove_build_file(duplicates.last)
+          end
+
+          # 2. Find and link the missing Swift views
+          missing_files = ['WeekStripView.swift', 'YouTubePlayerView.swift', 'ExerciseVideoView.swift']
           
+          missing_files.each do |filename|
+            Dir.glob(%Q[AuraFitness/**/#{filename}]).each do |path|
+              # Only add if it hasn't been linked already
+              unless target.source_build_phase.files.any? { |f| f.file_ref && f.file_ref.path && f.file_ref.path.include?(filename) }
+                file_ref = project.new_file(path)
+                target.source_build_phase.add_file_reference(file_ref)
+                puts 'Successfully linked ' + filename
+              end
+            end
+          end
+          project.save
+          "
+             
       - name: Verify scheme
         run: xcodebuild -list -project AuraFitness.xcodeproj
 
