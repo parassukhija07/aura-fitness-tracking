@@ -57,12 +57,17 @@ enum NutritionConstants {
 
     /// MACRO_SPLIT — percentage [Protein, Carbs, Fats] per macro preset.
     static let macroSplits: [(label: String, pct: [Int])] = [
-        ("Balanced", [30, 40, 30]), ("High carb", [25, 55, 20]),
-        ("High protein", [40, 35, 25]), ("Keto", [30, 8, 62]),
+        ("Balanced", [30, 40, 30]), ("High carb", [25, 50, 25]),
+        ("High protein", [40, 30, 30]), ("Keto", [30, 10, 60]),
     ]
     static func macroSplit(_ key: String) -> [Int] {
         macroSplits.first { $0.label == key }?.pct ?? [30, 40, 30]
     }
+
+    /// Input bounds for the details editor. Canonical units: cm and kg.
+    static let ageRange: ClosedRange<Int> = 13...100
+    static let heightRangeCm: ClosedRange<Double> = 100...250
+    static let weightRangeKg: ClosedRange<Double> = 30...300
 }
 
 // MARK: - Daily macro targets (grams)
@@ -84,8 +89,13 @@ struct BodyStats: Codable {
     var goalType: String = "Lean gain"      // key into GOAL_ADJ
     var macroSplit: String = "Balanced"     // key into MACRO_SPLIT
 
-    /// BMI = wt / (h/100)²
+    /// True once height and weight are both set — every derived figure
+    /// (BMI/BMR/TDEE/targets) is meaningless until then.
+    var hasCompleteDetails: Bool { height > 0 && weight > 0 }
+
+    /// BMI = wt / (h/100)² — 0 when height is unset (never divide by zero).
     var bmi: Double {
+        guard hasCompleteDetails else { return 0 }
         let hm = height / 100
         return weight / (hm * hm)
     }

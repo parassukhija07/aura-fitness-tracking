@@ -482,6 +482,140 @@ struct AuraLineChart: View {
     }
 }
 
+// MARK: - AuraAxisChart
+/// Labelled sibling of `AuraLineChart` — same gradient-area + accent-line
+/// language, plus a "nice tick" Y axis and X labels along the bottom.
+/// Built for reuse (Progress trends now, Measurements later).
+struct AuraAxisChart: View {
+    let points: [Double]
+    /// Same count as `points` or fewer — spread evenly across the plot width.
+    let xLabels: [String]
+    let valueFormatter: (Double) -> String
+    var color: Color = .aura.accent
+    var height: CGFloat = 140
+
+    var body: some View {
+        // Local, not a stored property — a `private` stored property would
+        // drop the memberwise init to `private` and break every call site.
+        let gutter: CGFloat = 46   // left column reserved for Y tick labels
+        let ticks = Self.axisTicks(for: points)
+        let axisMin = ticks.first ?? 0
+        let span = max((ticks.last ?? 1) - axisMin, 0.0001)
+
+        VStack(spacing: 6) {
+            GeometryReader { geo in
+                let w = geo.size.width
+                let h = geo.size.height
+                let plotW = max(w - gutter, 1)
+                let inset: CGFloat = 5
+                let yFor: (Double) -> CGFloat = { v in
+                    inset + (1 - CGFloat((v - axisMin) / span)) * (h - 2 * inset)
+                }
+                let pts: [CGPoint] = points.enumerated().map { i, v in
+                    let x = points.count == 1
+                        ? gutter + plotW / 2
+                        : gutter + CGFloat(i) * plotW / CGFloat(points.count - 1)
+                    return CGPoint(x: x, y: yFor(v))
+                }
+
+                ZStack(alignment: .topLeading) {
+                    ForEach(Array(ticks.enumerated()), id: \.offset) { _, tick in
+                        let y = yFor(tick)
+                        Path { p in
+                            p.move(to: CGPoint(x: gutter, y: y))
+                            p.addLine(to: CGPoint(x: w, y: y))
+                        }
+                        .stroke(Color.aura.separator2, lineWidth: 1)
+
+                        Text(valueFormatter(tick))
+                            .font(AuraFont.secondary())
+                            .foregroundColor(.aura.text3)
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.7)
+                            .frame(width: gutter - 6, alignment: .leading)
+                            .position(x: (gutter - 6) / 2, y: y)
+                    }
+
+                    if pts.count > 1 {
+                        Path { p in
+                            p.move(to: pts[0])
+                            pts.dropFirst().forEach { p.addLine(to: $0) }
+                            p.addLine(to: CGPoint(x: pts[pts.count - 1].x, y: h - inset))
+                            p.addLine(to: CGPoint(x: pts[0].x, y: h - inset))
+                            p.closeSubpath()
+                        }
+                        .fill(LinearGradient(
+                            colors: [color.opacity(0.22), color.opacity(0)],
+                            startPoint: .top, endPoint: .bottom
+                        ))
+
+                        Path { p in
+                            p.move(to: pts[0])
+                            pts.dropFirst().forEach { p.addLine(to: $0) }
+                        }
+                        .stroke(color, style: StrokeStyle(lineWidth: 2.4, lineCap: .round, lineJoin: .round))
+                    }
+
+                    // A single point still gets its dot (and the axis around it).
+                    if let last = pts.last {
+                        Circle()
+                            .fill(color)
+                            .frame(width: 8, height: 8)
+                            .position(last)
+                    }
+                }
+                .frame(width: w, height: h)
+            }
+            .frame(height: height)
+
+            if !xLabels.isEmpty {
+                HStack(spacing: 0) {
+                    ForEach(Array(xLabels.enumerated()), id: \.offset) { _, label in
+                        Text(label)
+                            .font(AuraFont.secondary())
+                            .foregroundColor(.aura.text3)
+                            .lineLimit(1)
+                            .frame(maxWidth: .infinity)
+                    }
+                }
+                .padding(.leading, gutter)
+            }
+        }
+    }
+
+    // MARK: Nice ticks
+
+    /// Exactly 4 intervals (5 gridlines) with a step snapped to 1/2/5 × 10ⁿ.
+    static func axisTicks(for values: [Double]) -> [Double] {
+        guard let lo = values.min(), let hi = values.max() else { return [0, 1, 2, 3, 4] }
+
+        // Degenerate flat series: centre the value on the middle gridline.
+        guard hi > lo else {
+            let step = max(1, abs(hi) * 0.1)
+            let axisMin = hi - 2 * step
+            return (0...4).map { axisMin + Double($0) * step }
+        }
+
+        var step = niceStep((hi - lo) / 4)
+        var axisMin = (lo / step).rounded(.down) * step
+        // Flooring `axisMin` can leave `hi` above the top gridline — step up.
+        while axisMin + 4 * step < hi {
+            step = niceStep(step.nextUp)
+            axisMin = (lo / step).rounded(.down) * step
+        }
+        return (0...4).map { axisMin + Double($0) * step }
+    }
+
+    /// Smallest value of the form 1/2/5 × 10ⁿ that is ≥ `raw`.
+    static func niceStep(_ raw: Double) -> Double {
+        guard raw > 0, raw.isFinite else { return 1 }
+        let magnitude = pow(10, log10(raw).rounded(.down))
+        let norm = raw / magnitude
+        let mult: Double = norm <= 1 ? 1 : norm <= 2 ? 2 : norm <= 5 ? 5 : 10
+        return mult * magnitude
+    }
+}
+
 // MARK: - AuraToast
 struct AuraToast: View {
     let message: String

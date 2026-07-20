@@ -366,16 +366,33 @@ struct PlanEmptyState: View {
 
 struct PlanLibraryCard<Trailing: View>: View {
     var thumbMuscle: String? = nil
+    /// When set, the thumb is keyword-tinted via `workoutTheme(for:)` and shows
+    /// its icon instead of the plain fill (used by the workout library cards).
+    var themeName: String? = nil
     var title: String
     var meta: AnyView
     @ViewBuilder var trailing: () -> Trailing
     let action: () -> Void
 
+    @ViewBuilder private var thumb: some View {
+        if let themeName {
+            let t = workoutTheme(for: themeName)
+            ZStack {
+                RoundedRectangle(cornerRadius: AuraRadius.sm)
+                    .fill(t.color.opacity(0.14))
+                Image(systemName: t.icon)
+                    .font(AuraFont.jakarta(22)).foregroundColor(t.color)
+            }
+        } else {
+            RoundedRectangle(cornerRadius: AuraRadius.sm)
+                .fill(Color.aura.fill)
+        }
+    }
+
     var body: some View {
         Button(action: action) {
             HStack(spacing: AuraSpacing.s3) {
-                RoundedRectangle(cornerRadius: AuraRadius.sm)
-                    .fill(Color.aura.fill)
+                thumb
                     .frame(width: 56, height: 56)
                 VStack(alignment: .leading, spacing: 3) {
                     Text(title).font(AuraFont.jakarta(16, .bold)).foregroundColor(.aura.text)
@@ -526,4 +543,21 @@ struct WeekStrip: View {
         }
         .buttonStyle(.plain)
     }
+}
+
+// MARK: - Workout keyword theming (shared)
+//
+// One rule for tile colour + SF Symbol icon across My Plans rows, the week
+// strip, and the libraries. First keyword match wins in the fixed order
+// push → pull → leg → upper; anything else falls back to accent + dumbbell
+// (the fallback is by design, e.g. "Chest Day"). Colour reuses the existing
+// `planWkStyle` tint / `planWkIcon` glyph so there's a single keyword table.
+
+struct WorkoutTheme {
+    let color: Color
+    let icon: String
+}
+
+func workoutTheme(for name: String) -> WorkoutTheme {
+    WorkoutTheme(color: planWkStyle(name).tint, icon: planWkIcon(name))
 }

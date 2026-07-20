@@ -253,13 +253,18 @@ enum DataImportService {
                 guard row.count > Col.setNote else { continue }
                 let name = row[Col.exerciseName]
                 if exercisesByName[name] == nil {
+                    // Historical rows carry no sets/reps programming, and the
+                    // user's current defaults must not be back-stamped onto
+                    // past workouts — use the neutral fallbacks.
                     exercisesByName[name] = Exercise(
                         name: name,
                         primaryMuscle: row[Col.primaryMuscle],
                         muscleGroups: [row[Col.primaryMuscle]],
                         equipment: row[Col.equipment],
                         difficulty: "Intermediate",
-                        isCable: false
+                        isCable: false,
+                        repRange: Exercise.fallbackRepRange,
+                        plannedSets: Exercise.fallbackSets
                     )
                     order.append(name)
                 }

@@ -4,16 +4,24 @@ struct PersonalRecordsView: View {
     @EnvironmentObject var appState: AppState
     @State private var selectedMuscle = "All"
 
-    let muscles = ["All","Chest","Back","Shoulders","Arms","Legs","Core"]
+    /// Core only earns a chip once the PR log actually contains one.
+    var muscles: [String] {
+        let base = ["All", "Chest", "Back", "Legs", "Shoulders", "Arms"]
+        let hasCore = appState.personalRecords.contains { $0.muscle.localizedCaseInsensitiveContains("Core") }
+        return hasCore ? base + ["Core"] : base
+    }
 
     /// Current best per exercise — `personalRecords` is an append-only log,
     /// so group down to the top e1RM entry per exercise for display.
-    var filtered: [PersonalRecord] {
-        let bestByExercise = Dictionary(grouping: appState.personalRecords, by: { $0.exerciseName.lowercased() })
+    var allRecords: [PersonalRecord] {
+        Dictionary(grouping: appState.personalRecords, by: { $0.exerciseName.lowercased() })
             .compactMap { _, records in records.max { a, b in (a.estimated1RM, a.weight) < (b.estimated1RM, b.weight) } }
-        let all = bestByExercise.sorted { $0.estimated1RM > $1.estimated1RM }
-        if selectedMuscle == "All" { return all }
-        return all.filter { $0.muscle.localizedCaseInsensitiveContains(selectedMuscle) }
+            .sorted { $0.estimated1RM > $1.estimated1RM }
+    }
+
+    var filtered: [PersonalRecord] {
+        if selectedMuscle == "All" { return allRecords }
+        return allRecords.filter { $0.muscle.localizedCaseInsensitiveContains(selectedMuscle) }
     }
 
     var body: some View {
@@ -32,18 +40,24 @@ struct PersonalRecordsView: View {
 
             if filtered.isEmpty {
                 Spacer()
-                VStack(spacing: AuraSpacing.s3) {
-                    Image(systemName: "trophy")
-                        .font(AuraFont.jakarta(44))
-                        .foregroundColor(.aura.text3)
-                    Text("No personal records yet")
-                        .font(AuraFont.jakarta(17, .semibold))
+                if allRecords.isEmpty {
+                    VStack(spacing: AuraSpacing.s3) {
+                        Image(systemName: "trophy")
+                            .font(AuraFont.jakarta(44))
+                            .foregroundColor(.aura.text3)
+                        Text("No personal records yet")
+                            .font(AuraFont.jakarta(17, .semibold))
+                            .foregroundColor(.aura.text2)
+                        Text("Complete workouts to set your first PRs automatically.")
+                            .font(AuraFont.secondary())
+                            .foregroundColor(.aura.text3)
+                            .multilineTextAlignment(.center)
+                            .frame(maxWidth: 260)
+                    }
+                } else {
+                    Text("No PRs in this category yet")
+                        .font(AuraFont.body())
                         .foregroundColor(.aura.text2)
-                    Text("Complete workouts to set your first PRs automatically.")
-                        .font(AuraFont.secondary())
-                        .foregroundColor(.aura.text3)
-                        .multilineTextAlignment(.center)
-                        .frame(maxWidth: 260)
                 }
                 Spacer()
             } else {

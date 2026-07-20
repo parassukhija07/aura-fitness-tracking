@@ -1,5 +1,7 @@
 import SwiftUI
+import UIKit
 import UniformTypeIdentifiers
+import UserNotifications
 
 // MARK: - General
 
@@ -77,8 +79,38 @@ struct GeneralSettingsView: View {
 struct NotificationsSettingsView: View {
     @EnvironmentObject var appState: AppState
     @StateObject private var toast = ToastCenter()
+    @State private var showPermissionAlert = false
 
     private let sounds = ["Ding", "Alarm clock"]
+
+    /// Enabling the toggle is only honoured if the OS actually grants (or has
+    /// already granted) permission. On `.denied` — or a fresh prompt the user
+    /// refuses — the toggle snaps back off and we point them at iOS Settings,
+    /// since the app cannot re-prompt once permission is denied.
+    private func handleNotificationsToggle(_ enabled: Bool) {
+        guard enabled else { return }
+        // Declared before the closures that capture it — a local function used
+        // ahead of its declaration does not compile.
+        let revokeToggle = {
+            DispatchQueue.main.async {
+                appState.notificationsEnabled = false
+                showPermissionAlert = true
+            }
+        }
+        let center = UNUserNotificationCenter.current()
+        center.getNotificationSettings { settings in
+            switch settings.authorizationStatus {
+            case .notDetermined:
+                center.requestAuthorization(options: [.alert, .sound]) { granted, _ in
+                    if !granted { revokeToggle() }
+                }
+            case .denied:
+                revokeToggle()
+            default:
+                break   // .authorized / .provisional / .ephemeral — keep it on.
+            }
+        }
+    }
 
     var body: some View {
         SettingsScreenScaffold(title: "Notifications", toast: toast) {
@@ -88,7 +120,7 @@ struct NotificationsSettingsView: View {
                                    subtitle: "Reminders, streaks and updates") {
                     AuraToggle(isOn: $appState.notificationsEnabled)
                         .onChange(of: appState.notificationsEnabled) { _, enabled in
-                            if enabled { NotificationScheduler.requestAuthorizationIfNeeded() }
+                            handleNotificationsToggle(enabled)
                         }
                 }
             }
@@ -128,9 +160,21 @@ struct NotificationsSettingsView: View {
                     if idx < sounds.count - 1 { Divider().padding(.leading, 64) }
                 }
             }
-            // Dim + disable the whole sound list when notifications are off.
+            // Dim + disable the whole sound list when notifications are off
+            // (shown, never hidden). `.disabled` over `.allowsHitTesting` so
+            // assistive tech reports the rows as unavailable too.
             .opacity(appState.notificationsEnabled ? 1 : 0.45)
-            .allowsHitTesting(appState.notificationsEnabled)
+            .disabled(!appState.notificationsEnabled)
+        }
+        .alert("Notifications are turned off", isPresented: $showPermissionAlert) {
+            Button("Open Settings") {
+                if let url = URL(string: UIApplication.openSettingsURLString) {
+                    UIApplication.shared.open(url)
+                }
+            }
+            Button("Not Now", role: .cancel) {}
+        } message: {
+            Text("Allow notifications for Aura in iOS Settings to get rest-timer alerts.")
         }
     }
 }
@@ -517,7 +561,7 @@ struct ProfileConfirmSheet: View {
                 .foregroundColor(.aura.text)
             Text(delete
                  ? "This permanently erases your account and all synced + local data. This cannot be undone."
-                 : "You can log back in anytime with your email.")
+                 : "You can log back in anytime.")
                 .font(AuraFont.secondary())
                 .foregroundColor(.aura.text2)
                 .multilineTextAlignment(.center)

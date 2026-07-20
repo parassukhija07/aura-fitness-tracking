@@ -162,11 +162,14 @@ struct SupersetView: View {
                     .lineLimit(1)
             }
             HStack(spacing: 0) {
-                metaCell(label: "🏆 PR",
-                         value: ex.lastPR.map { "\(UnitFormatter.weight($0.weight, unit: appState.weightUnit)) × \($0.reps)" } ?? "—",
-                         sub: ex.lastPR?.date ?? "—",
-                         tint: false)
-                    .overlay(Divider(), alignment: .trailing)
+                // Suppressed when "Show PRs during workout" is off.
+                if appState.showPRsDuringWorkout {
+                    metaCell(label: "🏆 PR",
+                             value: ex.lastPR.map { "\(UnitFormatter.weight($0.weight, unit: appState.weightUnit)) × \($0.reps)" } ?? "—",
+                             sub: ex.lastPR?.date ?? "—",
+                             tint: false)
+                        .overlay(Divider(), alignment: .trailing)
+                }
                 metaCell(label: "🎯 Target",
                          value: ex.target.map { "\(UnitFormatter.weight($0.weight, unit: appState.weightUnit)) × \($0.reps)" } ?? "—",
                          sub: ex.target?.note ?? "",

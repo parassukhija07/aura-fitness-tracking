@@ -2,6 +2,7 @@ import SwiftUI
 
 struct CreateExerciseView: View {
     @Environment(\.dismiss) var dismiss
+    @EnvironmentObject var appState: AppState
     @StateObject private var db = ExerciseDatabase.shared
 
     @State private var name = ""
@@ -12,8 +13,11 @@ struct CreateExerciseView: View {
     @State private var formTip = ""
     @State private var imageURL = ""
     @State private var youtubeURL = ""
-    @State private var repRange = "8–12"
-    @State private var plannedSets = 3
+    // Seeded from the user's Workout Settings in `.onAppear` (a @State
+    // initialiser cannot read the environment); the literals below are the
+    // neutral fallback if those defaults are somehow unavailable.
+    @State private var repRange = Exercise.fallbackRepRange
+    @State private var plannedSets = Exercise.fallbackSets
 
     let categories = ["Chest","Back","Shoulders","Arms","Legs","Core","Cardio","Warm-up"]
     let equipments = ["Barbell","Dumbbell","Cable","Machine","Bodyweight","Smith Machine"]
@@ -52,6 +56,13 @@ struct CreateExerciseView: View {
             }
             .navigationTitle("Create Exercise")
             .navigationBarTitleDisplayMode(.inline)
+            .onAppear {
+                // A brand-new exercise starts from the user's configured
+                // defaults; they stay editable here, and existing saved
+                // exercises are never retro-fitted.
+                repRange = appState.defaultRepRange
+                plannedSets = appState.defaultSets
+            }
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") { dismiss() }
@@ -78,7 +89,7 @@ struct CreateExerciseView: View {
             musclesTargeted: muscles.isEmpty ? [category] : muscles,
             type: equipment == "Cable" || equipment == "Machine" ? "Machine" : "Compound",
             difficulty: difficulty,
-            repRange: repRange.isEmpty ? "8–12" : repRange,
+            repRange: repRange.isEmpty ? Exercise.fallbackRepRange : repRange,
             youtubeURL: youtubeURL.trimmingCharacters(in: .whitespaces),
             imageURL: imageURL.trimmingCharacters(in: .whitespaces),
             proTips: formTip.isEmpty ? [] : [formTip],

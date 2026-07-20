@@ -1,6 +1,0 @@
-﻿2026-07-18T11:00:29.3497410Z ##[group]Run maxim-lobanov/setup-xcode@v1
-2026-07-18T11:00:29.3498000Z with:
-2026-07-18T11:00:29.3498360Z   xcode-version: ~15.4
-2026-07-18T11:00:29.3498750Z ##[endgroup]
-2026-07-18T11:00:29.4307370Z Switching Xcode to version '~15.4'...
-2026-07-18T11:00:29.5093170Z Xcode is set to 15.4.0 (15F31d)

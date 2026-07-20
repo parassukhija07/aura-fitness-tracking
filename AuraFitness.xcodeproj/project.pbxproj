@@ -72,6 +72,7 @@
 		CB01000000000000000A0002 /* ProgramLibraryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA01000000000000000A0002 /* ProgramLibraryView.swift */; };
 		CB01000000000000000A0003 /* ProgramDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA01000000000000000A0003 /* ProgramDetailView.swift */; };
 		CB01000000000000000A0004 /* ProgramEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA01000000000000000A0004 /* ProgramEditorView.swift */; };
+		CB01000000000000000A0010 /* WeekStrip.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA01000000000000000A0010 /* WeekStrip.swift */; };
 		CB01000000000000000A0005 /* WorkoutLibraryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA01000000000000000A0005 /* WorkoutLibraryView.swift */; };
 		CB01000000000000000A0006 /* WorkoutEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA01000000000000000A0006 /* WorkoutEditorView.swift */; };
 		CB01000000000000000A0007 /* ExerciseLibraryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA01000000000000000A0007 /* ExerciseLibraryView.swift */; };
@@ -167,6 +168,7 @@
 		CA01000000000000000A0002 /* ProgramLibraryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgramLibraryView.swift; sourceTree = "<group>"; };
 		CA01000000000000000A0003 /* ProgramDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgramDetailView.swift; sourceTree = "<group>"; };
 		CA01000000000000000A0004 /* ProgramEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgramEditorView.swift; sourceTree = "<group>"; };
+		CA01000000000000000A0010 /* WeekStrip.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeekStrip.swift; sourceTree = "<group>"; };
 		CA01000000000000000A0005 /* WorkoutLibraryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutLibraryView.swift; sourceTree = "<group>"; };
 		CA01000000000000000A0006 /* WorkoutEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutEditorView.swift; sourceTree = "<group>"; };
 		CA01000000000000000A0007 /* ExerciseLibraryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseLibraryView.swift; sourceTree = "<group>"; };
@@ -335,6 +337,7 @@
 				CA01000000000000000A0002 /* ProgramLibraryView.swift */,
 				CA01000000000000000A0003 /* ProgramDetailView.swift */,
 				CA01000000000000000A0004 /* ProgramEditorView.swift */,
+				CA01000000000000000A0010 /* WeekStrip.swift */,
 				CA01000000000000000A0005 /* WorkoutLibraryView.swift */,
 				CA01000000000000000A0006 /* WorkoutEditorView.swift */,
 				CA01000000000000000A0007 /* ExerciseLibraryView.swift */,
@@ -552,6 +555,7 @@
 				CB01000000000000000A0002 /* ProgramLibraryView.swift in Sources */,
 				CB01000000000000000A0003 /* ProgramDetailView.swift in Sources */,
 				CB01000000000000000A0004 /* ProgramEditorView.swift in Sources */,
+				CB01000000000000000A0010 /* WeekStrip.swift in Sources */,
 				CB01000000000000000A0005 /* WorkoutLibraryView.swift in Sources */,
 				CB01000000000000000A0006 /* WorkoutEditorView.swift in Sources */,
 				CB01000000000000000A0007 /* ExerciseLibraryView.swift in Sources */,

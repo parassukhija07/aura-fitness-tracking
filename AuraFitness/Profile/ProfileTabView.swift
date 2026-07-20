@@ -25,7 +25,9 @@ struct ProfileTabView: View {
 
     // MARK: Derived stats
     var totalSessions: Int { appState.workoutLogs.count }
-    var totalPRs: Int { appState.personalRecords.count }
+    /// Distinct exercises with a PR — `personalRecords` is an append-only log,
+    /// so a raw `.count` over-reports. Must stay in step with `StatsView.totalPRs`.
+    var totalPRs: Int { Set(appState.personalRecords.map { $0.exerciseName.lowercased() }).count }
     var streak: Int {
         var count = 0
         var day = Date()
@@ -41,15 +43,21 @@ struct ProfileTabView: View {
     private var initials: String {
         "\(profile.firstName.prefix(1))\(profile.lastName.prefix(1))"
     }
+    /// "{age} · {height} · {weight} · {gender}" — any unset field is dropped so
+    /// the line never renders a zero, an empty segment or a doubled separator.
     private var identitySubtitle: String {
-        let age = appState.bodyStats.age
-        let h = UnitFormatter.length(appState.bodyStats.height, unit: appState.lengthUnit)
-        let w = UnitFormatter.weight(appState.bodyStats.weight, unit: appState.weightUnit)
-        return "\(age) · \(h) · \(w) · \(profile.gender)"
+        let stats = appState.bodyStats
+        var parts: [String] = []
+        if stats.age > 0 { parts.append("\(stats.age)") }
+        if stats.height > 0 { parts.append(UnitFormatter.length(stats.height, unit: appState.lengthUnit)) }
+        if stats.weight > 0 { parts.append(UnitFormatter.weight(stats.weight, unit: appState.weightUnit)) }
+        let gender = profile.gender.trimmingCharacters(in: .whitespaces)
+        if !gender.isEmpty { parts.append(gender) }
+        return parts.joined(separator: " · ")
     }
     private var unitsSubtitle: String { "\(appState.weightUnit) · \(appState.lengthUnit)" }
     private var connectedSubtitle: String {
-        appState.appleHealthConnected ? "Apple Health connected" : "None connected"
+        appState.appleHealthConnected ? "Apple Health connected" : "Not connected"
     }
 
     var body: some View {

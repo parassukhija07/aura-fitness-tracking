@@ -166,7 +166,8 @@ final class CSVRoundTripTests: XCTestCase {
     func test_workoutHistoryCSV_roundTrip_twoExercisesTwoSetsEach() throws {
         var exerciseA = Exercise(
             name: "Barbell Squat", primaryMuscle: "Legs", muscleGroups: ["Legs"],
-            equipment: "Barbell", difficulty: "Advanced", isCable: false
+            equipment: "Barbell", difficulty: "Advanced", isCable: false,
+            repRange: Exercise.fallbackRepRange, plannedSets: Exercise.fallbackSets
         )
         exerciseA.sets = [
             WorkoutSet(weight: 100, reps: 5, done: true, type: .normal, note: ""),
@@ -174,7 +175,8 @@ final class CSVRoundTripTests: XCTestCase {
         ]
         var exerciseB = Exercise(
             name: "Leg Press", primaryMuscle: "Legs", muscleGroups: ["Legs"],
-            equipment: "Machine", difficulty: "Beginner", isCable: false
+            equipment: "Machine", difficulty: "Beginner", isCable: false,
+            repRange: Exercise.fallbackRepRange, plannedSets: Exercise.fallbackSets
         )
         exerciseB.sets = [
             WorkoutSet(weight: nil, reps: nil, done: false, type: .normal, note: ""),

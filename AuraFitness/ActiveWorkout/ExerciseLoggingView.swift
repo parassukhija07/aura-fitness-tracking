@@ -195,11 +195,15 @@ struct ExerciseLoggingView: View {
 
     private func prTargetCards(ex: Exercise) -> some View {
         HStack(spacing: AuraSpacing.s3) {
-            miniCard(
-                icon: "trophy.fill", iconColor: .aura.accent, head: "Last PR",
-                value: ex.lastPR.map { "\(UnitFormatter.weight($0.weight, unit: appState.weightUnit)) × \($0.reps)" } ?? "—",
-                sub: ex.lastPR?.date ?? "—", highlighted: false
-            )
+            // Historical PR comparison is suppressed when the user has turned
+            // "Show PRs during workout" off; the target card always stays.
+            if appState.showPRsDuringWorkout {
+                miniCard(
+                    icon: "trophy.fill", iconColor: .aura.accent, head: "Last PR",
+                    value: ex.lastPR.map { "\(UnitFormatter.weight($0.weight, unit: appState.weightUnit)) × \($0.reps)" } ?? "—",
+                    sub: ex.lastPR?.date ?? "—", highlighted: false
+                )
+            }
             miniCard(
                 icon: "target", iconColor: .aura.accent, head: "Today's target",
                 value: ex.target.map { "\(UnitFormatter.weight($0.weight, unit: appState.weightUnit)) × \($0.reps)" } ?? "—",

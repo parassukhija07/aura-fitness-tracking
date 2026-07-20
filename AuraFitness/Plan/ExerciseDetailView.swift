@@ -210,18 +210,13 @@ struct ExerciseEntryDetailView: View {
             Color.aura.surface
                 .frame(height: 180)
             VStack(spacing: 10) {
-                if URL(string: e.youtubeURL) != nil, !e.youtubeURL.isEmpty {
-                    ZStack {
-                        Circle()
-                            .fill(Color.black.opacity(0.5))
-                            .frame(width: 56, height: 56)
-                        Image(systemName: "play.fill")
-                            .foregroundColor(.white)
-                            .font(AuraFont.jakarta(22))
-                    }
-                    Text("Watch Demo")
-                        .font(AuraFont.secondary())
-                        .foregroundColor(.aura.text3)
+                // Playable demo when the link resolves to a YouTube id;
+                // "Auto-play video" decides whether it starts on its own or
+                // waits behind the thumbnail's Play overlay.
+                if YouTubePlayerView.videoID(from: e.youtubeURL) != nil {
+                    ExerciseVideoView(youtubeURL: e.youtubeURL,
+                                      autoplay: appState.autoPlayVideo,
+                                      height: 180)
                 } else {
                     ZStack {
                         Circle()

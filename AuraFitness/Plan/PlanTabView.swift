@@ -78,6 +78,14 @@ struct PlanTabView: View {
         .sheet(isPresented: $showCreateExercise) {
             CreateExerciseView()
         }
+        .onChange(of: appState.planSubtabRequest) { _, req in
+            guard let req else { return }
+            switch req {
+            case .programs:  subtab = .programs
+            case .workouts:  subtab = .workouts
+            }
+            appState.planSubtabRequest = nil
+        }
     }
 
     private var navbar: some View {

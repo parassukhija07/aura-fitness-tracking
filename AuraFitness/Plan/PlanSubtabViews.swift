@@ -223,6 +223,7 @@ struct PlanWorkoutsBody: View {
                     VStack(spacing: 10) {
                         ForEach(filtered) { w in
                             PlanLibraryCard(
+                                themeName: w.name,
                                 title: w.name,
                                 meta: AnyView(
                                     Text("\(w.exercises.count) exercises · \(w.primaryMuscles)")

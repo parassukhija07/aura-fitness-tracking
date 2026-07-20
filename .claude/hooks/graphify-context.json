@@ -1,0 +1,6 @@
+{
+  "hookSpecificOutput": {
+    "hookEventName": "UserPromptSubmit",
+    "additionalContext": "This project has a graphify code graph at graphify-out/graph.json (2086 nodes, 4811 edges, 161 files). To LOCATE code, query the graph before running broad Glob/Grep sweeps:\n  graphify explain \"SymbolName\"   - what a node is and its neighbors\n  graphify path \"A\" \"B\"           - how two symbols connect\n  graphify-out/GRAPH_REPORT.md     - community hubs and entry points\nThe graph tells you WHICH files matter; then Read those files directly for exact current contents. Do not treat graph output as a substitute for reading a file you are about to edit."
+  }
+}

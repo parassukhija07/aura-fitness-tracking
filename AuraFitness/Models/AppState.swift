@@ -373,6 +373,12 @@ class AppState: ObservableObject {
     /// consumes it to open the add-workout source sheet (03-log §misc).
     @Published var requestLogAddSheet: Bool = false
 
+    // MARK: - Plan subtab deep link (My Plans sheets → library subtabs)
+    enum PlanSubtabTarget: Equatable { case programs, workouts }
+    /// Set by a My Plans sheet ("Browse programs" / "From Workout Library");
+    /// PlanTabView consumes it to switch its active subtab, then clears it.
+    @Published var planSubtabRequest: PlanSubtabTarget? = nil
+
     // MARK: - User data
     var userPlans: [UserPlan] { UserPlanDatabase.shared.plans }
     @Published var workoutLogs: [WorkoutLog] = [] {
@@ -491,7 +497,10 @@ class AppState: ObservableObject {
         didSet { persistWorkoutPrefs() }
     }
     /// Derived "lo–hi" display string (mirrors the prototype's defRepsLo/Hi pair).
-    var defaultRepRange: String { "\(defaultRepLow)–\(defaultRepHigh)" }
+    /// A single-value range collapses to just that number ("8", not "8–8").
+    var defaultRepRange: String {
+        defaultRepLow == defaultRepHigh ? "\(defaultRepLow)" : "\(defaultRepLow)–\(defaultRepHigh)"
+    }
     @Published var defaultRestBetweenSets: Int = 60 {
         didSet { persistWorkoutPrefs() }
     }

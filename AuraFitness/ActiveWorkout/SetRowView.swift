@@ -33,16 +33,13 @@ struct SetRowView: View {
                 }
                 .buttonStyle(.plain)
 
-                // Weight input
-                inputBox(text: $weightText, placeholder: history.map { $0.weight } ?? "–", label: appState.weightUnit) {
-                    set.weight = UnitFormatter.parseWeightToKg(weightText, unit: appState.weightUnit)
-                    autoFinishOnBlur()
-                }
-
-                // Reps input
-                inputBox(text: $repsText, placeholder: history.map { $0.reps } ?? "–", label: "reps") {
-                    set.reps = Int(repsText)
-                    autoFinishOnBlur()
+                // Column order follows the "Show first" setting.
+                if appState.showRepsFirst {
+                    repsInput
+                    weightInput
+                } else {
+                    weightInput
+                    repsInput
                 }
 
                 // Done check
@@ -70,18 +67,17 @@ struct SetRowView: View {
                 .buttonStyle(.plain)
             }
 
-            // History row (last session), aligned under the kg / reps inputs
+            // History row (last session) — must track the same column order.
             if showHistory, let h = history {
                 HStack(spacing: 9) {
                     Color.clear.frame(width: 40)
-                    Text(UnitFormatter.weight(Double(h.weight) ?? 0, unit: appState.weightUnit))
-                        .font(AuraFont.jakarta(11, .bold))
-                        .foregroundColor(.aura.text3)
-                        .frame(maxWidth: .infinity)
-                    Text("\(h.reps) reps")
-                        .font(AuraFont.jakarta(11, .bold))
-                        .foregroundColor(.aura.text3)
-                        .frame(maxWidth: .infinity)
+                    if appState.showRepsFirst {
+                        historyCell("\(h.reps) reps")
+                        historyCell(UnitFormatter.weight(Double(h.weight) ?? 0, unit: appState.weightUnit))
+                    } else {
+                        historyCell(UnitFormatter.weight(Double(h.weight) ?? 0, unit: appState.weightUnit))
+                        historyCell("\(h.reps) reps")
+                    }
                     Color.clear.frame(width: 48)
                     Color.clear.frame(width: 48)
                 }
@@ -101,6 +97,27 @@ struct SetRowView: View {
             .presentationDetents([.fraction(0.58)])
             .presentationDragIndicator(.visible)
         }
+    }
+
+    private var weightInput: some View {
+        inputBox(text: $weightText, placeholder: history.map { $0.weight } ?? "–", label: appState.weightUnit) {
+            set.weight = UnitFormatter.parseWeightToKg(weightText, unit: appState.weightUnit)
+            autoFinishOnBlur()
+        }
+    }
+
+    private var repsInput: some View {
+        inputBox(text: $repsText, placeholder: history.map { $0.reps } ?? "–", label: "reps") {
+            set.reps = Int(repsText)
+            autoFinishOnBlur()
+        }
+    }
+
+    private func historyCell(_ text: String) -> some View {
+        Text(text)
+            .font(AuraFont.jakarta(11, .bold))
+            .foregroundColor(.aura.text3)
+            .frame(maxWidth: .infinity)
     }
 
     @ViewBuilder

@@ -72,7 +72,9 @@ final class PersistenceRoundTripTests: XCTestCase {
             muscleGroups: ["Chest"],
             equipment: "Barbell",
             difficulty: "Intermediate",
-            isCable: false
+            isCable: false,
+            repRange: Exercise.fallbackRepRange,
+            plannedSets: Exercise.fallbackSets
         )
     }
 

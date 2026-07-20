@@ -81,8 +81,11 @@ struct Exercise: Identifiable, Codable, Hashable {
     var difficulty: String
     var isCable: Bool
     var pulley: String = "single"   // "single" | "double"
-    var repRange: String = "8–12"
-    var plannedSets: Int = 3
+    // No defaults: sets/reps must be resolved explicitly at every creation
+    // site — either from the catalog entry, the user's Workout Settings, or
+    // `Exercise.fallback*` — so a generic 3×8–12 can never be stamped silently.
+    var repRange: String
+    var plannedSets: Int
     var lastPR: PRRecord? = nil
     var target: TargetRecord? = nil
     var history: [SetHistory] = []   // last session's per-set values (design `history`)
@@ -105,6 +108,12 @@ struct Exercise: Identifiable, Codable, Hashable {
             acc + (s.weight ?? 0) * Double(s.reps ?? 0)
         }
     }
+
+    /// Neutral fallbacks for contexts where the user's Workout Settings must
+    /// NOT apply — imported history, decoded archives, tests — and as the last
+    /// resort when `AppStateBridge.shared` is unavailable during creation.
+    static let fallbackRepRange = "8–12"
+    static let fallbackSets = 3
 }
 
 // MARK: - Workout

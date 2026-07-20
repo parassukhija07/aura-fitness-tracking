@@ -134,13 +134,13 @@ struct ProgressPhotosView: View {
         Group {
             if isVertical {
                 VStack(spacing: AuraSpacing.s3) {
-                    compareSlot(image: firstPhoto, label: "Before", pickerItem: $compareBeforeItem)
-                    compareSlot(image: lastPhoto, label: "After", pickerItem: $compareAfterItem)
+                    compareSlot(image: firstPhoto, caption: firstCaption, label: "Before", pickerItem: $compareBeforeItem)
+                    compareSlot(image: lastPhoto, caption: lastCaption, label: "After", pickerItem: $compareAfterItem)
                 }
             } else {
                 HStack(spacing: AuraSpacing.s3) {
-                    compareSlot(image: firstPhoto, label: "Before", pickerItem: $compareBeforeItem)
-                    compareSlot(image: lastPhoto, label: "After", pickerItem: $compareAfterItem)
+                    compareSlot(image: firstPhoto, caption: firstCaption, label: "Before", pickerItem: $compareBeforeItem)
+                    compareSlot(image: lastPhoto, caption: lastCaption, label: "After", pickerItem: $compareAfterItem)
                 }
             }
         }
@@ -154,8 +154,23 @@ struct ProgressPhotosView: View {
         afterImage ?? photos.first.flatMap { UIImage(data: $0.imageData) }
     }
 
+    /// Captions only exist for library photos — an ad-hoc image picked
+    /// straight into a compare slot carries no date or weight.
+    private var firstCaption: String? {
+        beforeImage == nil ? photos.last.map(caption) : nil
+    }
+    private var lastCaption: String? {
+        afterImage == nil ? photos.first.map(caption) : nil
+    }
+
+    private func caption(_ photo: ProgressPhoto) -> String {
+        let date = photo.date.formatted(date: .abbreviated, time: .omitted)
+        guard let w = photo.weight else { return date }
+        return "\(date) · \(UnitFormatter.weight(w, unit: appState.weightUnit))"
+    }
+
     @ViewBuilder
-    private func compareSlot(image: UIImage?, label: String, pickerItem: Binding<PhotosPickerItem?>) -> some View {
+    private func compareSlot(image: UIImage?, caption: String?, label: String, pickerItem: Binding<PhotosPickerItem?>) -> some View {
         PhotosPicker(selection: pickerItem, matching: .images) {
             ZStack(alignment: .bottom) {
                 if let img = image {
@@ -181,19 +196,33 @@ struct ProgressPhotosView: View {
                         Text(label)
                             .font(AuraFont.secondary())
                             .foregroundColor(.aura.text2)
+                        Text("Add comparison photo")
+                            .font(AuraFont.jakarta(10, .semibold))
+                            .foregroundColor(.aura.text3)
+                            .multilineTextAlignment(.center)
                     }
                 }
 
-                // Label pill at bottom
+                // Label pill at bottom, with date · weight when the slot is
+                // showing a library photo.
                 if image != nil {
-                    Text(label)
-                        .font(AuraFont.jakarta(11, .bold))
-                        .foregroundColor(.white)
-                        .padding(.horizontal, 10)
-                        .padding(.vertical, 4)
-                        .background(Color.black.opacity(0.5))
-                        .clipShape(Capsule())
-                        .padding(.bottom, 8)
+                    VStack(spacing: 1) {
+                        Text(label)
+                            .font(AuraFont.jakarta(11, .bold))
+                            .foregroundColor(.white)
+                        if let caption {
+                            Text(caption)
+                                .font(AuraFont.jakarta(9, .semibold))
+                                .foregroundColor(.white.opacity(0.85))
+                                .lineLimit(1)
+                                .minimumScaleFactor(0.7)
+                        }
+                    }
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 4)
+                    .background(Color.black.opacity(0.5))
+                    .clipShape(Capsule())
+                    .padding(.bottom, 8)
                 }
             }
             .frame(maxWidth: .infinity)
