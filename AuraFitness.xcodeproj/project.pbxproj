@@ -78,6 +78,10 @@
 		CB01000000000000000A0008 /* ExerciseDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA01000000000000000A0008 /* ExerciseDetailView.swift */; };
 		CB01000000000000000A0009 /* CreateExerciseView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA01000000000000000A0009 /* CreateExerciseView.swift */; };
 		CB01000000000000000A0010 /* SaveEditScopeSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA01000000000000000A0010 /* SaveEditScopeSheet.swift */; };
+		CB01000000000000000A0011 /* WorkoutEditorComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA01000000000000000A0011 /* WorkoutEditorComponents.swift */; };
+		CB01000000000000000A0012 /* EditorExercisePicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA01000000000000000A0012 /* EditorExercisePicker.swift */; };
+		CB01000000000000000A0013 /* SupersetPickSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA01000000000000000A0013 /* SupersetPickSheet.swift */; };
+		CB01000000000000000A0014 /* ExerciseHistoryTab.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA01000000000000000A0014 /* ExerciseHistoryTab.swift */; };
 		AA000027000000000000006F /* ProgressTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000027000000000000006F /* ProgressTabView.swift */; };
 		AA000028000000000000007C /* StatsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000028000000000000007C /* StatsView.swift */; };
 		AA000029000000000000007D /* ConsistencyHeatmapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000029000000000000007D /* ConsistencyHeatmapView.swift */; };
@@ -169,6 +173,10 @@
 		CA01000000000000000A0008 /* ExerciseDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseDetailView.swift; sourceTree = "<group>"; };
 		CA01000000000000000A0009 /* CreateExerciseView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateExerciseView.swift; sourceTree = "<group>"; };
 		CA01000000000000000A0010 /* SaveEditScopeSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SaveEditScopeSheet.swift; sourceTree = "<group>"; };
+		CA01000000000000000A0011 /* WorkoutEditorComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutEditorComponents.swift; sourceTree = "<group>"; };
+		CA01000000000000000A0012 /* EditorExercisePicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditorExercisePicker.swift; sourceTree = "<group>"; };
+		CA01000000000000000A0013 /* SupersetPickSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupersetPickSheet.swift; sourceTree = "<group>"; };
+		CA01000000000000000A0014 /* ExerciseHistoryTab.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseHistoryTab.swift; sourceTree = "<group>"; };
 		AB000027000000000000006F /* ProgressTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressTabView.swift; sourceTree = "<group>"; };
 		AB000028000000000000007C /* StatsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatsView.swift; sourceTree = "<group>"; };
 		AB000029000000000000007D /* ConsistencyHeatmapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConsistencyHeatmapView.swift; sourceTree = "<group>"; };
@@ -333,6 +341,10 @@
 				CA01000000000000000A0008 /* ExerciseDetailView.swift */,
 				CA01000000000000000A0009 /* CreateExerciseView.swift */,
 				CA01000000000000000A0010 /* SaveEditScopeSheet.swift */,
+				CA01000000000000000A0011 /* WorkoutEditorComponents.swift */,
+				CA01000000000000000A0012 /* EditorExercisePicker.swift */,
+				CA01000000000000000A0013 /* SupersetPickSheet.swift */,
+				CA01000000000000000A0014 /* ExerciseHistoryTab.swift */,
 			);
 			path = Plan;
 			sourceTree = "<group>";
@@ -546,6 +558,10 @@
 				CB01000000000000000A0008 /* ExerciseDetailView.swift in Sources */,
 				CB01000000000000000A0009 /* CreateExerciseView.swift in Sources */,
 				CB01000000000000000A0010 /* SaveEditScopeSheet.swift in Sources */,
+				CB01000000000000000A0011 /* WorkoutEditorComponents.swift in Sources */,
+				CB01000000000000000A0012 /* EditorExercisePicker.swift in Sources */,
+				CB01000000000000000A0013 /* SupersetPickSheet.swift in Sources */,
+				CB01000000000000000A0014 /* ExerciseHistoryTab.swift in Sources */,
 				AA000027000000000000006F /* ProgressTabView.swift in Sources */,
 				AA000028000000000000007C /* StatsView.swift in Sources */,
 				AA000029000000000000007D /* ConsistencyHeatmapView.swift in Sources */,

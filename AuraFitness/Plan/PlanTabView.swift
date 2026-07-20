@@ -64,7 +64,7 @@ struct PlanTabView: View {
             ProgramDetailView(program: program)
         }
         .sheet(item: $selectedEntry) { entry in
-            ExerciseEntryDetailView(entry: entry)
+            ExerciseEntryDetailView(entry: entry, showActions: true)
         }
         .sheet(isPresented: $showCreateProgram) {
             ProgramEditorView(mode: .create)
