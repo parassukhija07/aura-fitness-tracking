@@ -502,12 +502,43 @@ class AppState: ObservableObject {
             syncSingleton(userProfile, table: .userProfile)
         }
     }
-    // TODO: migrate progressPhotos image blobs to file storage (UserDefaults size pressure)
+    /// Photo BYTES belong in the `progress-photos` Storage bucket, not in this
+    /// array and not in the synced row (phase3-01). `ProgressPhotoStorage`
+    /// uploads them and then clears `imageData`, leaving a metadata-only row;
+    /// `shouldPush` withholds the push until it does, so a full base64 payload
+    /// is never sent to Postgres just to be superseded seconds later.
     @Published var progressPhotos: [ProgressPhoto] = [] {
         didSet {
             persistCodable(progressPhotos, Keys.progressPhotos)
-            syncDiff(old: oldValue, new: progressPhotos, table: .progressPhotos, idOf: { $0.id.uuidString })
+            syncDiff(old: oldValue, new: progressPhotos, table: .progressPhotos,
+                     idOf: { $0.id.uuidString },
+                     shouldPush: { !ProgressPhotoStorage.shared.isUploadPending($0.id) })
+            guard !isLoading else { return }
+            ProgressPhotoStorage.shared.photosDidChange(
+                old: oldValue, new: progressPhotos, isApplyingRemote: isApplyingRemote)
         }
+    }
+
+    /// Storage upload finished: the bytes are durable in the bucket, so the row
+    /// keeps the path only and the inline base64 goes. Applied as ONE
+    /// assignment so `didSet` fires once, and deliberately NOT under
+    /// `isApplyingRemote` — this is a real local change that must be pushed so
+    /// other devices converge off the blob too.
+    func attachProgressPhotoStoragePath(_ path: String, photoID: UUID) {
+        guard let idx = progressPhotos.firstIndex(where: { $0.id == photoID }) else { return }
+        guard progressPhotos[idx].storagePath != path || progressPhotos[idx].imageData != nil else { return }
+        var photo = progressPhotos[idx]
+        photo.storagePath = path
+        photo.imageData = nil
+        progressPhotos[idx] = photo
+    }
+
+    /// Releases a push `shouldPush` withheld while an upload was queued. Called
+    /// only when that upload permanently failed, so the row goes up on the
+    /// legacy path — base64 and all — rather than never going up at all.
+    func pushProgressPhotoRow(id: UUID) {
+        guard let photo = progressPhotos.first(where: { $0.id == id }) else { return }
+        SupabaseSyncService.shared.push(photo, id: id.uuidString, table: .progressPhotos)
     }
 
     // MARK: - Write-through diff helpers (whole-array `didSet` hazard)
@@ -519,7 +550,14 @@ class AppState: ObservableObject {
     // (both guarded, mirroring the `isLoading` guard already used for local
     // persistence).
 
-    private func syncDiff<T: Encodable>(old: [T], new: [T], table: SupabaseSyncService.Table, idOf: (T) -> String) {
+    /// `shouldPush` lets a store defer the row until its out-of-band work is
+    /// done — progress photos hold theirs back until the Storage upload has
+    /// stripped the base64 (phase3-01). It gates ONLY upserts: a deleted row
+    /// has nothing left to wait for, and withholding its delete would leave a
+    /// live remote row pointing at bytes that are on their way out.
+    private func syncDiff<T: Encodable>(old: [T], new: [T], table: SupabaseSyncService.Table,
+                                        idOf: (T) -> String,
+                                        shouldPush: (T) -> Bool = { _ in true }) {
         guard !isLoading, !isApplyingRemote else { return }
         let oldByID = Dictionary(uniqueKeysWithValues: old.map { (idOf($0), $0) })
         let newByID = Dictionary(uniqueKeysWithValues: new.map { (idOf($0), $0) })
@@ -528,8 +566,16 @@ class AppState: ObservableObject {
             // so compare via JSON bytes (cheap relative to a network round
             // trip, and correct without requiring every model to add
             // Equatable just for this).
-            if oldByID[id] == nil || !jsonEqual(oldByID[id]!, value) {
+            guard oldByID[id] == nil || !jsonEqual(oldByID[id]!, value) else { continue }
+            if shouldPush(value) {
                 SupabaseSyncService.shared.push(value, id: id, table: table)
+            } else {
+                // A withheld row still gets stamped. `push` stamps even when
+                // signed out (see its doc comment) precisely because that
+                // timestamp is how LWW knows a local edit is newer than the
+                // remote row; skipping it here would let an older cloud row
+                // silently win the next reconcile.
+                SupabaseSyncService.shared.stampLocalChange(table: table, id: id)
             }
         }
         for id in oldByID.keys where newByID[id] == nil {

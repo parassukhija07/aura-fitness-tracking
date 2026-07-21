@@ -38,7 +38,11 @@ enum DataArchiveBuilder {
             bodyStats: appState.bodyStats,
             personalRecords: appState.personalRecords,
             userProfile: appState.userProfile,
-            progressPhotos: appState.progressPhotos,
+            // Migrated photos carry a path, not bytes (phase3-01), so refill
+            // from the on-disk cache to keep the export self-contained. Export
+            // stays offline by design: a photo whose bytes live only in the
+            // bucket and are not cached on this device exports as metadata.
+            progressPhotos: ProgressPhotoStorage.shared.hydratedForExport(appState.progressPhotos),
             preferences: appState.currentPrefsBlob()
         )
 

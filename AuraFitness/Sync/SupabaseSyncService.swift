@@ -286,6 +286,12 @@ final class SupabaseSyncService: ObservableObject {
         syncing = true
         defer { syncing = false }
 
+        // Before any push path runs: queues every photo whose bytes are still
+        // inline, so the pushes below withhold those rows until Storage has
+        // them (phase3-01). Also the resume point for a migration a previous
+        // launch left half-finished.
+        ProgressPhotoStorage.shared.resumePendingUploads()
+
         let remoteIsEmpty = await isRemoteEmpty(uid: userID)
         let localIsNonEmpty = hasAnyLocalData()
 
@@ -352,7 +358,11 @@ final class SupabaseSyncService: ObservableObject {
         for pr in appState.personalRecords {
             push(pr, id: pr.id.uuidString, table: .personalRecords)
         }
-        for photo in appState.progressPhotos {
+        // Photos still waiting on their Storage upload are skipped, not lost:
+        // the upload completing strips the base64 and pushes the metadata row
+        // itself. Backfilling them here would send the very blob phase3-01
+        // exists to keep out of Postgres.
+        for photo in appState.progressPhotos where !ProgressPhotoStorage.shared.isUploadPending(photo.id) {
             push(photo, id: photo.id.uuidString, table: .progressPhotos)
         }
         for (iso, ov) in appState.dayOverrides {
@@ -601,8 +611,16 @@ final class SupabaseSyncService: ObservableObject {
                       localLookup: { id in appState.personalRecords.first { $0.id.uuidString == id } },
                       skipRePush: skipRePush)
                 .map { appState.applyRemotePersonalRecords($0) }
+            // Same shape as the programs/exercises lookups above: returning nil
+            // suppresses the local-wins re-push. A photo mid-upload has nothing
+            // worth pushing yet — only its base64 — and the upload completing
+            // pushes the metadata row itself.
             reconcile(rows: photos, table: .progressPhotos, idOf: { (p: ProgressPhoto) in p.id.uuidString },
-                      localLookup: { id in appState.progressPhotos.first { $0.id.uuidString == id } },
+                      localLookup: { id in
+                          appState.progressPhotos.first {
+                              $0.id.uuidString == id && !ProgressPhotoStorage.shared.isUploadPending($0.id)
+                          }
+                      },
                       skipRePush: skipRePush)
                 .map { appState.applyRemoteProgressPhotos($0) }
 
@@ -903,7 +921,8 @@ final class SupabaseSyncService: ObservableObject {
                 push(v, id: key, table: table)
             }
         case .progressPhotos:
-            if let v = appState?.progressPhotos.first(where: { $0.id.uuidString == key }) {
+            if let v = appState?.progressPhotos.first(where: { $0.id.uuidString == key }),
+               !ProgressPhotoStorage.shared.isUploadPending(v.id) {
                 push(v, id: key, table: table)
             }
         case .dayOverrides:

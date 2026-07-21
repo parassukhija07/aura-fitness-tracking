@@ -19,6 +19,9 @@ final class PersistenceRoundTripTests: XCTestCase {
     let darkKey             = "aura_dark"
     let calStartKey         = "aura_calstart"
     let logStatKey          = "aura_logstat"
+    /// Written by `ProgressPhotoStorage` whenever a photo is stored with its
+    /// bytes still inline — which Test 5 does — so it needs clearing too.
+    let photoUploadPendingKey = "aura_photo_upload_pending_v1"
 
     // MARK: - setUp / tearDown
 
@@ -46,6 +49,7 @@ final class PersistenceRoundTripTests: XCTestCase {
         d.removeObject(forKey: darkKey)
         d.removeObject(forKey: calStartKey)
         d.removeObject(forKey: logStatKey)
+        d.removeObject(forKey: photoUploadPendingKey)
     }
 
     // MARK: - Shared helpers
@@ -135,16 +139,62 @@ final class PersistenceRoundTripTests: XCTestCase {
         let decoded = try roundTrip([original], as: [ProgressPhoto].self).first
 
         XCTAssertEqual(decoded?.imageData, bytes)
-        XCTAssertEqual(decoded?.imageData.count, 256)
+        XCTAssertEqual(decoded?.imageData?.count, 256)
         XCTAssertEqual(decoded?.note, "front")
         XCTAssertEqual(decoded?.weight, 78.4)
         XCTAssertEqual(decoded?.id, original.id)
+        // A pre-phase3-01 photo has no path — the bytes are still inline.
+        XCTAssertNil(decoded?.storagePath)
 
         // Optional hardening: verify base64 encoding of the raw bytes appears in the JSON.
         let singleData = try JSONEncoder().encode(original)
         let jsonString = String(data: singleData, encoding: .utf8) ?? ""
         let expectedBase64 = bytes.base64EncodedString()
         XCTAssertTrue(jsonString.contains(expectedBase64))
+    }
+
+    /// The post-migration shape (phase3-01): bytes live in the
+    /// `progress-photos` bucket, so the row carries a path and NO base64. The
+    /// encoded payload must actually omit `imageData` — that omission is the
+    /// entire point of moving photos to Storage, and a row that still shipped
+    /// a null/empty blob would keep the payload large for no reason.
+    func test_progressPhoto_storagePathRow_roundTripsWithoutInlineBytes() throws {
+        let original = ProgressPhoto(
+            date: Date(timeIntervalSince1970: 1_700_000_000),
+            imageData: nil,
+            weight: 78.4,
+            note: "front",
+            storagePath: "11111111-1111-1111-1111-111111111111/22222222-2222-2222-2222-222222222222.jpg"
+        )
+
+        let decoded = try roundTrip([original], as: [ProgressPhoto].self).first
+
+        XCTAssertNil(decoded?.imageData)
+        XCTAssertEqual(decoded?.storagePath, original.storagePath)
+        XCTAssertEqual(decoded?.id, original.id)
+
+        let jsonString = String(data: try JSONEncoder().encode(original), encoding: .utf8) ?? ""
+        XCTAssertFalse(jsonString.contains("imageData"))
+    }
+
+    /// Rows written before `storagePath` existed must keep decoding — the lazy
+    /// migration reads them, uploads their bytes, and only then rewrites them.
+    /// A decode failure here would strand those photos permanently.
+    func test_progressPhoto_legacyJSONWithoutStoragePath_decodes() throws {
+        let bytes = Data([9, 8, 7, 6])
+        let legacyJSON = """
+        [{"id":"33333333-3333-3333-3333-333333333333",\
+        "date":723427200,\
+        "imageData":"\(bytes.base64EncodedString())",\
+        "weight":78.4,\
+        "note":"legacy"}]
+        """
+
+        let decoded = try JSONDecoder().decode([ProgressPhoto].self, from: Data(legacyJSON.utf8)).first
+
+        XCTAssertEqual(decoded?.imageData, bytes)
+        XCTAssertNil(decoded?.storagePath)
+        XCTAssertEqual(decoded?.note, "legacy")
     }
 
     // MARK: - Test 5: Full persist -> relaunch simulation via real AppState

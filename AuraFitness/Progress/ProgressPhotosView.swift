@@ -10,9 +10,15 @@ struct ProgressPhotosView: View {
     @State private var compareBeforeItem: PhotosPickerItem? = nil
     @State private var compareAfterItem: PhotosPickerItem? = nil
 
-    // In-memory photo store (persisted via AppState.progressPhotos)
+    // Ad-hoc images picked straight into a compare slot — never persisted.
     @State private var beforeImage: UIImage? = nil
     @State private var afterImage: UIImage? = nil
+    /// The oldest/newest library photos, resolved through
+    /// `ProgressPhotoStorage` (cache, inline bytes, or a Storage download).
+    /// Held in state because a stored photo's bytes are no longer guaranteed
+    /// to be in memory — since phase3-01 they may need fetching.
+    @State private var libraryBefore: UIImage? = nil
+    @State private var libraryAfter: UIImage? = nil
     @State private var showAddSheet = false
     @State private var newPhotoImage: UIImage? = nil
     @State private var newPhotoWeight = ""
@@ -63,21 +69,7 @@ struct ProgressPhotosView: View {
                             spacing: 2
                         ) {
                             ForEach(photos) { photo in
-                                if let img = UIImage(data: photo.imageData) {
-                                    ZStack(alignment: .bottomLeading) {
-                                        Image(uiImage: img)
-                                            .resizable()
-                                            .scaledToFill()
-                                            .aspectRatio(3/4, contentMode: .fit)
-                                            .clipped()
-                                        Text(photo.date.formatted(date: .abbreviated, time: .omitted))
-                                            .font(AuraFont.jakarta(9, .bold))
-                                            .foregroundColor(.white)
-                                            .padding(4)
-                                            .background(Color.black.opacity(0.45))
-                                    }
-                                    .clipShape(RoundedRectangle(cornerRadius: 4))
-                                }
+                                PhotoTile(photo: photo)
                             }
                         }
                         .padding(.horizontal, AuraSpacing.screenPad)
@@ -124,6 +116,16 @@ struct ProgressPhotosView: View {
                     afterImage = UIImage(data: data)
                 }
             }
+            // Keyed on the photo id so adding/removing a photo re-resolves the
+            // slot. This is the ON-DEMAND download the sync layer deliberately
+            // does not do: a pulled row carries a path, and only the screen
+            // that shows it pays for the bytes.
+            .task(id: photos.last?.id) {
+                libraryBefore = await ProgressPhotoStorage.shared.loadImage(for: photos.last)
+            }
+            .task(id: photos.first?.id) {
+                libraryAfter = await ProgressPhotoStorage.shared.loadImage(for: photos.first)
+            }
         }
     }
 
@@ -147,12 +149,8 @@ struct ProgressPhotosView: View {
         .padding(.horizontal, AuraSpacing.screenPad)
     }
 
-    private var firstPhoto: UIImage? {
-        beforeImage ?? photos.last.flatMap { UIImage(data: $0.imageData) }
-    }
-    private var lastPhoto: UIImage? {
-        afterImage ?? photos.first.flatMap { UIImage(data: $0.imageData) }
-    }
+    private var firstPhoto: UIImage? { beforeImage ?? libraryBefore }
+    private var lastPhoto: UIImage? { afterImage ?? libraryAfter }
 
     /// Captions only exist for library photos — an ad-hoc image picked
     /// straight into a compare slot carries no date or weight.
@@ -313,22 +311,24 @@ struct ProgressPhotosView: View {
     }
 
     // MARK: Helpers
-    /// Budget for the encoded JPEG. The photo is base64'd into the
-    /// `aura_progress_photos` jsonb payload, which 0005_payload_guardrails.sql
-    /// caps at 3 MB — and base64 inflates by 4/3 — so the JPEG itself has to
-    /// stay near 2 MB with room left for the row's other fields. A
-    /// full-resolution camera photo blows past that at any quality, hence the
-    /// downscale below. Superseded by phase3-01, which moves photos out of the
-    /// payload and into Supabase Storage.
-    private static let jpegByteBudget = 2_000_000
+    /// Budget for the encoded JPEG. The bytes now go to the `progress-photos`
+    /// Storage bucket (phase3-01), where 1 MB is the target the spec sets — it
+    /// keeps uploads cheap on cellular and stays far under the bucket's own
+    /// size limit. It ALSO has to keep working for the legacy fallback: if the
+    /// upload is permanently rejected (bucket missing), the photo is pushed
+    /// base64 inside the `aura_progress_photos` payload instead, which
+    /// 0005_payload_guardrails.sql caps at 3 MB — and base64 inflates by 4/3,
+    /// so 1 MB of JPEG lands around 1.33 MB with room to spare.
+    private static let jpegByteBudget = 1_000_000
     /// Long edge, in pixels. Well beyond what the compare/thumbnail UI shows.
     private static let maxPhotoDimension: CGFloat = 1600
 
     /// Downscales, then steps quality down until the JPEG fits the budget.
     /// The last attempt is returned even if it still doesn't fit — a photo
-    /// saved locally but rejected by the server beats silently saving nothing,
-    /// and the sync layer treats that rejection as permanent (it drops the
-    /// queued push and keeps the local row).
+    /// saved locally but rejected by the server beats silently saving nothing.
+    /// Both rejection paths keep the local row: `ProgressPhotoStorage` retries
+    /// an oversized upload once at lower quality before giving up, and the sync
+    /// layer drops a permanently-rejected queued push rather than the photo.
     private func encodedPhotoData(_ img: UIImage) -> Data? {
         let scaled = Self.downscaled(img, maxDimension: Self.maxPhotoDimension)
         var last: Data? = nil
@@ -385,5 +385,46 @@ struct ProgressPhotosView: View {
         guard !items.isEmpty else { return }
         let av = UIActivityViewController(activityItems: items, applicationActivities: nil)
         root.present(av, animated: true)
+    }
+}
+
+/// One library-grid cell. Its own view (rather than an inline `if let`) so each
+/// tile owns the async resolve of its image — inside a `LazyVGrid` that makes
+/// the Storage download happen per-tile, as it scrolls into view, instead of
+/// all at once. A tile whose bytes are neither cached nor reachable shows the
+/// placeholder and retries the next time it appears.
+private struct PhotoTile: View {
+    let photo: ProgressPhoto
+
+    @State private var image: UIImage? = nil
+
+    var body: some View {
+        ZStack(alignment: .bottomLeading) {
+            if let image {
+                Image(uiImage: image)
+                    .resizable()
+                    .scaledToFill()
+                    .aspectRatio(3/4, contentMode: .fit)
+                    .clipped()
+            } else {
+                Rectangle()
+                    .fill(Color.aura.surface)
+                    .aspectRatio(3/4, contentMode: .fit)
+                    .overlay(
+                        Image(systemName: "photo")
+                            .font(AuraFont.jakarta(18))
+                            .foregroundColor(.aura.text3)
+                    )
+            }
+            Text(photo.date.formatted(date: .abbreviated, time: .omitted))
+                .font(AuraFont.jakarta(9, .bold))
+                .foregroundColor(.white)
+                .padding(4)
+                .background(Color.black.opacity(0.45))
+        }
+        .clipShape(RoundedRectangle(cornerRadius: 4))
+        .task(id: photo.id) {
+            image = await ProgressPhotoStorage.shared.loadImage(for: photo)
+        }
     }
 }

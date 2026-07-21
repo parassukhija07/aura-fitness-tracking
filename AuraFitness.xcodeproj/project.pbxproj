@@ -13,6 +13,7 @@
 		F4B7795274B943A5B9B62526 /* AuthGateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 767A044673D746789E72D381 /* AuthGateView.swift */; };
 		1C44CF6B34AC4873A99272F1 /* SupabaseSyncService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1769544EF2E3416F82E81B02 /* SupabaseSyncService.swift */; };
 		4656E2A977A641238D1AB9C0 /* Syncable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 803A4A0AEB6F4A24B9B0F3EF /* Syncable.swift */; };
+		9F2E1A7B4C0D48E1B3A65C10 /* ProgressPhotoStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B4C0D489F2E48E1B3A65C11 /* ProgressPhotoStorage.swift */; };
 		8D33A0F1C2094AB78B2B8659 /* DataArchive.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D8FE47712C54B54A93D5F78 /* DataArchive.swift */; };
 		3C776F2B48C74E23A00FABDA /* DataResetService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AEA826CEB9E4915BB1984C0 /* DataResetService.swift */; };
 		AA59FEAF6AB35E46E6A39847 /* HealthKitService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB16797C38CBD24BBD9E0E01 /* HealthKitService.swift */; };
@@ -108,6 +109,7 @@
 		767A044673D746789E72D381 /* AuthGateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthGateView.swift; sourceTree = "<group>"; };
 		1769544EF2E3416F82E81B02 /* SupabaseSyncService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupabaseSyncService.swift; sourceTree = "<group>"; };
 		803A4A0AEB6F4A24B9B0F3EF /* Syncable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Syncable.swift; sourceTree = "<group>"; };
+		7B4C0D489F2E48E1B3A65C11 /* ProgressPhotoStorage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressPhotoStorage.swift; sourceTree = "<group>"; };
 		3D8FE47712C54B54A93D5F78 /* DataArchive.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataArchive.swift; sourceTree = "<group>"; };
 		5AEA826CEB9E4915BB1984C0 /* DataResetService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataResetService.swift; sourceTree = "<group>"; };
 		AB16797C38CBD24BBD9E0E01 /* HealthKitService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthKitService.swift; sourceTree = "<group>"; };
@@ -410,6 +412,7 @@
 			children = (
 				1769544EF2E3416F82E81B02 /* SupabaseSyncService.swift */,
 				803A4A0AEB6F4A24B9B0F3EF /* Syncable.swift */,
+				7B4C0D489F2E48E1B3A65C11 /* ProgressPhotoStorage.swift */,
 			);
 			path = Sync;
 			sourceTree = "<group>";
@@ -592,6 +595,7 @@
 				F4B7795274B943A5B9B62526 /* AuthGateView.swift in Sources */,
 				1C44CF6B34AC4873A99272F1 /* SupabaseSyncService.swift in Sources */,
 				4656E2A977A641238D1AB9C0 /* Syncable.swift in Sources */,
+				9F2E1A7B4C0D48E1B3A65C10 /* ProgressPhotoStorage.swift in Sources */,
 				8D33A0F1C2094AB78B2B8659 /* DataArchive.swift in Sources */,
 				3C776F2B48C74E23A00FABDA /* DataResetService.swift in Sources */,
 				AA59FEAF6AB35E46E6A39847 /* HealthKitService.swift in Sources */,

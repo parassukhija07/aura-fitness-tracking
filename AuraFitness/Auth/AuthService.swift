@@ -125,6 +125,12 @@ final class AuthService: ObservableObject {
         // this device starts its incremental sync from epoch, never inheriting
         // the prior user's cursor.
         SupabaseSyncService.shared.resetSyncState()
+        // The progress-photo file cache is deliberately NOT dropped here.
+        // Sign-out does not clear `appState.progressPhotos`, so the rows stay
+        // on screen — and since phase3-01 a migrated row has no inline bytes,
+        // deleting its cache file would leave a blank tile that nothing can
+        // refill (no session, no download). Byte lifetime tracks row lifetime:
+        // the full reset clears both (see DataResetService).
         sessionState = .signedOut
     }
 

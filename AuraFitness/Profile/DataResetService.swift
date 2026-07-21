@@ -49,6 +49,13 @@ enum DataResetService {
         appState.clearQuickLogs()
         appState.clearPersonalRecords()
 
+        // Captured before the local array is emptied. `clearProgressPhotos()`
+        // is an `isApplyingRemote` write, and that path deliberately does NOT
+        // delete Storage objects — a tombstone or a local-only reset must not
+        // destroy bytes the remote rows still point at. A remote wipe is the
+        // one case that must, so the paths are held here for it.
+        var photoObjectPaths: [String] = []
+
         var remoteTables: [SupabaseSyncService.Table] = [
             .programs, .plans, .exercises, .workoutLogs, .dayOverrides, .quickLogs, .personalRecords,
         ]
@@ -68,8 +75,11 @@ enum DataResetService {
             appState.clearMeasurements()
             appState.resetBodyStats()
             appState.resetUserProfile()
+            photoObjectPaths = appState.progressPhotos.compactMap(\.storagePath)
             appState.clearProgressPhotos()
             appState.resetPrefs()
+            // Queued uploads, the pending-id list, and the Caches/ photo files.
+            ProgressPhotoStorage.shared.resetLocalState()
 
             remoteTables += [.measurements, .bodyStats, .userProfile, .progressPhotos, .preferences]
 
@@ -88,6 +98,7 @@ enum DataResetService {
 
         if alsoRemote {
             SupabaseSyncService.shared.wipeRemote(tables: remoteTables)
+            ProgressPhotoStorage.shared.wipeRemoteObjects(paths: photoObjectPaths)
         }
     }
 }

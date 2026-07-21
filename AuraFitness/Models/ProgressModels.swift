@@ -4,9 +4,19 @@ import Foundation
 struct ProgressPhoto: Identifiable, Codable {
     var id = UUID()
     var date: Date
-    var imageData: Data
+    /// LEGACY inline JPEG bytes. Non-nil only while the photo has not reached
+    /// Supabase Storage yet — a photo just taken, a guest-mode photo, or a row
+    /// written by a client predating phase3-01. `ProgressPhotoStorage` clears
+    /// it the moment the upload succeeds, so a migrated row carries metadata
+    /// only and the bytes come from the bucket (or the local file cache).
+    /// Optional purely so those legacy rows keep decoding.
+    var imageData: Data?
     var weight: Double?
     var note: String = ""
+    /// Bucket-relative object path — `{user_id}/{photo_uuid}.jpg` inside
+    /// `progress-photos` (see 0006_progress_photos_storage.sql). Non-nil means
+    /// the bytes are durable server-side and `imageData` is expected to be nil.
+    var storagePath: String? = nil
 }
 
 // MARK: - WorkoutLog
