@@ -9,9 +9,15 @@ on:
 
 jobs:
   # Verifies that pull_changes(since) cannot leak one user's rows to another.
-  # Deliberately workflow_dispatch-only: it creates (and then deletes) two real
-  # auth users in the linked Supabase project, which should not happen on every
-  # push or pull request.
+  #
+  # Deliberately workflow_dispatch-only: it signs up two real users in the
+  # linked Supabase project and, having only the anon key, cannot delete them
+  # afterwards — so each run leaves two throwaway users in auth.users. That is
+  # not something to do on every push or pull request.
+  #
+  # Requires email confirmation to be OFF for the duration of the run, or
+  # signup returns no session and the script fails with an explanation. See
+  # the header of scripts/rls_isolation_test.sh.
   rls-isolation:
     if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
@@ -19,23 +25,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Check required secrets are configured
-        env:
-          SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
-        run: |
-          if [ -z "$SERVICE_ROLE_KEY" ]; then
-            echo "SUPABASE_SERVICE_ROLE_KEY is not set in repository secrets."
-            echo "It is required to create two confirmed test users and to"
-            echo "delete them afterwards. Add it under Settings > Secrets and"
-            echo "variables > Actions, then re-run this workflow."
-            exit 1
-          fi
-
       - name: Run RLS isolation test against pull_changes
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
-          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
         run: bash scripts/rls_isolation_test.sh
 
   build:

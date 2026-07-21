@@ -6,25 +6,35 @@
 # are supposed to guarantee: user B calling pull_changes can never see user A's
 # rows, no matter what `since` value B forges.
 #
-# Creates two throwaway confirmed users, writes one row as each, calls the RPC
-# as each, asserts isolation, then deletes both users. `aura_*.user_id` is
-# `references auth.users(id) on delete cascade`, so deleting the users removes
-# their rows too — the trap below runs cleanup even when an assertion fails.
+# Uses ONLY the anon key — no service_role key is required or accepted.
+#
+# TWO CONSEQUENCES OF THAT, both deliberate:
+#
+#   1. Users are created with the public /auth/v1/signup endpoint, which only
+#      returns a session when the project has email confirmation DISABLED
+#      (Dashboard > Authentication > Sign In / Providers > "Confirm email").
+#      With confirmation ON, signup yields no access token, there is nothing to
+#      authenticate as, and this script FAILS LOUDLY rather than exiting green
+#      without having verified anything. A verification job that silently
+#      verifies nothing is worse than one that fails.
+#
+#   2. Cleanup can delete the two test ROWS (the owner_all policy permits an
+#      owner to delete its own rows) but NOT the two test USERS, which requires
+#      admin privileges. Two throwaway users are therefore LEFT BEHIND in
+#      auth.users on every run. They are named aura-rls-{a,b}-<stamp>@example.com
+#      so you can find and purge them from the Dashboard.
 #
 # Required env:
-#   SUPABASE_URL               https://<project-ref>.supabase.co
-#   SUPABASE_ANON_KEY          anon/publishable key (acts as the client)
-#   SUPABASE_SERVICE_ROLE_KEY  service_role key (admin user create/delete only)
+#   SUPABASE_URL       https://<project-ref>.supabase.co
+#   SUPABASE_ANON_KEY  anon/publishable key
 #
-# WARNING: this runs against whatever project SUPABASE_URL points at. It briefly
-# creates two auth users and two rows, then removes them. Do not point it at a
-# project where that is unacceptable.
+# WARNING: runs against whatever project SUPABASE_URL points at, and leaves two
+# auth users behind there. Do not point it at a project where that matters.
 
 set -euo pipefail
 
 : "${SUPABASE_URL:?SUPABASE_URL is required}"
 : "${SUPABASE_ANON_KEY:?SUPABASE_ANON_KEY is required}"
-: "${SUPABASE_SERVICE_ROLE_KEY:?SUPABASE_SERVICE_ROLE_KEY is required}"
 
 BASE="${SUPABASE_URL%/}"
 EPOCH="1970-01-01T00:00:00.000Z"
@@ -38,46 +48,55 @@ new_uuid() {
   fi
 }
 
-USER_A_ID=""
-USER_B_ID=""
+JWT_A=""
+JWT_B=""
+ROW_A=""
+ROW_B=""
+EMAIL_A=""
+EMAIL_B=""
 
+# Deletes each test row as its own owner. Runs even when an assertion fails.
+# Cannot remove the users themselves without admin rights — see header.
 cleanup() {
   local code=$?
   set +e
-  for uid in "$USER_A_ID" "$USER_B_ID"; do
-    [ -n "$uid" ] || continue
+  if [ -n "$JWT_A" ] && [ -n "$ROW_A" ]; then
     curl --silent --show-error --output /dev/null \
-      -X DELETE "$BASE/auth/v1/admin/users/$uid" \
-      -H "apikey: $SUPABASE_SERVICE_ROLE_KEY" \
-      -H "Authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY"
-    echo "cleanup: deleted test user $uid (cascade removed its aura_* rows)"
-  done
+      -X DELETE "$BASE/rest/v1/aura_workout_logs?id=eq.$ROW_A" \
+      -H "apikey: $SUPABASE_ANON_KEY" -H "Authorization: Bearer $JWT_A"
+    echo "cleanup: deleted row $ROW_A"
+  fi
+  if [ -n "$JWT_B" ] && [ -n "$ROW_B" ]; then
+    curl --silent --show-error --output /dev/null \
+      -X DELETE "$BASE/rest/v1/aura_workout_logs?id=eq.$ROW_B" \
+      -H "apikey: $SUPABASE_ANON_KEY" -H "Authorization: Bearer $JWT_B"
+    echo "cleanup: deleted row $ROW_B"
+  fi
+  if [ -n "$EMAIL_A" ] || [ -n "$EMAIL_B" ]; then
+    echo "NOTE: these throwaway users remain in auth.users and need manual"
+    echo "      removal from the Dashboard (no admin key available here):"
+    [ -n "$EMAIL_A" ] && echo "      $EMAIL_A"
+    [ -n "$EMAIL_B" ] && echo "      $EMAIL_B"
+  fi
   exit $code
 }
 trap cleanup EXIT
 
-# Creates a confirmed user and echoes its uuid. email_confirm bypasses the
-# signup confirmation flow, which would otherwise withhold a session.
-admin_create_user() {
-  local email="$1"
-  curl --silent --show-error --fail \
-    -X POST "$BASE/auth/v1/admin/users" \
-    -H "apikey: $SUPABASE_SERVICE_ROLE_KEY" \
-    -H "Authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY" \
-    -H "Content-Type: application/json" \
-    -d "{\"email\":\"$email\",\"password\":\"$PASSWORD\",\"email_confirm\":true}" \
-    | jq -r '.id'
-}
+fail() { echo "FAIL: $*" >&2; exit 1; }
 
-# Echoes a user access token. Never logged — it is a live credential.
-sign_in() {
-  local email="$1"
-  curl --silent --show-error --fail \
-    -X POST "$BASE/auth/v1/token?grant_type=password" \
+# Signs up a user and echoes "<uuid> <access_token>". GoTrue returns the token
+# at the top level on some versions and under .session on others; when email
+# confirmation is enabled it returns neither, which the caller treats as fatal.
+signup() {
+  local email="$1" body
+  body="$(curl --silent --show-error --fail \
+    -X POST "$BASE/auth/v1/signup" \
     -H "apikey: $SUPABASE_ANON_KEY" \
     -H "Content-Type: application/json" \
-    -d "{\"email\":\"$email\",\"password\":\"$PASSWORD\"}" \
-    | jq -r '.access_token'
+    -d "{\"email\":\"$email\",\"password\":\"$PASSWORD\"}")"
+  echo "$body" | jq -r '
+    [ (.id // .user.id // ""),
+      (.access_token // .session.access_token // "") ] | join(" ")'
 }
 
 insert_log_row() {
@@ -100,24 +119,33 @@ call_pull_changes() {
     -d "{\"since\":\"$since\"}"
 }
 
-fail() { echo "FAIL: $*" >&2; exit 1; }
-
 stamp="$(date +%s)-$RANDOM"
 EMAIL_A="aura-rls-a-$stamp@example.com"
 EMAIL_B="aura-rls-b-$stamp@example.com"
 
-echo "==> creating two throwaway users"
-USER_A_ID="$(admin_create_user "$EMAIL_A")"
-USER_B_ID="$(admin_create_user "$EMAIL_B")"
-[ -n "$USER_A_ID" ] && [ "$USER_A_ID" != "null" ] || fail "could not create user A"
-[ -n "$USER_B_ID" ] && [ "$USER_B_ID" != "null" ] || fail "could not create user B"
+echo "==> signing up two throwaway users"
+read -r USER_A_ID TOKEN_A <<<"$(signup "$EMAIL_A")"
+read -r USER_B_ID TOKEN_B <<<"$(signup "$EMAIL_B")"
+
+if [ -z "$TOKEN_A" ] || [ -z "$TOKEN_B" ]; then
+  echo "Signup returned no access token." >&2
+  echo "This project almost certainly has email confirmation ENABLED, so a new" >&2
+  echo "user has no session until the emailed link is clicked, and there is no" >&2
+  echo "identity to run the isolation test as." >&2
+  echo >&2
+  echo "To run this test, temporarily turn off Dashboard > Authentication >" >&2
+  echo "Sign In / Providers > 'Confirm email', re-run, then turn it back on." >&2
+  fail "cannot authenticate as test users; nothing was verified"
+fi
+[ -n "$USER_A_ID" ] && [ "$USER_A_ID" != "null" ] || fail "signup A returned no user id"
+[ -n "$USER_B_ID" ] && [ "$USER_B_ID" != "null" ] || fail "signup B returned no user id"
+
+# Assign only after the tokens are known good, so the trap never fires DELETEs
+# with an empty Authorization header.
+JWT_A="$TOKEN_A"
+JWT_B="$TOKEN_B"
 echo "    A=$USER_A_ID"
 echo "    B=$USER_B_ID"
-
-JWT_A="$(sign_in "$EMAIL_A")"
-JWT_B="$(sign_in "$EMAIL_B")"
-[ -n "$JWT_A" ] && [ "$JWT_A" != "null" ] || fail "could not sign in as user A"
-[ -n "$JWT_B" ] && [ "$JWT_B" != "null" ] || fail "could not sign in as user B"
 
 ROW_A="$(new_uuid)"
 ROW_B="$(new_uuid)"
