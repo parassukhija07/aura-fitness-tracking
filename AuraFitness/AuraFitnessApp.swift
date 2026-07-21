@@ -17,6 +17,13 @@ struct AuraFitnessApp: App {
     init() {
         let state = AppState()
         AppStateBridge.shared = state
+        // Must run before AuthService is touched below: `restoreSession` can
+        // kick off a pull, and pulling remote plans onto still-random local
+        // seed ids is exactly the mismatch this migration exists to remove.
+        // Nothing pushes here — there is no session yet — but every rewritten
+        // row is stamped as a local change, so the first sign-in reconcile
+        // carries the stable ids up.
+        SeedIDMigration.runIfNeeded()
         _appState = StateObject(wrappedValue: state)
         _authService = StateObject(wrappedValue: AuthService.shared)
         _syncService = StateObject(wrappedValue: SupabaseSyncService.shared)

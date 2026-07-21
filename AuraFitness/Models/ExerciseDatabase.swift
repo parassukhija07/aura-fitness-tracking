@@ -107,8 +107,14 @@ final class ExerciseDatabase: ObservableObject {
     }
 
     // MARK: - Remote sync hooks
+    /// Single chokepoint for every entry write-through in this class — all
+    /// the CRUD methods above route here, so the ownership gate only has to
+    /// exist once.
     private func syncPush(_ entry: ExerciseEntry) {
         guard !isApplyingRemote else { return }
+        // The bundled library ships in the binary; only custom entries sync.
+        // See Syncable.swift.
+        guard entry.isSyncable else { return }
         entry.syncPush(table: .exercises)
     }
     private func syncDelete(id: UUID) {
@@ -118,12 +124,17 @@ final class ExerciseDatabase: ObservableObject {
 
     /// Replaces `entries` with pulled remote rows merged over local, without
     /// re-pushing (guards the push loop).
+    /// Non-syncable rows are dropped on the way in: devices predating the
+    /// ownership policy pushed the whole bundled catalog, and those legacy
+    /// rows must never overwrite the shipped library. Belt-and-braces
+    /// alongside the push gate in `syncPush` and the one-time
+    /// `cleanupPredefinedRemoteRows` sweep.
     func applyRemote(_ remoteEntries: [ExerciseEntry]) {
         isApplyingRemote = true
         defer { isApplyingRemote = false }
         var byID: [UUID: ExerciseEntry] = [:]
         for e in entries { byID[e.id] = e }
-        for e in remoteEntries { byID[e.id] = e }
+        for e in remoteEntries where e.isSyncable { byID[e.id] = e }
         entries = Array(byID.values)
         persist()
     }

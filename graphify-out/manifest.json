@@ -230,8 +230,8 @@
     "semantic_hash": ""
   },
   "AuraFitness/AuraFitnessApp.swift": {
-    "mtime": 1784592098.22767,
-    "ast_hash": "f7bf7413629ca91c71e482094ac0f7be",
+    "mtime": 1784623916.102412,
+    "ast_hash": "e2bb913e66b7427a8f2c4c0f5f6f3cfc",
     "semantic_hash": ""
   },
   "AuraFitness/Auth/AuthConfig.swift": {
@@ -300,13 +300,13 @@
     "semantic_hash": ""
   },
   "AuraFitness/Models/AppState.swift": {
-    "mtime": 1784620386.3252003,
-    "ast_hash": "cd5144aeaee9f2292729d1b66414ce69",
+    "mtime": 1784623889.7869742,
+    "ast_hash": "b13875f3514af0d2f7e89752e8576d9f",
     "semantic_hash": ""
   },
   "AuraFitness/Models/ExerciseDatabase.swift": {
-    "mtime": 1784620332.1089098,
-    "ast_hash": "f5b57c6f62f41ae80c33f385d35691d0",
+    "mtime": 1784624109.2037282,
+    "ast_hash": "72b31544d954b11692e85a802fc2f01b",
     "semantic_hash": ""
   },
   "AuraFitness/Models/LogDayModel.swift": {
@@ -315,8 +315,8 @@
     "semantic_hash": ""
   },
   "AuraFitness/Models/ProgramDatabase.swift": {
-    "mtime": 1784620354.2553618,
-    "ast_hash": "963eec0b0dd812c793d243d7258d2b85",
+    "mtime": 1784624099.8613062,
+    "ast_hash": "1dcab9c33d932238c08031f5c6d78152",
     "semantic_hash": ""
   },
   "AuraFitness/Models/ProgressModels.swift": {
@@ -325,8 +325,8 @@
     "semantic_hash": ""
   },
   "AuraFitness/Models/SeedData.swift": {
-    "mtime": 1782854910.7127001,
-    "ast_hash": "3d419197447e20c1aa265f581c6c861a",
+    "mtime": 1784623770.7441435,
+    "ast_hash": "ecd6f579c46a92ffb9c96a22b9c3686a",
     "semantic_hash": ""
   },
   "AuraFitness/Models/UnitFormatter.swift": {
@@ -555,13 +555,13 @@
     "semantic_hash": ""
   },
   "AuraFitness/Sync/SupabaseSyncService.swift": {
-    "mtime": 1784622972.8055086,
-    "ast_hash": "28503171aae649b658e4e7f54c8b1d8e",
+    "mtime": 1784624227.968771,
+    "ast_hash": "b5cb3eb0ec477840f771f3be35ea9f78",
     "semantic_hash": ""
   },
   "AuraFitness/Sync/Syncable.swift": {
-    "mtime": 1784373707.8791864,
-    "ast_hash": "098bfeee7a4a31db0140e6be2281a57e",
+    "mtime": 1784624055.5348022,
+    "ast_hash": "625a307e03ba302947f837569e0b8970",
     "semantic_hash": ""
   },
   "push_changes.sh": {

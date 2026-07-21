@@ -298,6 +298,9 @@ final class SupabaseSyncService: ObservableObject {
             await pullChanges()
         }
         await flushQueue()
+        // After the queue drains, so the sweep can't race a queued upsert of
+        // the very rows it is deleting.
+        await cleanupPredefinedRemoteRows()
     }
 
     private func isRemoteEmpty(uid: String) async -> Bool {
@@ -560,8 +563,15 @@ final class SupabaseSyncService: ObservableObject {
         bodyStats: [RemoteRow], profile: [RemoteRow], prefs: [RemoteRow],
         skipRePush: Set<String> = []
     ) -> Date? {
+        // The `localLookup` closures for programs/exercises refuse non-syncable
+        // values on purpose. `reconcile`'s local-wins branch pushes whatever
+        // lookup returns, bypassing the stores' own `syncPush` ownership gate —
+        // returning nil there is what stops a predefined program being
+        // republished by the merge itself.
         reconcile(rows: programs, table: .programs, idOf: { (p: Program) in p.id.uuidString },
-                  localLookup: { id in ProgramDatabase.shared.programs.first { $0.id.uuidString == id } },
+                  localLookup: { id in
+                      ProgramDatabase.shared.programs.first { $0.id.uuidString == id && $0.isSyncable }
+                  },
                   skipRePush: skipRePush)
             .map { ProgramDatabase.shared.applyRemote($0) }
         reconcile(rows: plans, table: .plans, idOf: { (p: UserPlan) in p.id.uuidString },
@@ -569,7 +579,9 @@ final class SupabaseSyncService: ObservableObject {
                   skipRePush: skipRePush)
             .map { UserPlanDatabase.shared.applyRemote($0) }
         reconcile(rows: exercises, table: .exercises, idOf: { (e: ExerciseEntry) in e.id.uuidString },
-                  localLookup: { id in ExerciseDatabase.shared.entries.first { $0.id.uuidString == id } },
+                  localLookup: { id in
+                      ExerciseDatabase.shared.entries.first { $0.id.uuidString == id && $0.isSyncable }
+                  },
                   skipRePush: skipRePush)
             .map { ExerciseDatabase.shared.applyRemote($0) }
 
@@ -700,6 +712,72 @@ final class SupabaseSyncService: ObservableObject {
         }
         saveLocalTsMap(localTsMap)
         return merged.isEmpty ? nil : merged
+    }
+
+    // MARK: - Predefined content cleanup (one-time)
+
+    private let predefinedCleanupKey = "aura_predefined_cleanup_done_v1"
+
+    /// Deletes the predefined programs and bundled exercises that devices
+    /// predating the ownership policy pushed into this account. Runs once per
+    /// install, after sign-in.
+    ///
+    /// Filtering happens CLIENT-side rather than with a PostgREST
+    /// `payload->>isPredefined=eq.true` filter: the arrow-operator column
+    /// syntax has to survive the SDK's URL encoding, and getting that subtly
+    /// wrong fails open — it would match nothing, delete nothing, and still
+    /// look like success. Fetching and decoding costs one extra round trip,
+    /// once, and cannot silently no-op.
+    ///
+    /// The flag is set ONLY after both tables finish cleanly, so a network
+    /// failure mid-sweep just retries at the next sign-in. Re-running is
+    /// harmless — deletes are idempotent, and the rows are gone by then.
+    ///
+    /// These deletes fire the phase1-02 triggers and leave tombstones behind.
+    /// That is fine: the pull-side `isSyncable` filters ignore predefined rows
+    /// anyway, and a tombstone for a row no device wants is a no-op.
+    func cleanupPredefinedRemoteRows() async {
+        guard let uid = userID else { return }
+        guard !UserDefaults.standard.bool(forKey: predefinedCleanupKey) else { return }
+
+        do {
+            try await deleteNonSyncableRows(.programs, uid: uid) { (p: Program) in p.isSyncable }
+            try await deleteNonSyncableRows(.exercises, uid: uid) { (e: ExerciseEntry) in e.isSyncable }
+            UserDefaults.standard.set(true, forKey: predefinedCleanupKey)
+        } catch {
+            // Signed out, offline, or a transient failure — leave the flag
+            // unset so the next sign-in tries again. Nothing local changed.
+        }
+    }
+
+    /// Fetches every row of `table` for this user, decodes each payload, and
+    /// deletes the ones the ownership policy says should never have been
+    /// there. Throws on the first failure so the caller can withhold the
+    /// completion flag — unlike `fetchRows`, which swallows errors into an
+    /// empty array and would make a failed fetch indistinguishable from a
+    /// clean account.
+    private func deleteNonSyncableRows<T: Decodable>(
+        _ table: Table, uid: String, isSyncable: (T) -> Bool
+    ) async throws {
+        /// Just the two fields this sweep needs. Deliberately NOT `RemoteRow`:
+        /// that type carries `updated_at: Date`, which the default decoder
+        /// cannot read from PostgREST's ISO-8601 string, so decoding it here
+        /// would throw on every run and the sweep would never complete.
+        struct OwnershipRow: Decodable {
+            let id: String?
+            let payload: AnyJSON
+        }
+
+        let response = try await client.from(table.rawValue)
+            .select("id,payload")
+            .eq("user_id", value: uid)
+            .execute()
+        let rows = try JSONDecoder().decode([OwnershipRow].self, from: response.data)
+
+        for row in rows {
+            guard let id = row.id, let decoded: T = decode(row.payload), !isSyncable(decoded) else { continue }
+            try await deleteRemote(table: table, uid: uid, rowID: id)
+        }
     }
 
     // MARK: - Tombstones (aura_deletions)

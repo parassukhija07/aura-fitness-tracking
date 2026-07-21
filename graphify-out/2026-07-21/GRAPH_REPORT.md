@@ -1,16 +1,16 @@
 # Graph Report - Aura Fitness Tracker  (2026-07-21)
 
 ## Corpus Check
-- 167 files · ~302,491 words
+- 167 files · ~304,647 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 2133 nodes · 4948 edges · 130 communities (119 shown, 11 thin omitted)
-- Extraction: 93% EXTRACTED · 7% INFERRED · 0% AMBIGUOUS · INFERRED: 356 edges (avg confidence: 0.75)
+- 2151 nodes · 5012 edges · 132 communities (124 shown, 8 thin omitted)
+- Extraction: 93% EXTRACTED · 7% INFERRED · 0% AMBIGUOUS · INFERRED: 359 edges (avg confidence: 0.75)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `1ec1b57e`
+- Built from commit: `0a96d905`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -68,7 +68,7 @@
 - AuthService
 - .programRow
 - DayOverride
-- NutritionView
+- SessionState
 - HealthKitService
 - PersistenceRoundTripTests
 - IMPLEMENTATION SPEC
@@ -86,7 +86,7 @@
 - IMPLEMENTATION SPEC: YouTube Tap-to-Play + Remote Exercise Images
 - AuraColors.swift
 - Identifiable
-- ResumeBanner
+- StatsView.swift
 - CI Build Failure — Root Cause & Fix
 - BACKEND IMPLEMENTATION SPEC: Deletion Tombstones — Stop Deleted-Row Resurrection
 - IMPLEMENTATION SPEC: Plan Workout Editor — Design-Faithful Redesign
@@ -108,46 +108,48 @@
 - IMPLEMENTATION SPEC: Profile — Account/Units/Connected/Support + Confirm Sheets
 - SessionState
 - AuraSpacing.swift
-- MeasurementsView
+- CodingKeys
+- LogMeasurementSheet
 - BACKEND IMPLEMENTATION SPEC: delete-account Edge Function — Storage Cleanup
 - IMPLEMENTATION SUMMARY
 - IMPLEMENTATION SPEC: Consistency Heatmap — 5-Level Real Outcomes
 - IMPLEMENTATION SPEC: Nutrition Calculator — Exact Formulas + Layout Parity
 - Aura Fitness — Developer Handover
-- AuraAxisChart
+- Set
+- .editableLogCard
 - Aura Fitness — Remaining Build: Phase Index
 - TEST EXECUTION REPORT
 - PlanBodyMap
-- DataArchive
+- AuraSheetModifier
+- AuraTabIcon
+- Kind
 - IMPLEMENTATION SUMMARY
 - FINAL ARCHITECTURE REVIEW
 - TEST EXECUTION REPORT
 - FINAL ARCHITECTURE REVIEW
 - ActiveWorkoutScreen
 - data.jsx
+- PersonalRecordsView
 - String
-- AuraToggleStyle
+- AddToPlanSheet
+- AuraFitnessApp
 - icons.js
 - 00-INDEX.md
 - push_changes.sh
 - index.ts
-- PlanDay
-- .editableLogCard
-- ProfileScreen
-- CodingKeys
 - EndWorkoutSheet
 
 ## God Nodes (most connected - your core abstractions)
-1. `AppState` - 141 edges
+1. `AppState` - 142 edges
 2. `Workout` - 76 edges
 3. `Exercise` - 70 edges
 4. `SwiftUI` - 66 edges
 5. `WorkoutSessionState` - 66 edges
 6. `Color` - 63 edges
 7. `LogSheetsView` - 51 edges
-8. `SupabaseSyncService` - 46 edges
-9. `WorkoutEditorView` - 31 edges
-10. `Table` - 31 edges
+8. `SupabaseSyncService` - 48 edges
+9. `Table` - 32 edges
+10. `WorkoutEditorView` - 31 edges
 
 ## Surprising Connections (you probably didn't know these)
 - `AuthFormView` --calls--> `ToastCenter`  [INFERRED]
@@ -164,18 +166,18 @@
 ## Import Cycles
 - None detected.
 
-## Communities (130 total, 11 thin omitted)
+## Communities (132 total, 8 thin omitted)
 
 ### Community 0 - "Exercise"
-Cohesion: 0.06
-Nodes (50): ActiveWorkoutSeed, Int, ExerciseDatabase, ExerciseEntry, ExerciseWarmupProtocol, FailableDecodable, GymExerciseJSON, Bool (+42 more)
+Cohesion: 0.15
+Nodes (13): ExerciseDatabase, ExerciseEntry, ExerciseWarmupProtocol, GymExerciseJSON, Bool, Int, Set, String (+5 more)
 
 ### Community 1 - ".secondary"
-Cohesion: 0.06
-Nodes (42): AuraFitness, CSVArchiveBuilder, Bool, Date, Double, ExerciseEntry, Int, ISO8601DateFormatter (+34 more)
+Cohesion: 0.17
+Nodes (13): CSVArchiveBuilder, Bool, Date, Double, ExerciseEntry, Int, ISO8601DateFormatter, Measurement (+5 more)
 
 ### Community 2 - "WorkoutEditorView"
-Cohesion: 0.06
+Cohesion: 0.05
 Nodes (39): EditorExercisePicker, EditorPickerMode, addAfter, substitute, supersetNew, Bool, ExerciseEntry, String (+31 more)
 
 ### Community 3 - "support.js"
@@ -195,51 +197,51 @@ Cohesion: 0.28
 Nodes (7): Date, Double, Int, String, WorkoutLog, WeeklyVolumeView, WeekPoint
 
 ### Community 7 - "UnitFormatter"
-Cohesion: 0.09
-Nodes (22): ArraySlice, Double, String, UnitFormatter, LogMeasurementSheet, Binding, String, MeasurementsView (+14 more)
+Cohesion: 0.08
+Nodes (25): ArraySlice, Double, String, UnitFormatter, MeasurementsView, Date, Double, Int (+17 more)
 
 ### Community 8 - ".persist"
-Cohesion: 0.11
-Nodes (13): programs, ProgramDatabase, Bool, IndexSet, Int, Program, Set, String (+5 more)
+Cohesion: 0.09
+Nodes (15): programs, ProgramDatabase, SeedIDMigration, Bool, IndexSet, Int, Program, Set (+7 more)
 
 ### Community 9 - "MyPlansView"
-Cohesion: 0.11
-Nodes (18): CreatePlanView, CreateWorkoutIcon, MyPlanSheet, addPlan, addWorkout, assign, createWorkout, dayMenu (+10 more)
+Cohesion: 0.17
+Nodes (10): ExerciseLoggingView, Bool, Double, Int, String, AuraTabBar, PlanScheduleEditorView, Bool (+2 more)
 
 ### Community 10 - "WorkoutSessionState"
-Cohesion: 0.16
-Nodes (11): Comparable, ExerciseTrendPicker, StatsView, Bool, ClosedRange, Date, Double, Int (+3 more)
+Cohesion: 0.07
+Nodes (24): String, AuraCard, AuraProgressBar, Content, AuraFont, Face, SectionLabelStyle, CGFloat (+16 more)
 
 ### Community 11 - "LogSheetsView"
-Cohesion: 0.18
-Nodes (9): LogSheetsView, Bool, Date, ExerciseEntry, Program, Set, String, Void (+1 more)
+Cohesion: 0.15
+Nodes (11): LogSheetsView, Bool, Date, ExerciseEntry, Program, Set, String, UUID (+3 more)
 
 ### Community 12 - "String"
-Cohesion: 0.23
+Cohesion: 0.25
 Nodes (9): NutritionView, Binding, Bool, ClosedRange, Date, Double, Int, String (+1 more)
 
 ### Community 13 - "AppState"
 Cohesion: 0.07
-Nodes (13): App, AuraFitnessApp, AppState, RemotePrefs, Bool, Measurement, PersonalRecord, ProgressPhoto (+5 more)
+Nodes (17): App, AuraFitnessApp, AppState, DayInfo, Bool, Date, Measurement, PersonalRecord (+9 more)
 
 ### Community 14 - "PlanComponents.swift"
-Cohesion: 0.24
-Nodes (6): ExerciseLoggingView, Bool, Double, Int, String, Exercise
+Cohesion: 0.09
+Nodes (47): ActiveWorkoutSeed, Int, Kind, added, edited, logged, removed, rest (+39 more)
 
 ### Community 15 - "View"
 Cohesion: 0.33
 Nodes (4): ProgramDetailView, Bool, Program, String
 
 ### Community 16 - "ExerciseDatabase"
-Cohesion: 0.27
-Nodes (5): LogTabView, Bool, Date, Int, String
+Cohesion: 0.12
+Nodes (14): T, QueueOp, Error, Table, bodyStats, exercises, measurements, personalRecords (+6 more)
 
 ### Community 17 - "ProfileSheet"
 Cohesion: 0.14
 Nodes (19): AvatarCircle, fmtRest(), ProfileSheet, delete, export, importData, logout, reset (+11 more)
 
 ### Community 18 - "PlanDay"
-Cohesion: 0.22
+Cohesion: 0.21
 Nodes (9): ActiveWorkoutData, MuscleGroupOption, String, WorkoutExerciseOption, EmptyOverviewView, Bool, String, Void (+1 more)
 
 ### Community 19 - "ProgramEditorView"
@@ -247,7 +249,7 @@ Cohesion: 0.11
 Nodes (16): IntBox, Mode, create, edit, ProgramEditorView, Binding, Bool, Int (+8 more)
 
 ### Community 20 - "Workout"
-Cohesion: 0.23
+Cohesion: 0.29
 Nodes (3): SeedData, Program, Workout
 
 ### Community 21 - "store.jsx"
@@ -255,124 +257,136 @@ Cohesion: 0.10
 Nodes (13): addDays(), DOW, EXERCISES, freshState(), iso(), MONTHS, PROGRAMS, Store (+5 more)
 
 ### Community 22 - "AuraComponents.swift"
-Cohesion: 0.15
-Nodes (25): AuraChip, AuraDangerButton, AuraListRow, AuraPrimaryButton, AuraSectionLabel, AuraSegmentedPicker, AuraSheetModifier, AuraStepper (+17 more)
+Cohesion: 0.07
+Nodes (46): AuraColorNamespace, Color, dyn(), dynA(), CGFloat, String, UIColor, AuraAxisChart (+38 more)
 
 ### Community 23 - "PlanWorkoutEditorView"
-Cohesion: 0.09
-Nodes (34): AnyView, PlanCatalogGrid, PlanEmptyState, PlanFilterChip, PlanIconButton, PlanLibraryCard, PlanList, PlanNavbar (+26 more)
+Cohesion: 0.17
+Nodes (14): AnyView, PlanLibraryCard, IdString, PlanExercisesBody, PlanProgramsBody, PlanWorkoutsBody, ProgFilter, ExerciseEntry (+6 more)
 
 ### Community 24 - ".jakarta"
-Cohesion: 0.08
-Nodes (36): BodyStats, MacroTargets, Measurement, NutritionConstants, PersonalRecord, ProgressPhoto, Bool, ClosedRange (+28 more)
+Cohesion: 0.10
+Nodes (28): HistSession, HistSet, PBs, PlanExerciseDetail, planNum(), Double, Int, String (+20 more)
 
 ### Community 25 - "ToastCenter"
-Cohesion: 0.15
-Nodes (16): ToastCenter, ConnectedAppsView, GeneralSettingsView, NotificationsSettingsView, OptionalToast, ProfileConfirmSheet, SettingsScreenScaffold, SupportView (+8 more)
+Cohesion: 0.17
+Nodes (13): ToastCenter, ConnectedAppsView, GeneralSettingsView, NotificationsSettingsView, OptionalToast, SettingsScreenScaffold, SupportView, Binding (+5 more)
 
 ### Community 26 - ".row"
-Cohesion: 0.29
-Nodes (4): AuraFont, CGFloat, Font, String
+Cohesion: 0.23
+Nodes (10): DataImportService, ImportSummary, Bool, Date, Double, Int, Set, String (+2 more)
+
+### Community 27 - "DataImportService"
+Cohesion: 0.21
+Nodes (9): ExerciseDetailView, ExerciseEntry, ExerciseEntryDetailView, Binding, Bool, ExerciseEntry, Int, String (+1 more)
 
 ### Community 28 - ".scheduleRestComplete"
-Cohesion: 0.15
-Nodes (6): NotificationScheduler, Bool, Int, String, GeometryProxy, UserNotifications
+Cohesion: 0.16
+Nodes (7): NotificationScheduler, Bool, Int, String, RestPillView, CGSize, GeometryProxy
 
 ### Community 29 - "Color"
-Cohesion: 0.10
-Nodes (19): LogSheet, add, buildFromLibrary, calendar, edit, editLog, logPast, logQuick (+11 more)
+Cohesion: 0.08
+Nodes (22): CalendarDayIcon, LogSheet, add, buildFromLibrary, calendar, edit, editLog, logPast (+14 more)
 
 ### Community 30 - ".parse"
 Cohesion: 0.21
-Nodes (10): ImageMemoryCache, RemoteExerciseImage, CGSize, Data, String, UIImage, URL, ContentMode (+2 more)
+Nodes (7): CSVError, malformed, CSVParser, Int, String, CSVRoundTripTests, Error
 
 ### Community 31 - ".importJSONArchive"
-Cohesion: 0.26
-Nodes (3): AppStateBridge, Bool, String
+Cohesion: 0.17
+Nodes (7): LogTabView, Bool, Date, Int, String, Int, Bool
 
 ### Community 32 - "SwiftUI"
-Cohesion: 0.09
-Nodes (10): CelebrationOverlay, CGFloat, ResumeBanner, Void, SaveEditScopeSheet, Void, BodyView, ProgressTabView (+2 more)
+Cohesion: 0.10
+Nodes (10): WorkoutSummaryView, SaveEditScopeSheet, Void, SupersetPickSheet, Void, WorkoutLibraryView, BodyView, ProgressTabView (+2 more)
 
 ### Community 33 - "SupersetView"
-Cohesion: 0.22
+Cohesion: 0.23
 Nodes (8): SupersetSetRow, SupersetView, Binding, Bool, Double, Int, String, Void
 
 ### Community 34 - "QuickLogExercise"
-Cohesion: 0.18
-Nodes (8): View, DayOverride, QuickLog, QuickLogExercise, QuickLogSet, Decoder, Int, UUID
+Cohesion: 0.11
+Nodes (14): Binding, Int, View, DayOverride, QuickLog, QuickLogExercise, QuickLogSet, Relation (+6 more)
 
 ### Community 35 - "LogSheet"
-Cohesion: 0.11
-Nodes (18): AuthFormView, AuthGateView, Mode, login, signUp, AuthService, SessionState, awaitingEmailConfirmation (+10 more)
+Cohesion: 0.24
+Nodes (5): AuthService, Bool, Error, String, SupabaseClient
 
 ### Community 36 - "UserPlanDatabase"
-Cohesion: 0.13
-Nodes (14): AwaitingConfirmationView, Binding, String, UIKeyboardType, SupersetPickSheet, String, Void, AccountDetailsView (+6 more)
+Cohesion: 0.22
+Nodes (9): Col, MinimalZipReader, Data, ZipError, malformed, unsupportedCompression, Compression, UInt16 (+1 more)
 
 ### Community 37 - "Table"
-Cohesion: 0.25
+Cohesion: 0.28
 Nodes (9): Int, String, WorkoutModal, addExercise, createSuperset, removeSuperset, substitute, WorkoutModalsView (+1 more)
 
 ### Community 38 - "PlanLibExercise"
-Cohesion: 0.19
-Nodes (8): SetRowView, SetTypeMenuSheet, Binding, Bool, Double, Int, String, Void
+Cohesion: 0.22
+Nodes (16): PlanCatalogGrid, PlanEmptyState, PlanFilterChip, PlanIconButton, PlanNavbar, PlanRow, PlanSearchField, PlanSourceCard (+8 more)
 
 ### Community 39 - "PlanEditorExercise"
 Cohesion: 0.07
-Nodes (29): Keys, SavedExercise, SavedWorkout, Bool, CGPoint, Date, Int, String (+21 more)
+Nodes (28): Keys, SavedExercise, SavedWorkout, Bool, CGPoint, Date, Int, String (+20 more)
 
 ### Community 40 - "WorkoutModal"
-Cohesion: 0.16
-Nodes (12): Table, bodyStats, dayOverrides, exercises, measurements, personalRecords, preferences, programs (+4 more)
+Cohesion: 0.26
+Nodes (9): PlanData, PlanEditorExercise, PlanMusclePalette, PlanProgram, PlanWorkout, Int, String, UUID (+1 more)
 
 ### Community 41 - "ExerciseEntryDetailView"
-Cohesion: 0.20
-Nodes (10): DayState, done, emptyToday, future, missed, rest, restPlanned, restToday (+2 more)
+Cohesion: 0.21
+Nodes (10): ImageMemoryCache, RemoteExerciseImage, CGSize, Data, String, UIImage, URL, ContentMode (+2 more)
 
 ### Community 42 - "WorkoutExerciseOption"
-Cohesion: 0.05
-Nodes (56): HistSession, HistSet, PBs, PlanExerciseDetail, planNum(), Double, Int, String (+48 more)
+Cohesion: 0.12
+Nodes (16): CreatePlanView, CreateWorkoutIcon, MyPlanSheet, addPlan, addWorkout, assign, createWorkout, dayMenu (+8 more)
 
 ### Community 43 - "ToastCenter"
-Cohesion: 0.27
+Cohesion: 0.25
 Nodes (9): ExerciseMenuSheet, ExercisePickerSheet, IndexWrapper, Bool, Double, Int, String, Void (+1 more)
 
 ### Community 44 - "DarkModePreference"
-Cohesion: 0.22
-Nodes (8): Keys, PlanSubtabTarget, workouts, ProgressDeepLink, measurements, photos, UserPlan, Equatable
+Cohesion: 0.32
+Nodes (10): ExerciseHistoryTab, HistSet, Session, SessionRow, SetRow, Summary, Date, Double (+2 more)
 
 ### Community 45 - "PlanExerciseDetail"
-Cohesion: 0.29
-Nodes (5): Face, SectionLabelStyle, Content, View, View
+Cohesion: 0.22
+Nodes (8): SetRowView, SetTypeMenuSheet, Binding, Bool, Double, Int, String, Void
+
+### Community 46 - "PlanProgramsBody"
+Cohesion: 0.19
+Nodes (10): AuthFormView, AuthGateView, AwaitingConfirmationView, Mode, login, signUp, Binding, String (+2 more)
 
 ### Community 48 - "ui.jsx"
 Cohesion: 0.21
 Nodes (8): Icon(), Nav, NavBar(), Row(), Search(), Sheet(), TabBar(), useNav()
 
 ### Community 49 - ".editableLogCard"
-Cohesion: 0.22
-Nodes (8): Coordinator, Bool, String, YouTubePlayerView, Context, UIViewRepresentable, WebKit, WKWebView
+Cohesion: 0.19
+Nodes (10): Coordinator, ExerciseVideoView, Bool, CGFloat, String, YouTubePlayerView, Context, UIViewRepresentable (+2 more)
 
 ### Community 50 - "AuthService"
-Cohesion: 0.17
-Nodes (8): CelebrationData, Bool, CGPoint, Date, Double, String, WorkoutSessionState, Timer
+Cohesion: 0.12
+Nodes (10): CelebrationData, Bool, CGPoint, Date, Double, IndexSet, Int, String (+2 more)
 
 ### Community 51 - ".programRow"
-Cohesion: 0.19
-Nodes (8): AuraBadge, ExerciseLibraryTabView, ExerciseEntry, String, ProgramLibraryView, Bool, Program, String
+Cohesion: 0.33
+Nodes (8): AnyJSON, DeletionRow, PullChangesResponse, QueueAction, delete, upsert, RemoteRow, Decodable
 
-### Community 53 - "NutritionView"
-Cohesion: 0.29
-Nodes (7): Kind, added, edited, logged, removed, rest, switched
+### Community 52 - "DayOverride"
+Cohesion: 0.12
+Nodes (12): DataArchive, DataArchiveBuilder, Date, ExerciseEntry, Measurement, PersonalRecord, Program, ProgressPhoto (+4 more)
+
+### Community 53 - "SessionState"
+Cohesion: 0.27
+Nodes (7): PlanList, PlanSheet, Content, WorkoutTheme, planWkIcon(), planWkStyle(), PlanWorkoutStyle
 
 ### Community 54 - "HealthKitService"
 Cohesion: 0.18
 Nodes (8): HealthKitService, Bool, Date, Double, Int, HealthKit, HKObjectType, HKQuantityType
 
 ### Community 55 - "PersistenceRoundTripTests"
-Cohesion: 0.22
-Nodes (5): PersistenceRoundTripTests, String, T, UserDefaults, XCTestCase
+Cohesion: 0.15
+Nodes (8): AuraFitness, PersistenceRoundTripTests, String, T, UInt8, UserDefaults, XCTest, XCTestCase
 
 ### Community 56 - "IMPLEMENTATION SPEC"
 Cohesion: 0.14
@@ -383,24 +397,24 @@ Cohesion: 0.29
 Nodes (10): ExerciseEditCard, ExerciseEditMenuSheet, nearestLadderIndex(), restLabel(), RestLadderPicker, SupersetConnector, Bool, Int (+2 more)
 
 ### Community 58 - "WeeklyVolumeView"
-Cohesion: 0.40
-Nodes (4): PersonalRecordsView, Double, PersonalRecord, String
+Cohesion: 0.25
+Nodes (7): SessionState, awaitingEmailConfirmation, guest, loading, signedIn, signedOut, Supabase
 
 ### Community 59 - "AuraScreenScroll"
 Cohesion: 0.28
 Nodes (6): AuraScreenScroll, ScrollOffsetKey, CGFloat, Content, String, PreferenceKey
 
 ### Community 60 - "PlanProgramEditorView"
-Cohesion: 0.33
-Nodes (5): Int, String, Void, WeekStripDayTile, WeekStripView
+Cohesion: 0.25
+Nodes (8): ProfileScreen, account, connected, general, notifications, support, units, workout
 
 ### Community 61 - "Aura Fitness — Manual Steps Required"
 Cohesion: 0.17
 Nodes (11): Aura Fitness — Manual Steps Required, Quick checklist, Step 1 — Create the Supabase project (≈10 min), Step 2 — Apply the database schema (≈5 min), Step 3 — Wire the secrets into Xcode (≈10 min, needs your Mac), Step 4 — Deploy the delete-account Edge Function (≈5 min, needs Supabase CLI), Step 5 — Add the HealthKit capability in Xcode (≈3 min), Step 6 — Bundle the exercise library JSON (≈2 min) (+3 more)
 
 ### Community 62 - "DayState"
-Cohesion: 0.18
-Nodes (9): T, QueueAction, delete, upsert, QueueOp, SupabaseSyncService, Error, ISO8601DateFormatter (+1 more)
+Cohesion: 0.16
+Nodes (10): AppStateBridge, SupabaseSyncService, Bool, Date, ISO8601DateFormatter, Set, SupabaseClient, T (+2 more)
 
 ### Community 63 - "BACKEND IMPLEMENTATION SPEC: Progress Photos → Supabase Storage"
 Cohesion: 0.18
@@ -427,12 +441,16 @@ Cohesion: 0.18
 Nodes (10): 🏗️ ARCHITECTURE & PATTERNS, `AuraFitness/ActiveWorkout/ExerciseLoggingView.swift`, `AuraFitness/DesignSystem/RemoteExerciseImage.swift`, `AuraFitness/Plan/ExerciseDetailView.swift`, `AuraFitness/Plan/PlanSubtabViews.swift`, 🛡️ EDGE CASES & CONSTRAINTS TO HANDLE, 📄 FILES TO CREATE, 📝 FILES TO MODIFY (+2 more)
 
 ### Community 69 - "AuraColors.swift"
-Cohesion: 0.26
-Nodes (10): AuraColorNamespace, Color, dyn(), dynA(), CGFloat, String, UIColor, CalendarDayIcon (+2 more)
+Cohesion: 0.43
+Nodes (4): StableID, String, UUID, CryptoKit
 
 ### Community 70 - "Identifiable"
-Cohesion: 0.50
-Nodes (4): Relation, future, past, today
+Cohesion: 0.20
+Nodes (10): DayState, done, emptyToday, future, missed, rest, restPlanned, restToday (+2 more)
+
+### Community 71 - "StatsView.swift"
+Cohesion: 0.27
+Nodes (8): PickerMode, add, ssNew, sub, PlanExercisePickerView, Bool, String, Void
 
 ### Community 72 - "CI Build Failure — Root Cause & Fix"
 Cohesion: 0.20
@@ -475,8 +493,8 @@ Cohesion: 0.22
 Nodes (8): Aura Fitness Tracker — Audit Report v2 (Fix Verification), CI / GitHub Actions status, Critical, High, Low, Medium, New findings (this verification pass), Recommended fix order for what remains
 
 ### Community 82 - "WorkoutEditorContext"
-Cohesion: 0.29
-Nodes (5): DarkModePreference, auto, off, on, ColorScheme
+Cohesion: 0.12
+Nodes (14): DarkModePreference, auto, off, on, Keys, PlanSubtabTarget, workouts, ProgressDeepLink (+6 more)
 
 ### Community 83 - "IMPLEMENTATION SPEC"
 Cohesion: 0.22
@@ -518,9 +536,13 @@ Nodes (3): fail(), insert_log_row(), rls_isolation_test.sh script
 Cohesion: 0.36
 Nodes (5): AuraRadius, AuraShadowToken, AuraSpacing, CGFloat, View
 
-### Community 95 - "MeasurementsView"
-Cohesion: 0.50
-Nodes (3): Binding, String, WorkoutSettingsView
+### Community 94 - "CodingKeys"
+Cohesion: 0.20
+Nodes (9): PlanDay, fri, mon, sat, sun, thu, tue, wed (+1 more)
+
+### Community 95 - "LogMeasurementSheet"
+Cohesion: 0.40
+Nodes (5): Int, String, Void, WeekStripDayTile, WeekStripView
 
 ### Community 96 - "BACKEND IMPLEMENTATION SPEC: delete-account Edge Function — Storage Cleanup"
 Cohesion: 0.25
@@ -542,9 +564,13 @@ Nodes (7): 🏗️ ARCHITECTURE & PATTERNS, `AuraFitness/Progress/NutritionView.
 Cohesion: 0.29
 Nodes (6): Aura Fitness — Developer Handover, Chapters, Fidelity, How to use this, Source files (in `../`), Target stack notes
 
-### Community 103 - "AuraAxisChart"
-Cohesion: 0.60
-Nodes (4): AuraAxisChart, AuraLineChart, CGFloat, Double
+### Community 102 - "Set"
+Cohesion: 0.40
+Nodes (3): LogMeasurementSheet, Binding, String
+
+### Community 103 - ".editableLogCard"
+Cohesion: 0.50
+Nodes (4): ProfileConfirmSheet, CGFloat, URL, Void
 
 ### Community 104 - "Aura Fitness — Remaining Build: Phase Index"
 Cohesion: 0.29
@@ -558,9 +584,13 @@ Nodes (6): 🛑 BLOCKERS (If Failed), 📝 EXECUTION LOG, Notes (non-blocking, i
 Cohesion: 0.40
 Nodes (4): PlanBodyMap, CGFloat, Double, String
 
-### Community 109 - "DataArchive"
-Cohesion: 0.25
-Nodes (9): AnyJSON, DeletionRow, PullChangesResponse, RemoteRow, Date, Set, T, Decodable (+1 more)
+### Community 107 - "AuraSheetModifier"
+Cohesion: 0.40
+Nodes (5): CodingKeys, durationMinutes, exercises, time, CodingKey
+
+### Community 108 - "AuraTabIcon"
+Cohesion: 0.50
+Nodes (3): Binding, String, WorkoutSettingsView
 
 ### Community 110 - "IMPLEMENTATION SUMMARY"
 Cohesion: 0.33
@@ -579,47 +609,39 @@ Cohesion: 0.33
 Nodes (5): 🛠️ ACTION ITEMS, 🔍 DIFF ANALYSIS, FINAL ARCHITECTURE REVIEW, 🛡️ QUALITY & SECURITY AUDIT, ⚖️ VERDICT
 
 ### Community 114 - "ActiveWorkoutScreen"
-Cohesion: 0.40
+Cohesion: 0.33
 Nodes (5): ActiveWorkoutScreen, exercise, overview, summary, superset
 
 ### Community 115 - "data.jsx"
 Cohesion: 0.40
 Nodes (4): ADD_OPTIONS, SET_TYPES, SUB_OPTIONS, WORKOUT
 
-### Community 117 - "String"
-Cohesion: 0.11
-Nodes (15): String, WorkoutSummaryView, AuraCard, AuraProgressBar, AuraTabBar, ExerciseVideoView, CGFloat, ExerciseDetailView (+7 more)
-
-### Community 118 - "AuraToggleStyle"
+### Community 116 - "PersonalRecordsView"
 Cohesion: 0.50
-Nodes (3): AuraToggleStyle, Configuration, ToggleStyle
+Nodes (3): FailableDecodable, Decoder, Base
 
-### Community 133 - "ProfileScreen"
-Cohesion: 0.25
-Nodes (8): ProfileScreen, account, connected, general, notifications, support, units, workout
-
-### Community 135 - "CodingKeys"
-Cohesion: 0.40
-Nodes (5): CodingKeys, durationMinutes, exercises, time, CodingKey
+### Community 117 - "String"
+Cohesion: 0.22
+Nodes (8): String, AccountDetailsView, Binding, Bool, Date, Double, String, UIKeyboardType
 
 ### Community 137 - "EndWorkoutSheet"
 Cohesion: 0.50
 Nodes (3): ActiveWorkoutView, EndWorkoutSheet, Bool
 
 ## Knowledge Gaps
-- **381 isolated node(s):** `TODAY`, `DOW`, `MONTHS`, `EXERCISES`, `WORKOUTS` (+376 more)
+- **382 isolated node(s):** `TODAY`, `DOW`, `MONTHS`, `EXERCISES`, `WORKOUTS` (+377 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **11 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **8 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `AppState` connect `AppState` to `Exercise`, `.secondary`, `PlanDay`, `AuraTab`, `Foundation`, `UnitFormatter`, `.persist`, `EndWorkoutSheet`, `MyPlansView`, `LogSheetsView`, `String`, `WorkoutSessionState`, `PlanComponents.swift`, `View`, `ExerciseDatabase`, `ProfileSheet`, `PlanDay`, `ProgramEditorView`, `.jakarta`, `ToastCenter`, `.importJSONArchive`, `SwiftUI`, `SupersetView`, `QuickLogExercise`, `UserPlanDatabase`, `PlanLibExercise`, `WorkoutExerciseOption`, `ToastCenter`, `DarkModePreference`, `PlanProgramsBody`, `AuthService`, `.programRow`, `DayOverride`, `HealthKitService`, `WeeklyVolumeView`, `DayState`, `WorkoutEditorContext`, `MeasurementsView`, `String`?**
-  _High betweenness centrality (0.145) - this node is a cross-community bridge._
-- **Why does `Workout` connect `Workout` to `Exercise`, `.secondary`, `WorkoutEditorView`, `AuraTab`, `PlanEditorExercise`, `.persist`, `MyPlansView`, `LogSheetsView`, `AppState`, `PlanComponents.swift`, `AuthService`, `ProgramEditorView`, `DayOverride`, `String`, `PlanWorkoutEditorView`, `.jakarta`, `PlanProgramEditorView`, `.importJSONArchive`?**
-  _High betweenness centrality (0.063) - this node is a cross-community bridge._
-- **Why does `WorkoutSessionState` connect `AuthService` to `SwiftUI`, `SupersetView`, `Table`, `PlanLibExercise`, `ResumeBanner`, `.persist`, `EndWorkoutSheet`, `ToastCenter`, `AppState`, `PlanComponents.swift`, `PlanDay`, `ActiveWorkoutScreen`, `Workout`, `String`, `DataImportService`, `.scheduleRestComplete`?**
-  _High betweenness centrality (0.057) - this node is a cross-community bridge._
+- **Why does `AppState` connect `AppState` to `Exercise`, `.secondary`, `AuraTab`, `Foundation`, `UnitFormatter`, `.persist`, `EndWorkoutSheet`, `MyPlansView`, `LogSheetsView`, `String`, `WorkoutSessionState`, `PlanComponents.swift`, `View`, `ExerciseDatabase`, `ProfileSheet`, `PlanDay`, `ProgramEditorView`, `AuraComponents.swift`, `.jakarta`, `ToastCenter`, `.row`, `DataImportService`, `.parse`, `.importJSONArchive`, `SwiftUI`, `SupersetView`, `QuickLogExercise`, `WorkoutExerciseOption`, `ToastCenter`, `DarkModePreference`, `PlanExerciseDetail`, `AuthService`, `DayOverride`, `HealthKitService`, `DayState`, `WorkoutEditorContext`, `Set`, `.editableLogCard`, `AuraTabIcon`, `String`?**
+  _High betweenness centrality (0.141) - this node is a cross-community bridge._
+- **Why does `Workout` connect `Workout` to `WorkoutEditorView`, `AuraTab`, `.persist`, `MyPlansView`, `WorkoutSessionState`, `LogSheetsView`, `AppState`, `PlanComponents.swift`, `ProgramEditorView`, `PlanWorkoutEditorView`, `.row`, `.parse`, `.importJSONArchive`, `SwiftUI`, `QuickLogExercise`, `PlanEditorExercise`, `WorkoutExerciseOption`, `AuthService`, `SessionState`, `DayState`, `LogMeasurementSheet`, `AddToPlanSheet`?**
+  _High betweenness centrality (0.068) - this node is a cross-community bridge._
+- **Why does `WorkoutSessionState` connect `AuthService` to `SwiftUI`, `SupersetView`, `Table`, `.persist`, `EndWorkoutSheet`, `MyPlansView`, `ToastCenter`, `Kind`, `PlanExerciseDetail`, `AppState`, `PlanDay`, `ActiveWorkoutScreen`, `Workout`, `.scheduleRestComplete`?**
+  _High betweenness centrality (0.059) - this node is a cross-community bridge._
 - **Are the 6 inferred relationships involving `AppState` (e.g. with `.confirmBuildFromLibrary()` and `.loadForm()`) actually correct?**
   _`AppState` has 6 INFERRED edges - model-reasoned connections that need verification._
 - **Are the 3 inferred relationships involving `Workout` (e.g. with `.importCustomWorkouts()` and `.importPrograms()`) actually correct?**
@@ -627,4 +649,4 @@ _Questions this graph is uniquely positioned to answer:_
 - **Are the 5 inferred relationships involving `Exercise` (e.g. with `.importCustomWorkouts()` and `.importPrograms()`) actually correct?**
   _`Exercise` has 5 INFERRED edges - model-reasoned connections that need verification._
 - **What connects `TODAY`, `DOW`, `MONTHS` to the rest of the system?**
-  _381 weakly-connected nodes found - possible documentation gaps or missing edges._
+  _382 weakly-connected nodes found - possible documentation gaps or missing edges._

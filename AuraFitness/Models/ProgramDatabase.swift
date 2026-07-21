@@ -116,8 +116,14 @@ final class ProgramDatabase: ObservableObject {
     }
 
     // MARK: - Remote sync hooks
+    /// Single chokepoint for every program write-through in this class — all
+    /// the CRUD methods above route here, so the ownership gate only has to
+    /// exist once.
     private func syncPush(_ program: Program) {
         guard !isApplyingRemote else { return }
+        // Predefined programs are identical on every install; syncing them
+        // would store the same rows per user for nothing. See Syncable.swift.
+        guard program.isSyncable else { return }
         program.syncPush(table: .programs)
     }
     private func syncDelete(id: UUID) {
@@ -129,12 +135,17 @@ final class ProgramDatabase: ObservableObject {
     /// customs, without re-pushing (guards the push loop). Predefined
     /// programs are preserved by ID; any local custom program not present
     /// remotely is kept as-is (LWW already decided the push direction).
+    /// Non-syncable rows are dropped on the way in: devices predating the
+    /// ownership policy pushed their predefined programs, and those legacy
+    /// rows must never overwrite the local seed (they carry another install's
+    /// random ids and stale content). Belt-and-braces alongside the push gate
+    /// in `syncPush` and the one-time `cleanupPredefinedRemoteRows` sweep.
     func applyRemote(_ remotePrograms: [Program]) {
         isApplyingRemote = true
         defer { isApplyingRemote = false }
         var byID: [UUID: Program] = [:]
         for p in programs { byID[p.id] = p }
-        for p in remotePrograms { byID[p.id] = p }
+        for p in remotePrograms where p.isSyncable { byID[p.id] = p }
         programs = Array(byID.values)
         persist()
     }
@@ -168,6 +179,41 @@ final class ProgramDatabase: ObservableObject {
     func hardReset() {
         programs = SeedData.programs
         persist()
+    }
+
+    /// Rewrites the ids of already-persisted predefined programs and their
+    /// workouts to the deterministic `StableID` values, matching by name.
+    /// Returns the old -> new id map so callers can fix every reference held
+    /// elsewhere (plan schedules, day overrides) before those references
+    /// dangle. Run once, by `SeedIDMigration`.
+    ///
+    /// Custom programs are untouched — their ids were user-generated and are
+    /// already unique and meaningful.
+    func migrateSeedIDs() -> [UUID: UUID] {
+        var map: [UUID: UUID] = [:]
+        let seedByName = Dictionary(SeedData.programs.map { ($0.name, $0) },
+                                    uniquingKeysWith: { first, _ in first })
+
+        for i in programs.indices where programs[i].isPredefined {
+            guard let seed = seedByName[programs[i].name] else { continue }
+            if programs[i].id != seed.id {
+                map[programs[i].id] = seed.id
+                programs[i].id = seed.id
+            }
+            let seedWorkoutIDs = Dictionary(seed.workouts.map { ($0.name, $0.id) },
+                                            uniquingKeysWith: { first, _ in first })
+            for j in programs[i].workouts.indices {
+                guard let newID = seedWorkoutIDs[programs[i].workouts[j].name] else { continue }
+                let oldID = programs[i].workouts[j].id
+                guard oldID != newID else { continue }
+                map[oldID] = newID
+                programs[i].workouts[j].id = newID
+            }
+        }
+
+        guard !map.isEmpty else { return [:] }
+        persist()
+        return map
     }
 
     // MARK: Persistence
@@ -369,6 +415,35 @@ final class UserPlanDatabase: ObservableObject {
         }
     }
 
+    /// Repoints every reference a plan holds at a seeded program or workout
+    /// from its old random id to the new deterministic one. Without this the
+    /// `migrateSeedIDs()` rewrite would orphan `weekSchedule` — every day
+    /// would resolve to no workout at all.
+    ///
+    /// The remapped plans ARE pushed: plans sync, and a device that has
+    /// migrated must publish the stable ids so other devices converge instead
+    /// of trading references neither can resolve.
+    func remapSeedReferences(_ map: [UUID: UUID]) {
+        guard !map.isEmpty else { return }
+        var changed = false
+
+        for i in plans.indices {
+            if let source = plans[i].sourceProgramID, let newID = map[source] {
+                plans[i].sourceProgramID = newID
+                changed = true
+            }
+            for (day, entry) in plans[i].weekSchedule {
+                guard let workoutID = entry, let newID = map[workoutID] else { continue }
+                plans[i].weekSchedule[day] = newID
+                changed = true
+            }
+        }
+
+        guard changed else { return }
+        persist()
+        for plan in plans { syncPush(plan) }
+    }
+
     /// Drops plans deleted on another device, as reported by the
     /// `aura_deletions` tombstones in a delta pull. Holds the same invariant
     /// `applyRemote` does — `plans` is never left empty — by re-seeding the
@@ -418,5 +493,35 @@ final class UserPlanDatabase: ObservableObject {
                 addPlan(from: prog)
             }
         }
+    }
+}
+
+// MARK: - SeedIDMigration
+//
+// One-shot upgrade for installs created before seeded programs/workouts got
+// deterministic ids (see `StableID` in SeedData.swift). Those installs hold
+// random per-install ids on disk, which is why a plan synced to a second
+// device used to resolve to an empty week.
+//
+// Order is load-bearing: the id rewrite has to happen FIRST, and every holder
+// of a reference has to be repointed in the same pass, or the references
+// dangle. Fresh installs seed with stable ids already, so the map comes back
+// empty and every step below no-ops.
+@MainActor
+enum SeedIDMigration {
+    private static let doneKey = "aura_stable_seed_ids_v1"
+
+    static func runIfNeeded() {
+        guard !UserDefaults.standard.bool(forKey: doneKey) else { return }
+
+        let map = ProgramDatabase.shared.migrateSeedIDs()
+        if !map.isEmpty {
+            UserPlanDatabase.shared.remapSeedReferences(map)
+            AppStateBridge.shared?.remapSeedReferences(map)
+        }
+
+        // Set on completion regardless of whether anything moved: an empty map
+        // means there was nothing to migrate, which is just as done.
+        UserDefaults.standard.set(true, forKey: doneKey)
     }
 }

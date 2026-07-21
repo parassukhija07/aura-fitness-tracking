@@ -1,4 +1,41 @@
 import Foundation
+import CryptoKit
+
+// MARK: - Stable seed identifiers
+//
+// Seeded programs and workouts used to get a fresh `UUID()` on every install.
+// That is fine locally — the ids are persisted on first launch and stay put —
+// but it breaks the moment anything CROSSES devices: `UserPlan.weekSchedule`
+// and `DayOverride.workoutId` reference workouts BY ID, and plans/overrides
+// sync. A plan pulled onto a second device pointed at workout ids that device
+// had never generated, so the whole week resolved to empty.
+//
+// Deriving the ids from the content name instead means every install on every
+// device computes the same id for "Push Day A", and those references resolve
+// anywhere. Existing installs are migrated by `SeedIDMigration` (see
+// ProgramDatabase.swift), which rewrites the old random ids and every
+// reference to them.
+enum StableID {
+    /// Frozen namespace. NEVER change this value — it would silently
+    /// re-issue every seed id and orphan every existing plan reference.
+    private static let namespace = UUID(uuidString: "6B1D4E9A-3F27-4C58-9A0E-2D8C7B5F1A34")!
+
+    static func program(_ name: String) -> UUID { v5("program:" + name) }
+    static func workout(_ name: String) -> UUID { v5("workout:" + name) }
+
+    /// RFC 4122 §4.3 name-based UUID, SHA-1 flavour (version 5): hash the
+    /// namespace bytes followed by the name, then stamp the version and
+    /// variant bits into the first 16 bytes of the digest.
+    private static func v5(_ name: String) -> UUID {
+        var input = withUnsafeBytes(of: namespace.uuid) { Array($0) }
+        input.append(contentsOf: Array(name.utf8))
+        var b = Array(Insecure.SHA1.hash(data: Data(input)).prefix(16))
+        b[6] = (b[6] & 0x0F) | 0x50   // version 5
+        b[8] = (b[8] & 0x3F) | 0x80   // RFC 4122 variant
+        return UUID(uuid: (b[0], b[1], b[2],  b[3],  b[4],  b[5],  b[6],  b[7],
+                           b[8], b[9], b[10], b[11], b[12], b[13], b[14], b[15]))
+    }
+}
 
 // MARK: - Exercise Library (80+ exercises)
 enum ExerciseLibrary {
@@ -333,7 +370,7 @@ enum ExerciseLibrary {
 enum SeedData {
     // MARK: PPL
     private static func pplPushA() -> Workout {
-        var w = Workout(id: UUID(), name: "Push Day A", primaryMuscles: "Chest · Shoulders · Triceps",
+        var w = Workout(id: StableID.workout("Push Day A"), name: "Push Day A", primaryMuscles: "Chest · Shoulders · Triceps",
                         estimatedMinutes: 60, exercises: [])
         let lib = ExerciseLibrary.all
         func find(_ name: String) -> Exercise { lib.first { $0.name == name } ?? ExerciseLibrary.chest[0] }
@@ -350,7 +387,7 @@ enum SeedData {
         return w
     }
     private static func pplPullA() -> Workout {
-        var w = Workout(id: UUID(), name: "Pull Day A", primaryMuscles: "Back · Biceps",
+        var w = Workout(id: StableID.workout("Pull Day A"), name: "Pull Day A", primaryMuscles: "Back · Biceps",
                         estimatedMinutes: 55, exercises: [])
         let lib = ExerciseLibrary.all
         func find(_ name: String) -> Exercise { lib.first { $0.name == name } ?? ExerciseLibrary.back[0] }
@@ -367,7 +404,7 @@ enum SeedData {
         return w
     }
     private static func pplLegsA() -> Workout {
-        var w = Workout(id: UUID(), name: "Leg Day A", primaryMuscles: "Quads · Hamstrings · Calves",
+        var w = Workout(id: StableID.workout("Leg Day A"), name: "Leg Day A", primaryMuscles: "Quads · Hamstrings · Calves",
                         estimatedMinutes: 65, exercises: [])
         let lib = ExerciseLibrary.all
         func find(_ name: String) -> Exercise { lib.first { $0.name == name } ?? ExerciseLibrary.legs[0] }
@@ -384,7 +421,7 @@ enum SeedData {
         return w
     }
     private static func pplPushB() -> Workout {
-        var w = Workout(id: UUID(), name: "Push Day B", primaryMuscles: "Shoulders · Chest · Triceps",
+        var w = Workout(id: StableID.workout("Push Day B"), name: "Push Day B", primaryMuscles: "Shoulders · Chest · Triceps",
                         estimatedMinutes: 58, exercises: [])
         let lib = ExerciseLibrary.all
         func find(_ name: String) -> Exercise { lib.first { $0.name == name } ?? ExerciseLibrary.shoulders[0] }
@@ -401,7 +438,7 @@ enum SeedData {
         return w
     }
     private static func pplPullB() -> Workout {
-        var w = Workout(id: UUID(), name: "Pull Day B", primaryMuscles: "Back · Biceps",
+        var w = Workout(id: StableID.workout("Pull Day B"), name: "Pull Day B", primaryMuscles: "Back · Biceps",
                         estimatedMinutes: 60, exercises: [])
         let lib = ExerciseLibrary.all
         func find(_ name: String) -> Exercise { lib.first { $0.name == name } ?? ExerciseLibrary.back[0] }
@@ -418,7 +455,7 @@ enum SeedData {
         return w
     }
     private static func pplLegsB() -> Workout {
-        var w = Workout(id: UUID(), name: "Leg Day B", primaryMuscles: "Glutes · Quads · Hamstrings",
+        var w = Workout(id: StableID.workout("Leg Day B"), name: "Leg Day B", primaryMuscles: "Glutes · Quads · Hamstrings",
                         estimatedMinutes: 65, exercises: [])
         let lib = ExerciseLibrary.all
         func find(_ name: String) -> Exercise { lib.first { $0.name == name } ?? ExerciseLibrary.legs[0] }
@@ -445,7 +482,7 @@ enum SeedData {
             e.repRange = "5"
             return e
         }
-        return Workout(id: UUID(), name: "Workout A", primaryMuscles: "Full Body", estimatedMinutes: 45,
+        return Workout(id: StableID.workout("Workout A"), name: "Workout A", primaryMuscles: "Full Body", estimatedMinutes: 45,
                        exercises: [find("Barbell Squat"), find("Barbell Bench Press"), find("Barbell Row")])
     }
     private static func sl5x5WorkoutB() -> Workout {
@@ -457,7 +494,7 @@ enum SeedData {
             e.repRange = "5"
             return e
         }
-        return Workout(id: UUID(), name: "Workout B", primaryMuscles: "Full Body", estimatedMinutes: 45,
+        return Workout(id: StableID.workout("Workout B"), name: "Workout B", primaryMuscles: "Full Body", estimatedMinutes: 45,
                        exercises: [find("Barbell Squat"), find("Overhead Press"), find("Deadlift")])
     }
 
@@ -465,14 +502,14 @@ enum SeedData {
     private static func ulUpper() -> Workout {
         let lib = ExerciseLibrary.all
         func find(_ name: String) -> Exercise { lib.first { $0.name == name } ?? ExerciseLibrary.chest[0] }
-        return Workout(id: UUID(), name: "Upper Body", primaryMuscles: "Chest · Back · Shoulders · Arms", estimatedMinutes: 60,
+        return Workout(id: StableID.workout("Upper Body"), name: "Upper Body", primaryMuscles: "Chest · Back · Shoulders · Arms", estimatedMinutes: 60,
                        exercises: [find("Barbell Bench Press"), find("Barbell Row"), find("Overhead Press"),
                                    find("Lat Pulldown"), find("Dumbbell Lateral Raise"), find("Barbell Curl"), find("Skull Crushers")])
     }
     private static func ulLower() -> Workout {
         let lib = ExerciseLibrary.all
         func find(_ name: String) -> Exercise { lib.first { $0.name == name } ?? ExerciseLibrary.legs[0] }
-        return Workout(id: UUID(), name: "Lower Body", primaryMuscles: "Quads · Hamstrings · Glutes", estimatedMinutes: 55,
+        return Workout(id: StableID.workout("Lower Body"), name: "Lower Body", primaryMuscles: "Quads · Hamstrings · Glutes", estimatedMinutes: 55,
                        exercises: [find("Barbell Squat"), find("Romanian Deadlift"), find("Leg Press"),
                                    find("Leg Curl"), find("Calf Raises"), find("Hip Thrust")])
     }
@@ -481,7 +518,7 @@ enum SeedData {
     private static func fullBodyWorkout() -> Workout {
         let lib = ExerciseLibrary.all
         func find(_ name: String) -> Exercise { lib.first { $0.name == name } ?? ExerciseLibrary.chest[0] }
-        return Workout(id: UUID(), name: "Full Body", primaryMuscles: "Full Body", estimatedMinutes: 50,
+        return Workout(id: StableID.workout("Full Body"), name: "Full Body", primaryMuscles: "Full Body", estimatedMinutes: 50,
                        exercises: [find("Barbell Squat"), find("Barbell Bench Press"), find("Barbell Row"),
                                    find("Overhead Press"), find("Romanian Deadlift"), find("Barbell Curl"), find("Triceps Rope Pushdown")])
     }
@@ -490,7 +527,7 @@ enum SeedData {
     private static func hiitWorkout() -> Workout {
         let lib = ExerciseLibrary.all
         func find(_ name: String) -> Exercise { lib.first { $0.name == name } ?? ExerciseLibrary.cardio[0] }
-        return Workout(id: UUID(), name: "HIIT Circuit", primaryMuscles: "Cardio · Full Body", estimatedMinutes: 30,
+        return Workout(id: StableID.workout("HIIT Circuit"), name: "HIIT Circuit", primaryMuscles: "Cardio · Full Body", estimatedMinutes: 30,
                        exercises: [find("Burpees"), find("Box Jump"), find("Jump Rope"),
                                    find("Cycling"), find("Hanging Leg Raise")])
     }
@@ -498,30 +535,35 @@ enum SeedData {
     // MARK: - Programs
     static let programs: [Program] = [
         Program(
+            id: StableID.program("Push · Pull · Legs"),
             name: "Push · Pull · Legs",
             daysPerWeek: 6, level: "Intermediate", style: "Hypertrophy",
             description: "The classic PPL split targets each muscle group twice per week with dedicated push, pull, and leg sessions. Ideal for intermediate lifters looking to build size and strength simultaneously.",
             workouts: [pplPushA(), pplPullA(), pplLegsA(), pplPushB(), pplPullB(), pplLegsB()]
         ),
         Program(
+            id: StableID.program("StrongLifts 5×5"),
             name: "StrongLifts 5×5",
             daysPerWeek: 3, level: "Beginner", style: "Strength",
             description: "A proven strength program built around 5 compound lifts. Alternate Workout A and B three times a week with a rest day between each. Add 2.5 kg per session.",
             workouts: [sl5x5WorkoutA(), sl5x5WorkoutB()]
         ),
         Program(
+            id: StableID.program("Upper / Lower"),
             name: "Upper / Lower",
             daysPerWeek: 4, level: "Intermediate", style: "Strength + Hypertrophy",
             description: "Alternate upper and lower body days four times per week. Balances frequency with volume — great transition from full-body to more advanced splits.",
             workouts: [ulUpper(), ulLower()]
         ),
         Program(
+            id: StableID.program("Full Body 3×"),
             name: "Full Body 3×",
             daysPerWeek: 3, level: "Beginner", style: "Strength",
             description: "Hit every major muscle group three times a week. Perfect for beginners who want to build a foundation of strength and movement patterns.",
             workouts: [fullBodyWorkout()]
         ),
         Program(
+            id: StableID.program("HIIT Cardio"),
             name: "HIIT Cardio",
             daysPerWeek: 3, level: "All Levels", style: "Cardio",
             description: "High-intensity interval training to maximize calorie burn and improve cardiovascular fitness. Short sessions with maximal effort intervals.",

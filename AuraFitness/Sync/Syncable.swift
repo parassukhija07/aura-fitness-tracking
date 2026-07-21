@@ -19,6 +19,31 @@ extension Syncable {
     }
 }
 
+// MARK: - Ownership policy
+//
+// Predefined programs and the bundled exercise library are seeded IDENTICALLY
+// on every install (deterministically, since `StableID` landed), so pushing
+// them per-user stores the same rows again for every account and every device
+// while carrying exactly zero information. Only user-created or user-owned
+// content syncs.
+//
+// These two properties are the single source of truth for that policy — the
+// stores' write-through hooks and the pull-side merge both consult them.
+
+extension Program {
+    /// Seeded programs are re-created locally on every device; only
+    /// user-created ones are worth a row. Editing a predefined program is
+    /// routed through a user-owned copy by the Plan tab, so an edited program
+    /// arrives here already `isPredefined == false`.
+    var isSyncable: Bool { !isPredefined }
+}
+
+extension ExerciseEntry {
+    /// The bundled catalog ships in the app binary; only user-added exercises
+    /// need a row.
+    var isSyncable: Bool { isCustom }
+}
+
 extension Program: Syncable {
     var stringID: String { id.uuidString }
 }

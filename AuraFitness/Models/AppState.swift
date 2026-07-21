@@ -251,6 +251,26 @@ class AppState: ObservableObject {
         userProfile = profile
     }
 
+    /// Repoints `DayOverride.workoutId` from the old random seed ids to the
+    /// deterministic `StableID` ones. Day overrides sync, so a stale id here
+    /// would travel to other devices and resolve to nothing. Called once by
+    /// `SeedIDMigration`.
+    ///
+    /// NOT guarded by `isApplyingRemote`: this is a genuine local change that
+    /// SHOULD be pushed, so other devices converge on the stable ids too.
+    func remapSeedReferences(_ map: [UUID: UUID]) {
+        guard !map.isEmpty else { return }
+        var merged = dayOverrides
+        var changed = false
+        for (iso, override) in merged {
+            guard let workoutID = override.workoutId, let newID = map[workoutID] else { continue }
+            merged[iso]?.workoutId = newID
+            changed = true
+        }
+        guard changed else { return }
+        dayOverrides = merged
+    }
+
     // MARK: - Remote deletion hooks (aura_deletions tombstone target)
     //
     // The `applyRemote*` merges above are unions — they can only ever ADD
