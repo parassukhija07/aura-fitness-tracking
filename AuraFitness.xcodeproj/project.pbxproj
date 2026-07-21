@@ -79,7 +79,7 @@
 		CB01000000000000000A0007 /* ExerciseLibraryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA01000000000000000A0007 /* ExerciseLibraryView.swift */; };
 		CB01000000000000000A0008 /* ExerciseDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA01000000000000000A0008 /* ExerciseDetailView.swift */; };
 		CB01000000000000000A0009 /* CreateExerciseView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA01000000000000000A0009 /* CreateExerciseView.swift */; };
-		CB01000000000000000A0010 /* SaveEditScopeSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA01000000000000000A0010 /* SaveEditScopeSheet.swift */; };
+		CB01000000000000000A00A1 /* SaveEditScopeSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA01000000000000000A00A1 /* SaveEditScopeSheet.swift */; };
 		CB01000000000000000A0011 /* WorkoutEditorComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA01000000000000000A0011 /* WorkoutEditorComponents.swift */; };
 		CB01000000000000000A0012 /* EditorExercisePicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA01000000000000000A0012 /* EditorExercisePicker.swift */; };
 		CB01000000000000000A0013 /* SupersetPickSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA01000000000000000A0013 /* SupersetPickSheet.swift */; };
@@ -176,7 +176,7 @@
 		CA01000000000000000A0007 /* ExerciseLibraryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseLibraryView.swift; sourceTree = "<group>"; };
 		CA01000000000000000A0008 /* ExerciseDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseDetailView.swift; sourceTree = "<group>"; };
 		CA01000000000000000A0009 /* CreateExerciseView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateExerciseView.swift; sourceTree = "<group>"; };
-		CA01000000000000000A0010 /* SaveEditScopeSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SaveEditScopeSheet.swift; sourceTree = "<group>"; };
+		CA01000000000000000A00A1 /* SaveEditScopeSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SaveEditScopeSheet.swift; sourceTree = "<group>"; };
 		CA01000000000000000A0011 /* WorkoutEditorComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutEditorComponents.swift; sourceTree = "<group>"; };
 		CA01000000000000000A0012 /* EditorExercisePicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditorExercisePicker.swift; sourceTree = "<group>"; };
 		CA01000000000000000A0013 /* SupersetPickSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupersetPickSheet.swift; sourceTree = "<group>"; };
@@ -353,7 +353,7 @@
 				CA01000000000000000A0007 /* ExerciseLibraryView.swift */,
 				CA01000000000000000A0008 /* ExerciseDetailView.swift */,
 				CA01000000000000000A0009 /* CreateExerciseView.swift */,
-				CA01000000000000000A0010 /* SaveEditScopeSheet.swift */,
+				CA01000000000000000A00A1 /* SaveEditScopeSheet.swift */,
 				CA01000000000000000A0011 /* WorkoutEditorComponents.swift */,
 				CA01000000000000000A0012 /* EditorExercisePicker.swift */,
 				CA01000000000000000A0013 /* SupersetPickSheet.swift */,
@@ -572,7 +572,7 @@
 				CB01000000000000000A0007 /* ExerciseLibraryView.swift in Sources */,
 				CB01000000000000000A0008 /* ExerciseDetailView.swift in Sources */,
 				CB01000000000000000A0009 /* CreateExerciseView.swift in Sources */,
-				CB01000000000000000A0010 /* SaveEditScopeSheet.swift in Sources */,
+				CB01000000000000000A00A1 /* SaveEditScopeSheet.swift in Sources */,
 				CB01000000000000000A0011 /* WorkoutEditorComponents.swift in Sources */,
 				CB01000000000000000A0012 /* EditorExercisePicker.swift in Sources */,
 				CB01000000000000000A0013 /* SupersetPickSheet.swift in Sources */,

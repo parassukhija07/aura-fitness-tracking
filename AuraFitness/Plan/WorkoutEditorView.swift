@@ -549,7 +549,7 @@ struct WorkoutEditorView: View {
             if let existing = programDB.programs.first(where: { $0.name == "__standalone__" }) {
                 programDB.addWorkout(workout, to: existing.id)
             } else {
-                var prog = Program(name: "__standalone__", daysPerWeek: 0, level: "", style: "", description: "", workouts: [workout], isPredefined: false)
+                let prog = Program(name: "__standalone__", daysPerWeek: 0, level: "", style: "", description: "", workouts: [workout], isPredefined: false)
                 programDB.addProgram(prog)
             }
         case .createInProgram(let pid):
