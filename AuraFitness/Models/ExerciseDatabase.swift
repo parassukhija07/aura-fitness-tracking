@@ -1,5 +1,6 @@
 import SwiftUI
 import Combine
+import Supabase
 
 // MARK: - ExerciseEntry (canonical, flat, library record)
 struct ExerciseEntry: Identifiable, Codable, Hashable {
@@ -214,10 +215,23 @@ final class ExerciseDatabase: ObservableObject {
 // MARK: - Seed Data (merged from ExerciseLibrary + JSON)
 extension ExerciseDatabase {
     static func seedEntries() -> [ExerciseEntry] {
-        // Convert existing ExerciseLibrary exercises
-        let legacyEntries = ExerciseLibrary.all.map { ex -> ExerciseEntry in
+        let legacy = legacyEntries()
+        return legacy + libraryEntries(jsonLibraryEntries(), dedupedAgainst: legacy)
+    }
+
+    /// The hand-written `ExerciseLibrary` records, as catalog entries.
+    ///
+    /// These are NOT part of the remote catalog table — that table is
+    /// generated from the bundled JSON alone — so a catalog refresh rebuilds
+    /// them from here unchanged rather than dropping them.
+    static func legacyEntries() -> [ExerciseEntry] {
+        ExerciseLibrary.all.map { ex -> ExerciseEntry in
             ExerciseEntry(
-                id: ex.id,
+                // Deterministic, NOT `ex.id`: `ExerciseLibrary.all` mints a
+                // fresh random `Exercise` id every time it is evaluated, so
+                // taking it here re-keyed the whole library on every reseed
+                // and could never line up with the remote catalog.
+                id: StableID.exercise(ex.name),
                 name: ex.name,
                 category: categoryFrom(muscle: ex.primaryMuscle),
                 equipment: ex.equipment,
@@ -231,7 +245,8 @@ extension ExerciseDatabase {
                 warmupProtocol: ExerciseWarmupProtocol(
                     type: ex.warmup.isEmpty ? "No Warmup Required" : "Standard Protocol",
                     steps: ex.warmup.enumerated().map { i, ws in
-                        WarmupStep(set: i + 1, intensity: ws.label, reps: ws.reps, description: "")
+                        WarmupStep(id: StableID.warmupStep(exercise: ex.name, index: i),
+                                   set: i + 1, intensity: ws.label, reps: ws.reps, description: "")
                     }
                 ),
                 isCable: ex.isCable,
@@ -240,13 +255,16 @@ extension ExerciseDatabase {
                 hint: ex.hint
             )
         }
+    }
 
-        // JSON library entries (deduplicated by name)
-        let jsonEntries = jsonLibraryEntries().filter { j in
-            !legacyEntries.contains { $0.name.lowercased() == j.name.lowercased() }
-        }
-
-        return legacyEntries + jsonEntries
+    /// Bundled-JSON (or remote-catalog) entries, minus any whose name a
+    /// legacy record already covers. The legacy record wins because it
+    /// carries hand-tuned warm-up sets, rep ranges and coaching cues the
+    /// generated one doesn't — same precedence the seed has always used.
+    static func libraryEntries(_ candidates: [ExerciseEntry],
+                               dedupedAgainst legacy: [ExerciseEntry]) -> [ExerciseEntry] {
+        let taken = Set(legacy.map { $0.name.lowercased() })
+        return candidates.filter { !taken.contains($0.name.lowercased()) }
     }
 
     private static func categoryFrom(muscle: String) -> String {
@@ -269,20 +287,38 @@ extension ExerciseDatabase {
         guard let url = Bundle.main.url(forResource: "gym_exercise_library", withExtension: "json"),
               let data = try? Data(contentsOf: url) else {
             print("⚠️ ExerciseDatabase: gym_exercise_library.json not found in the app bundle — falling back to \(hardcodedJsonEntries().count) hardcoded entries. Check the Resources build phase.")
-            return hardcodedJsonEntries()
+            return withStableIDs(hardcodedJsonEntries())
         }
         // Lossy array decode: each element is wrapped so one bad record is
         // dropped individually rather than discarding the whole library.
         guard let raw = try? JSONDecoder().decode([FailableDecodable<GymExerciseJSON>].self, from: data) else {
             print("⚠️ ExerciseDatabase: gym_exercise_library.json could not be decoded — falling back to hardcoded entries.")
-            return hardcodedJsonEntries()
+            return withStableIDs(hardcodedJsonEntries())
         }
         let parsed = raw.compactMap { $0.base?.toEntry() }
         guard !parsed.isEmpty else {
             print("⚠️ ExerciseDatabase: gym_exercise_library.json decoded to 0 usable entries — falling back to hardcoded entries.")
-            return hardcodedJsonEntries()
+            return withStableIDs(hardcodedJsonEntries())
         }
         return parsed
+    }
+
+    /// Stamps deterministic ids over entries built with literal initializers,
+    /// which otherwise take the random `UUID()` default. Keeps the
+    /// resource-missing fallback keyed the same way the JSON and remote
+    /// catalog paths are, so a later catalog refresh lands on top of these
+    /// rows rather than beside them.
+    static func withStableIDs(_ list: [ExerciseEntry]) -> [ExerciseEntry] {
+        list.map { entry in
+            var e = entry
+            e.id = StableID.exercise(e.name)
+            e.warmupProtocol.steps = e.warmupProtocol.steps.enumerated().map { i, step in
+                var s = step
+                s.id = StableID.warmupStep(exercise: e.name, index: i)
+                return s
+            }
+            return e
+        }
     }
 
     // Fallback: real exercises from the JSON (top-quality ones only, skipping "Variant N" filler)
@@ -435,6 +471,134 @@ extension ExerciseDatabase {
     }
 }
 
+// MARK: - Remote catalog refresh (over-the-air library updates)
+//
+// The exercise library ships in the app bundle, so a typo, a dead tutorial
+// link, or a new exercise would otherwise need an App Store release to reach
+// anyone. `aura_exercise_catalog` (see
+// supabase/migrations/0008_exercise_catalog.sql) holds the same library
+// server-side, world-readable and writable only by the project owner, with
+// `aura_catalog_meta.catalog_version` as the marker that says "this differs
+// from what you have".
+//
+// NOT part of per-user sync: the catalog has no `user_id`, is not in
+// `SupabaseSyncService.Table`, and is fetched straight off the shared client
+// here. It carries no user data, so it reads fine with the anon key — guests
+// get catalog updates too.
+//
+// FAILURE IS ALWAYS SILENT-AND-KEEP-BUNDLED. Offline, signed out, misconfigured
+// keys, an unseeded table, a payload this app version can't decode: every one
+// of those leaves the current catalog exactly as it is. The next launch
+// retries on its own, which is why there is no retry loop here.
+extension ExerciseDatabase {
+
+    /// Catalog version baked into the bundled JSON. Must match the
+    /// `CATALOG_VERSION` the committed seed was generated with — a fresh
+    /// install that already holds seed version 1 should not immediately pull
+    /// version 1 down again.
+    static let bundledCatalogVersion = "1"
+
+    private static var catalogVersionKey: String { "aura_catalog_version_v1" }
+
+    private struct CatalogMetaRow: Decodable { let value: String }
+
+    private struct CatalogRow: Decodable {
+        let id: UUID
+        let payload: ExerciseEntry
+    }
+
+    /// Version-checks the remote catalog and, only if it differs from what
+    /// this device last applied, pulls and applies the whole thing.
+    ///
+    /// Cheap by design: the common case is one tiny GET returning a single
+    /// short string, and nothing else happens.
+    func refreshCatalogFromRemote() async {
+        let client = AuthService.shared.client
+        let storedVersion = UserDefaults.standard.string(forKey: Self.catalogVersionKey)
+            ?? Self.bundledCatalogVersion
+
+        let remoteVersion: String
+        do {
+            let response = try await client
+                .from("aura_catalog_meta")
+                .select("value")
+                .eq("key", value: "catalog_version")
+                .limit(1)
+                .execute()
+            let rows = try JSONDecoder().decode([CatalogMetaRow].self, from: response.data)
+            // Empty means the catalog has not been seeded on this project
+            // yet. Bundled content is the whole library in that case, and
+            // pulling zero rows over it would empty the app.
+            guard let value = rows.first?.value else { return }
+            remoteVersion = value
+        } catch {
+            print("⚠️ ExerciseDatabase: catalog version check failed, keeping the bundled catalog — \(error)")
+            return
+        }
+
+        guard remoteVersion != storedVersion else { return }
+
+        let remoteEntries: [ExerciseEntry]
+        do {
+            let response = try await client
+                .from("aura_exercise_catalog")
+                .select("id,payload")
+                .execute()
+            // Strict, all-or-nothing decode: a single unreadable payload
+            // aborts the whole refresh rather than applying a catalog with a
+            // hole in it. `updated_at` is deliberately not selected — nothing
+            // here needs it, and fetching it would drag in the ISO-8601 date
+            // strategy `SupabaseSyncService` needs for its delta pulls.
+            let rows = try JSONDecoder().decode([CatalogRow].self, from: response.data)
+            guard !rows.isEmpty else { return }
+            // The primary key is the authority on identity; if a payload's
+            // own `id` field ever disagrees with its row id, the row id wins.
+            remoteEntries = rows.map { row in
+                var entry = row.payload
+                entry.id = row.id
+                return entry
+            }
+        } catch {
+            print("⚠️ ExerciseDatabase: catalog fetch/decode failed, keeping the bundled catalog — \(error)")
+            return
+        }
+
+        applyRemoteCatalog(remoteEntries)
+        UserDefaults.standard.set(remoteVersion, forKey: Self.catalogVersionKey)
+    }
+
+    /// Replaces every non-custom entry with the pulled catalog, preserving
+    /// the user's own rows and their per-entry state.
+    ///
+    /// Composition mirrors `seedEntries()` exactly, with the remote rows
+    /// standing in for the bundled JSON: hand-written `ExerciseLibrary`
+    /// records still win on a name collision, and still survive a refresh —
+    /// they were never in the catalog table to begin with.
+    func applyRemoteCatalog(_ remote: [ExerciseEntry]) {
+        // Favourites and notes live ON the entry, so a wholesale replacement
+        // would wipe them. Carried over BY NAME, not by id: installs
+        // predating deterministic ids hold random ones, and matching on those
+        // would silently drop every favourite on the upgrade.
+        let previous = Dictionary(entries.map { ($0.name.lowercased(), $0) },
+                                  uniquingKeysWith: { first, _ in first })
+        func carryingUserState(_ entry: ExerciseEntry) -> ExerciseEntry {
+            guard let old = previous[entry.name.lowercased()] else { return entry }
+            var e = entry
+            e.isFavorite = old.isFavorite
+            e.notes = old.notes
+            return e
+        }
+
+        // Read before the assignment below overwrites `entries`.
+        let customs = entries.filter { $0.isCustom }
+
+        let legacy = Self.legacyEntries()
+        let library = Self.libraryEntries(remote, dedupedAgainst: legacy)
+        entries = (legacy + library).map(carryingUserState) + customs
+        persist()
+    }
+}
+
 // MARK: - Lossy element wrapper
 /// Wraps one array element so a malformed record decodes to `nil` (skipped)
 /// instead of throwing and taking the whole array down with it.
@@ -477,6 +641,10 @@ struct GymExerciseJSON: Codable {
             return "Beginner"
         }()
         return ExerciseEntry(
+            // Matches the id `supabase/seed/generate_seed.py` computes for
+            // this same record, so a pulled catalog row replaces the bundled
+            // one instead of duplicating it.
+            id: StableID.exercise(name),
             name: name,
             category: category,
             equipment: equipment,
@@ -489,8 +657,10 @@ struct GymExerciseJSON: Codable {
             proTips: pro_tips,
             warmupProtocol: ExerciseWarmupProtocol(
                 type: warmup_protocol.type,
-                steps: warmup_protocol.steps.map {
-                    WarmupStep(set: $0.set, intensity: $0.intensity, reps: $0.reps, description: $0.description)
+                steps: warmup_protocol.steps.enumerated().map { i, step in
+                    WarmupStep(id: StableID.warmupStep(exercise: name, index: i),
+                               set: step.set, intensity: step.intensity,
+                               reps: step.reps, description: step.description)
                 }
             ),
             isCable: equipment.lowercased() == "cable",

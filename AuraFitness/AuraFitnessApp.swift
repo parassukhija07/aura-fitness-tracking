@@ -55,6 +55,22 @@ struct AuraFitnessApp: App {
                 // pullAll/backfill can safely read/apply AppState.
                 await authService.restoreSession()
             }
+            .task(priority: .background) {
+                // Over-the-air exercise-library refresh. Independent of
+                // `restoreSession` above and deliberately not sequenced after
+                // it: the catalog is world-readable, so it works signed out
+                // and in guest mode, and it must never delay sign-in. Costs
+                // one small GET when the catalog is unchanged, which is the
+                // usual case; failure leaves the bundled library in place.
+                await ExerciseDatabase.shared.refreshCatalogFromRemote()
+            }
+            // Password-reset / email-confirmation links come back in through
+            // here. Requires the `aurafitness` URL scheme to be declared on
+            // the target (Info → URL Types) — see AuthService.authCallbackURL
+            // and MANUAL_STEPS.md; without it iOS never delivers the link.
+            .onOpenURL { url in
+                Task { await authService.handleAuthCallback(url: url) }
+            }
         }
         .onChange(of: scenePhase) { _, phase in
             // `authService.userID` is nil for guests, so this already
@@ -62,7 +78,13 @@ struct AuraFitnessApp: App {
             // intentionally does not pull (there's nothing remote to fetch;
             // guest data lives purely locally until the user signs in).
             guard phase == .active, authService.userID != nil else { return }
-            Task { await SupabaseSyncService.shared.pullChanges() }
+            Task {
+                // A confirmed email change only lands server-side, so the new
+                // login email surfaces on the next session refresh — do it
+                // here rather than making the Account screen poll.
+                await authService.refreshSession()
+                await SupabaseSyncService.shared.pullChanges()
+            }
         }
     }
 }

@@ -29,7 +29,7 @@ The app's login, signup, and cloud sync all talk to Supabase. Without this, the 
 
 ## Step 2 — Apply the database schema (≈5 min)
 
-The repo ships the full schema at `supabase/migrations/0001_init_schema.sql` — 12 tables (`aura_workout_logs`, `aura_programs`, `aura_plans`, …), each with an `updated_at` trigger and owner-only Row Level Security. Two ways to apply it; the Dashboard way is simpler:
+The repo ships the schema as numbered files in `supabase/migrations/`. `0001_init_schema.sql` creates 12 tables (`aura_workout_logs`, `aura_programs`, `aura_plans`, …), each with an `updated_at` trigger and owner-only Row Level Security; later files add the delta-pull RPC, deletion tombstones, payload guardrails, photo storage, and function hardening. **Run every file, in numeric order** — they build on each other. Two ways to apply them; the Dashboard way is simpler:
 
 **Option A — Dashboard (recommended, no CLI needed):**
 
@@ -37,7 +37,10 @@ The repo ships the full schema at `supabase/migrations/0001_init_schema.sql` —
 2. Click **New query**.
 3. Open `supabase/migrations/0001_init_schema.sql` from this repo in any text editor, copy its **entire** contents, paste into the SQL editor.
 4. Click **Run**. You should see "Success. No rows returned".
-5. Verify: go to **Table Editor** — you should see 12 tables all prefixed `aura_`.
+5. Repeat 2–4 for each remaining file **in order**: `0002_pull_changes_rpc.sql`, `0003_deletions_tombstones.sql`, `0004_pull_changes_v2.sql`, `0005_payload_guardrails.sql`, `0006_progress_photos_storage.sql`, `0007_function_hardening.sql`, `0008_exercise_catalog.sql`.
+6. Verify: go to **Table Editor** — you should see 12 tables all prefixed `aura_`, plus `aura_deletions`, `aura_exercise_catalog`, and `aura_catalog_meta`.
+
+> `0007_function_hardening.sql` is what clears the four warnings the **Database → Linter** page reports (`function_search_path_mutable` ×2, `*_security_definer_function_executable` ×2). It also takes `purge_old_deletions()` off the public REST API — it was callable by anyone holding the anon key. If you ever re-run `0003` on its own, re-run `0007` after it: `0003` would otherwise put `record_deletion()` back to `security invoker`, which combined with the revoke makes roughly one delete in a thousand fail. The file's header explains why.
 
 **Option B — CLI (if you have the Supabase CLI installed):**
 
@@ -141,8 +144,49 @@ Storage is **not** covered by that cascade — there is no foreign key from a st
 Sign-up in the app requires email confirmation (the app shows a "Check your email" screen and refuses login until confirmed).
 
 1. Supabase dashboard → **Authentication → Providers → Email**: confirm **Email** is enabled and "Confirm email" is ON (it is by default).
-2. **Authentication → URL Configuration**: the defaults are fine for now (the confirmation link opens in a browser; the user then returns to the app and logs in).
-3. Optional but recommended before real users: **Authentication → Email Templates** — the default sender is Supabase's shared SMTP with tight rate limits (~3 emails/hour). For anything beyond your own testing, configure custom SMTP under **Project Settings → Auth → SMTP**.
+2. **Authentication → URL Configuration** → **Site URL**: change the default `http://localhost:3000` to:
+
+   ```
+   aurafitness://auth-callback
+   ```
+
+   Site URL is the fallback target for any link that does not carry its own `redirect_to` — which is the case for the **sign-up confirmation** email (`signUp` deliberately sends none). Left at `localhost:3000`, confirming a new account still works (GoTrue marks the email confirmed *before* redirecting) but dumps the user on a dead browser page they have to back out of by hand. Pointed at the callback, the link deep-links into the app and `handleAuthCallback` signs them in. Wildcards are not allowed in this field, and none are needed.
+
+3. Same screen → **Redirect URLs** → add BOTH of these:
+   - `aurafitness://auth-callback`
+   - `aurafitness://auth-callback**`
+
+   The second (glob) entry is not optional: the password-reset link IS sent with an explicit `redirect_to=aurafitness://auth-callback?flow=recovery`, and the plain entry does not match a URL carrying query parameters. Without it Supabase refuses the redirect and the reset mail dead-ends. See `AuthService.passwordResetRedirectURL` for why the marker exists.
+4. **Authentication → Email Templates** is locked ("Set up custom SMTP to edit templates") until you configure your own sender — that is fine and **blocks nothing here**. The default `Reset Password` template already uses `{{ .ConfirmationURL }}`, which honours the `redirect_to` the app sends, so the deep link works untouched.
+
+   Custom SMTP is still worth doing before you test seriously, for two reasons that have nothing to do with editing templates:
+   - Supabase's **default sender only delivers to members of your Supabase organisation**. A reset link sent to any other address is dropped silently — the app shows "a reset link is on its way" (it must, to avoid user enumeration) and no mail ever arrives.
+   - The default sender is rate-limited to roughly **2 emails per hour**, which you will hit quickly while testing sign-up + reset together.
+
+   Configure it under **Project Settings → Auth → SMTP**. Free tiers that work: Resend, Brevo, Mailgun.
+
+---
+
+## Step 7b — Declare the `aurafitness` URL scheme in Xcode (≈2 min)
+
+Password reset and login-email change both send the user out to their mailbox and back into the app via a deep link. iOS only delivers that link if the app declares the scheme — **this cannot be committed for you**, because the target uses `GENERATE_INFOPLIST_FILE = YES` and `CFBundleURLTypes` is an array of dictionaries, which the `INFOPLIST_KEY_…` build-setting passthrough (the trick `AuthConfig` relies on) cannot express.
+
+1. Open the project in Xcode → select the **AuraFitness** target → **Info** tab.
+2. Expand **URL Types** → click **+**.
+   - **Identifier**: `com.aurafitness.app`
+   - **URL Schemes**: `aurafitness`
+   - **Role**: `Editor`
+3. Xcode will materialise an `Info.plist` for the target and point `INFOPLIST_FILE` at it. That is expected — `GENERATE_INFOPLIST_FILE` stays `YES` and the existing `INFOPLIST_KEY_SUPABASE_*` values keep merging in, so **do not** remove them.
+4. Build once and confirm the app still launches (a broken Info.plist wiring shows up as the DEBUG `fatalError` in `AuthConfig`).
+5. Commit the resulting `Info.plist` and `project.pbxproj` change.
+
+**Test the reset flow end to end** (needs Steps 1–3 and 7):
+1. Run the app → **Forgot password?** → enter an email you control → you should see "If an account exists for that email, a reset link is on its way." (that copy is deliberately identical for unknown addresses — no user enumeration).
+2. Open the mail on the same device/simulator → tap the link → the app should foreground with a **Set a new password** sheet.
+3. Enter a new password twice (min 6 chars) → **Save password** → you land signed in.
+4. Tapping the same link a second time should now show "That link has expired. Request a new one."
+
+**Login-email change**: Profile → Account Details → edit **Email** → **Save Changes** → confirm the alert. Supabase's default is double confirmation (a link to the old address *and* the new one); the app says "Confirm the change from the link sent to your new address" and keeps showing the OLD address until the change actually lands. If you want single confirmation, turn OFF **Authentication → Providers → Email → "Secure email change"**.
 
 **Quick end-to-end test after Steps 1–4:**
 1. Run the app in the simulator → Sign Up with a real email you control.
@@ -177,6 +221,26 @@ CI currently re-resolves all Swift Package versions on every run (no `Package.re
 
 ---
 
+## Step 10 (optional) — Seed the global exercise catalog (≈3 min)
+
+Step 2's `0008_exercise_catalog.sql` created two empty tables: `aura_exercise_catalog` (the exercise library, world-readable) and `aura_catalog_meta` (a single `catalog_version` row). Seeding them lets you fix a typo, replace a dead tutorial link, or add an exercise **without shipping an App Store release** — the app pulls the new catalog at its next launch.
+
+Skipping this is safe. With the tables empty the app reads no version marker and keeps the library bundled in the binary, exactly as it behaves today.
+
+1. In **SQL Editor**, click **New query**.
+2. Open `supabase/seed/seed_exercise_catalog.sql` from this repo, copy its **entire** contents (it is ~150 KB — make sure you get all of it), paste, **Run**.
+3. Verify: **Table Editor** → `aura_exercise_catalog` shows 137 rows, and `aura_catalog_meta` shows one row, `catalog_version` = `1`.
+4. Confirm it is genuinely read-only: in **SQL Editor**, run
+   ```sql
+   set role anon;
+   delete from aura_exercise_catalog;
+   ```
+   This must fail with `42501` / "new row violates row-level security policy". Then run `reset role;`. If the delete SUCCEEDS, stop and re-run `0008_exercise_catalog.sql`.
+
+**To ship a catalog update later:** edit `AuraFitness/Resources/gym_exercise_library.json`, bump `CATALOG_VERSION` in `supabase/seed/generate_seed.py`, run `python supabase/seed/generate_seed.py`, commit the regenerated SQL, and repeat steps 1–3 above. Apps notice the changed version on their next launch and pull the whole catalog. Never rename an exercise expecting the old row to follow it — ids are derived from the name, so a rename creates a new row and the old one stays put for older clients.
+
+---
+
 ## Quick checklist
 
 | # | Step | Needs | Blocks |
@@ -187,6 +251,8 @@ CI currently re-resolves all Swift Package versions on every run (no `Package.re
 | 4 | Deploy delete-account function | Supabase CLI | Delete Account button only |
 | 5 | HealthKit capability | Mac + Xcode | Apple Health toggle only |
 | 6 | Bundle exercise JSON | Mac + Xcode | Full exercise library (falls back to 11) |
-| 7 | Auth email settings + E2E test | Browser | Sign-up flow quality |
+| 7 | Auth email settings + redirect URLs | Browser | Sign-up + password reset |
+| 7b | Declare `aurafitness://` URL scheme | Mac + Xcode | Password reset + email change |
 | 8 | Verify CI green | Browser | Release artifact |
 | 9 | Pin Package.resolved | Mac + Xcode | CI reproducibility (optional) |
+| 10 | Seed exercise catalog | Browser (SQL editor) | Over-the-air library updates (optional) |

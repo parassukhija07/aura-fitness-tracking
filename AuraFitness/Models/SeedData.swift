@@ -23,6 +23,22 @@ enum StableID {
     static func program(_ name: String) -> UUID { v5("program:" + name) }
     static func workout(_ name: String) -> UUID { v5("workout:" + name) }
 
+    /// Library exercise ids. Load-bearing for a second reason beyond the
+    /// cross-device one above: the global catalog table seeded by
+    /// `supabase/seed/generate_seed.py` computes these SAME ids server-side,
+    /// which is what lets a pulled catalog row REPLACE its bundled
+    /// counterpart instead of landing beside it as a duplicate.
+    static func exercise(_ name: String) -> UUID { v5("exercise:" + name) }
+
+    /// Warm-up steps are `Identifiable` and rendered in id-keyed lists, so a
+    /// refreshed catalog entry must not hand them new ids on every pull.
+    /// Keyed by POSITION, not by the step's own `set` number — a malformed
+    /// record can repeat a set number, and two steps sharing an id collapse
+    /// in the list. Mirrored by `warmup_step_id` in the seed generator.
+    static func warmupStep(exercise: String, index: Int) -> UUID {
+        v5("warmupstep:\(exercise)#\(index)")
+    }
+
     /// RFC 4122 §4.3 name-based UUID, SHA-1 flavour (version 5): hash the
     /// namespace bytes followed by the name, then stamp the version and
     /// variant bits into the first 16 bytes of the digest.
