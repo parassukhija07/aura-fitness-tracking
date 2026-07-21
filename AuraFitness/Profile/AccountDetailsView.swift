@@ -111,6 +111,14 @@ struct AccountDetailsView: View {
                 .padding(.top, AuraSpacing.s3)
 
                 AuraPrimaryButton(label: "Save Changes") {
+                    let email = appState.userProfile.email.trimmingCharacters(in: .whitespaces)
+                    // Non-blocking for the other fields (they bind live to
+                    // appState already) — only gate the save on a malformed
+                    // email. Empty is allowed; it's an optional field.
+                    guard email.isEmpty || isValidEmail(email) else {
+                        toast.flash("Enter a valid email")
+                        return
+                    }
                     dismiss()
                     appState.profileSaveFlash = "Account saved"
                 }
@@ -128,6 +136,14 @@ struct AccountDetailsView: View {
                 .environmentObject(AuthService.shared)
         }
         .auraToast(toast)
+    }
+
+    // MARK: Validation
+
+    /// Basic `local@domain.tld` shape check — enough to catch typos before
+    /// save without rejecting valid addresses.
+    private func isValidEmail(_ s: String) -> Bool {
+        s.range(of: #"^[^\s@]+@[^\s@]+\.[^\s@]+$"#, options: .regularExpression) != nil
     }
 
     // MARK: Field builders

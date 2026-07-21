@@ -313,9 +313,51 @@ struct ProgressPhotosView: View {
     }
 
     // MARK: Helpers
+    /// Budget for the encoded JPEG. The photo is base64'd into the
+    /// `aura_progress_photos` jsonb payload, which 0005_payload_guardrails.sql
+    /// caps at 3 MB — and base64 inflates by 4/3 — so the JPEG itself has to
+    /// stay near 2 MB with room left for the row's other fields. A
+    /// full-resolution camera photo blows past that at any quality, hence the
+    /// downscale below. Superseded by phase3-01, which moves photos out of the
+    /// payload and into Supabase Storage.
+    private static let jpegByteBudget = 2_000_000
+    /// Long edge, in pixels. Well beyond what the compare/thumbnail UI shows.
+    private static let maxPhotoDimension: CGFloat = 1600
+
+    /// Downscales, then steps quality down until the JPEG fits the budget.
+    /// The last attempt is returned even if it still doesn't fit — a photo
+    /// saved locally but rejected by the server beats silently saving nothing,
+    /// and the sync layer treats that rejection as permanent (it drops the
+    /// queued push and keeps the local row).
+    private func encodedPhotoData(_ img: UIImage) -> Data? {
+        let scaled = Self.downscaled(img, maxDimension: Self.maxPhotoDimension)
+        var last: Data? = nil
+        for quality: CGFloat in [0.75, 0.6, 0.45, 0.3] {
+            guard let data = scaled.jpegData(compressionQuality: quality) else { continue }
+            last = data
+            if data.count <= Self.jpegByteBudget { return data }
+        }
+        return last
+    }
+
+    /// Aspect-preserving resize of the long edge. `format.scale = 1` is
+    /// load-bearing: the renderer defaults to the screen scale, which would
+    /// hand back an image 2–3x larger in pixels than asked for.
+    private static func downscaled(_ img: UIImage, maxDimension: CGFloat) -> UIImage {
+        let longest = max(img.size.width, img.size.height)
+        guard longest > maxDimension, longest > 0 else { return img }
+        let ratio = maxDimension / longest
+        let target = CGSize(width: img.size.width * ratio, height: img.size.height * ratio)
+        let format = UIGraphicsImageRendererFormat.default()
+        format.scale = 1
+        return UIGraphicsImageRenderer(size: target, format: format).image { _ in
+            img.draw(in: CGRect(origin: .zero, size: target))
+        }
+    }
+
     private func savePhoto() {
         guard let img = newPhotoImage,
-              let data = img.jpegData(compressionQuality: 0.75) else { return }
+              let data = encodedPhotoData(img) else { return }
         let photo = ProgressPhoto(
             date: Date(),
             imageData: data,

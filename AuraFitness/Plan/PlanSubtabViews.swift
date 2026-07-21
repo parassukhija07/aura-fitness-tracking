@@ -274,7 +274,8 @@ struct PlanExercisesBody: View {
     private var gridItems: [PlanLibExercise] {
         filtered.map {
             PlanLibExercise(id: $0.id.uuidString, name: $0.name,
-                            muscle: $0.category, equip: $0.equipment)
+                            muscle: $0.category, equip: $0.equipment,
+                            imageURL: $0.imageURL)
         }
     }
 

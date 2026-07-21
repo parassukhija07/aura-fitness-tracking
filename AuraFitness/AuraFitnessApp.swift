@@ -55,7 +55,7 @@ struct AuraFitnessApp: App {
             // intentionally does not pull (there's nothing remote to fetch;
             // guest data lives purely locally until the user signs in).
             guard phase == .active, authService.userID != nil else { return }
-            Task { await SupabaseSyncService.shared.pullAll() }
+            Task { await SupabaseSyncService.shared.pullChanges() }
         }
     }
 }

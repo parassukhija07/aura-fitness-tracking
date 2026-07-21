@@ -121,6 +121,10 @@ final class AuthService: ObservableObject {
         // A signed-out user is neither guest nor signed-in; clear the guest
         // flag so they land back on the login form, not a silent guest session.
         UserDefaults.standard.set(false, forKey: guestKey)
+        // Drop the delta-pull watermark so a *different* account signing in on
+        // this device starts its incremental sync from epoch, never inheriting
+        // the prior user's cursor.
+        SupabaseSyncService.shared.resetSyncState()
         sessionState = .signedOut
     }
 

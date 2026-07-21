@@ -218,14 +218,21 @@ struct ExerciseEntryDetailView: View {
                                       autoplay: appState.autoPlayVideo,
                                       height: 180)
                 } else {
-                    ZStack {
-                        Circle()
-                            .fill(categoryColor(e.category).opacity(0.15))
-                            .frame(width: 64, height: 64)
-                        Text(e.category.prefix(2).uppercased())
-                            .font(AuraFont.jakarta(26, .heavy))
-                            .foregroundColor(categoryColor(e.category))
-                    }
+                    // No demo video → cached remote still (falls back to the
+                    // muscle-tinted gradient), with the category badge on top.
+                    RemoteExerciseImage(urlString: e.imageURL, fallbackMuscle: e.category)
+                        .frame(height: 180)
+                        .frame(maxWidth: .infinity)
+                        .overlay(
+                            ZStack {
+                                Circle()
+                                    .fill(Color.black.opacity(0.28))
+                                    .frame(width: 64, height: 64)
+                                Text(e.category.prefix(2).uppercased())
+                                    .font(AuraFont.jakarta(26, .heavy))
+                                    .foregroundColor(.white)
+                            }
+                        )
                 }
             }
         }
@@ -685,18 +692,16 @@ struct ExerciseDetailView: View {
             NavigationStack {
                 ScrollView {
                     VStack(alignment: .leading, spacing: AuraSpacing.s4) {
-                        ZStack {
-                            RoundedRectangle(cornerRadius: AuraRadius.lg)
-                                .fill(Color.aura.surface)
-                                .frame(height: 200)
-                            VStack(spacing: 8) {
-                                ZStack {
-                                    Circle().fill(Color.black.opacity(0.5)).frame(width: 56, height: 56)
-                                    Image(systemName: "play.fill").foregroundColor(.white).font(AuraFont.jakarta(22))
-                                }
-                                Text("Exercise Demo").font(AuraFont.secondary()).foregroundColor(.aura.text3)
+                        Group {
+                            if YouTubePlayerView.videoID(from: exercise.youtubeURL) != nil {
+                                ExerciseVideoView(youtubeURL: exercise.youtubeURL, autoplay: false, height: 200)
+                            } else {
+                                RemoteExerciseImage(urlString: exercise.imageURL, fallbackMuscle: exercise.primaryMuscle)
+                                    .frame(height: 200)
+                                    .frame(maxWidth: .infinity)
                             }
                         }
+                        .clipShape(RoundedRectangle(cornerRadius: AuraRadius.lg))
 
                         Text(exercise.name).font(AuraFont.cardTitle()).foregroundColor(.aura.text)
 

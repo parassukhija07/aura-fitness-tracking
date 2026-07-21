@@ -128,6 +128,20 @@ final class ExerciseDatabase: ObservableObject {
         persist()
     }
 
+    /// Drops entries deleted on another device, as reported by the
+    /// `aura_deletions` tombstones in a delta pull. `applyRemote` above is a
+    /// union merge and can only ever ADD rows, so a remote delete needs this
+    /// separate path or the entry survives locally and gets re-pushed.
+    func applyRemoteDeletions(ids: Set<UUID>) {
+        guard !ids.isEmpty else { return }
+        isApplyingRemote = true
+        defer { isApplyingRemote = false }
+        let before = entries.count
+        entries.removeAll { ids.contains($0.id) }
+        guard entries.count != before else { return }
+        persist()
+    }
+
     /// Drops ALL entries (library + custom) back to the raw seed — distinct
     /// from `resetToSeed()` below, which preserves customs.
     func hardReset() {
@@ -237,14 +251,27 @@ extension ExerciseDatabase {
         }
     }
 
-    // Parse JSON gym_exercise_library.json bundled entries
+    // Parse JSON gym_exercise_library.json bundled entries.
+    // Falls back to the small hardcoded list ONLY when the resource is missing
+    // or wholly undecodable — a single malformed record is skipped, not fatal.
     static func jsonLibraryEntries() -> [ExerciseEntry] {
         guard let url = Bundle.main.url(forResource: "gym_exercise_library", withExtension: "json"),
-              let data = try? Data(contentsOf: url),
-              let raw = try? JSONDecoder().decode([GymExerciseJSON].self, from: data) else {
+              let data = try? Data(contentsOf: url) else {
+            print("⚠️ ExerciseDatabase: gym_exercise_library.json not found in the app bundle — falling back to \(hardcodedJsonEntries().count) hardcoded entries. Check the Resources build phase.")
             return hardcodedJsonEntries()
         }
-        return raw.map { $0.toEntry() }
+        // Lossy array decode: each element is wrapped so one bad record is
+        // dropped individually rather than discarding the whole library.
+        guard let raw = try? JSONDecoder().decode([FailableDecodable<GymExerciseJSON>].self, from: data) else {
+            print("⚠️ ExerciseDatabase: gym_exercise_library.json could not be decoded — falling back to hardcoded entries.")
+            return hardcodedJsonEntries()
+        }
+        let parsed = raw.compactMap { $0.base?.toEntry() }
+        guard !parsed.isEmpty else {
+            print("⚠️ ExerciseDatabase: gym_exercise_library.json decoded to 0 usable entries — falling back to hardcoded entries.")
+            return hardcodedJsonEntries()
+        }
+        return parsed
     }
 
     // Fallback: real exercises from the JSON (top-quality ones only, skipping "Variant N" filler)
@@ -394,6 +421,17 @@ extension ExerciseDatabase {
                 ]), isCable: false, plannedSets: 1
             )
         ]
+    }
+}
+
+// MARK: - Lossy element wrapper
+/// Wraps one array element so a malformed record decodes to `nil` (skipped)
+/// instead of throwing and taking the whole array down with it.
+struct FailableDecodable<Base: Decodable>: Decodable {
+    let base: Base?
+    init(from decoder: Decoder) throws {
+        let container = try decoder.singleValueContainer()
+        base = try? container.decode(Base.self)
     }
 }
 

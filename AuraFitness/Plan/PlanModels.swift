@@ -170,6 +170,8 @@ struct PlanLibExercise: Identifiable, Hashable {
     var name: String
     var muscle: String
     var equip: String
+    /// Optional remote still for the catalog thumb; empty → gradient fallback.
+    var imageURL: String = ""
 }
 
 // MARK: Editor exercise (WK_SEEDS row)

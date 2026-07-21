@@ -76,6 +76,9 @@ enum DataResetService {
             // New sync-infra keys cleared on full reset only.
             UserDefaults.standard.removeObject(forKey: "aura_sync_queue_v1")
             UserDefaults.standard.removeObject(forKey: "aura_local_ts_v1")
+            // Reset the delta-pull watermark too, so a post-reset sync re-pulls
+            // from epoch rather than skipping rows behind a stale cursor.
+            SupabaseSyncService.shared.resetSyncState()
 
             // Guest-mode flag — full reset also drops guest status so a
             // post-reset relaunch shows the login screen, not a silent guest

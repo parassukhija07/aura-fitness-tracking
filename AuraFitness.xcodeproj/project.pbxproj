@@ -24,10 +24,13 @@
 		AAF0700300000000000000F1 /* PlusJakartaSans-SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = ABF0700300000000000000F1 /* PlusJakartaSans-SemiBold.ttf */; };
 		AAF0700400000000000000F1 /* PlusJakartaSans-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = ABF0700400000000000000F1 /* PlusJakartaSans-Bold.ttf */; };
 		AAF0700500000000000000F1 /* PlusJakartaSans-ExtraBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = ABF0700500000000000000F1 /* PlusJakartaSans-ExtraBold.ttf */; };
+		AAF0709900000000000000F1 /* gym_exercise_library.json in Resources */ = {isa = PBXBuildFile; fileRef = ABF0709900000000000000F1 /* gym_exercise_library.json */; };
 		AA000003000000000000003B /* AuraColors.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000003000000000000003B /* AuraColors.swift */; };
 		AA000004000000000000004B /* AuraTypography.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000004000000000000004B /* AuraTypography.swift */; };
 		AA000005000000000000005B /* AuraSpacing.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000005000000000000005B /* AuraSpacing.swift */; };
 		AA000006000000000000006B /* AuraComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000006000000000000006B /* AuraComponents.swift */; };
+		AAD5000000000000000000E1 /* AuraVideoPlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABD5000000000000000000E1 /* AuraVideoPlayer.swift */; };
+		AAD5000000000000000000E2 /* RemoteExerciseImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABD5000000000000000000E2 /* RemoteExerciseImage.swift */; };
 		AAEE0001000000000000001B /* AuraTabBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABEE0001000000000000001B /* AuraTabBar.swift */; };
 		AAEE0002000000000000002B /* AuraScreenScroll.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABEE0002000000000000002B /* AuraScreenScroll.swift */; };
 		AAEE0003000000000000003B /* ResumeBanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABEE0003000000000000003B /* ResumeBanner.swift */; };
@@ -62,10 +65,7 @@
 		00F9A57BA3BE4F249AFAC7CC /* PlanExerciseDetailData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A5A3265AEA24FD599D3EBA0 /* PlanExerciseDetailData.swift */; };
 		4A36DFD0F37D4722823C3938 /* PlanComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = ECF711C33D7641439F2CD2BD /* PlanComponents.swift */; };
 		3C1FD94A48ED4BB9AE32068B /* PlanSubtabViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1201BDAFC4C04FE1967A9969 /* PlanSubtabViews.swift */; };
-		66ABE8B35A6D4E2F8A38ABDE /* PlanSheets.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79968BBFFAB24C84B5AEA56F /* PlanSheets.swift */; };
 		07EDD830DA2343E3AB2FA011 /* PlanExercisePickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61AE6FC2AC904F8D963632AC /* PlanExercisePickerView.swift */; };
-		13AE805DFC634FA48D3591AF /* PlanProgramViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = F2F7122502C44780AC8C6713 /* PlanProgramViews.swift */; };
-		E5D31AB2AD9D49C3A6CA5C6C /* PlanWorkoutEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2865FC79E9954BE1A25B3411 /* PlanWorkoutEditorView.swift */; };
 		FF9914404E7E49F68C857B0D /* PlanExerciseDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9641805392374D16AAA3209E /* PlanExerciseDetailView.swift */; };
 		D1E6081F805C44EA80D37561 /* PlanBodyMap.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF6B6FD2015947908E6EE16B /* PlanBodyMap.swift */; };
 		CB01000000000000000A0001 /* MyPlansView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA01000000000000000A0001 /* MyPlansView.swift */; };
@@ -120,10 +120,13 @@
 		ABF0700300000000000000F1 /* PlusJakartaSans-SemiBold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "PlusJakartaSans-SemiBold.ttf"; sourceTree = "<group>"; };
 		ABF0700400000000000000F1 /* PlusJakartaSans-Bold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "PlusJakartaSans-Bold.ttf"; sourceTree = "<group>"; };
 		ABF0700500000000000000F1 /* PlusJakartaSans-ExtraBold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "PlusJakartaSans-ExtraBold.ttf"; sourceTree = "<group>"; };
+		ABF0709900000000000000F1 /* gym_exercise_library.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = gym_exercise_library.json; sourceTree = "<group>"; };
 		AB000003000000000000003B /* AuraColors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuraColors.swift; sourceTree = "<group>"; };
 		AB000004000000000000004B /* AuraTypography.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuraTypography.swift; sourceTree = "<group>"; };
 		AB000005000000000000005B /* AuraSpacing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuraSpacing.swift; sourceTree = "<group>"; };
 		AB000006000000000000006B /* AuraComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuraComponents.swift; sourceTree = "<group>"; };
+		ABD5000000000000000000E1 /* AuraVideoPlayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuraVideoPlayer.swift; sourceTree = "<group>"; };
+		ABD5000000000000000000E2 /* RemoteExerciseImage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteExerciseImage.swift; sourceTree = "<group>"; };
 		ABEE0001000000000000001B /* AuraTabBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuraTabBar.swift; sourceTree = "<group>"; };
 		ABEE0002000000000000002B /* AuraScreenScroll.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuraScreenScroll.swift; sourceTree = "<group>"; };
 		ABEE0003000000000000003B /* ResumeBanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResumeBanner.swift; sourceTree = "<group>"; };
@@ -158,10 +161,7 @@
 		7A5A3265AEA24FD599D3EBA0 /* PlanExerciseDetailData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlanExerciseDetailData.swift; sourceTree = "<group>"; };
 		ECF711C33D7641439F2CD2BD /* PlanComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlanComponents.swift; sourceTree = "<group>"; };
 		1201BDAFC4C04FE1967A9969 /* PlanSubtabViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlanSubtabViews.swift; sourceTree = "<group>"; };
-		79968BBFFAB24C84B5AEA56F /* PlanSheets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlanSheets.swift; sourceTree = "<group>"; };
 		61AE6FC2AC904F8D963632AC /* PlanExercisePickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlanExercisePickerView.swift; sourceTree = "<group>"; };
-		F2F7122502C44780AC8C6713 /* PlanProgramViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlanProgramViews.swift; sourceTree = "<group>"; };
-		2865FC79E9954BE1A25B3411 /* PlanWorkoutEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlanWorkoutEditorView.swift; sourceTree = "<group>"; };
 		9641805392374D16AAA3209E /* PlanExerciseDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlanExerciseDetailView.swift; sourceTree = "<group>"; };
 		FF6B6FD2015947908E6EE16B /* PlanBodyMap.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlanBodyMap.swift; sourceTree = "<group>"; };
 		CA01000000000000000A0001 /* MyPlansView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyPlansView.swift; sourceTree = "<group>"; };
@@ -242,9 +242,18 @@
 				ACGRP080000000000000000A /* Profile */,
 				ACGRP090000000000000000A /* Auth */,
 				ACGRP0A0000000000000000A /* Sync */,
+				ACGRP0B0000000000000000A /* Resources */,
 				ACGRPF070000000000000F01 /* Fonts */,
 			);
 			path = AuraFitness;
+			sourceTree = "<group>";
+		};
+		ACGRP0B0000000000000000A /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				ABF0709900000000000000F1 /* gym_exercise_library.json */,
+			);
+			path = Resources;
 			sourceTree = "<group>";
 		};
 		ACGRPF070000000000000F01 /* Fonts */ = {
@@ -269,6 +278,8 @@
 				ABEE0001000000000000001B /* AuraTabBar.swift */,
 				ABEE0002000000000000002B /* AuraScreenScroll.swift */,
 				ABEE0003000000000000003B /* ResumeBanner.swift */,
+				ABD5000000000000000000E1 /* AuraVideoPlayer.swift */,
+				ABD5000000000000000000E2 /* RemoteExerciseImage.swift */,
 			);
 			path = DesignSystem;
 			sourceTree = "<group>";
@@ -327,10 +338,7 @@
 				7A5A3265AEA24FD599D3EBA0 /* PlanExerciseDetailData.swift */,
 				ECF711C33D7641439F2CD2BD /* PlanComponents.swift */,
 				1201BDAFC4C04FE1967A9969 /* PlanSubtabViews.swift */,
-				79968BBFFAB24C84B5AEA56F /* PlanSheets.swift */,
 				61AE6FC2AC904F8D963632AC /* PlanExercisePickerView.swift */,
-				F2F7122502C44780AC8C6713 /* PlanProgramViews.swift */,
-				2865FC79E9954BE1A25B3411 /* PlanWorkoutEditorView.swift */,
 				9641805392374D16AAA3209E /* PlanExerciseDetailView.swift */,
 				FF6B6FD2015947908E6EE16B /* PlanBodyMap.swift */,
 				CA01000000000000000A0001 /* MyPlansView.swift */,
@@ -490,6 +498,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				AAA55E70000000000000001B /* Assets.xcassets in Resources */,
+				AAF0709900000000000000F1 /* gym_exercise_library.json in Resources */,
 				AAF0700100000000000000F1 /* PlusJakartaSans-Regular.ttf in Resources */,
 				AAF0700200000000000000F1 /* PlusJakartaSans-Medium.ttf in Resources */,
 				AAF0700300000000000000F1 /* PlusJakartaSans-SemiBold.ttf in Resources */,
@@ -511,6 +520,8 @@
 				AA000004000000000000004B /* AuraTypography.swift in Sources */,
 				AA000005000000000000005B /* AuraSpacing.swift in Sources */,
 				AA000006000000000000006B /* AuraComponents.swift in Sources */,
+				AAD5000000000000000000E1 /* AuraVideoPlayer.swift in Sources */,
+				AAD5000000000000000000E2 /* RemoteExerciseImage.swift in Sources */,
 				AAEE0001000000000000001B /* AuraTabBar.swift in Sources */,
 				AAEE0002000000000000002B /* AuraScreenScroll.swift in Sources */,
 				AAEE0003000000000000003B /* ResumeBanner.swift in Sources */,
@@ -545,10 +556,7 @@
 				00F9A57BA3BE4F249AFAC7CC /* PlanExerciseDetailData.swift in Sources */,
 				4A36DFD0F37D4722823C3938 /* PlanComponents.swift in Sources */,
 				3C1FD94A48ED4BB9AE32068B /* PlanSubtabViews.swift in Sources */,
-				66ABE8B35A6D4E2F8A38ABDE /* PlanSheets.swift in Sources */,
 				07EDD830DA2343E3AB2FA011 /* PlanExercisePickerView.swift in Sources */,
-				13AE805DFC634FA48D3591AF /* PlanProgramViews.swift in Sources */,
-				E5D31AB2AD9D49C3A6CA5C6C /* PlanWorkoutEditorView.swift in Sources */,
 				FF9914404E7E49F68C857B0D /* PlanExerciseDetailView.swift in Sources */,
 				D1E6081F805C44EA80D37561 /* PlanBodyMap.swift in Sources */,
 				CB01000000000000000A0001 /* MyPlansView.swift in Sources */,

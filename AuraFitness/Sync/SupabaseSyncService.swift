@@ -160,6 +160,12 @@ final class SupabaseSyncService: ObservableObject {
                 try await upsertRemote(table: table, uid: uid, rowID: id, payloadJSON: payloadJSON)
                 await flushQueue()
             } catch {
+                // A payload the server will never accept (0005 guardrails)
+                // must not be queued — it would fail on every flush forever.
+                guard !Self.isPermanentWriteFailure(error) else {
+                    Self.logDroppedWrite(table: table.rawValue, rowID: id, error: error)
+                    return
+                }
                 enqueue(QueueOp(table: table.rawValue, rowID: id, action: .upsert,
                                  payloadJSON: payloadJSON, queuedAt: Date()))
             }
@@ -201,6 +207,10 @@ final class SupabaseSyncService: ObservableObject {
         }
     }
 
+    /// Plain hard delete — no tombstone bookkeeping here on purpose. The
+    /// `after delete` trigger from 0003_deletions_tombstones.sql records the
+    /// `aura_deletions` row server-side, so deletes that never pass through
+    /// this method (Dashboard, edge functions, `wipeRemote`) are tombstoned too.
     private func deleteRemote(table: Table, uid: String, rowID: String) async throws {
         if table.isSingleton {
             _ = try await client.from(table.rawValue).delete().eq("user_id", value: uid).execute()
@@ -252,7 +262,14 @@ final class SupabaseSyncService: ObservableObject {
                     try await deleteRemote(table: table, uid: uid, rowID: op.rowID)
                 }
             } catch {
-                remaining.append(op)
+                // Retryable (offline, 5xx, timeout) stays queued; permanently
+                // rejected payloads are dropped so one bad row can't wedge the
+                // queue and block every op behind it.
+                if Self.isPermanentWriteFailure(error) {
+                    Self.logDroppedWrite(table: op.table, rowID: op.rowID, error: error)
+                } else {
+                    remaining.append(op)
+                }
             }
         }
         queue = remaining
@@ -359,9 +376,24 @@ final class SupabaseSyncService: ObservableObject {
         let updated_at: Date
     }
 
+    /// One tombstone from `aura_deletions` (0003_deletions_tombstones.sql):
+    /// "row `row_key` of `table_name` was deleted at `deleted_at`". Carries no
+    /// payload — there is nothing left to carry.
+    private struct DeletionRow: Decodable {
+        let table_name: String
+        let row_key: String
+        let deleted_at: Date
+    }
+
     /// Decoded shape of the `pull_changes` RPC — one array per `aura_*` table.
     /// The RPC always emits all 12 keys (empty array when nothing changed), so
     /// every property is non-optional and decoding is total.
+    ///
+    /// `aura_deletions` is the one exception: it only exists from
+    /// 0004_pull_changes_v2.sql onward, so it is Optional purely so a client
+    /// talking to a database still on 0002 keeps decoding (nil = this server
+    /// has no tombstone support) instead of failing every delta pull into the
+    /// full-pull fallback forever.
     private struct PullChangesResponse: Decodable {
         let aura_workout_logs: [RemoteRow]
         let aura_measurements: [RemoteRow]
@@ -375,6 +407,7 @@ final class SupabaseSyncService: ObservableObject {
         let aura_body_stats: [RemoteRow]
         let aura_user_profile: [RemoteRow]
         let aura_preferences: [RemoteRow]
+        let aura_deletions: [DeletionRow]?
     }
 
     /// Pulls every table for the current user and reconciles into local
@@ -418,10 +451,18 @@ final class SupabaseSyncService: ObservableObject {
     /// advances to the max server `updated_at` merged, and ONLY after a fully
     /// successful merge (empty delta leaves it untouched — never regress it).
     ///
+    /// Deletions ride along in the same response as `aura_deletions`
+    /// tombstones and are applied FIRST, before any per-table merge, with the
+    /// keys they removed handed to the merge so its local-only re-push can't
+    /// push a just-deleted row straight back up. See `applyDeletions`.
+    ///
     /// Fallback ladder (terminates — no retry loop): an auth failure (JWT
     /// expired / 401) is treated as signed-out and does nothing. Any other RPC
     /// or decode failure — notably a 404 (migration not applied yet) or a 400
-    /// (bad `since`) — degrades to exactly one legacy full `pullAll()`.
+    /// (bad `since`) — degrades to exactly one legacy full `pullAll()`. Note
+    /// that the fallback CANNOT see tombstones (`pullAll` reads the tables
+    /// directly, and a deleted row is simply absent) — deletions are missed
+    /// for that cycle and picked up by the next successful delta pull.
     func pullChanges() async {
         guard userID != nil else { return }
         syncing = true
@@ -431,13 +472,18 @@ final class SupabaseSyncService: ObservableObject {
         do {
             let response = try await client.rpc("pull_changes", params: ["since": sinceISO]).execute()
             let delta = try Self.deltaDecoder.decode(PullChangesResponse.self, from: response.data)
+            let (tombstoned, maxDeletedAt) = applyDeletions(delta.aura_deletions ?? [])
             let maxTs = mergeRemoteRows(
                 programs: delta.aura_programs, plans: delta.aura_plans, exercises: delta.aura_exercises,
                 logs: delta.aura_workout_logs, measurements: delta.aura_measurements, prs: delta.aura_personal_records,
                 photos: delta.aura_progress_photos, overrides: delta.aura_day_overrides, quicks: delta.aura_quick_logs,
-                bodyStats: delta.aura_body_stats, profile: delta.aura_user_profile, prefs: delta.aura_preferences)
+                bodyStats: delta.aura_body_stats, profile: delta.aura_user_profile, prefs: delta.aura_preferences,
+                skipRePush: tombstoned)
             // Advance only forward, and only if the response carried rows.
-            if let maxTs, maxTs > lastDeltaPullAt {
+            // Tombstones count: they're filtered by `deleted_at > since` off
+            // the same watermark, so leaving them out would re-deliver every
+            // deletion on every pull until an unrelated row happened to change.
+            if let maxTs = [maxTs, maxDeletedAt].compactMap({ $0 }).max(), maxTs > lastDeltaPullAt {
                 lastDeltaPullAt = maxTs
             }
         } catch {
@@ -460,26 +506,71 @@ final class SupabaseSyncService: ObservableObject {
             || text.contains("unauthorized") || text.contains("not authenticated")
     }
 
+    // MARK: - Write failure classification (payload guardrails)
+
+    /// True when re-sending this exact payload can only ever fail again, so
+    /// the queued op must be DROPPED rather than retried forever. The headline
+    /// case is `23514` — the CHECK constraints from 0005_payload_guardrails.sql
+    /// (payload over its size cap, or not a JSON object).
+    ///
+    /// Deliberately an ALLOW-LIST of SQLSTATE codes: anything unrecognised —
+    /// offline, timeout, 5xx, a code added by a future PostgREST — stays
+    /// queued. Silently discarding a write is far worse than retrying one.
+    /// Auth failures are explicitly excluded: a refreshed token fixes those,
+    /// so they are transient no matter what else the message says.
+    ///
+    /// Matching on the error's text mirrors `isAuthError` above — the
+    /// PostgREST/GoTrue errors this SDK surfaces don't expose a stable typed
+    /// status to switch on.
+    ///
+    /// NOTE: only the remote queue op is dropped. The local store keeps the
+    /// row and stays authoritative, so nothing the user created is lost — it
+    /// just stops trying to reach Supabase until the payload is fixed.
+    private static func isPermanentWriteFailure(_ error: Error) -> Bool {
+        guard !isAuthError(error) else { return false }
+        let text = "\(error)".lowercased()
+        return text.contains("23514")   // check_violation — the payload guardrails
+            || text.contains("23502")   // not_null_violation
+            || text.contains("23503")   // foreign_key_violation — user row is gone
+            || text.contains("22p02")   // invalid_text_representation
+            || text.contains("22003")   // numeric_value_out_of_range
+    }
+
+    /// Surfaces a dropped write. Uses `print` to match the existing diagnostic
+    /// style in this codebase (see ExerciseDatabase's seed-load warnings);
+    /// there is no os_log convention here to follow yet.
+    private static func logDroppedWrite(table: String, rowID: String, error: Error) {
+        print("⚠️ SupabaseSyncService: permanently rejected write to \(table) row \(rowID) — dropping the queued op, local copy kept. \(error)")
+    }
+
     /// Shared per-table LWW merge + local apply used by BOTH `pullAll()` (full
     /// snapshot) and `pullChanges()` (incremental delta). Takes the already-
     /// decoded rows per table, reconciles each into its local store, and
     /// returns the maximum `updated_at` seen across every row (nil when the
     /// batch is empty) so `pullChanges()` can advance its watermark.
+    ///
+    /// `skipRePush` holds the `"table:key"` stamps of rows a tombstone just
+    /// removed this cycle. Those rows must never take the local-wins re-push
+    /// branch below — that would recreate remotely exactly what was deleted.
     @discardableResult
     private func mergeRemoteRows(
         programs: [RemoteRow], plans: [RemoteRow], exercises: [RemoteRow],
         logs: [RemoteRow], measurements: [RemoteRow], prs: [RemoteRow],
         photos: [RemoteRow], overrides: [RemoteRow], quicks: [RemoteRow],
-        bodyStats: [RemoteRow], profile: [RemoteRow], prefs: [RemoteRow]
+        bodyStats: [RemoteRow], profile: [RemoteRow], prefs: [RemoteRow],
+        skipRePush: Set<String> = []
     ) -> Date? {
         reconcile(rows: programs, table: .programs, idOf: { (p: Program) in p.id.uuidString },
-                  localLookup: { id in ProgramDatabase.shared.programs.first { $0.id.uuidString == id } })
+                  localLookup: { id in ProgramDatabase.shared.programs.first { $0.id.uuidString == id } },
+                  skipRePush: skipRePush)
             .map { ProgramDatabase.shared.applyRemote($0) }
         reconcile(rows: plans, table: .plans, idOf: { (p: UserPlan) in p.id.uuidString },
-                  localLookup: { id in UserPlanDatabase.shared.plans.first { $0.id.uuidString == id } })
+                  localLookup: { id in UserPlanDatabase.shared.plans.first { $0.id.uuidString == id } },
+                  skipRePush: skipRePush)
             .map { UserPlanDatabase.shared.applyRemote($0) }
         reconcile(rows: exercises, table: .exercises, idOf: { (e: ExerciseEntry) in e.id.uuidString },
-                  localLookup: { id in ExerciseDatabase.shared.entries.first { $0.id.uuidString == id } })
+                  localLookup: { id in ExerciseDatabase.shared.entries.first { $0.id.uuidString == id } },
+                  skipRePush: skipRePush)
             .map { ExerciseDatabase.shared.applyRemote($0) }
 
         // Programs/plans/exercises apply above even without the AppState bridge
@@ -487,23 +578,29 @@ final class SupabaseSyncService: ObservableObject {
         // skips only those applies — the watermark still advances off all rows.
         if let appState = AppStateBridge.shared {
             reconcile(rows: logs, table: .workoutLogs, idOf: { (l: WorkoutLog) in l.id.uuidString },
-                      localLookup: { id in appState.workoutLogs.first { $0.id.uuidString == id } })
+                      localLookup: { id in appState.workoutLogs.first { $0.id.uuidString == id } },
+                      skipRePush: skipRePush)
                 .map { appState.applyRemoteWorkoutLogs($0) }
             reconcile(rows: measurements, table: .measurements, idOf: { (m: Measurement) in m.id.uuidString },
-                      localLookup: { id in appState.measurements.first { $0.id.uuidString == id } })
+                      localLookup: { id in appState.measurements.first { $0.id.uuidString == id } },
+                      skipRePush: skipRePush)
                 .map { appState.applyRemoteMeasurements($0) }
             reconcile(rows: prs, table: .personalRecords, idOf: { (p: PersonalRecord) in p.id.uuidString },
-                      localLookup: { id in appState.personalRecords.first { $0.id.uuidString == id } })
+                      localLookup: { id in appState.personalRecords.first { $0.id.uuidString == id } },
+                      skipRePush: skipRePush)
                 .map { appState.applyRemotePersonalRecords($0) }
             reconcile(rows: photos, table: .progressPhotos, idOf: { (p: ProgressPhoto) in p.id.uuidString },
-                      localLookup: { id in appState.progressPhotos.first { $0.id.uuidString == id } })
+                      localLookup: { id in appState.progressPhotos.first { $0.id.uuidString == id } },
+                      skipRePush: skipRePush)
                 .map { appState.applyRemoteProgressPhotos($0) }
 
             reconcileKeyed(rows: overrides, table: .dayOverrides,
-                           localLookup: { key in appState.dayOverrides[key] })
+                           localLookup: { key in appState.dayOverrides[key] },
+                           skipRePush: skipRePush)
                 .map { appState.applyRemoteDayOverrides($0) }
             reconcileKeyed(rows: quicks, table: .quickLogs,
-                           localLookup: { key in appState.quickLogs[key] })
+                           localLookup: { key in appState.quickLogs[key] },
+                           skipRePush: skipRePush)
                 .map { appState.applyRemoteQuickLogs($0) }
 
             if let row = bodyStats.first, let decoded: BodyStats = decode(row.payload) {
@@ -552,13 +649,16 @@ final class SupabaseSyncService: ObservableObject {
     ///   win and are applied locally; the local timestamp map is re-stamped
     ///   to the remote row's `updated_at` so a subsequent reconcile doesn't
     ///   misjudge this id as a fresh unstamped local edit.
-    private func reconcile<T: Codable>(rows: [RemoteRow], table: Table, idOf: (T) -> String, localLookup: (String) -> T?) -> [T]? {
+    private func reconcile<T: Codable>(rows: [RemoteRow], table: Table, idOf: (T) -> String,
+                                       localLookup: (String) -> T?,
+                                       skipRePush: Set<String> = []) -> [T]? {
         guard !rows.isEmpty else { return nil }
         var localTsMap = loadLocalTsMap()
         var merged: [String: T] = [:]
 
         for row in rows {
             guard let id = row.id, let decoded: T = decode(row.payload) else { continue }
+            guard !skipRePush.contains("\(table.rawValue):\(id)") else { continue }
             let localTs = localTsMap["\(table.rawValue):\(id)"]
             if let localTs, localTs > row.updated_at {
                 // Local edit happened after this remote snapshot — local
@@ -579,12 +679,15 @@ final class SupabaseSyncService: ObservableObject {
         return merged.isEmpty ? nil : Array(merged.values)
     }
 
-    private func reconcileKeyed<T: Codable>(rows: [RemoteRow], table: Table, localLookup: (String) -> T?) -> [String: T]? {
+    private func reconcileKeyed<T: Codable>(rows: [RemoteRow], table: Table,
+                                            localLookup: (String) -> T?,
+                                            skipRePush: Set<String> = []) -> [String: T]? {
         guard !rows.isEmpty else { return nil }
         var localTsMap = loadLocalTsMap()
         var merged: [String: T] = [:]
         for row in rows {
             guard let key = row.day_iso, let decoded: T = decode(row.payload) else { continue }
+            guard !skipRePush.contains("\(table.rawValue):\(key)") else { continue }
             let localTs = localTsMap["\(table.rawValue):\(key)"]
             if let localTs, localTs > row.updated_at {
                 if let localValue = localLookup(key) {
@@ -597,6 +700,141 @@ final class SupabaseSyncService: ObservableObject {
         }
         saveLocalTsMap(localTsMap)
         return merged.isEmpty ? nil : merged
+    }
+
+    // MARK: - Tombstones (aura_deletions)
+
+    /// Applies the tombstones a delta pull carried, BEFORE any per-table
+    /// merge. Returns the `"table:key"` stamps actually removed (so the merge
+    /// can skip re-pushing them) and the newest `deleted_at` seen (so the
+    /// watermark advances past every tombstone, including ones LWW rejected).
+    ///
+    /// LWW applies to deletes exactly as it does to edits: a local change
+    /// stamped AFTER the tombstone wins, so the row is kept and re-pushed —
+    /// which correctly recreates it remotely. Only when the tombstone is the
+    /// newer fact is the local row dropped, together with its timestamp stamp
+    /// and any queued offline upsert (a pending upsert left in the queue would
+    /// resurrect the row the moment the queue flushed).
+    ///
+    /// A tombstone for a row this device never had removes nothing — silently,
+    /// not as an error.
+    private func applyDeletions(_ rows: [DeletionRow]) -> (applied: Set<String>, maxTs: Date?) {
+        guard !rows.isEmpty else { return ([], nil) }
+        var localTsMap = loadLocalTsMap()
+        var applied: Set<String> = []
+        var toRemove: [Table: Set<String>] = [:]
+
+        for row in rows {
+            guard let table = Table(rawValue: row.table_name) else { continue }
+            let key = localKey(for: table, rowKey: row.row_key)
+            let stampKey = "\(table.rawValue):\(key)"
+            if let localTs = localTsMap[stampKey], localTs > row.deleted_at {
+                repushLocal(table: table, key: key)
+                continue
+            }
+            applied.insert(stampKey)
+            localTsMap.removeValue(forKey: stampKey)
+            toRemove[table, default: []].insert(key)
+        }
+        saveLocalTsMap(localTsMap)
+
+        for (table, keys) in toRemove {
+            dropQueuedUpserts(table: table, keys: keys)
+            removeLocalRows(table: table, keys: keys)
+        }
+        return (applied, rows.map(\.deleted_at).max())
+    }
+
+    /// Translates a tombstone's server-side `row_key` into the key this client
+    /// stamps and queues that row under. Only singletons differ: the server
+    /// writes the literal `"singleton"` (one row per user, `user_id` is the
+    /// PK) while the client keys them by the user id.
+    private func localKey(for table: Table, rowKey: String) -> String {
+        table.isSingleton ? (userID ?? rowKey) : rowKey
+    }
+
+    /// Removes tombstoned rows from the local stores. Every call lands on an
+    /// `applyRemote*Deletions` (or `reset*`) helper, all of which set their
+    /// store's `isApplyingRemote` guard so the removal is not echoed back up
+    /// as another delete. Singletons have no "absent" state — they reset to
+    /// their default value instead.
+    private func removeLocalRows(table: Table, keys: Set<String>) {
+        let ids = Set(keys.compactMap(UUID.init(uuidString:)))
+        let appState = AppStateBridge.shared
+        switch table {
+        case .programs:        ProgramDatabase.shared.applyRemoteDeletions(ids: ids)
+        case .plans:           UserPlanDatabase.shared.applyRemoteDeletions(ids: ids)
+        case .exercises:       ExerciseDatabase.shared.applyRemoteDeletions(ids: ids)
+        case .workoutLogs:     appState?.applyRemoteWorkoutLogDeletions(ids: ids)
+        case .measurements:    appState?.applyRemoteMeasurementDeletions(ids: ids)
+        case .personalRecords: appState?.applyRemotePersonalRecordDeletions(ids: ids)
+        case .progressPhotos:  appState?.applyRemoteProgressPhotoDeletions(ids: ids)
+        case .dayOverrides:    appState?.applyRemoteDayOverrideDeletions(keys: keys)
+        case .quickLogs:       appState?.applyRemoteQuickLogDeletions(keys: keys)
+        case .bodyStats:       appState?.resetBodyStats()
+        case .userProfile:     appState?.resetUserProfile()
+        case .preferences:     appState?.resetPrefs()
+        }
+    }
+
+    /// Re-pushes the local value of a row whose local edit is newer than its
+    /// tombstone (local wins), recreating it remotely. A row that is no longer
+    /// present locally has nothing to push — the delete already agreed with
+    /// local state.
+    private func repushLocal(table: Table, key: String) {
+        let appState = AppStateBridge.shared
+        switch table {
+        case .programs:
+            if let v = ProgramDatabase.shared.programs.first(where: { $0.id.uuidString == key }) {
+                push(v, id: key, table: table)
+            }
+        case .plans:
+            if let v = UserPlanDatabase.shared.plans.first(where: { $0.id.uuidString == key }) {
+                push(v, id: key, table: table)
+            }
+        case .exercises:
+            if let v = ExerciseDatabase.shared.entries.first(where: { $0.id.uuidString == key }) {
+                push(v, id: key, table: table)
+            }
+        case .workoutLogs:
+            if let v = appState?.workoutLogs.first(where: { $0.id.uuidString == key }) {
+                push(v, id: key, table: table)
+            }
+        case .measurements:
+            if let v = appState?.measurements.first(where: { $0.id.uuidString == key }) {
+                push(v, id: key, table: table)
+            }
+        case .personalRecords:
+            if let v = appState?.personalRecords.first(where: { $0.id.uuidString == key }) {
+                push(v, id: key, table: table)
+            }
+        case .progressPhotos:
+            if let v = appState?.progressPhotos.first(where: { $0.id.uuidString == key }) {
+                push(v, id: key, table: table)
+            }
+        case .dayOverrides:
+            if let v = appState?.dayOverrides[key] { push(v, id: key, table: table) }
+        case .quickLogs:
+            if let v = appState?.quickLogs[key] { push(v, id: key, table: table) }
+        case .bodyStats:
+            if let v = appState?.bodyStats { push(v, id: key, table: table) }
+        case .userProfile:
+            if let v = appState?.userProfile { push(v, id: key, table: table) }
+        case .preferences:
+            if let v = appState?.currentPrefsBlob() { push(v, id: key, table: table) }
+        }
+    }
+
+    /// Drops queued offline upserts for rows a tombstone just removed. Without
+    /// this the row is gone from the local store but the queue still holds its
+    /// last payload, and the next `flushQueue()` writes it straight back to
+    /// Supabase. Queued DELETES are left alone — they agree with the tombstone.
+    private func dropQueuedUpserts(table: Table, keys: Set<String>) {
+        var queue = loadQueue()
+        let before = queue.count
+        queue.removeAll { $0.table == table.rawValue && $0.action == .upsert && keys.contains($0.rowID) }
+        guard queue.count != before else { return }
+        saveQueue(queue)
     }
 
     // MARK: - Reset support (DataResetService)

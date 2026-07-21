@@ -248,7 +248,7 @@ struct ConnectedAppsView: View {
                 Image(systemName: "info.circle")
                     .font(AuraFont.jakarta(16))
                     .foregroundColor(.aura.text2)
-                Text("Aura syncs workouts and body weight both ways with your connected health app.")
+                Text("Aura syncs workouts and body weight two-way with Apple Health.")
                     .font(AuraFont.secondary())
                     .foregroundColor(.aura.text2)
                     .fixedSize(horizontal: false, vertical: true)
@@ -267,6 +267,11 @@ struct ConnectedAppsView: View {
 struct SupportView: View {
     @StateObject private var toast = ToastCenter()
 
+    /// Real marketing version from the bundle — never hardcode the number.
+    private var appVersion: String {
+        Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "1.0"
+    }
+
     var body: some View {
         SettingsScreenScaffold(title: "Support", toast: toast) {
             SettingsSectionLabel(title: "Get help")
@@ -278,7 +283,7 @@ struct SupportView: View {
                 supportRow("sparkles", .aura.purple, "Feature Request", "Opening request form…")
             }
 
-            Text("Aura Fitness · v2.4.0")
+            Text("Aura Fitness · v\(appVersion)")
                 .font(AuraFont.secondary())
                 .foregroundColor(.aura.text3)
                 .frame(maxWidth: .infinity)
@@ -341,6 +346,7 @@ struct ProfileConfirmSheet: View {
     @State private var busy = false
     @State private var csvBusy = false
     @State private var showFullResetConfirm = false
+    @State private var showWorkoutResetConfirm = false
     @State private var showFileImporter = false
     @State private var importBusy = false
 
@@ -362,6 +368,15 @@ struct ProfileConfirmSheet: View {
             }
         } message: {
             Text("This clears your profile, settings, and all workout data on this device and in the cloud. This cannot be undone.")
+        }
+        .alert("Reset workout data?", isPresented: $showWorkoutResetConfirm) {
+            Button("Cancel", role: .cancel) {}
+            Button("Reset Workouts", role: .destructive) {
+                DataResetService.resetAll(workoutOnly: true, appState: appState, alsoRemote: true)
+                dismiss(); flash("Workout data reset")
+            }
+        } message: {
+            Text("This clears all logged workouts on this device and in the cloud. Your profile and settings are kept. This cannot be undone.")
         }
     }
 
@@ -393,7 +408,7 @@ struct ProfileConfirmSheet: View {
                 .font(AuraFont.jakarta(17, .bold))
                 .foregroundColor(.aura.text)
                 .padding(.bottom, AuraSpacing.s2)
-            Text("Download a full copy of your workouts, measurements and settings as a JSON archive.")
+            Text("CSV + JSON archive of all your data.")
                 .font(AuraFont.secondary())
                 .foregroundColor(.aura.text2)
                 .multilineTextAlignment(.center)
@@ -503,8 +518,8 @@ struct ProfileConfirmSheet: View {
                 .padding(.bottom, AuraSpacing.s2)
             SettingsGroup {
                 Button {
-                    DataResetService.resetAll(workoutOnly: true, appState: appState, alsoRemote: true)
-                    dismiss(); flash("Workout data reset")
+                    // Confirm before executing, same as the full-wipe option.
+                    showWorkoutResetConfirm = true
                 } label: {
                     SettingsRowLabel(icon: "dumbbell.fill", iconColor: .aura.text2,
                                      title: "Reset workout data only",

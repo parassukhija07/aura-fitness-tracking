@@ -139,6 +139,22 @@ final class ProgramDatabase: ObservableObject {
         persist()
     }
 
+    /// Drops programs deleted on another device, as reported by the
+    /// `aura_deletions` tombstones in a delta pull. Distinct from
+    /// `applyRemote` (a union merge that can only ever ADD rows) — without
+    /// this, a remote delete is invisible to a pulling client and the row
+    /// gets re-pushed on the next local write. Guarded like every other
+    /// remote apply so removing the row doesn't echo a delete back up.
+    func applyRemoteDeletions(ids: Set<UUID>) {
+        guard !ids.isEmpty else { return }
+        isApplyingRemote = true
+        defer { isApplyingRemote = false }
+        let before = programs.count
+        programs.removeAll { ids.contains($0.id) }
+        guard programs.count != before else { return }
+        persist()
+    }
+
     /// Resets predefined programs to the shipped seed, preserving any
     /// user-created custom programs (used by DataResetService — NOT full
     /// wipe; see `hardReset()` for that).
@@ -346,6 +362,24 @@ final class UserPlanDatabase: ObservableObject {
         for p in plans { byID[p.id] = p }
         for p in remotePlans { byID[p.id] = p }
         plans = Array(byID.values)
+        if plans.isEmpty, let prog = SeedData.programs.first {
+            _ = addPlan(from: prog)
+        } else {
+            persist()
+        }
+    }
+
+    /// Drops plans deleted on another device, as reported by the
+    /// `aura_deletions` tombstones in a delta pull. Holds the same invariant
+    /// `applyRemote` does — `plans` is never left empty — by re-seeding the
+    /// default plan if the tombstones removed the last one.
+    func applyRemoteDeletions(ids: Set<UUID>) {
+        guard !ids.isEmpty else { return }
+        isApplyingRemote = true
+        defer { isApplyingRemote = false }
+        let before = plans.count
+        plans.removeAll { ids.contains($0.id) }
+        guard plans.count != before else { return }
         if plans.isEmpty, let prog = SeedData.programs.first {
             _ = addPlan(from: prog)
         } else {

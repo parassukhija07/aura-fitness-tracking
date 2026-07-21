@@ -251,6 +251,61 @@ class AppState: ObservableObject {
         userProfile = profile
     }
 
+    // MARK: - Remote deletion hooks (aura_deletions tombstone target)
+    //
+    // The `applyRemote*` merges above are unions — they can only ever ADD
+    // rows, so a row deleted on another device stays local forever and gets
+    // re-pushed on the next write ("resurrection"). These apply the tombstones
+    // a delta pull carries, removing exactly the listed keys and nothing else.
+    // Same `isApplyingRemote` guard: removing the row must not echo a delete
+    // back up to Supabase (the row is already gone there).
+
+    func applyRemoteWorkoutLogDeletions(ids: Set<UUID>) {
+        guard !ids.isEmpty else { return }
+        isApplyingRemote = true
+        defer { isApplyingRemote = false }
+        workoutLogs.removeAll { ids.contains($0.id) }
+    }
+
+    func applyRemoteMeasurementDeletions(ids: Set<UUID>) {
+        guard !ids.isEmpty else { return }
+        isApplyingRemote = true
+        defer { isApplyingRemote = false }
+        measurements.removeAll { ids.contains($0.id) }
+    }
+
+    func applyRemotePersonalRecordDeletions(ids: Set<UUID>) {
+        guard !ids.isEmpty else { return }
+        isApplyingRemote = true
+        defer { isApplyingRemote = false }
+        personalRecords.removeAll { ids.contains($0.id) }
+    }
+
+    func applyRemoteProgressPhotoDeletions(ids: Set<UUID>) {
+        guard !ids.isEmpty else { return }
+        isApplyingRemote = true
+        defer { isApplyingRemote = false }
+        progressPhotos.removeAll { ids.contains($0.id) }
+    }
+
+    func applyRemoteDayOverrideDeletions(keys: Set<String>) {
+        guard !keys.isEmpty else { return }
+        isApplyingRemote = true
+        defer { isApplyingRemote = false }
+        var merged = dayOverrides
+        for key in keys { merged.removeValue(forKey: key) }
+        dayOverrides = merged
+    }
+
+    func applyRemoteQuickLogDeletions(keys: Set<String>) {
+        guard !keys.isEmpty else { return }
+        isApplyingRemote = true
+        defer { isApplyingRemote = false }
+        var merged = quickLogs
+        for key in keys { merged.removeValue(forKey: key) }
+        quickLogs = merged
+    }
+
     // MARK: - Reset support (hard REPLACE, not merge)
     //
     // `applyRemote*` above are union-merge helpers for pull reconcile and

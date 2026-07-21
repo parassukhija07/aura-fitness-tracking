@@ -751,7 +751,7 @@ struct LogSheetsView: View {
                 .padding(.horizontal, AuraSpacing.screenPad)
 
                 HStack(spacing: 0) {
-                    ForEach(["S","M","T","W","T","F","S"], id: \.self) { d in
+                    ForEach(Array(["S","M","T","W","T","F","S"].enumerated()), id: \.offset) { _, d in
                         Text(d).font(AuraFont.jakarta(12, .bold)).foregroundColor(.aura.text3).frame(maxWidth: .infinity)
                     }
                 }.padding(.horizontal, AuraSpacing.screenPad)

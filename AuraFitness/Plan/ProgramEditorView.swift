@@ -45,6 +45,9 @@ struct ProgramEditorView: View {
     @State private var workoutToDelete: Workout? = nil
     @State private var showDeleteAlert = false
     @State private var showDeleteProgramAlert = false
+    /// Shown when a delete is attempted on a predefined program (L5): the DB
+    /// refuses it, so surface why instead of silently dismissing.
+    @State private var showPredefinedDeleteAlert = false
     @State private var warnEmpty = false
 
     /// Sheet payload: which workout to open in which editor context.
@@ -154,12 +157,22 @@ struct ProgramEditorView: View {
             }
             .alert("Delete Program", isPresented: $showDeleteProgramAlert) {
                 Button("Delete", role: .destructive) {
-                    if let pid = programID { programDB.deleteProgram(id: pid) }
-                    dismiss()
+                    // `deleteProgram` returns false for predefined programs. Only
+                    // dismiss on a real delete; otherwise explain why (L5).
+                    if let pid = programID, !programDB.deleteProgram(id: pid) {
+                        showPredefinedDeleteAlert = true
+                    } else {
+                        dismiss()
+                    }
                 }
                 Button("Cancel", role: .cancel) {}
             } message: {
                 Text("This will permanently delete the program and all its workouts.")
+            }
+            .alert("Can't delete", isPresented: $showPredefinedDeleteAlert) {
+                Button("OK", role: .cancel) {}
+            } message: {
+                Text("Predefined programs can't be deleted. Add it to My Plans to customise it.")
             }
         }
     }

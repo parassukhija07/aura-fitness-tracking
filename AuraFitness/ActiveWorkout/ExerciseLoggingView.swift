@@ -35,7 +35,7 @@ struct ExerciseLoggingView: View {
             navBar(ex: ex)
             ScrollView(showsIndicators: false) {
                 VStack(alignment: .leading, spacing: 0) {
-                    videoThumb
+                    videoThumb(ex: ex)
                     nameAndChips(ex: ex)
                     if ex.isCable { pulleyCard }
                     prTargetCards(ex: ex)
@@ -106,30 +106,33 @@ struct ExerciseLoggingView: View {
 
     // MARK: Video thumbnail + play
 
-    private var videoThumb: some View {
-        ZStack {
-            RoundedRectangle(cornerRadius: AuraRadius.lg)
-                .fill(Color.aura.surface2)
-                .aspectRatio(16.0/10.0, contentMode: .fit)
-                .overlay(
-                    RoundedRectangle(cornerRadius: AuraRadius.lg)
-                        .stroke(Color.aura.separator.opacity(0.5), lineWidth: 1)
-                )
-                .overlay(
-                    Text("exercise demo")
-                        .font(AuraFont.jakarta(11))
-                        .foregroundColor(.aura.text3)
-                )
-            Circle()
-                .fill(Color.white)
-                .frame(width: 52, height: 52)
-                .overlay(
-                    Image(systemName: "play.fill")
-                        .font(AuraFont.jakarta(20))
-                        .foregroundColor(.black)
-                        .offset(x: 2)
-                )
-                .shadow(color: .black.opacity(0.25), radius: 12, x: 0, y: 6)
+    @ViewBuilder
+    private func videoThumb(ex: Exercise) -> some View {
+        Group {
+            if YouTubePlayerView.videoID(from: ex.youtubeURL) != nil {
+                // Embedded player: tap-to-play, or auto-plays (muted, looping)
+                // when the "Auto-play video" setting is on. The player's own
+                // coordinator guards reloads, so it can't loop-launch.
+                ExerciseVideoView(youtubeURL: ex.youtubeURL,
+                                  autoplay: appState.autoPlayVideo,
+                                  height: 210)
+                    .clipShape(RoundedRectangle(cornerRadius: AuraRadius.lg))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: AuraRadius.lg)
+                            .stroke(Color.aura.separator.opacity(0.5), lineWidth: 1)
+                    )
+            } else {
+                // No video → cached remote still (or muscle gradient). No dead
+                // play button when there is nothing to play.
+                RemoteExerciseImage(urlString: ex.imageURL, fallbackMuscle: ex.primaryMuscle)
+                    .aspectRatio(16.0/10.0, contentMode: .fit)
+                    .frame(maxWidth: .infinity)
+                    .clipShape(RoundedRectangle(cornerRadius: AuraRadius.lg))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: AuraRadius.lg)
+                            .stroke(Color.aura.separator.opacity(0.5), lineWidth: 1)
+                    )
+            }
         }
         .padding(.top, 14)
     }

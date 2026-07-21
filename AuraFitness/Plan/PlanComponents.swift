@@ -312,7 +312,11 @@ struct PlanCatalogGrid: View {
                 Button { onTap(e) } label: {
                     VStack(alignment: .leading, spacing: 0) {
                         ZStack {
-                            RoundedRectangle(cornerRadius: AuraRadius.sm).fill(th.bg)
+                            // Cached remote still; muscle-tinted gradient is the
+                            // loading/failure fallback. No play button in cells —
+                            // tapping the cell already opens the detail.
+                            RemoteExerciseImage(urlString: e.imageURL, fallbackMuscle: e.muscle)
+                                .clipShape(RoundedRectangle(cornerRadius: AuraRadius.sm))
                             Text(PlanMusclePalette.displayLabel(e.muscle).uppercased())
                                 .font(AuraFont.jakarta(10, .heavy))
                                 .tracking(0.7)
