@@ -99,6 +99,10 @@ The function automatically receives `SUPABASE_URL` / `SUPABASE_SERVICE_ROLE_KEY`
 
 Because every `aura_*` table has `on delete cascade` foreign keys to `auth.users`, deleting the user wipes all their rows automatically.
 
+Storage is **not** covered by that cascade — there is no foreign key from a storage object to `auth.users` — so the function also empties the user's `progress-photos/<user-id>/` folder before deleting the account. Storage is purged first and the auth user last on purpose: if the purge fails the account still exists and the user can retry, whereas the reverse order would strand photos nobody could ever authenticate to delete.
+
+> **Re-run `supabase functions deploy delete-account` after pulling changes to this function.** A deployed function is a snapshot — editing the file in the repo does nothing until it is redeployed. An older deployment still deletes the account correctly; it just leaves the photos behind.
+
 > Until this is deployed, everything else works; only the "Delete Account" button will show "Something went wrong".
 
 ---
