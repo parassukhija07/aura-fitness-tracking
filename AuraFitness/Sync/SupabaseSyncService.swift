@@ -790,18 +790,23 @@ final class SupabaseSyncService: ObservableObject {
     /// completion flag — unlike `fetchRows`, which swallows errors into an
     /// empty array and would make a failed fetch indistinguishable from a
     /// clean account.
+    /// Just the two fields the ownership sweep needs. Deliberately NOT
+    /// `RemoteRow`: that type carries `updated_at: Date`, which the default
+    /// decoder cannot read from PostgREST's ISO-8601 string, so decoding it
+    /// there would throw on every run and the sweep would never complete.
+    ///
+    /// Declared at type scope rather than inside `deleteNonSyncableRows`,
+    /// where it used to live: Swift cannot nest a type in a generic function
+    /// ("type 'OwnershipRow' cannot be nested in generic function"). Still
+    /// private to this class.
+    private struct OwnershipRow: Decodable {
+        let id: String?
+        let payload: AnyJSON
+    }
+
     private func deleteNonSyncableRows<T: Decodable>(
         _ table: Table, uid: String, isSyncable: (T) -> Bool
     ) async throws {
-        /// Just the two fields this sweep needs. Deliberately NOT `RemoteRow`:
-        /// that type carries `updated_at: Date`, which the default decoder
-        /// cannot read from PostgREST's ISO-8601 string, so decoding it here
-        /// would throw on every run and the sweep would never complete.
-        struct OwnershipRow: Decodable {
-            let id: String?
-            let payload: AnyJSON
-        }
-
         let response = try await client.from(table.rawValue)
             .select("id,payload")
             .eq("user_id", value: uid)

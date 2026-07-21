@@ -59,7 +59,14 @@ struct YouTubePlayerView: UIViewRepresentable {
     /// Pulls the id out of `watch?v=`, `youtu.be/` and `embed/` forms. Returns
     /// nil for anything unrecognised so callers can fall back to a non-video
     /// placeholder instead of loading a broken player.
-    static func videoID(from urlString: String) -> String? {
+    ///
+    /// Takes an OPTIONAL string because that is what the callers actually
+    /// hold: `Exercise.youtubeURL` is `String?` (only the bundled
+    /// `ExerciseEntry` guarantees one). "No URL" and "unparseable URL" mean
+    /// the same thing to every caller — no video — so nil is absorbed here
+    /// instead of being unwrapped identically at each call site.
+    static func videoID(from urlString: String?) -> String? {
+        guard let urlString else { return nil }
         let trimmed = urlString.trimmingCharacters(in: .whitespaces)
         guard !trimmed.isEmpty, let url = URL(string: trimmed) else { return nil }
 
@@ -84,7 +91,9 @@ struct YouTubePlayerView: UIViewRepresentable {
 /// starting the clip immediately or showing the thumbnail behind a Play
 /// overlay that loads the player on tap.
 struct ExerciseVideoView: View {
-    let youtubeURL: String
+    /// Optional for the same reason `videoID(from:)` is — `Exercise.youtubeURL`
+    /// is `String?`, and a nil URL renders exactly like an unparseable one.
+    let youtubeURL: String?
     let autoplay: Bool
     var height: CGFloat = 180
 

@@ -55,7 +55,34 @@ struct WorkoutEditorView: View {
         }
     }
 
+    // MARK: - Body
+    //
+    // Split across four computed properties rather than written as one chain.
+    // Seven `.sheet`s and two `.alert`s in a single expression put this body
+    // past the solver's budget — "the compiler is unable to type-check this
+    // expression in reasonable time". Each property below is its own
+    // expression and is checked independently; modifier ORDER across them is
+    // identical to the original chain, so presentation behaviour is unchanged.
+
     var body: some View {
+        detailSheets
+            .sheet(isPresented: $showSaveScope) {
+                SaveEditScopeSheet(
+                    onJustToday: nil,
+                    onPermanently: { saveWorkout() }
+                )
+                .presentationDetents([.fraction(0.45)])
+                .presentationDragIndicator(.visible)
+            }
+            .alert("Delete Workout", isPresented: $showDeleteAlert) {
+                Button("Delete", role: .destructive) { deleteWorkout(); dismiss() }
+                Button("Cancel", role: .cancel) {}
+            } message: {
+                Text("This will permanently remove this workout.")
+            }
+    }
+
+    private var scrollContent: some View {
         ScrollView(showsIndicators: false) {
             VStack(alignment: .leading, spacing: AuraSpacing.s4) {
                 infoCard
@@ -85,11 +112,19 @@ struct WorkoutEditorView: View {
             }
             .padding(AuraSpacing.screenPad)
         }
-        .background(Color.aura.bg.ignoresSafeArea())
-        .navigationTitle(title)
-        .navigationBarTitleDisplayMode(.inline)
-        .toolbar { toolbarContent }
-        .safeAreaInset(edge: .bottom) { deleteBar }
+    }
+
+    private var chromeLayer: some View {
+        scrollContent
+            .background(Color.aura.bg.ignoresSafeArea())
+            .navigationTitle(title)
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar { toolbarContent }
+            .safeAreaInset(edge: .bottom) { deleteBar }
+    }
+
+    private var pickerSheets: some View {
+        chromeLayer
         .sheet(isPresented: $showExLibrary) {
             ExercisePickerSheet { ex in
                 workout.exercises.append(ex)
@@ -122,6 +157,10 @@ struct WorkoutEditorView: View {
                 applyPick(entry, mode: mode)
             }
         }
+    }
+
+    private var detailSheets: some View {
+        pickerSheets
         .sheet(item: supersetPickBinding) { box in
             let leaderIdx = box.value
             if workout.exercises.indices.contains(leaderIdx) {
@@ -149,20 +188,6 @@ struct WorkoutEditorView: View {
             Button("OK", role: .cancel) {}
         } message: {
             Text("This custom exercise has no library page.")
-        }
-        .sheet(isPresented: $showSaveScope) {
-            SaveEditScopeSheet(
-                onJustToday: nil,
-                onPermanently: { saveWorkout() }
-            )
-            .presentationDetents([.fraction(0.45)])
-            .presentationDragIndicator(.visible)
-        }
-        .alert("Delete Workout", isPresented: $showDeleteAlert) {
-            Button("Delete", role: .destructive) { deleteWorkout(); dismiss() }
-            Button("Cancel", role: .cancel) {}
-        } message: {
-            Text("This will permanently remove this workout.")
         }
     }
 

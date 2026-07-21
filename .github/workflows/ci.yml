@@ -68,62 +68,29 @@ jobs:
           echo "SUPABASE_URL = ${{ secrets.SUPABASE_URL }}" > AuraFitness/Secrets.xcconfig
           echo "SUPABASE_ANON_KEY = ${{ secrets.SUPABASE_ANON_KEY }}" >> AuraFitness/Secrets.xcconfig
 
-      # The exercise library is now committed to the project at
-      # AuraFitness/Resources/gym_exercise_library.json. Adding the repo-root
-      # copy unconditionally (as this step used to) put TWO producers of
-      # AuraFitness.app/gym_exercise_library.json in the resources phase, and
-      # Xcode fails the whole build with "Multiple commands produce" before it
-      # compiles a single Swift file. Guard it the same way the step below
-      # guards its Swift additions: a no-op when the reference is already
-      # there, still a fallback if it ever goes missing.
-      - name: Link JSON to Xcode Project (if not already linked)
-        run: |
-          gem install xcodeproj
-          ruby -e "
-          require 'xcodeproj'
-          project = Xcodeproj::Project.open('AuraFitness.xcodeproj')
-          target = project.targets.first
-          name = 'gym_exercise_library.json'
-          linked = target.resources_build_phase.files.any? { |f| f.file_ref && f.file_ref.path && f.file_ref.path.include?(name) }
-          if linked
-            puts 'Already linked, skipping: ' + name
-          else
-            file = project.new_file(name)
-            target.resources_build_phase.add_file_reference(file)
-            project.save
-            puts 'Linked ' + name
-          end
-          "
-      - name: Fix Missing Swift Files and Duplicates
-        run: |
-          gem install xcodeproj
-          ruby -e "
-          require 'xcodeproj'
-          project = Xcodeproj::Project.open('AuraFitness.xcodeproj')
-          target = project.targets.first
+      # NOTE: two steps used to sit here that rewrote AuraFitness.xcodeproj
+      # with the Xcodeproj gem on every run — one linking the repo-root
+      # gym_exercise_library.json, one "fixing missing Swift files and
+      # duplicates". Both are removed, because both caused the failures they
+      # claimed to prevent:
+      #
+      #   - The JSON step added a SECOND producer of
+      #     AuraFitness.app/gym_exercise_library.json (the file is committed to
+      #     the project at AuraFitness/Resources/), so Xcode failed the build
+      #     with "Multiple commands produce" during planning — before compiling
+      #     any Swift, making every run red regardless of the code in it.
+      #   - The "fix" step hunted for WeekStripView.swift / YouTubePlayerView.swift
+      #     / ExerciseVideoView.swift, none of which exist under those names
+      #     (they are WeekStrip.swift and AuraVideoPlayer.swift), and its
+      #     de-duplication branch could remove a real build file. Its rewrite is
+      #     also the likeliest source of the "member of multiple groups (Plan
+      #     and Plan)" warning and the resulting "cannot find 'WeekStripView' /
+      #     'SaveEditScopeSheet' in scope" errors — both files ARE correctly in
+      #     the committed project.
+      #
+      # CI builds the repository as committed. If a file is missing from the
+      # target, fix project.pbxproj in a commit — do not patch it on the runner.
 
-          # 1. Fix the duplicate SaveEditScopeSheet.swift warning
-          duplicates = target.source_build_phase.files.select { |f| f.file_ref && f.file_ref.path && f.file_ref.path.include?('SaveEditScopeSheet.swift') }
-          if duplicates.count > 1
-            target.source_build_phase.remove_build_file(duplicates.last)
-          end
-
-          # 2. Find and link the missing Swift views
-          missing_files = ['WeekStripView.swift', 'YouTubePlayerView.swift', 'ExerciseVideoView.swift']
-          
-          missing_files.each do |filename|
-            Dir.glob(%Q[AuraFitness/**/#{filename}]).each do |path|
-              # Only add if it hasn't been linked already
-              unless target.source_build_phase.files.any? { |f| f.file_ref && f.file_ref.path && f.file_ref.path.include?(filename) }
-                file_ref = project.new_file(path)
-                target.source_build_phase.add_file_reference(file_ref)
-                puts 'Successfully linked ' + filename
-              end
-            end
-          end
-          project.save
-          "
-             
       - name: Verify scheme
         run: xcodebuild -list -project AuraFitness.xcodeproj
 
