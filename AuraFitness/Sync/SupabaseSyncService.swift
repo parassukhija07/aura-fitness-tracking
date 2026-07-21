@@ -1,6 +1,46 @@
 import Foundation
 import Supabase
 
+/// ISO-8601 parsing/formatting for the sync layer's server timestamps.
+///
+/// Lives at FILE scope, deliberately outside `SupabaseSyncService`. Inside a
+/// `@MainActor` class these statics are MainActor-isolated, but the one caller
+/// that matters — `deltaDecoder`'s `.custom` date strategy — is a nonisolated
+/// closure the decoder invokes on whatever thread it likes. That mismatch is
+/// the "call to main actor-isolated static method 'parseTimestamp' in a
+/// synchronous nonisolated context" warning: benign in Swift 5 language mode,
+/// a hard error in Swift 6.
+///
+/// `nonisolated(unsafe)` is accurate rather than a silencer: `ISO8601DateFormatter`
+/// is documented as thread-safe for concurrent formatting and parsing, and
+/// neither instance is ever mutated after its initialiser runs. Sharing them is
+/// the point — building a formatter per row would be far more expensive than
+/// the parse itself on a full pull.
+private enum SyncTimestamp {
+    /// Supabase emits fractional seconds (2026-07-18T10:00:00.123Z); PostgREST
+    /// sometimes omits them (2026-07-18T10:00:00+00:00). Try the richer format
+    /// first, then fall back — a single formatter cannot accept both.
+    nonisolated(unsafe) static let isoFractional: ISO8601DateFormatter = {
+        let f = ISO8601DateFormatter()
+        f.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        return f
+    }()
+    nonisolated(unsafe) static let isoPlain: ISO8601DateFormatter = {
+        let f = ISO8601DateFormatter()
+        f.formatOptions = [.withInternetDateTime]
+        return f
+    }()
+
+    static func parse(_ s: String) -> Date? {
+        isoFractional.date(from: s) ?? isoPlain.date(from: s)
+    }
+
+    /// Used for the `since` argument of the `pull_changes` RPC.
+    static func string(from date: Date) -> String {
+        isoFractional.string(from: date)
+    }
+}
+
 /// All table push/pull + the offline queue + first-login migration.
 /// Fire-and-forget from the stores' perspective — never throws into the UI,
 /// never blocks a mutation. Mirrors the `@MainActor final class ... :
@@ -84,25 +124,12 @@ final class SupabaseSyncService: ObservableObject {
     // *payloads* are still decoded by `decode(_:)` with default coders (they
     // were pushed with default coders, so their dates are numeric) — this
     // decoder only ever touches the top-level `updated_at`.
-    private static let isoFractional: ISO8601DateFormatter = {
-        let f = ISO8601DateFormatter()
-        f.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
-        return f
-    }()
-    private static let isoPlain: ISO8601DateFormatter = {
-        let f = ISO8601DateFormatter()
-        f.formatOptions = [.withInternetDateTime]
-        return f
-    }()
-    private static func parseTimestamp(_ s: String) -> Date? {
-        isoFractional.date(from: s) ?? isoPlain.date(from: s)
-    }
     private static let deltaDecoder: JSONDecoder = {
         let decoder = JSONDecoder()
         decoder.dateDecodingStrategy = .custom { d in
             let container = try d.singleValueContainer()
             let raw = try container.decode(String.self)
-            guard let date = SupabaseSyncService.parseTimestamp(raw) else {
+            guard let date = SyncTimestamp.parse(raw) else {
                 throw DecodingError.dataCorruptedError(
                     in: container, debugDescription: "Unparseable RPC timestamp: \(raw)")
             }
@@ -481,7 +508,7 @@ final class SupabaseSyncService: ObservableObject {
         syncing = true
         defer { syncing = false; lastPullAt = Date() }
 
-        let sinceISO = Self.isoFractional.string(from: lastDeltaPullAt)
+        let sinceISO = SyncTimestamp.string(from: lastDeltaPullAt)
         do {
             let response = try await client.rpc("pull_changes", params: ["since": sinceISO]).execute()
             let delta = try Self.deltaDecoder.decode(PullChangesResponse.self, from: response.data)
