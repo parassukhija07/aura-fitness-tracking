@@ -68,16 +68,31 @@ jobs:
           echo "SUPABASE_URL = ${{ secrets.SUPABASE_URL }}" > AuraFitness/Secrets.xcconfig
           echo "SUPABASE_ANON_KEY = ${{ secrets.SUPABASE_ANON_KEY }}" >> AuraFitness/Secrets.xcconfig
 
-      - name: Link JSON to Xcode Project
+      # The exercise library is now committed to the project at
+      # AuraFitness/Resources/gym_exercise_library.json. Adding the repo-root
+      # copy unconditionally (as this step used to) put TWO producers of
+      # AuraFitness.app/gym_exercise_library.json in the resources phase, and
+      # Xcode fails the whole build with "Multiple commands produce" before it
+      # compiles a single Swift file. Guard it the same way the step below
+      # guards its Swift additions: a no-op when the reference is already
+      # there, still a fallback if it ever goes missing.
+      - name: Link JSON to Xcode Project (if not already linked)
         run: |
           gem install xcodeproj
           ruby -e "
           require 'xcodeproj'
           project = Xcodeproj::Project.open('AuraFitness.xcodeproj')
           target = project.targets.first
-          file = project.new_file('gym_exercise_library.json')
-          target.resources_build_phase.add_file_reference(file)
-          project.save
+          name = 'gym_exercise_library.json'
+          linked = target.resources_build_phase.files.any? { |f| f.file_ref && f.file_ref.path && f.file_ref.path.include?(name) }
+          if linked
+            puts 'Already linked, skipping: ' + name
+          else
+            file = project.new_file(name)
+            target.resources_build_phase.add_file_reference(file)
+            project.save
+            puts 'Linked ' + name
+          end
           "
       - name: Fix Missing Swift Files and Duplicates
         run: |
