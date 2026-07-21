@@ -50,6 +50,67 @@ final class SupabaseSyncService: ObservableObject {
     private let queueKey = "aura_sync_queue_v1"
     private let localTsKey = "aura_local_ts_v1"
 
+    // MARK: - Delta-pull watermark
+
+    /// Incremental-sync cursor: `pullChanges()` fetches only rows whose server
+    /// `updated_at` is strictly greater than this. Persisted (as epoch seconds)
+    /// so a relaunch resumes the delta instead of re-pulling everything.
+    /// Advanced ONLY to the max server `updated_at` actually merged — never the
+    /// client clock — to avoid clock-skew gaps. Epoch 0 (key absent) means
+    /// "pull everything" (fresh install / post-reset / first sign-in).
+    private let lastDeltaPullKey = "aura_sync_last_delta_pull_v1"
+    private var lastDeltaPullAt: Date {
+        get {
+            let secs = UserDefaults.standard.double(forKey: lastDeltaPullKey)
+            return Date(timeIntervalSince1970: secs) // absent -> 0.0 -> 1970 (pull all)
+        }
+        set { UserDefaults.standard.set(newValue.timeIntervalSince1970, forKey: lastDeltaPullKey) }
+    }
+
+    /// Clears the delta watermark so the next `pullChanges()` re-pulls from
+    /// epoch. Called on sign-out and full data reset (state the service should
+    /// forget). Kept here (not inlined at the call sites) so the persisted key
+    /// name stays owned by this file.
+    func resetSyncState() {
+        UserDefaults.standard.removeObject(forKey: lastDeltaPullKey)
+    }
+
+    // MARK: - Delta timestamp coding
+    //
+    // The `pull_changes` RPC emits `updated_at` as an ISO-8601 UTC string
+    // (YYYY-MM-DDTHH:MM:SS.mmmZ — see 0002_pull_changes_rpc.sql), NOT the
+    // numeric reference-date the default `JSONDecoder` strategy expects, so the
+    // delta response needs a decoder with an explicit ISO strategy. Row
+    // *payloads* are still decoded by `decode(_:)` with default coders (they
+    // were pushed with default coders, so their dates are numeric) — this
+    // decoder only ever touches the top-level `updated_at`.
+    private static let isoFractional: ISO8601DateFormatter = {
+        let f = ISO8601DateFormatter()
+        f.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        return f
+    }()
+    private static let isoPlain: ISO8601DateFormatter = {
+        let f = ISO8601DateFormatter()
+        f.formatOptions = [.withInternetDateTime]
+        return f
+    }()
+    private static func parseTimestamp(_ s: String) -> Date? {
+        isoFractional.date(from: s) ?? isoPlain.date(from: s)
+    }
+    private static let deltaDecoder: JSONDecoder = {
+        let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .custom { d in
+            let container = try d.singleValueContainer()
+            let raw = try container.decode(String.self)
+            guard let date = SupabaseSyncService.parseTimestamp(raw) else {
+                throw DecodingError.dataCorruptedError(
+                    in: container, debugDescription: "Unparseable RPC timestamp: \(raw)")
+            }
+            return date
+        }
+        return decoder
+    }()
+
     private init() {
         client = AuthService.shared.client
     }
@@ -214,7 +275,10 @@ final class SupabaseSyncService: ObservableObject {
         if remoteIsEmpty && localIsNonEmpty {
             await backfillLocalToRemote(uid: userID)
         } else {
-            await pullAll()
+            // First sign-in on this device has an epoch-0 watermark, so this
+            // pulls everything (same as the old full pull) but via the single
+            // delta RPC; later foregrounds fetch only what changed.
+            await pullChanges()
         }
         await flushQueue()
     }
@@ -287,9 +351,30 @@ final class SupabaseSyncService: ObservableObject {
     private struct RemoteRow: Decodable {
         let id: String?
         let day_iso: String?
-        let user_id: String
+        /// Optional: the REST full-pull (`fetchRows`) selects it, but the
+        /// `pull_changes` RPC omits it (rows are already `auth.uid()`-scoped).
+        /// It is never read by the reconcile logic either way.
+        let user_id: String?
         let payload: AnyJSON
         let updated_at: Date
+    }
+
+    /// Decoded shape of the `pull_changes` RPC — one array per `aura_*` table.
+    /// The RPC always emits all 12 keys (empty array when nothing changed), so
+    /// every property is non-optional and decoding is total.
+    private struct PullChangesResponse: Decodable {
+        let aura_workout_logs: [RemoteRow]
+        let aura_measurements: [RemoteRow]
+        let aura_personal_records: [RemoteRow]
+        let aura_progress_photos: [RemoteRow]
+        let aura_programs: [RemoteRow]
+        let aura_plans: [RemoteRow]
+        let aura_exercises: [RemoteRow]
+        let aura_day_overrides: [RemoteRow]
+        let aura_quick_logs: [RemoteRow]
+        let aura_body_stats: [RemoteRow]
+        let aura_user_profile: [RemoteRow]
+        let aura_preferences: [RemoteRow]
     }
 
     /// Pulls every table for the current user and reconciles into local
@@ -319,6 +404,74 @@ final class SupabaseSyncService: ObservableObject {
             await (programsRows, plansRows, exercisesRows, workoutLogRows, measurementRows, prRows, photoRows,
                    dayOverrideRows, quickLogRows, bodyStatsRows, userProfileRows, prefsRows)
 
+        mergeRemoteRows(programs: programs, plans: plans, exercises: exercises,
+                        logs: logs, measurements: measurements, prs: prs,
+                        photos: photos, overrides: overrides, quicks: quicks,
+                        bodyStats: bodyStats, profile: profile, prefs: prefs)
+    }
+
+    // MARK: - Incremental pull (delta RPC, with full-pull fallback)
+
+    /// One-request incremental sync: calls the `pull_changes(since)` RPC with
+    /// the persisted watermark and routes every returned row through the SAME
+    /// per-table LWW merge `pullAll()` uses (`mergeRemoteRows`). The watermark
+    /// advances to the max server `updated_at` merged, and ONLY after a fully
+    /// successful merge (empty delta leaves it untouched — never regress it).
+    ///
+    /// Fallback ladder (terminates — no retry loop): an auth failure (JWT
+    /// expired / 401) is treated as signed-out and does nothing. Any other RPC
+    /// or decode failure — notably a 404 (migration not applied yet) or a 400
+    /// (bad `since`) — degrades to exactly one legacy full `pullAll()`.
+    func pullChanges() async {
+        guard userID != nil else { return }
+        syncing = true
+        defer { syncing = false; lastPullAt = Date() }
+
+        let sinceISO = Self.isoFractional.string(from: lastDeltaPullAt)
+        do {
+            let response = try await client.rpc("pull_changes", params: ["since": sinceISO]).execute()
+            let delta = try Self.deltaDecoder.decode(PullChangesResponse.self, from: response.data)
+            let maxTs = mergeRemoteRows(
+                programs: delta.aura_programs, plans: delta.aura_plans, exercises: delta.aura_exercises,
+                logs: delta.aura_workout_logs, measurements: delta.aura_measurements, prs: delta.aura_personal_records,
+                photos: delta.aura_progress_photos, overrides: delta.aura_day_overrides, quicks: delta.aura_quick_logs,
+                bodyStats: delta.aura_body_stats, profile: delta.aura_user_profile, prefs: delta.aura_preferences)
+            // Advance only forward, and only if the response carried rows.
+            if let maxTs, maxTs > lastDeltaPullAt {
+                lastDeltaPullAt = maxTs
+            }
+        } catch {
+            // Signed-out: don't fall back, don't retry — pullAll would just 401
+            // too and this call is fire-and-forget.
+            guard !Self.isAuthError(error) else { return }
+            // Migration-not-applied (404) / bad-since (400) / transient: one
+            // full pull, then stop.
+            await pullAll()
+        }
+    }
+
+    /// Best-effort classification of an expired/missing-JWT failure. On these
+    /// we must not fall back to a full pull (the user is effectively signed
+    /// out). PostgREST/GoTrue don't expose a stable typed status here, so match
+    /// the known message shapes.
+    private static func isAuthError(_ error: Error) -> Bool {
+        let text = "\(error)".lowercased()
+        return text.contains("jwt") || text.contains("401")
+            || text.contains("unauthorized") || text.contains("not authenticated")
+    }
+
+    /// Shared per-table LWW merge + local apply used by BOTH `pullAll()` (full
+    /// snapshot) and `pullChanges()` (incremental delta). Takes the already-
+    /// decoded rows per table, reconciles each into its local store, and
+    /// returns the maximum `updated_at` seen across every row (nil when the
+    /// batch is empty) so `pullChanges()` can advance its watermark.
+    @discardableResult
+    private func mergeRemoteRows(
+        programs: [RemoteRow], plans: [RemoteRow], exercises: [RemoteRow],
+        logs: [RemoteRow], measurements: [RemoteRow], prs: [RemoteRow],
+        photos: [RemoteRow], overrides: [RemoteRow], quicks: [RemoteRow],
+        bodyStats: [RemoteRow], profile: [RemoteRow], prefs: [RemoteRow]
+    ) -> Date? {
         reconcile(rows: programs, table: .programs, idOf: { (p: Program) in p.id.uuidString },
                   localLookup: { id in ProgramDatabase.shared.programs.first { $0.id.uuidString == id } })
             .map { ProgramDatabase.shared.applyRemote($0) }
@@ -329,37 +482,44 @@ final class SupabaseSyncService: ObservableObject {
                   localLookup: { id in ExerciseDatabase.shared.entries.first { $0.id.uuidString == id } })
             .map { ExerciseDatabase.shared.applyRemote($0) }
 
-        guard let appState = AppStateBridge.shared else { return }
+        // Programs/plans/exercises apply above even without the AppState bridge
+        // (they live in their own singletons); the rest need it. A nil bridge
+        // skips only those applies — the watermark still advances off all rows.
+        if let appState = AppStateBridge.shared {
+            reconcile(rows: logs, table: .workoutLogs, idOf: { (l: WorkoutLog) in l.id.uuidString },
+                      localLookup: { id in appState.workoutLogs.first { $0.id.uuidString == id } })
+                .map { appState.applyRemoteWorkoutLogs($0) }
+            reconcile(rows: measurements, table: .measurements, idOf: { (m: Measurement) in m.id.uuidString },
+                      localLookup: { id in appState.measurements.first { $0.id.uuidString == id } })
+                .map { appState.applyRemoteMeasurements($0) }
+            reconcile(rows: prs, table: .personalRecords, idOf: { (p: PersonalRecord) in p.id.uuidString },
+                      localLookup: { id in appState.personalRecords.first { $0.id.uuidString == id } })
+                .map { appState.applyRemotePersonalRecords($0) }
+            reconcile(rows: photos, table: .progressPhotos, idOf: { (p: ProgressPhoto) in p.id.uuidString },
+                      localLookup: { id in appState.progressPhotos.first { $0.id.uuidString == id } })
+                .map { appState.applyRemoteProgressPhotos($0) }
 
-        reconcile(rows: logs, table: .workoutLogs, idOf: { (l: WorkoutLog) in l.id.uuidString },
-                  localLookup: { id in appState.workoutLogs.first { $0.id.uuidString == id } })
-            .map { appState.applyRemoteWorkoutLogs($0) }
-        reconcile(rows: measurements, table: .measurements, idOf: { (m: Measurement) in m.id.uuidString },
-                  localLookup: { id in appState.measurements.first { $0.id.uuidString == id } })
-            .map { appState.applyRemoteMeasurements($0) }
-        reconcile(rows: prs, table: .personalRecords, idOf: { (p: PersonalRecord) in p.id.uuidString },
-                  localLookup: { id in appState.personalRecords.first { $0.id.uuidString == id } })
-            .map { appState.applyRemotePersonalRecords($0) }
-        reconcile(rows: photos, table: .progressPhotos, idOf: { (p: ProgressPhoto) in p.id.uuidString },
-                  localLookup: { id in appState.progressPhotos.first { $0.id.uuidString == id } })
-            .map { appState.applyRemoteProgressPhotos($0) }
+            reconcileKeyed(rows: overrides, table: .dayOverrides,
+                           localLookup: { key in appState.dayOverrides[key] })
+                .map { appState.applyRemoteDayOverrides($0) }
+            reconcileKeyed(rows: quicks, table: .quickLogs,
+                           localLookup: { key in appState.quickLogs[key] })
+                .map { appState.applyRemoteQuickLogs($0) }
 
-        reconcileKeyed(rows: overrides, table: .dayOverrides,
-                       localLookup: { key in appState.dayOverrides[key] })
-            .map { appState.applyRemoteDayOverrides($0) }
-        reconcileKeyed(rows: quicks, table: .quickLogs,
-                       localLookup: { key in appState.quickLogs[key] })
-            .map { appState.applyRemoteQuickLogs($0) }
+            if let row = bodyStats.first, let decoded: BodyStats = decode(row.payload) {
+                appState.applyRemoteBodyStats(decoded)
+            }
+            if let row = profile.first, let decoded: UserProfile = decode(row.payload) {
+                appState.applyRemoteUserProfile(decoded)
+            }
+            if let row = prefs.first, let decoded: AppState.RemotePrefs = decode(row.payload) {
+                appState.applyRemotePrefs(decoded)
+            }
+        }
 
-        if let row = bodyStats.first, let decoded: BodyStats = decode(row.payload) {
-            appState.applyRemoteBodyStats(decoded)
-        }
-        if let row = profile.first, let decoded: UserProfile = decode(row.payload) {
-            appState.applyRemoteUserProfile(decoded)
-        }
-        if let row = prefs.first, let decoded: AppState.RemotePrefs = decode(row.payload) {
-            appState.applyRemotePrefs(decoded)
-        }
+        return [programs, plans, exercises, logs, measurements, prs,
+                photos, overrides, quicks, bodyStats, profile, prefs]
+            .flatMap { $0 }.map(\.updated_at).max()
     }
 
     private func fetchRows(_ table: Table, uid: String) async -> [RemoteRow] {
