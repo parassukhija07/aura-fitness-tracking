@@ -59,6 +59,7 @@
   "57": "WorkoutEditorComponents.swift",
   "58": "WeeklyVolumeView",
   "59": "AuraScreenScroll",
+  "60": "Color",
   "61": "Aura Fitness — Manual Steps Required",
   "62": "DayState",
   "63": "BACKEND IMPLEMENTATION SPEC: Progress Photos → Supabase Storage",
@@ -112,6 +113,7 @@
   "111": "FINAL ARCHITECTURE REVIEW",
   "112": "TEST EXECUTION REPORT",
   "113": "FINAL ARCHITECTURE REVIEW",
+  "114": "ActiveWorkoutScreen",
   "115": "data.jsx",
   "116": "PersonalRecordsView",
   "117": "String",
@@ -128,5 +130,6 @@
   "128": "PRD.md",
   "129": "ship.md",
   "130": "app.json",
+  "131": "CreateExerciseView",
   "137": "EndWorkoutSheet"
 }

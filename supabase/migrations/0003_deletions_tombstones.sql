@@ -1,3 +1,4 @@
+
 -- 0003_deletions_tombstones.sql
 -- Aura Fitness — deletion tombstones. Stops deleted rows resurrecting.
 --

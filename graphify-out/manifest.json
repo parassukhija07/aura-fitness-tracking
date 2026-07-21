@@ -1,7 +1,7 @@
 {
   ".claude/settings.json": {
-    "mtime": 1784619295.9105227,
-    "ast_hash": "cae15e80c27dee6fe371c4096cffbf72",
+    "mtime": 1784624975.8608725,
+    "ast_hash": "466b6ba0e751513ddda546da64de7e0d",
     "semantic_hash": ""
   },
   ".claude/settings.local.json": {
@@ -555,8 +555,8 @@
     "semantic_hash": ""
   },
   "AuraFitness/Sync/SupabaseSyncService.swift": {
-    "mtime": 1784624227.968771,
-    "ast_hash": "b5cb3eb0ec477840f771f3be35ea9f78",
+    "mtime": 1784636075.6519856,
+    "ast_hash": "b5a66fe970e7a87b8ca4d4951e5f2528",
     "semantic_hash": ""
   },
   "AuraFitness/Sync/Syncable.swift": {
@@ -1045,8 +1045,8 @@
     "semantic_hash": ""
   },
   "supabase/migrations/0003_deletions_tombstones.sql": {
-    "mtime": 1784620204.6702542,
-    "ast_hash": "d224bd7f20823ffbffbe6aa6a812cd5f",
+    "mtime": 1784635928.2957435,
+    "ast_hash": "a836c98e35829699dafd9c77dc9c2c5a",
     "semantic_hash": ""
   },
   "supabase/migrations/0004_pull_changes_v2.sql": {

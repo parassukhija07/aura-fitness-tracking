@@ -631,14 +631,30 @@ final class SupabaseSyncService: ObservableObject {
             .flatMap { $0 }.map(\.updated_at).max()
     }
 
+    /// Full-table REST read for one table, used only by the legacy `pullAll()`
+    /// fallback.
+    ///
+    /// Uses `deltaDecoder`, NOT a bare `JSONDecoder`: PostgREST serialises
+    /// `updated_at` as an ISO-8601 string ("2026-07-18T10:00:00.123456+00:00"),
+    /// and the default `.deferredToDate` strategy expects a Double — so a bare
+    /// decoder threw `typeMismatch` on EVERY row, the catch below turned that
+    /// into `[]`, and `pullAll()` silently merged nothing at all. The RPC path
+    /// never hit this because it always had the ISO-aware decoder.
+    ///
+    /// Row payloads are unaffected: they decode separately in `decode(_:)`
+    /// with default coders, matching how they were encoded.
     private func fetchRows(_ table: Table, uid: String) async -> [RemoteRow] {
         do {
             let response = try await client.from(table.rawValue)
                 .select()
                 .eq("user_id", value: uid)
                 .execute()
-            return try JSONDecoder().decode([RemoteRow].self, from: response.data)
+            return try Self.deltaDecoder.decode([RemoteRow].self, from: response.data)
         } catch {
+            // Returning [] keeps the pull fire-and-forget, but an empty result
+            // is indistinguishable from "no rows" — which is exactly how the
+            // decoder bug above stayed invisible. Say so out loud.
+            print("⚠️ SupabaseSyncService: full pull of \(table.rawValue) failed, treating as empty — \(error)")
             return []
         }
     }

@@ -2444,8 +2444,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "hashable",
-      "community": 14,
-      "community_name": "PlanComponents.swift",
+      "community": 42,
+      "community_name": "WorkoutExerciseOption",
       "norm_label": "hashable"
     },
     {
@@ -2510,8 +2510,8 @@
       "source_location": "L113",
       "_origin": "ast",
       "id": "aurafitness_activeworkout_activeworkoutdata_workoutexerciseoption_makeexercise",
-      "community": 14,
-      "community_name": "PlanComponents.swift",
+      "community": 42,
+      "community_name": "WorkoutExerciseOption",
       "norm_label": ".makeexercise()"
     },
     {
@@ -2544,8 +2544,8 @@
       "source_location": "L9",
       "_origin": "ast",
       "id": "aurafitness_activeworkout_activeworkoutseed_activeworkoutseed",
-      "community": 14,
-      "community_name": "PlanComponents.swift",
+      "community": 42,
+      "community_name": "WorkoutExerciseOption",
       "norm_label": "activeworkoutseed"
     },
     {
@@ -2555,8 +2555,8 @@
       "source_location": "L21",
       "_origin": "ast",
       "id": "aurafitness_activeworkout_activeworkoutseed_activeworkoutseed_pushdaya",
-      "community": 14,
-      "community_name": "PlanComponents.swift",
+      "community": 42,
+      "community_name": "WorkoutExerciseOption",
       "norm_label": ".pushdaya()"
     },
     {
@@ -2566,8 +2566,8 @@
       "source_location": "L41",
       "_origin": "ast",
       "id": "aurafitness_activeworkout_activeworkoutseed_activeworkoutseed_bench",
-      "community": 14,
-      "community_name": "PlanComponents.swift",
+      "community": 42,
+      "community_name": "WorkoutExerciseOption",
       "norm_label": ".bench()"
     },
     {
@@ -2577,8 +2577,8 @@
       "source_location": "L71",
       "_origin": "ast",
       "id": "aurafitness_activeworkout_activeworkoutseed_activeworkoutseed_incline",
-      "community": 14,
-      "community_name": "PlanComponents.swift",
+      "community": 42,
+      "community_name": "WorkoutExerciseOption",
       "norm_label": ".incline()"
     },
     {
@@ -2588,8 +2588,8 @@
       "source_location": "L95",
       "_origin": "ast",
       "id": "aurafitness_activeworkout_activeworkoutseed_activeworkoutseed_fly",
-      "community": 14,
-      "community_name": "PlanComponents.swift",
+      "community": 42,
+      "community_name": "WorkoutExerciseOption",
       "norm_label": ".fly()"
     },
     {
@@ -2599,8 +2599,8 @@
       "source_location": "L115",
       "_origin": "ast",
       "id": "aurafitness_activeworkout_activeworkoutseed_activeworkoutseed_ohp",
-      "community": 14,
-      "community_name": "PlanComponents.swift",
+      "community": 42,
+      "community_name": "WorkoutExerciseOption",
       "norm_label": ".ohp()"
     },
     {
@@ -2610,8 +2610,8 @@
       "source_location": "L139",
       "_origin": "ast",
       "id": "aurafitness_activeworkout_activeworkoutseed_activeworkoutseed_lateral",
-      "community": 14,
-      "community_name": "PlanComponents.swift",
+      "community": 42,
+      "community_name": "WorkoutExerciseOption",
       "norm_label": ".lateral()"
     },
     {
@@ -2621,8 +2621,8 @@
       "source_location": "L163",
       "_origin": "ast",
       "id": "aurafitness_activeworkout_activeworkoutseed_activeworkoutseed_pushdown",
-      "community": 14,
-      "community_name": "PlanComponents.swift",
+      "community": 42,
+      "community_name": "WorkoutExerciseOption",
       "norm_label": ".pushdown()"
     },
     {
@@ -2687,8 +2687,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "aurafitness_activeworkout_celebrationoverlay",
-      "community": 109,
-      "community_name": "Kind",
+      "community": 32,
+      "community_name": "SwiftUI",
       "norm_label": "celebrationoverlay.swift"
     },
     {
@@ -2698,8 +2698,8 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "aurafitness_activeworkout_celebrationoverlay_celebrationoverlay",
-      "community": 109,
-      "community_name": "Kind",
+      "community": 32,
+      "community_name": "SwiftUI",
       "norm_label": "celebrationoverlay"
     },
     {
@@ -2709,8 +2709,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "aurafitness_activeworkout_celebrationoverlay_swift_cgfloat",
-      "community": 109,
-      "community_name": "Kind",
+      "community": 32,
+      "community_name": "SwiftUI",
       "norm_label": "cgfloat"
     },
     {
@@ -3017,8 +3017,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "aurafitness_activeworkout_notificationscheduler",
-      "community": 25,
-      "community_name": "ToastCenter",
+      "community": 28,
+      "community_name": ".scheduleRestComplete",
       "norm_label": "notificationscheduler.swift"
     },
     {
@@ -3029,8 +3029,8 @@
       "source_location": "L4",
       "_origin": "ast",
       "id": "usernotifications",
-      "community": 25,
-      "community_name": "ToastCenter",
+      "community": 28,
+      "community_name": ".scheduleRestComplete",
       "norm_label": "usernotifications"
     },
     {
@@ -3106,8 +3106,8 @@
       "source_location": "L38",
       "_origin": "ast",
       "id": "aurafitness_activeworkout_notificationscheduler_notificationscheduler_cancelrestcomplete",
-      "community": 28,
-      "community_name": ".scheduleRestComplete",
+      "community": 50,
+      "community_name": "AuthService",
       "norm_label": ".cancelrestcomplete()"
     },
     {
@@ -3293,8 +3293,8 @@
       "source_location": "L153",
       "_origin": "ast",
       "id": "aurafitness_activeworkout_setrowview_setrowview_autofinishonblur",
-      "community": 50,
-      "community_name": "AuthService",
+      "community": 45,
+      "community_name": "PlanExerciseDetail",
       "norm_label": ".autofinishonblur()"
     },
     {
@@ -3469,8 +3469,8 @@
       "source_location": "L296",
       "_origin": "ast",
       "id": "aurafitness_activeworkout_supersetview_supersetview_completesuperset",
-      "community": 33,
-      "community_name": "SupersetView",
+      "community": 50,
+      "community_name": "AuthService",
       "norm_label": ".completesuperset()"
     },
     {
@@ -3645,8 +3645,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "aurafitness_activeworkout_workoutmodalsview_swift_string",
-      "community": 37,
-      "community_name": "Table",
+      "community": 18,
+      "community_name": "PlanDay",
       "norm_label": "string"
     },
     {
@@ -3733,8 +3733,8 @@
       "source_location": "L275",
       "_origin": "ast",
       "id": "aurafitness_activeworkout_workoutmodalsview_workoutmodalsview_optionrow",
-      "community": 37,
-      "community_name": "Table",
+      "community": 18,
+      "community_name": "PlanDay",
       "norm_label": ".optionrow()"
     },
     {
@@ -3744,8 +3744,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "aurafitness_activeworkout_workoutmodalsview_swift_void",
-      "community": 37,
-      "community_name": "Table",
+      "community": 18,
+      "community_name": "PlanDay",
       "norm_label": "void"
     },
     {
@@ -3887,8 +3887,8 @@
       "source_location": "L317",
       "_origin": "ast",
       "id": "aurafitness_activeworkout_workoutoverviewview_exercisemenusheet_triggermodal",
-      "community": 43,
-      "community_name": "ToastCenter",
+      "community": 37,
+      "community_name": "Table",
       "norm_label": ".triggermodal()"
     },
     {
@@ -4186,8 +4186,8 @@
       "source_location": "L4",
       "_origin": "ast",
       "id": "aurafitness_activeworkout_workoutsessionstate_activeworkoutscreen",
-      "community": 50,
-      "community_name": "AuthService",
+      "community": 114,
+      "community_name": "ActiveWorkoutScreen",
       "norm_label": "activeworkoutscreen"
     },
     {
@@ -4197,8 +4197,8 @@
       "source_location": "L5",
       "_origin": "ast",
       "id": "aurafitness_activeworkout_workoutsessionstate_activeworkoutscreen_overview",
-      "community": 50,
-      "community_name": "AuthService",
+      "community": 114,
+      "community_name": "ActiveWorkoutScreen",
       "norm_label": "overview"
     },
     {
@@ -4208,8 +4208,8 @@
       "source_location": "L6",
       "_origin": "ast",
       "id": "aurafitness_activeworkout_workoutsessionstate_activeworkoutscreen_exercise",
-      "community": 50,
-      "community_name": "AuthService",
+      "community": 114,
+      "community_name": "ActiveWorkoutScreen",
       "norm_label": "exercise"
     },
     {
@@ -4230,8 +4230,8 @@
       "source_location": "L7",
       "_origin": "ast",
       "id": "aurafitness_activeworkout_workoutsessionstate_activeworkoutscreen_superset",
-      "community": 50,
-      "community_name": "AuthService",
+      "community": 114,
+      "community_name": "ActiveWorkoutScreen",
       "norm_label": "superset"
     },
     {
@@ -4241,8 +4241,8 @@
       "source_location": "L8",
       "_origin": "ast",
       "id": "aurafitness_activeworkout_workoutsessionstate_activeworkoutscreen_summary",
-      "community": 50,
-      "community_name": "AuthService",
+      "community": 114,
+      "community_name": "ActiveWorkoutScreen",
       "norm_label": "summary"
     },
     {
@@ -4417,8 +4417,8 @@
       "source_location": "L167",
       "_origin": "ast",
       "id": "aurafitness_activeworkout_workoutsessionstate_workoutsessionstate_scheduleresttick",
-      "community": 28,
-      "community_name": ".scheduleRestComplete",
+      "community": 50,
+      "community_name": "AuthService",
       "norm_label": ".scheduleresttick()"
     },
     {
@@ -4439,8 +4439,8 @@
       "source_location": "L191",
       "_origin": "ast",
       "id": "aurafitness_activeworkout_workoutsessionstate_workoutsessionstate_pauseresumerest",
-      "community": 28,
-      "community_name": ".scheduleRestComplete",
+      "community": 50,
+      "community_name": "AuthService",
       "norm_label": ".pauseresumerest()"
     },
     {
@@ -4461,8 +4461,8 @@
       "source_location": "L214",
       "_origin": "ast",
       "id": "aurafitness_activeworkout_workoutsessionstate_workoutsessionstate_dismissrest",
-      "community": 28,
-      "community_name": ".scheduleRestComplete",
+      "community": 50,
+      "community_name": "AuthService",
       "norm_label": ".dismissrest()"
     },
     {
@@ -4593,8 +4593,8 @@
       "source_location": "L350",
       "_origin": "ast",
       "id": "aurafitness_activeworkout_workoutsessionstate_workoutsessionstate_addexercise",
-      "community": 50,
-      "community_name": "AuthService",
+      "community": 18,
+      "community_name": "PlanDay",
       "norm_label": ".addexercise()"
     },
     {
@@ -4824,8 +4824,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "aurafitness_auth_authgateview",
-      "community": 46,
-      "community_name": "PlanProgramsBody",
+      "community": 35,
+      "community_name": "LogSheet",
       "norm_label": "authgateview.swift"
     },
     {
@@ -4835,8 +4835,8 @@
       "source_location": "L7",
       "_origin": "ast",
       "id": "aurafitness_auth_authgateview_authgateview",
-      "community": 46,
-      "community_name": "PlanProgramsBody",
+      "community": 35,
+      "community_name": "LogSheet",
       "norm_label": "authgateview"
     },
     {
@@ -4846,8 +4846,8 @@
       "source_location": "L45",
       "_origin": "ast",
       "id": "aurafitness_auth_authgateview_authformview",
-      "community": 46,
-      "community_name": "PlanProgramsBody",
+      "community": 35,
+      "community_name": "LogSheet",
       "norm_label": "authformview"
     },
     {
@@ -4857,8 +4857,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "mode",
-      "community": 46,
-      "community_name": "PlanProgramsBody",
+      "community": 35,
+      "community_name": "LogSheet",
       "norm_label": "mode"
     },
     {
@@ -4868,8 +4868,8 @@
       "source_location": "L54",
       "_origin": "ast",
       "id": "aurafitness_auth_authgateview_mode",
-      "community": 46,
-      "community_name": "PlanProgramsBody",
+      "community": 35,
+      "community_name": "LogSheet",
       "norm_label": "mode"
     },
     {
@@ -4879,8 +4879,8 @@
       "source_location": "L54",
       "_origin": "ast",
       "id": "aurafitness_auth_authgateview_mode_login",
-      "community": 46,
-      "community_name": "PlanProgramsBody",
+      "community": 35,
+      "community_name": "LogSheet",
       "norm_label": "login"
     },
     {
@@ -4890,8 +4890,8 @@
       "source_location": "L54",
       "_origin": "ast",
       "id": "aurafitness_auth_authgateview_mode_signup",
-      "community": 46,
-      "community_name": "PlanProgramsBody",
+      "community": 35,
+      "community_name": "LogSheet",
       "norm_label": "signup"
     },
     {
@@ -4901,8 +4901,8 @@
       "source_location": "L114",
       "_origin": "ast",
       "id": "aurafitness_auth_authgateview_authformview_submit",
-      "community": 46,
-      "community_name": "PlanProgramsBody",
+      "community": 35,
+      "community_name": "LogSheet",
       "norm_label": ".submit()"
     },
     {
@@ -4912,8 +4912,8 @@
       "source_location": "L127",
       "_origin": "ast",
       "id": "aurafitness_auth_authgateview_authformview_field",
-      "community": 46,
-      "community_name": "PlanProgramsBody",
+      "community": 35,
+      "community_name": "LogSheet",
       "norm_label": ".field()"
     },
     {
@@ -4923,8 +4923,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "aurafitness_auth_authgateview_swift_string",
-      "community": 46,
-      "community_name": "PlanProgramsBody",
+      "community": 35,
+      "community_name": "LogSheet",
       "norm_label": "string"
     },
     {
@@ -4934,8 +4934,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "aurafitness_auth_authgateview_swift_binding",
-      "community": 46,
-      "community_name": "PlanProgramsBody",
+      "community": 35,
+      "community_name": "LogSheet",
       "norm_label": "binding"
     },
     {
@@ -4945,8 +4945,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "aurafitness_auth_authgateview_swift_uikeyboardtype",
-      "community": 46,
-      "community_name": "PlanProgramsBody",
+      "community": 35,
+      "community_name": "LogSheet",
       "norm_label": "uikeyboardtype"
     },
     {
@@ -4956,8 +4956,8 @@
       "source_location": "L139",
       "_origin": "ast",
       "id": "aurafitness_auth_authgateview_authformview_securefield",
-      "community": 46,
-      "community_name": "PlanProgramsBody",
+      "community": 35,
+      "community_name": "LogSheet",
       "norm_label": ".securefield()"
     },
     {
@@ -4967,8 +4967,8 @@
       "source_location": "L151",
       "_origin": "ast",
       "id": "aurafitness_auth_authgateview_awaitingconfirmationview",
-      "community": 46,
-      "community_name": "PlanProgramsBody",
+      "community": 35,
+      "community_name": "LogSheet",
       "norm_label": "awaitingconfirmationview"
     },
     {
@@ -4978,8 +4978,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "aurafitness_auth_authservice",
-      "community": 58,
-      "community_name": "WeeklyVolumeView",
+      "community": 35,
+      "community_name": "LogSheet",
       "norm_label": "authservice.swift"
     },
     {
@@ -4990,8 +4990,8 @@
       "source_location": "L2",
       "_origin": "ast",
       "id": "supabase",
-      "community": 58,
-      "community_name": "WeeklyVolumeView",
+      "community": 35,
+      "community_name": "LogSheet",
       "norm_label": "supabase"
     },
     {
@@ -5012,8 +5012,8 @@
       "source_location": "L12",
       "_origin": "ast",
       "id": "aurafitness_auth_authservice_sessionstate",
-      "community": 58,
-      "community_name": "WeeklyVolumeView",
+      "community": 35,
+      "community_name": "LogSheet",
       "norm_label": "sessionstate"
     },
     {
@@ -5034,8 +5034,8 @@
       "source_location": "L13",
       "_origin": "ast",
       "id": "aurafitness_auth_authservice_sessionstate_loading",
-      "community": 58,
-      "community_name": "WeeklyVolumeView",
+      "community": 35,
+      "community_name": "LogSheet",
       "norm_label": "loading"
     },
     {
@@ -5045,8 +5045,8 @@
       "source_location": "L14",
       "_origin": "ast",
       "id": "aurafitness_auth_authservice_sessionstate_signedout",
-      "community": 58,
-      "community_name": "WeeklyVolumeView",
+      "community": 35,
+      "community_name": "LogSheet",
       "norm_label": "signedout"
     },
     {
@@ -5056,8 +5056,8 @@
       "source_location": "L15",
       "_origin": "ast",
       "id": "aurafitness_auth_authservice_sessionstate_awaitingemailconfirmation",
-      "community": 58,
-      "community_name": "WeeklyVolumeView",
+      "community": 35,
+      "community_name": "LogSheet",
       "norm_label": "awaitingemailconfirmation"
     },
     {
@@ -5078,8 +5078,8 @@
       "source_location": "L16",
       "_origin": "ast",
       "id": "aurafitness_auth_authservice_sessionstate_signedin",
-      "community": 58,
-      "community_name": "WeeklyVolumeView",
+      "community": 35,
+      "community_name": "LogSheet",
       "norm_label": "signedin"
     },
     {
@@ -5089,8 +5089,8 @@
       "source_location": "L17",
       "_origin": "ast",
       "id": "aurafitness_auth_authservice_sessionstate_guest",
-      "community": 58,
-      "community_name": "WeeklyVolumeView",
+      "community": 35,
+      "community_name": "LogSheet",
       "norm_label": "guest"
     },
     {
@@ -5232,8 +5232,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "aurafitness_contentview",
-      "community": 5,
-      "community_name": "AuraTab",
+      "community": 44,
+      "community_name": "DarkModePreference",
       "norm_label": "contentview.swift"
     },
     {
@@ -5243,8 +5243,8 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "aurafitness_contentview_contentview",
-      "community": 5,
-      "community_name": "AuraTab",
+      "community": 44,
+      "community_name": "DarkModePreference",
       "norm_label": "contentview"
     },
     {
@@ -5254,8 +5254,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "aurafitness_designsystem_auracolors",
-      "community": 22,
-      "community_name": "AuraComponents.swift",
+      "community": 60,
+      "community_name": "Color",
       "norm_label": "auracolors.swift"
     },
     {
@@ -5277,8 +5277,8 @@
       "source_location": "L4",
       "_origin": "ast",
       "id": "aurafitness_designsystem_auracolors_color",
-      "community": 22,
-      "community_name": "AuraComponents.swift",
+      "community": 60,
+      "community_name": "Color",
       "norm_label": "color"
     },
     {
@@ -5288,8 +5288,8 @@
       "source_location": "L14",
       "_origin": "ast",
       "id": "aurafitness_designsystem_auracolors_auracolornamespace",
-      "community": 22,
-      "community_name": "AuraComponents.swift",
+      "community": 60,
+      "community_name": "Color",
       "norm_label": "auracolornamespace"
     },
     {
@@ -5299,8 +5299,8 @@
       "source_location": "L111",
       "_origin": "ast",
       "id": "aurafitness_designsystem_auracolors_dyn",
-      "community": 22,
-      "community_name": "AuraComponents.swift",
+      "community": 60,
+      "community_name": "Color",
       "norm_label": "dyn()"
     },
     {
@@ -5310,8 +5310,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "aurafitness_designsystem_auracolors_swift_string",
-      "community": 22,
-      "community_name": "AuraComponents.swift",
+      "community": 60,
+      "community_name": "Color",
       "norm_label": "string"
     },
     {
@@ -5321,8 +5321,8 @@
       "source_location": "L117",
       "_origin": "ast",
       "id": "aurafitness_designsystem_auracolors_dyna",
-      "community": 22,
-      "community_name": "AuraComponents.swift",
+      "community": 60,
+      "community_name": "Color",
       "norm_label": "dyna()"
     },
     {
@@ -5332,8 +5332,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "aurafitness_designsystem_auracolors_swift_cgfloat",
-      "community": 22,
-      "community_name": "AuraComponents.swift",
+      "community": 60,
+      "community_name": "Color",
       "norm_label": "cgfloat"
     },
     {
@@ -5343,8 +5343,8 @@
       "source_location": "L126",
       "_origin": "ast",
       "id": "aurafitness_designsystem_auracolors_uicolor",
-      "community": 22,
-      "community_name": "AuraComponents.swift",
+      "community": 60,
+      "community_name": "Color",
       "norm_label": "uicolor"
     },
     {
@@ -5354,8 +5354,8 @@
       "source_location": "L127",
       "_origin": "ast",
       "id": "aurafitness_designsystem_auracolors_uicolor_init",
-      "community": 22,
-      "community_name": "AuraComponents.swift",
+      "community": 60,
+      "community_name": "Color",
       "norm_label": ".init()"
     },
     {
@@ -5365,8 +5365,8 @@
       "source_location": "L140",
       "_origin": "ast",
       "id": "aurafitness_designsystem_auracolors_color_init",
-      "community": 22,
-      "community_name": "AuraComponents.swift",
+      "community": 60,
+      "community_name": "Color",
       "norm_label": ".init()"
     },
     {
@@ -5519,8 +5519,8 @@
       "source_location": "L178",
       "_origin": "ast",
       "id": "aurafitness_designsystem_auracomponents_aurabadge",
-      "community": 22,
-      "community_name": "AuraComponents.swift",
+      "community": 46,
+      "community_name": "PlanProgramsBody",
       "norm_label": "aurabadge"
     },
     {
@@ -5552,8 +5552,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "aurafitness_designsystem_auracomponents_swift_double",
-      "community": 22,
-      "community_name": "AuraComponents.swift",
+      "community": 108,
+      "community_name": "AuraTabIcon",
       "norm_label": "double"
     },
     {
@@ -5563,8 +5563,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "aurafitness_designsystem_auracomponents_swift_cgfloat",
-      "community": 22,
-      "community_name": "AuraComponents.swift",
+      "community": 108,
+      "community_name": "AuraTabIcon",
       "norm_label": "cgfloat"
     },
     {
@@ -5585,8 +5585,8 @@
       "source_location": "L233",
       "_origin": "ast",
       "id": "aurafitness_designsystem_auracomponents_auratogglestyle",
-      "community": 22,
-      "community_name": "AuraComponents.swift",
+      "community": 119,
+      "community_name": "AuraFitnessApp",
       "norm_label": "auratogglestyle"
     },
     {
@@ -5596,8 +5596,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "togglestyle",
-      "community": 22,
-      "community_name": "AuraComponents.swift",
+      "community": 119,
+      "community_name": "AuraFitnessApp",
       "norm_label": "togglestyle"
     },
     {
@@ -5607,8 +5607,8 @@
       "source_location": "L234",
       "_origin": "ast",
       "id": "aurafitness_designsystem_auracomponents_auratogglestyle_makebody",
-      "community": 22,
-      "community_name": "AuraComponents.swift",
+      "community": 119,
+      "community_name": "AuraFitnessApp",
       "norm_label": ".makebody()"
     },
     {
@@ -5618,8 +5618,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "configuration",
-      "community": 22,
-      "community_name": "AuraComponents.swift",
+      "community": 119,
+      "community_name": "AuraFitnessApp",
       "norm_label": "configuration"
     },
     {
@@ -5717,8 +5717,8 @@
       "source_location": "L327",
       "_origin": "ast",
       "id": "aurafitness_designsystem_auracomponents_toastcenter",
-      "community": 25,
-      "community_name": "ToastCenter",
+      "community": 22,
+      "community_name": "AuraComponents.swift",
       "norm_label": "toastcenter"
     },
     {
@@ -5728,8 +5728,8 @@
       "source_location": "L330",
       "_origin": "ast",
       "id": "aurafitness_designsystem_auracomponents_toastcenter_flash",
-      "community": 25,
-      "community_name": "ToastCenter",
+      "community": 22,
+      "community_name": "AuraComponents.swift",
       "norm_label": ".flash()"
     },
     {
@@ -5816,8 +5816,8 @@
       "source_location": "L425",
       "_origin": "ast",
       "id": "aurafitness_designsystem_auracomponents_auralinechart",
-      "community": 22,
-      "community_name": "AuraComponents.swift",
+      "community": 108,
+      "community_name": "AuraTabIcon",
       "norm_label": "auralinechart"
     },
     {
@@ -5827,8 +5827,8 @@
       "source_location": "L489",
       "_origin": "ast",
       "id": "aurafitness_designsystem_auracomponents_auraaxischart",
-      "community": 22,
-      "community_name": "AuraComponents.swift",
+      "community": 108,
+      "community_name": "AuraTabIcon",
       "norm_label": "auraaxischart"
     },
     {
@@ -5838,8 +5838,8 @@
       "source_location": "L589",
       "_origin": "ast",
       "id": "aurafitness_designsystem_auracomponents_auraaxischart_axisticks",
-      "community": 22,
-      "community_name": "AuraComponents.swift",
+      "community": 108,
+      "community_name": "AuraTabIcon",
       "norm_label": ".axisticks()"
     },
     {
@@ -5849,8 +5849,8 @@
       "source_location": "L610",
       "_origin": "ast",
       "id": "aurafitness_designsystem_auracomponents_auraaxischart_nicestep",
-      "community": 22,
-      "community_name": "AuraComponents.swift",
+      "community": 108,
+      "community_name": "AuraTabIcon",
       "norm_label": ".nicestep()"
     },
     {
@@ -6091,8 +6091,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "aurafitness_designsystem_auratabbar",
-      "community": 5,
-      "community_name": "AuraTab",
+      "community": 44,
+      "community_name": "DarkModePreference",
       "norm_label": "auratabbar.swift"
     },
     {
@@ -6102,8 +6102,8 @@
       "source_location": "L5",
       "_origin": "ast",
       "id": "aurafitness_designsystem_auratabbar_auratab",
-      "community": 5,
-      "community_name": "AuraTab",
+      "community": 44,
+      "community_name": "DarkModePreference",
       "norm_label": "auratab"
     },
     {
@@ -6113,8 +6113,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "int",
-      "community": 5,
-      "community_name": "AuraTab",
+      "community": 44,
+      "community_name": "DarkModePreference",
       "norm_label": "int"
     },
     {
@@ -6124,8 +6124,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "caseiterable",
-      "community": 5,
-      "community_name": "AuraTab",
+      "community": 58,
+      "community_name": "WeeklyVolumeView",
       "norm_label": "caseiterable"
     },
     {
@@ -6135,8 +6135,8 @@
       "source_location": "L6",
       "_origin": "ast",
       "id": "aurafitness_designsystem_auratabbar_auratab_log",
-      "community": 5,
-      "community_name": "AuraTab",
+      "community": 44,
+      "community_name": "DarkModePreference",
       "norm_label": "log"
     },
     {
@@ -6146,8 +6146,8 @@
       "source_location": "L6",
       "_origin": "ast",
       "id": "aurafitness_designsystem_auratabbar_auratab_plan",
-      "community": 5,
-      "community_name": "AuraTab",
+      "community": 44,
+      "community_name": "DarkModePreference",
       "norm_label": "plan"
     },
     {
@@ -6157,8 +6157,8 @@
       "source_location": "L6",
       "_origin": "ast",
       "id": "aurafitness_designsystem_auratabbar_auratab_progress",
-      "community": 5,
-      "community_name": "AuraTab",
+      "community": 44,
+      "community_name": "DarkModePreference",
       "norm_label": "progress"
     },
     {
@@ -6168,8 +6168,8 @@
       "source_location": "L6",
       "_origin": "ast",
       "id": "aurafitness_designsystem_auratabbar_auratab_profile",
-      "community": 5,
-      "community_name": "AuraTab",
+      "community": 44,
+      "community_name": "DarkModePreference",
       "norm_label": "profile"
     },
     {
@@ -6179,8 +6179,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "aurafitness_designsystem_auratabbar_swift_string",
-      "community": 5,
-      "community_name": "AuraTab",
+      "community": 44,
+      "community_name": "DarkModePreference",
       "norm_label": "string"
     },
     {
@@ -6190,8 +6190,8 @@
       "source_location": "L23",
       "_origin": "ast",
       "id": "aurafitness_designsystem_auratabbar_auraquickaction",
-      "community": 5,
-      "community_name": "AuraTab",
+      "community": 44,
+      "community_name": "DarkModePreference",
       "norm_label": "auraquickaction"
     },
     {
@@ -6201,8 +6201,8 @@
       "source_location": "L24",
       "_origin": "ast",
       "id": "aurafitness_designsystem_auratabbar_auraquickaction_startworkout",
-      "community": 5,
-      "community_name": "AuraTab",
+      "community": 44,
+      "community_name": "DarkModePreference",
       "norm_label": "startworkout"
     },
     {
@@ -6212,8 +6212,8 @@
       "source_location": "L24",
       "_origin": "ast",
       "id": "aurafitness_designsystem_auratabbar_auraquickaction_logmeasurement",
-      "community": 5,
-      "community_name": "AuraTab",
+      "community": 44,
+      "community_name": "DarkModePreference",
       "norm_label": "logmeasurement"
     },
     {
@@ -6223,8 +6223,8 @@
       "source_location": "L24",
       "_origin": "ast",
       "id": "aurafitness_designsystem_auratabbar_auraquickaction_progressphoto",
-      "community": 5,
-      "community_name": "AuraTab",
+      "community": 44,
+      "community_name": "DarkModePreference",
       "norm_label": "progressphoto"
     },
     {
@@ -6234,8 +6234,8 @@
       "source_location": "L40",
       "_origin": "ast",
       "id": "aurafitness_designsystem_auratabbar_notification_name",
-      "community": 5,
-      "community_name": "AuraTab",
+      "community": 44,
+      "community_name": "DarkModePreference",
       "norm_label": "notification.name"
     },
     {
@@ -6267,8 +6267,8 @@
       "source_location": "L103",
       "_origin": "ast",
       "id": "aurafitness_designsystem_auratabbar_auratabicon",
-      "community": 5,
-      "community_name": "AuraTab",
+      "community": 102,
+      "community_name": "Set",
       "norm_label": "auratabicon"
     },
     {
@@ -6278,8 +6278,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "shape",
-      "community": 5,
-      "community_name": "AuraTab",
+      "community": 102,
+      "community_name": "Set",
       "norm_label": "shape"
     },
     {
@@ -6289,8 +6289,8 @@
       "source_location": "L106",
       "_origin": "ast",
       "id": "aurafitness_designsystem_auratabbar_auratabicon_path",
-      "community": 5,
-      "community_name": "AuraTab",
+      "community": 102,
+      "community_name": "Set",
       "norm_label": ".path()"
     },
     {
@@ -6300,8 +6300,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "cgrect",
-      "community": 5,
-      "community_name": "AuraTab",
+      "community": 102,
+      "community_name": "Set",
       "norm_label": "cgrect"
     },
     {
@@ -6311,8 +6311,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "path",
-      "community": 5,
-      "community_name": "AuraTab",
+      "community": 102,
+      "community_name": "Set",
       "norm_label": "path"
     },
     {
@@ -6322,8 +6322,8 @@
       "source_location": "L156",
       "_origin": "ast",
       "id": "aurafitness_designsystem_auratabbar_auratabicon_addroundedrect",
-      "community": 5,
-      "community_name": "AuraTab",
+      "community": 102,
+      "community_name": "Set",
       "norm_label": ".addroundedrect()"
     },
     {
@@ -6333,8 +6333,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "aurafitness_designsystem_auratabbar_swift_cgfloat",
-      "community": 5,
-      "community_name": "AuraTab",
+      "community": 102,
+      "community_name": "Set",
       "norm_label": "cgfloat"
     },
     {
@@ -6984,8 +6984,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "aurafitness_designsystem_resumebanner",
-      "community": 119,
-      "community_name": "AuraFitnessApp",
+      "community": 32,
+      "community_name": "SwiftUI",
       "norm_label": "resumebanner.swift"
     },
     {
@@ -6995,8 +6995,8 @@
       "source_location": "L8",
       "_origin": "ast",
       "id": "aurafitness_designsystem_resumebanner_resumebanner",
-      "community": 119,
-      "community_name": "AuraFitnessApp",
+      "community": 32,
+      "community_name": "SwiftUI",
       "norm_label": "resumebanner"
     },
     {
@@ -7006,8 +7006,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "aurafitness_designsystem_resumebanner_swift_void",
-      "community": 119,
-      "community_name": "AuraFitnessApp",
+      "community": 32,
+      "community_name": "SwiftUI",
       "norm_label": "void"
     },
     {
@@ -7017,8 +7017,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "aurafitness_log_logsheetsview",
-      "community": 34,
-      "community_name": "QuickLogExercise",
+      "community": 69,
+      "community_name": "AuraColors.swift",
       "norm_label": "logsheetsview.swift"
     },
     {
@@ -7303,8 +7303,8 @@
       "source_location": "L663",
       "_origin": "ast",
       "id": "aurafitness_log_logsheetsview_logsheetsview_confirmbuildfromlibrary",
-      "community": 11,
-      "community_name": "LogSheetsView",
+      "community": 34,
+      "community_name": "QuickLogExercise",
       "norm_label": ".confirmbuildfromlibrary()"
     },
     {
@@ -7391,8 +7391,8 @@
       "source_location": "L868",
       "_origin": "ast",
       "id": "aurafitness_log_logsheetsview_logsheetsview_logexercisecard",
-      "community": 11,
-      "community_name": "LogSheetsView",
+      "community": 34,
+      "community_name": "QuickLogExercise",
       "norm_label": ".logexercisecard()"
     },
     {
@@ -7413,8 +7413,8 @@
       "source_location": "L913",
       "_origin": "ast",
       "id": "aurafitness_log_logsheetsview_logsheetsview_plannedexercisecard",
-      "community": 31,
-      "community_name": ".importJSONArchive",
+      "community": 11,
+      "community_name": "LogSheetsView",
       "norm_label": ".plannedexercisecard()"
     },
     {
@@ -7424,8 +7424,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "aurafitness_log_logsheetsview_swift_int",
-      "community": 34,
-      "community_name": "QuickLogExercise",
+      "community": 69,
+      "community_name": "AuraColors.swift",
       "norm_label": "int"
     },
     {
@@ -7435,8 +7435,8 @@
       "source_location": "L936",
       "_origin": "ast",
       "id": "aurafitness_log_logsheetsview_logsheetsview_logquicksheet",
-      "community": 34,
-      "community_name": "QuickLogExercise",
+      "community": 11,
+      "community_name": "LogSheetsView",
       "norm_label": ".logquicksheet()"
     },
     {
@@ -7446,8 +7446,8 @@
       "source_location": "L940",
       "_origin": "ast",
       "id": "aurafitness_log_logsheetsview_logsheetsview_quicklogform",
-      "community": 34,
-      "community_name": "QuickLogExercise",
+      "community": 11,
+      "community_name": "LogSheetsView",
       "norm_label": ".quicklogform()"
     },
     {
@@ -7457,8 +7457,8 @@
       "source_location": "L1002",
       "_origin": "ast",
       "id": "aurafitness_log_logsheetsview_logsheetsview_editablelogcard",
-      "community": 34,
-      "community_name": "QuickLogExercise",
+      "community": 69,
+      "community_name": "AuraColors.swift",
       "norm_label": ".editablelogcard()"
     },
     {
@@ -7468,8 +7468,8 @@
       "source_location": "L1034",
       "_origin": "ast",
       "id": "aurafitness_log_logsheetsview_logsheetsview_bindingweight",
-      "community": 34,
-      "community_name": "QuickLogExercise",
+      "community": 69,
+      "community_name": "AuraColors.swift",
       "norm_label": ".bindingweight()"
     },
     {
@@ -7479,8 +7479,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "aurafitness_log_logsheetsview_swift_binding",
-      "community": 34,
-      "community_name": "QuickLogExercise",
+      "community": 69,
+      "community_name": "AuraColors.swift",
       "norm_label": "binding"
     },
     {
@@ -7490,8 +7490,8 @@
       "source_location": "L1037",
       "_origin": "ast",
       "id": "aurafitness_log_logsheetsview_logsheetsview_bindingreps",
-      "community": 34,
-      "community_name": "QuickLogExercise",
+      "community": 69,
+      "community_name": "AuraColors.swift",
       "norm_label": ".bindingreps()"
     },
     {
@@ -7523,8 +7523,8 @@
       "source_location": "L1067",
       "_origin": "ast",
       "id": "aurafitness_log_logsheetsview_view",
-      "community": 34,
-      "community_name": "QuickLogExercise",
+      "community": 69,
+      "community_name": "AuraColors.swift",
       "norm_label": "view"
     },
     {
@@ -7534,8 +7534,8 @@
       "source_location": "L1068",
       "_origin": "ast",
       "id": "aurafitness_log_logsheetsview_view_logfieldstyle",
-      "community": 34,
-      "community_name": "QuickLogExercise",
+      "community": 69,
+      "community_name": "AuraColors.swift",
       "norm_label": ".logfieldstyle()"
     },
     {
@@ -7908,8 +7908,8 @@
       "source_location": "L563",
       "_origin": "ast",
       "id": "aurafitness_log_logtabview_logtabview_flash",
-      "community": 11,
-      "community_name": "LogSheetsView",
+      "community": 34,
+      "community_name": "QuickLogExercise",
       "norm_label": ".flash()"
     },
     {
@@ -7919,8 +7919,8 @@
       "source_location": "L572",
       "_origin": "ast",
       "id": "aurafitness_log_logtabview_logtabview_logsheet",
-      "community": 29,
-      "community_name": "Color",
+      "community": 31,
+      "community_name": ".importJSONArchive",
       "norm_label": ".logsheet()"
     },
     {
@@ -8084,8 +8084,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "aurafitness_models_appstate_swift_int",
-      "community": 14,
-      "community_name": "PlanComponents.swift",
+      "community": 42,
+      "community_name": "WorkoutExerciseOption",
       "norm_label": "int"
     },
     {
@@ -8689,8 +8689,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "dateformatter",
-      "community": 11,
-      "community_name": "LogSheetsView",
+      "community": 34,
+      "community_name": "QuickLogExercise",
       "norm_label": "dateformatter"
     },
     {
@@ -8700,8 +8700,8 @@
       "source_location": "L660",
       "_origin": "ast",
       "id": "aurafitness_models_appstate_appstate_synthesizedwarmup",
-      "community": 14,
-      "community_name": "PlanComponents.swift",
+      "community": 42,
+      "community_name": "WorkoutExerciseOption",
       "norm_label": ".synthesizedwarmup()"
     },
     {
@@ -8722,8 +8722,8 @@
       "source_location": "L707",
       "_origin": "ast",
       "id": "aurafitness_models_appstate_appstate_buildsession",
-      "community": 14,
-      "community_name": "PlanComponents.swift",
+      "community": 42,
+      "community_name": "WorkoutExerciseOption",
       "norm_label": ".buildsession()"
     },
     {
@@ -9162,8 +9162,8 @@
       "source_location": "L164",
       "_origin": "ast",
       "id": "aurafitness_models_exercisedatabase_exercisedatabase_toexercise",
-      "community": 14,
-      "community_name": "PlanComponents.swift",
+      "community": 118,
+      "community_name": "AddToPlanSheet",
       "norm_label": ".toexercise()"
     },
     {
@@ -9382,8 +9382,8 @@
       "source_location": "L8",
       "_origin": "ast",
       "id": "aurafitness_models_logdaymodel_kind",
-      "community": 14,
-      "community_name": "PlanComponents.swift",
+      "community": 103,
+      "community_name": ".editableLogCard",
       "norm_label": "kind"
     },
     {
@@ -9393,8 +9393,8 @@
       "source_location": "L9",
       "_origin": "ast",
       "id": "aurafitness_models_logdaymodel_kind_switched",
-      "community": 14,
-      "community_name": "PlanComponents.swift",
+      "community": 103,
+      "community_name": ".editableLogCard",
       "norm_label": "switched"
     },
     {
@@ -9404,8 +9404,8 @@
       "source_location": "L10",
       "_origin": "ast",
       "id": "aurafitness_models_logdaymodel_kind_added",
-      "community": 14,
-      "community_name": "PlanComponents.swift",
+      "community": 103,
+      "community_name": ".editableLogCard",
       "norm_label": "added"
     },
     {
@@ -9415,8 +9415,8 @@
       "source_location": "L11",
       "_origin": "ast",
       "id": "aurafitness_models_logdaymodel_kind_logged",
-      "community": 14,
-      "community_name": "PlanComponents.swift",
+      "community": 103,
+      "community_name": ".editableLogCard",
       "norm_label": "logged"
     },
     {
@@ -9426,8 +9426,8 @@
       "source_location": "L12",
       "_origin": "ast",
       "id": "aurafitness_models_logdaymodel_kind_rest",
-      "community": 14,
-      "community_name": "PlanComponents.swift",
+      "community": 103,
+      "community_name": ".editableLogCard",
       "norm_label": "rest"
     },
     {
@@ -9437,8 +9437,8 @@
       "source_location": "L13",
       "_origin": "ast",
       "id": "aurafitness_models_logdaymodel_kind_removed",
-      "community": 14,
-      "community_name": "PlanComponents.swift",
+      "community": 103,
+      "community_name": ".editableLogCard",
       "norm_label": "removed"
     },
     {
@@ -9448,8 +9448,8 @@
       "source_location": "L14",
       "_origin": "ast",
       "id": "aurafitness_models_logdaymodel_kind_edited",
-      "community": 14,
-      "community_name": "PlanComponents.swift",
+      "community": 103,
+      "community_name": ".editableLogCard",
       "norm_label": "edited"
     },
     {
@@ -10603,8 +10603,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "aurafitness_models_seeddata",
-      "community": 69,
-      "community_name": "AuraColors.swift",
+      "community": 20,
+      "community_name": "Workout",
       "norm_label": "seeddata.swift"
     },
     {
@@ -10615,8 +10615,8 @@
       "source_location": "L2",
       "_origin": "ast",
       "id": "cryptokit",
-      "community": 69,
-      "community_name": "AuraColors.swift",
+      "community": 20,
+      "community_name": "Workout",
       "norm_label": "cryptokit"
     },
     {
@@ -10626,8 +10626,8 @@
       "source_location": "L18",
       "_origin": "ast",
       "id": "aurafitness_models_seeddata_stableid",
-      "community": 69,
-      "community_name": "AuraColors.swift",
+      "community": 20,
+      "community_name": "Workout",
       "norm_label": "stableid"
     },
     {
@@ -10637,8 +10637,8 @@
       "source_location": "L23",
       "_origin": "ast",
       "id": "aurafitness_models_seeddata_stableid_program",
-      "community": 69,
-      "community_name": "AuraColors.swift",
+      "community": 20,
+      "community_name": "Workout",
       "norm_label": ".program()"
     },
     {
@@ -10648,8 +10648,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "aurafitness_models_seeddata_swift_string",
-      "community": 69,
-      "community_name": "AuraColors.swift",
+      "community": 20,
+      "community_name": "Workout",
       "norm_label": "string"
     },
     {
@@ -10659,8 +10659,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "aurafitness_models_seeddata_swift_uuid",
-      "community": 69,
-      "community_name": "AuraColors.swift",
+      "community": 20,
+      "community_name": "Workout",
       "norm_label": "uuid"
     },
     {
@@ -10681,8 +10681,8 @@
       "source_location": "L29",
       "_origin": "ast",
       "id": "aurafitness_models_seeddata_stableid_v5",
-      "community": 69,
-      "community_name": "AuraColors.swift",
+      "community": 20,
+      "community_name": "Workout",
       "norm_label": ".v5()"
     },
     {
@@ -10692,8 +10692,8 @@
       "source_location": "L41",
       "_origin": "ast",
       "id": "aurafitness_models_seeddata_exerciselibrary",
-      "community": 14,
-      "community_name": "PlanComponents.swift",
+      "community": 42,
+      "community_name": "WorkoutExerciseOption",
       "norm_label": "exerciselibrary"
     },
     {
@@ -10703,8 +10703,8 @@
       "source_location": "L350",
       "_origin": "ast",
       "id": "aurafitness_models_seeddata_exerciselibrary_ex",
-      "community": 14,
-      "community_name": "PlanComponents.swift",
+      "community": 42,
+      "community_name": "WorkoutExerciseOption",
       "norm_label": ".ex()"
     },
     {
@@ -10714,8 +10714,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "aurafitness_models_seeddata_swift_bool",
-      "community": 14,
-      "community_name": "PlanComponents.swift",
+      "community": 42,
+      "community_name": "WorkoutExerciseOption",
       "norm_label": "bool"
     },
     {
@@ -10725,8 +10725,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "aurafitness_models_seeddata_swift_int",
-      "community": 14,
-      "community_name": "PlanComponents.swift",
+      "community": 42,
+      "community_name": "WorkoutExerciseOption",
       "norm_label": "int"
     },
     {
@@ -11088,8 +11088,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "aurafitness_models_workoutmodels",
-      "community": 14,
-      "community_name": "PlanComponents.swift",
+      "community": 42,
+      "community_name": "WorkoutExerciseOption",
       "norm_label": "workoutmodels.swift"
     },
     {
@@ -11099,8 +11099,8 @@
       "source_location": "L4",
       "_origin": "ast",
       "id": "aurafitness_models_workoutmodels_settype",
-      "community": 14,
-      "community_name": "PlanComponents.swift",
+      "community": 109,
+      "community_name": "Kind",
       "norm_label": "settype"
     },
     {
@@ -11110,8 +11110,8 @@
       "source_location": "L5",
       "_origin": "ast",
       "id": "aurafitness_models_workoutmodels_settype_normal",
-      "community": 14,
-      "community_name": "PlanComponents.swift",
+      "community": 109,
+      "community_name": "Kind",
       "norm_label": "normal"
     },
     {
@@ -11121,8 +11121,8 @@
       "source_location": "L5",
       "_origin": "ast",
       "id": "aurafitness_models_workoutmodels_settype_drop",
-      "community": 14,
-      "community_name": "PlanComponents.swift",
+      "community": 109,
+      "community_name": "Kind",
       "norm_label": "drop"
     },
     {
@@ -11132,8 +11132,8 @@
       "source_location": "L5",
       "_origin": "ast",
       "id": "aurafitness_models_workoutmodels_settype_restpause",
-      "community": 14,
-      "community_name": "PlanComponents.swift",
+      "community": 109,
+      "community_name": "Kind",
       "norm_label": "restpause"
     },
     {
@@ -11143,8 +11143,8 @@
       "source_location": "L5",
       "_origin": "ast",
       "id": "aurafitness_models_workoutmodels_settype_failure",
-      "community": 14,
-      "community_name": "PlanComponents.swift",
+      "community": 109,
+      "community_name": "Kind",
       "norm_label": "failure"
     },
     {
@@ -11154,8 +11154,8 @@
       "source_location": "L5",
       "_origin": "ast",
       "id": "aurafitness_models_workoutmodels_settype_partials",
-      "community": 14,
-      "community_name": "PlanComponents.swift",
+      "community": 109,
+      "community_name": "Kind",
       "norm_label": "partials"
     },
     {
@@ -11165,8 +11165,8 @@
       "source_location": "L39",
       "_origin": "ast",
       "id": "aurafitness_models_workoutmodels_workoutset",
-      "community": 14,
-      "community_name": "PlanComponents.swift",
+      "community": 42,
+      "community_name": "WorkoutExerciseOption",
       "norm_label": "workoutset"
     },
     {
@@ -11176,8 +11176,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "aurafitness_models_workoutmodels_swift_double",
-      "community": 14,
-      "community_name": "PlanComponents.swift",
+      "community": 42,
+      "community_name": "WorkoutExerciseOption",
       "norm_label": "double"
     },
     {
@@ -11187,8 +11187,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "aurafitness_models_workoutmodels_swift_int",
-      "community": 14,
-      "community_name": "PlanComponents.swift",
+      "community": 42,
+      "community_name": "WorkoutExerciseOption",
       "norm_label": "int"
     },
     {
@@ -11209,8 +11209,8 @@
       "source_location": "L49",
       "_origin": "ast",
       "id": "aurafitness_models_workoutmodels_warmupset",
-      "community": 14,
-      "community_name": "PlanComponents.swift",
+      "community": 42,
+      "community_name": "WorkoutExerciseOption",
       "norm_label": "warmupset"
     },
     {
@@ -11220,8 +11220,8 @@
       "source_location": "L55",
       "_origin": "ast",
       "id": "aurafitness_models_workoutmodels_sethistory",
-      "community": 14,
-      "community_name": "PlanComponents.swift",
+      "community": 42,
+      "community_name": "WorkoutExerciseOption",
       "norm_label": "sethistory"
     },
     {
@@ -11231,8 +11231,8 @@
       "source_location": "L61",
       "_origin": "ast",
       "id": "aurafitness_models_workoutmodels_prrecord",
-      "community": 14,
-      "community_name": "PlanComponents.swift",
+      "community": 42,
+      "community_name": "WorkoutExerciseOption",
       "norm_label": "prrecord"
     },
     {
@@ -11242,8 +11242,8 @@
       "source_location": "L68",
       "_origin": "ast",
       "id": "aurafitness_models_workoutmodels_targetrecord",
-      "community": 14,
-      "community_name": "PlanComponents.swift",
+      "community": 42,
+      "community_name": "WorkoutExerciseOption",
       "norm_label": "targetrecord"
     },
     {
@@ -11253,8 +11253,8 @@
       "source_location": "L75",
       "_origin": "ast",
       "id": "aurafitness_models_workoutmodels_exercise",
-      "community": 14,
-      "community_name": "PlanComponents.swift",
+      "community": 42,
+      "community_name": "WorkoutExerciseOption",
       "norm_label": "exercise"
     },
     {
@@ -11319,8 +11319,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "aurafitness_plan_createexerciseview",
-      "community": 0,
-      "community_name": "Exercise",
+      "community": 131,
+      "community_name": "CreateExerciseView",
       "norm_label": "createexerciseview.swift"
     },
     {
@@ -11330,8 +11330,8 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "aurafitness_plan_createexerciseview_createexerciseview",
-      "community": 0,
-      "community_name": "Exercise",
+      "community": 131,
+      "community_name": "CreateExerciseView",
       "norm_label": "createexerciseview"
     },
     {
@@ -11726,8 +11726,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "aurafitness_plan_exercisehistorytab",
-      "community": 44,
-      "community_name": "DarkModePreference",
+      "community": 7,
+      "community_name": "UnitFormatter",
       "norm_label": "exercisehistorytab.swift"
     },
     {
@@ -11737,8 +11737,8 @@
       "source_location": "L10",
       "_origin": "ast",
       "id": "aurafitness_plan_exercisehistorytab_exercisehistorytab",
-      "community": 44,
-      "community_name": "DarkModePreference",
+      "community": 7,
+      "community_name": "UnitFormatter",
       "norm_label": "exercisehistorytab"
     },
     {
@@ -11748,8 +11748,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "aurafitness_plan_exercisehistorytab_swift_string",
-      "community": 44,
-      "community_name": "DarkModePreference",
+      "community": 7,
+      "community_name": "UnitFormatter",
       "norm_label": "string"
     },
     {
@@ -11759,8 +11759,8 @@
       "source_location": "L17",
       "_origin": "ast",
       "id": "aurafitness_plan_exercisehistorytab_histset",
-      "community": 44,
-      "community_name": "DarkModePreference",
+      "community": 7,
+      "community_name": "UnitFormatter",
       "norm_label": "histset"
     },
     {
@@ -11770,8 +11770,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "aurafitness_plan_exercisehistorytab_swift_double",
-      "community": 44,
-      "community_name": "DarkModePreference",
+      "community": 7,
+      "community_name": "UnitFormatter",
       "norm_label": "double"
     },
     {
@@ -11781,8 +11781,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "aurafitness_plan_exercisehistorytab_swift_int",
-      "community": 44,
-      "community_name": "DarkModePreference",
+      "community": 7,
+      "community_name": "UnitFormatter",
       "norm_label": "int"
     },
     {
@@ -11792,8 +11792,8 @@
       "source_location": "L23",
       "_origin": "ast",
       "id": "aurafitness_plan_exercisehistorytab_session",
-      "community": 44,
-      "community_name": "DarkModePreference",
+      "community": 7,
+      "community_name": "UnitFormatter",
       "norm_label": "session"
     },
     {
@@ -11803,8 +11803,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "aurafitness_plan_exercisehistorytab_swift_date",
-      "community": 44,
-      "community_name": "DarkModePreference",
+      "community": 7,
+      "community_name": "UnitFormatter",
       "norm_label": "date"
     },
     {
@@ -11814,8 +11814,8 @@
       "source_location": "L95",
       "_origin": "ast",
       "id": "aurafitness_plan_exercisehistorytab_exercisehistorytab_pbtile",
-      "community": 44,
-      "community_name": "DarkModePreference",
+      "community": 7,
+      "community_name": "UnitFormatter",
       "norm_label": ".pbtile()"
     },
     {
@@ -11825,8 +11825,8 @@
       "source_location": "L112",
       "_origin": "ast",
       "id": "aurafitness_plan_exercisehistorytab_exercisehistorytab_weightdisplay",
-      "community": 44,
-      "community_name": "DarkModePreference",
+      "community": 7,
+      "community_name": "UnitFormatter",
       "norm_label": ".weightdisplay()"
     },
     {
@@ -11836,8 +11836,8 @@
       "source_location": "L137",
       "_origin": "ast",
       "id": "aurafitness_plan_exercisehistorytab_exercisehistorytab_sessionsummary",
-      "community": 44,
-      "community_name": "DarkModePreference",
+      "community": 7,
+      "community_name": "UnitFormatter",
       "norm_label": ".sessionsummary()"
     },
     {
@@ -11847,8 +11847,8 @@
       "source_location": "L158",
       "_origin": "ast",
       "id": "aurafitness_plan_exercisehistorytab_sessionrow",
-      "community": 44,
-      "community_name": "DarkModePreference",
+      "community": 7,
+      "community_name": "UnitFormatter",
       "norm_label": "sessionrow"
     },
     {
@@ -11858,8 +11858,8 @@
       "source_location": "L159",
       "_origin": "ast",
       "id": "aurafitness_plan_exercisehistorytab_setrow",
-      "community": 44,
-      "community_name": "DarkModePreference",
+      "community": 7,
+      "community_name": "UnitFormatter",
       "norm_label": "setrow"
     },
     {
@@ -11869,8 +11869,8 @@
       "source_location": "L166",
       "_origin": "ast",
       "id": "aurafitness_plan_exercisehistorytab_summary",
-      "community": 44,
-      "community_name": "DarkModePreference",
+      "community": 7,
+      "community_name": "UnitFormatter",
       "norm_label": "summary"
     },
     {
@@ -11880,8 +11880,8 @@
       "source_location": "L178",
       "_origin": "ast",
       "id": "aurafitness_plan_exercisehistorytab_sessionrow_w",
-      "community": 44,
-      "community_name": "DarkModePreference",
+      "community": 7,
+      "community_name": "UnitFormatter",
       "norm_label": ".w()"
     },
     {
@@ -11891,8 +11891,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "aurafitness_plan_exerciselibraryview",
-      "community": 22,
-      "community_name": "AuraComponents.swift",
+      "community": 46,
+      "community_name": "PlanProgramsBody",
       "norm_label": "exerciselibraryview.swift"
     },
     {
@@ -11902,8 +11902,8 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "aurafitness_plan_exerciselibraryview_exerciselibrarytabview",
-      "community": 22,
-      "community_name": "AuraComponents.swift",
+      "community": 46,
+      "community_name": "PlanProgramsBody",
       "norm_label": "exerciselibrarytabview"
     },
     {
@@ -11913,8 +11913,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "aurafitness_plan_exerciselibraryview_swift_exerciseentry",
-      "community": 22,
-      "community_name": "AuraComponents.swift",
+      "community": 46,
+      "community_name": "PlanProgramsBody",
       "norm_label": "exerciseentry"
     },
     {
@@ -11924,8 +11924,8 @@
       "source_location": "L96",
       "_origin": "ast",
       "id": "aurafitness_plan_exerciselibraryview_exerciselibrarytabview_exercisecell",
-      "community": 22,
-      "community_name": "AuraComponents.swift",
+      "community": 46,
+      "community_name": "PlanProgramsBody",
       "norm_label": ".exercisecell()"
     },
     {
@@ -11935,8 +11935,8 @@
       "source_location": "L133",
       "_origin": "ast",
       "id": "aurafitness_plan_exerciselibraryview_exerciselibrarytabview_categorycolor",
-      "community": 22,
-      "community_name": "AuraComponents.swift",
+      "community": 46,
+      "community_name": "PlanProgramsBody",
       "norm_label": ".categorycolor()"
     },
     {
@@ -11946,8 +11946,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "aurafitness_plan_exerciselibraryview_swift_string",
-      "community": 22,
-      "community_name": "AuraComponents.swift",
+      "community": 46,
+      "community_name": "PlanProgramsBody",
       "norm_label": "string"
     },
     {
@@ -11957,8 +11957,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "aurafitness_plan_myplansview",
-      "community": 42,
-      "community_name": "WorkoutExerciseOption",
+      "community": 8,
+      "community_name": ".persist",
       "norm_label": "myplansview.swift"
     },
     {
@@ -11968,8 +11968,8 @@
       "source_location": "L9",
       "_origin": "ast",
       "id": "aurafitness_plan_myplansview_myplansview",
-      "community": 42,
-      "community_name": "WorkoutExerciseOption",
+      "community": 8,
+      "community_name": ".persist",
       "norm_label": "myplansview"
     },
     {
@@ -11979,8 +11979,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "aurafitness_plan_myplansview_swift_userplan",
-      "community": 42,
-      "community_name": "WorkoutExerciseOption",
+      "community": 8,
+      "community_name": ".persist",
       "norm_label": "userplan"
     },
     {
@@ -11990,8 +11990,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "aurafitness_plan_myplansview_swift_workouteditortarget",
-      "community": 42,
-      "community_name": "WorkoutExerciseOption",
+      "community": 8,
+      "community_name": ".persist",
       "norm_label": "workouteditortarget"
     },
     {
@@ -12001,8 +12001,8 @@
       "source_location": "L29",
       "_origin": "ast",
       "id": "aurafitness_plan_myplansview_myplansheet",
-      "community": 42,
-      "community_name": "WorkoutExerciseOption",
+      "community": 8,
+      "community_name": ".persist",
       "norm_label": "myplansheet"
     },
     {
@@ -12012,8 +12012,8 @@
       "source_location": "L30",
       "_origin": "ast",
       "id": "aurafitness_plan_myplansview_myplansheet_addplan",
-      "community": 42,
-      "community_name": "WorkoutExerciseOption",
+      "community": 8,
+      "community_name": ".persist",
       "norm_label": "addplan"
     },
     {
@@ -12023,8 +12023,8 @@
       "source_location": "L31",
       "_origin": "ast",
       "id": "aurafitness_plan_myplansview_myplansheet_assign",
-      "community": 42,
-      "community_name": "WorkoutExerciseOption",
+      "community": 8,
+      "community_name": ".persist",
       "norm_label": "assign"
     },
     {
@@ -12034,8 +12034,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "aurafitness_plan_myplansview_swift_int",
-      "community": 42,
-      "community_name": "WorkoutExerciseOption",
+      "community": 8,
+      "community_name": ".persist",
       "norm_label": "int"
     },
     {
@@ -12045,8 +12045,8 @@
       "source_location": "L32",
       "_origin": "ast",
       "id": "aurafitness_plan_myplansview_myplansheet_daymenu",
-      "community": 42,
-      "community_name": "WorkoutExerciseOption",
+      "community": 8,
+      "community_name": ".persist",
       "norm_label": "daymenu"
     },
     {
@@ -12056,8 +12056,8 @@
       "source_location": "L33",
       "_origin": "ast",
       "id": "aurafitness_plan_myplansview_myplansheet_addworkout",
-      "community": 42,
-      "community_name": "WorkoutExerciseOption",
+      "community": 8,
+      "community_name": ".persist",
       "norm_label": "addworkout"
     },
     {
@@ -12067,8 +12067,8 @@
       "source_location": "L34",
       "_origin": "ast",
       "id": "aurafitness_plan_myplansview_myplansheet_createworkout",
-      "community": 42,
-      "community_name": "WorkoutExerciseOption",
+      "community": 8,
+      "community_name": ".persist",
       "norm_label": "createworkout"
     },
     {
@@ -12078,8 +12078,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "aurafitness_plan_myplansview_swift_string",
-      "community": 42,
-      "community_name": "WorkoutExerciseOption",
+      "community": 8,
+      "community_name": ".persist",
       "norm_label": "string"
     },
     {
@@ -12089,8 +12089,8 @@
       "source_location": "L48",
       "_origin": "ast",
       "id": "aurafitness_plan_myplansview_createworkouticon",
-      "community": 42,
-      "community_name": "WorkoutExerciseOption",
+      "community": 8,
+      "community_name": ".persist",
       "norm_label": "createworkouticon"
     },
     {
@@ -12100,8 +12100,8 @@
       "source_location": "L58",
       "_origin": "ast",
       "id": "aurafitness_plan_myplansview_myplansview_createworkoutsymbol",
-      "community": 42,
-      "community_name": "WorkoutExerciseOption",
+      "community": 8,
+      "community_name": ".persist",
       "norm_label": ".createworkoutsymbol()"
     },
     {
@@ -12111,8 +12111,8 @@
       "source_location": "L77",
       "_origin": "ast",
       "id": "aurafitness_plan_myplansview_workouteditortarget",
-      "community": 42,
-      "community_name": "WorkoutExerciseOption",
+      "community": 8,
+      "community_name": ".persist",
       "norm_label": "workouteditortarget"
     },
     {
@@ -12122,8 +12122,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "aurafitness_plan_myplansview_swift_program",
-      "community": 42,
-      "community_name": "WorkoutExerciseOption",
+      "community": 8,
+      "community_name": ".persist",
       "norm_label": "program"
     },
     {
@@ -12133,8 +12133,8 @@
       "source_location": "L188",
       "_origin": "ast",
       "id": "aurafitness_plan_myplansview_myplansview_plangradientcolors",
-      "community": 42,
-      "community_name": "WorkoutExerciseOption",
+      "community": 8,
+      "community_name": ".persist",
       "norm_label": ".plangradientcolors()"
     },
     {
@@ -12155,8 +12155,8 @@
       "source_location": "L197",
       "_origin": "ast",
       "id": "aurafitness_plan_myplansview_myplansview_plansubtitle",
-      "community": 42,
-      "community_name": "WorkoutExerciseOption",
+      "community": 8,
+      "community_name": ".persist",
       "norm_label": ".plansubtitle()"
     },
     {
@@ -12166,8 +12166,8 @@
       "source_location": "L204",
       "_origin": "ast",
       "id": "aurafitness_plan_myplansview_myplansview_plancard",
-      "community": 42,
-      "community_name": "WorkoutExerciseOption",
+      "community": 8,
+      "community_name": ".persist",
       "norm_label": ".plancard()"
     },
     {
@@ -12177,8 +12177,8 @@
       "source_location": "L272",
       "_origin": "ast",
       "id": "aurafitness_plan_myplansview_myplansview_weekstrip",
-      "community": 42,
-      "community_name": "WorkoutExerciseOption",
+      "community": 8,
+      "community_name": ".persist",
       "norm_label": ".weekstrip()"
     },
     {
@@ -12188,8 +12188,8 @@
       "source_location": "L311",
       "_origin": "ast",
       "id": "aurafitness_plan_myplansview_myplansview_workoutcard",
-      "community": 42,
-      "community_name": "WorkoutExerciseOption",
+      "community": 8,
+      "community_name": ".persist",
       "norm_label": ".workoutcard()"
     },
     {
@@ -12199,8 +12199,8 @@
       "source_location": "L352",
       "_origin": "ast",
       "id": "aurafitness_plan_myplansview_myplansview_smallglyph",
-      "community": 42,
-      "community_name": "WorkoutExerciseOption",
+      "community": 8,
+      "community_name": ".persist",
       "norm_label": ".smallglyph()"
     },
     {
@@ -12210,8 +12210,8 @@
       "source_location": "L363",
       "_origin": "ast",
       "id": "aurafitness_plan_myplansview_myplansview_editworkout",
-      "community": 42,
-      "community_name": "WorkoutExerciseOption",
+      "community": 8,
+      "community_name": ".persist",
       "norm_label": ".editworkout()"
     },
     {
@@ -12221,8 +12221,8 @@
       "source_location": "L374",
       "_origin": "ast",
       "id": "aurafitness_plan_myplansview_myplansview_deleteworkout",
-      "community": 42,
-      "community_name": "WorkoutExerciseOption",
+      "community": 8,
+      "community_name": ".persist",
       "norm_label": ".deleteworkout()"
     },
     {
@@ -12232,8 +12232,8 @@
       "source_location": "L388",
       "_origin": "ast",
       "id": "aurafitness_plan_myplansview_myplansview_resolveworkout",
-      "community": 42,
-      "community_name": "WorkoutExerciseOption",
+      "community": 8,
+      "community_name": ".persist",
       "norm_label": ".resolveworkout()"
     },
     {
@@ -12243,8 +12243,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "aurafitness_plan_myplansview_swift_uuid",
-      "community": 42,
-      "community_name": "WorkoutExerciseOption",
+      "community": 8,
+      "community_name": ".persist",
       "norm_label": "uuid"
     },
     {
@@ -12254,8 +12254,8 @@
       "source_location": "L396",
       "_origin": "ast",
       "id": "aurafitness_plan_myplansview_myplansview_plansheet",
-      "community": 42,
-      "community_name": "WorkoutExerciseOption",
+      "community": 8,
+      "community_name": ".persist",
       "norm_label": ".plansheet()"
     },
     {
@@ -12265,8 +12265,8 @@
       "source_location": "L440",
       "_origin": "ast",
       "id": "aurafitness_plan_myplansview_myplansview_duplicateactiveplan",
-      "community": 42,
-      "community_name": "WorkoutExerciseOption",
+      "community": 8,
+      "community_name": ".persist",
       "norm_label": ".duplicateactiveplan()"
     },
     {
@@ -12276,8 +12276,8 @@
       "source_location": "L451",
       "_origin": "ast",
       "id": "aurafitness_plan_myplansview_myplansview_assignsheet",
-      "community": 42,
-      "community_name": "WorkoutExerciseOption",
+      "community": 8,
+      "community_name": ".persist",
       "norm_label": ".assignsheet()"
     },
     {
@@ -12298,8 +12298,8 @@
       "source_location": "L527",
       "_origin": "ast",
       "id": "aurafitness_plan_myplansview_myplansview_daymenusheet",
-      "community": 42,
-      "community_name": "WorkoutExerciseOption",
+      "community": 8,
+      "community_name": ".persist",
       "norm_label": ".daymenusheet()"
     },
     {
@@ -12331,8 +12331,8 @@
       "source_location": "L628",
       "_origin": "ast",
       "id": "aurafitness_plan_myplansview_myplansview_createworkouttile",
-      "community": 42,
-      "community_name": "WorkoutExerciseOption",
+      "community": 8,
+      "community_name": ".persist",
       "norm_label": ".createworkouttile()"
     },
     {
@@ -12342,8 +12342,8 @@
       "source_location": "L654",
       "_origin": "ast",
       "id": "aurafitness_plan_myplansview_myplansview_startcreateworkout",
-      "community": 42,
-      "community_name": "WorkoutExerciseOption",
+      "community": 8,
+      "community_name": ".persist",
       "norm_label": ".startcreateworkout()"
     },
     {
@@ -12353,8 +12353,8 @@
       "source_location": "L663",
       "_origin": "ast",
       "id": "aurafitness_plan_myplansview_myplansview_dayname",
-      "community": 42,
-      "community_name": "WorkoutExerciseOption",
+      "community": 8,
+      "community_name": ".persist",
       "norm_label": ".dayname()"
     },
     {
@@ -12364,8 +12364,8 @@
       "source_location": "L669",
       "_origin": "ast",
       "id": "aurafitness_plan_myplansview_createplanview",
-      "community": 42,
-      "community_name": "WorkoutExerciseOption",
+      "community": 8,
+      "community_name": ".persist",
       "norm_label": "createplanview"
     },
     {
@@ -13926,8 +13926,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "aurafitness_plan_plantabview",
-      "community": 5,
-      "community_name": "AuraTab",
+      "community": 58,
+      "community_name": "WeeklyVolumeView",
       "norm_label": "plantabview.swift"
     },
     {
@@ -13937,8 +13937,8 @@
       "source_location": "L10",
       "_origin": "ast",
       "id": "aurafitness_plan_plantabview_plantabview",
-      "community": 5,
-      "community_name": "AuraTab",
+      "community": 58,
+      "community_name": "WeeklyVolumeView",
       "norm_label": "plantabview"
     },
     {
@@ -13948,8 +13948,8 @@
       "source_location": "L16",
       "_origin": "ast",
       "id": "aurafitness_plan_plantabview_subtab",
-      "community": 5,
-      "community_name": "AuraTab",
+      "community": 58,
+      "community_name": "WeeklyVolumeView",
       "norm_label": "subtab"
     },
     {
@@ -13959,8 +13959,8 @@
       "source_location": "L17",
       "_origin": "ast",
       "id": "aurafitness_plan_plantabview_subtab_myplans",
-      "community": 5,
-      "community_name": "AuraTab",
+      "community": 58,
+      "community_name": "WeeklyVolumeView",
       "norm_label": "myplans"
     },
     {
@@ -13970,8 +13970,8 @@
       "source_location": "L17",
       "_origin": "ast",
       "id": "aurafitness_plan_plantabview_subtab_programs",
-      "community": 5,
-      "community_name": "AuraTab",
+      "community": 58,
+      "community_name": "WeeklyVolumeView",
       "norm_label": "programs"
     },
     {
@@ -13981,8 +13981,8 @@
       "source_location": "L17",
       "_origin": "ast",
       "id": "aurafitness_plan_plantabview_subtab_workouts",
-      "community": 5,
-      "community_name": "AuraTab",
+      "community": 58,
+      "community_name": "WeeklyVolumeView",
       "norm_label": "workouts"
     },
     {
@@ -13992,8 +13992,8 @@
       "source_location": "L17",
       "_origin": "ast",
       "id": "aurafitness_plan_plantabview_subtab_exercises",
-      "community": 5,
-      "community_name": "AuraTab",
+      "community": 58,
+      "community_name": "WeeklyVolumeView",
       "norm_label": "exercises"
     },
     {
@@ -14003,8 +14003,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "aurafitness_plan_plantabview_swift_program",
-      "community": 5,
-      "community_name": "AuraTab",
+      "community": 58,
+      "community_name": "WeeklyVolumeView",
       "norm_label": "program"
     },
     {
@@ -14014,8 +14014,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "aurafitness_plan_plantabview_swift_exerciseentry",
-      "community": 5,
-      "community_name": "AuraTab",
+      "community": 58,
+      "community_name": "WeeklyVolumeView",
       "norm_label": "exerciseentry"
     },
     {
@@ -14025,8 +14025,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "aurafitness_plan_plantabview_swift_void",
-      "community": 5,
-      "community_name": "AuraTab",
+      "community": 58,
+      "community_name": "WeeklyVolumeView",
       "norm_label": "void"
     },
     {
@@ -14465,8 +14465,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "aurafitness_plan_programlibraryview",
-      "community": 22,
-      "community_name": "AuraComponents.swift",
+      "community": 46,
+      "community_name": "PlanProgramsBody",
       "norm_label": "programlibraryview.swift"
     },
     {
@@ -14476,8 +14476,8 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "aurafitness_plan_programlibraryview_programlibraryview",
-      "community": 22,
-      "community_name": "AuraComponents.swift",
+      "community": 46,
+      "community_name": "PlanProgramsBody",
       "norm_label": "programlibraryview"
     },
     {
@@ -14487,8 +14487,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "aurafitness_plan_programlibraryview_swift_bool",
-      "community": 22,
-      "community_name": "AuraComponents.swift",
+      "community": 46,
+      "community_name": "PlanProgramsBody",
       "norm_label": "bool"
     },
     {
@@ -14498,8 +14498,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "aurafitness_plan_programlibraryview_swift_program",
-      "community": 22,
-      "community_name": "AuraComponents.swift",
+      "community": 46,
+      "community_name": "PlanProgramsBody",
       "norm_label": "program"
     },
     {
@@ -14509,8 +14509,8 @@
       "source_location": "L88",
       "_origin": "ast",
       "id": "aurafitness_plan_programlibraryview_programlibraryview_programrow",
-      "community": 22,
-      "community_name": "AuraComponents.swift",
+      "community": 46,
+      "community_name": "PlanProgramsBody",
       "norm_label": ".programrow()"
     },
     {
@@ -14520,8 +14520,8 @@
       "source_location": "L126",
       "_origin": "ast",
       "id": "aurafitness_plan_programlibraryview_programlibraryview_levelcolor",
-      "community": 22,
-      "community_name": "AuraComponents.swift",
+      "community": 46,
+      "community_name": "PlanProgramsBody",
       "norm_label": ".levelcolor()"
     },
     {
@@ -14531,8 +14531,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "aurafitness_plan_programlibraryview_swift_string",
-      "community": 22,
-      "community_name": "AuraComponents.swift",
+      "community": 46,
+      "community_name": "PlanProgramsBody",
       "norm_label": "string"
     },
     {
@@ -14575,8 +14575,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "aurafitness_plan_supersetpicksheet",
-      "community": 32,
-      "community_name": "SwiftUI",
+      "community": 117,
+      "community_name": "String",
       "norm_label": "supersetpicksheet.swift"
     },
     {
@@ -14586,8 +14586,8 @@
       "source_location": "L10",
       "_origin": "ast",
       "id": "aurafitness_plan_supersetpicksheet_supersetpicksheet",
-      "community": 32,
-      "community_name": "SwiftUI",
+      "community": 117,
+      "community_name": "String",
       "norm_label": "supersetpicksheet"
     },
     {
@@ -14597,8 +14597,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "aurafitness_plan_supersetpicksheet_swift_void",
-      "community": 32,
-      "community_name": "SwiftUI",
+      "community": 117,
+      "community_name": "String",
       "norm_label": "void"
     },
     {
@@ -14630,8 +14630,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "aurafitness_plan_weekstrip",
-      "community": 95,
-      "community_name": "LogMeasurementSheet",
+      "community": 8,
+      "community_name": ".persist",
       "norm_label": "weekstrip.swift"
     },
     {
@@ -14641,8 +14641,8 @@
       "source_location": "L10",
       "_origin": "ast",
       "id": "aurafitness_plan_weekstrip_weekstripview",
-      "community": 95,
-      "community_name": "LogMeasurementSheet",
+      "community": 8,
+      "community_name": ".persist",
       "norm_label": "weekstripview"
     },
     {
@@ -14652,8 +14652,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "aurafitness_plan_weekstrip_swift_int",
-      "community": 95,
-      "community_name": "LogMeasurementSheet",
+      "community": 8,
+      "community_name": ".persist",
       "norm_label": "int"
     },
     {
@@ -14663,8 +14663,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "aurafitness_plan_weekstrip_swift_void",
-      "community": 95,
-      "community_name": "LogMeasurementSheet",
+      "community": 8,
+      "community_name": ".persist",
       "norm_label": "void"
     },
     {
@@ -14674,8 +14674,8 @@
       "source_location": "L40",
       "_origin": "ast",
       "id": "aurafitness_plan_weekstrip_weekstripdaytile",
-      "community": 95,
-      "community_name": "LogMeasurementSheet",
+      "community": 8,
+      "community_name": ".persist",
       "norm_label": "weekstripdaytile"
     },
     {
@@ -14685,8 +14685,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "aurafitness_plan_weekstrip_swift_string",
-      "community": 95,
-      "community_name": "LogMeasurementSheet",
+      "community": 8,
+      "community_name": ".persist",
       "norm_label": "string"
     },
     {
@@ -16150,8 +16150,8 @@
       "source_location": "L46",
       "_origin": "ast",
       "id": "aurafitness_profile_dataimportservice_dataimportservice_importfile",
-      "community": 26,
-      "community_name": ".row",
+      "community": 36,
+      "community_name": "UserPlanDatabase",
       "norm_label": ".importfile()"
     },
     {
@@ -16161,8 +16161,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "aurafitness_profile_dataimportservice_swift_url",
-      "community": 26,
-      "community_name": ".row",
+      "community": 36,
+      "community_name": "UserPlanDatabase",
       "norm_label": "url"
     },
     {
@@ -16205,8 +16205,8 @@
       "source_location": "L140",
       "_origin": "ast",
       "id": "aurafitness_profile_dataimportservice_dataimportservice_importzip",
-      "community": 26,
-      "community_name": ".row",
+      "community": 36,
+      "community_name": "UserPlanDatabase",
       "norm_label": ".importzip()"
     },
     {
@@ -16502,8 +16502,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "uint8",
-      "community": 55,
-      "community_name": "PersistenceRoundTripTests",
+      "community": 36,
+      "community_name": "UserPlanDatabase",
       "norm_label": "uint8"
     },
     {
@@ -16899,8 +16899,8 @@
       "source_location": "L337",
       "_origin": "ast",
       "id": "aurafitness_profile_profilesettingsscreens_profileconfirmsheet",
-      "community": 103,
-      "community_name": ".editableLogCard",
+      "community": 35,
+      "community_name": "LogSheet",
       "norm_label": "profileconfirmsheet"
     },
     {
@@ -16910,8 +16910,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "aurafitness_profile_profilesettingsscreens_swift_void",
-      "community": 103,
-      "community_name": ".editableLogCard",
+      "community": 35,
+      "community_name": "LogSheet",
       "norm_label": "void"
     },
     {
@@ -16921,8 +16921,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "aurafitness_profile_profilesettingsscreens_swift_url",
-      "community": 103,
-      "community_name": ".editableLogCard",
+      "community": 35,
+      "community_name": "LogSheet",
       "norm_label": "url"
     },
     {
@@ -16932,8 +16932,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "aurafitness_profile_profilesettingsscreens_swift_cgfloat",
-      "community": 103,
-      "community_name": ".editableLogCard",
+      "community": 35,
+      "community_name": "LogSheet",
       "norm_label": "cgfloat"
     },
     {
@@ -16965,8 +16965,8 @@
       "source_location": "L4",
       "_origin": "ast",
       "id": "aurafitness_profile_profiletabview_profilescreen",
-      "community": 17,
-      "community_name": "ProfileSheet",
+      "community": 95,
+      "community_name": "LogMeasurementSheet",
       "norm_label": "profilescreen"
     },
     {
@@ -16976,8 +16976,8 @@
       "source_location": "L5",
       "_origin": "ast",
       "id": "aurafitness_profile_profiletabview_profilescreen_general",
-      "community": 17,
-      "community_name": "ProfileSheet",
+      "community": 95,
+      "community_name": "LogMeasurementSheet",
       "norm_label": "general"
     },
     {
@@ -16987,8 +16987,8 @@
       "source_location": "L5",
       "_origin": "ast",
       "id": "aurafitness_profile_profiletabview_profilescreen_workout",
-      "community": 17,
-      "community_name": "ProfileSheet",
+      "community": 95,
+      "community_name": "LogMeasurementSheet",
       "norm_label": "workout"
     },
     {
@@ -16998,8 +16998,8 @@
       "source_location": "L5",
       "_origin": "ast",
       "id": "aurafitness_profile_profiletabview_profilescreen_account",
-      "community": 17,
-      "community_name": "ProfileSheet",
+      "community": 95,
+      "community_name": "LogMeasurementSheet",
       "norm_label": "account"
     },
     {
@@ -17009,8 +17009,8 @@
       "source_location": "L5",
       "_origin": "ast",
       "id": "aurafitness_profile_profiletabview_profilescreen_notifications",
-      "community": 17,
-      "community_name": "ProfileSheet",
+      "community": 95,
+      "community_name": "LogMeasurementSheet",
       "norm_label": "notifications"
     },
     {
@@ -17020,8 +17020,8 @@
       "source_location": "L5",
       "_origin": "ast",
       "id": "aurafitness_profile_profiletabview_profilescreen_units",
-      "community": 17,
-      "community_name": "ProfileSheet",
+      "community": 95,
+      "community_name": "LogMeasurementSheet",
       "norm_label": "units"
     },
     {
@@ -17031,8 +17031,8 @@
       "source_location": "L5",
       "_origin": "ast",
       "id": "aurafitness_profile_profiletabview_profilescreen_connected",
-      "community": 17,
-      "community_name": "ProfileSheet",
+      "community": 95,
+      "community_name": "LogMeasurementSheet",
       "norm_label": "connected"
     },
     {
@@ -17042,8 +17042,8 @@
       "source_location": "L5",
       "_origin": "ast",
       "id": "aurafitness_profile_profiletabview_profilescreen_support",
-      "community": 17,
-      "community_name": "ProfileSheet",
+      "community": 95,
+      "community_name": "LogMeasurementSheet",
       "norm_label": "support"
     },
     {
@@ -17053,8 +17053,8 @@
       "source_location": "L9",
       "_origin": "ast",
       "id": "aurafitness_profile_profiletabview_profilesheet",
-      "community": 103,
-      "community_name": ".editableLogCard",
+      "community": 17,
+      "community_name": "ProfileSheet",
       "norm_label": "profilesheet"
     },
     {
@@ -17064,8 +17064,8 @@
       "source_location": "L10",
       "_origin": "ast",
       "id": "aurafitness_profile_profiletabview_profilesheet_export",
-      "community": 103,
-      "community_name": ".editableLogCard",
+      "community": 17,
+      "community_name": "ProfileSheet",
       "norm_label": "export"
     },
     {
@@ -17075,8 +17075,8 @@
       "source_location": "L10",
       "_origin": "ast",
       "id": "aurafitness_profile_profiletabview_profilesheet_reset",
-      "community": 103,
-      "community_name": ".editableLogCard",
+      "community": 17,
+      "community_name": "ProfileSheet",
       "norm_label": "reset"
     },
     {
@@ -17086,8 +17086,8 @@
       "source_location": "L10",
       "_origin": "ast",
       "id": "aurafitness_profile_profiletabview_profilesheet_delete",
-      "community": 103,
-      "community_name": ".editableLogCard",
+      "community": 17,
+      "community_name": "ProfileSheet",
       "norm_label": "delete"
     },
     {
@@ -17097,8 +17097,8 @@
       "source_location": "L10",
       "_origin": "ast",
       "id": "aurafitness_profile_profiletabview_profilesheet_logout",
-      "community": 103,
-      "community_name": ".editableLogCard",
+      "community": 17,
+      "community_name": "ProfileSheet",
       "norm_label": "logout"
     },
     {
@@ -17108,8 +17108,8 @@
       "source_location": "L10",
       "_origin": "ast",
       "id": "aurafitness_profile_profiletabview_profilesheet_importdata",
-      "community": 103,
-      "community_name": ".editableLogCard",
+      "community": 17,
+      "community_name": "ProfileSheet",
       "norm_label": "importdata"
     },
     {
@@ -17273,8 +17273,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "aurafitness_profile_workoutsettingsview",
-      "community": 108,
-      "community_name": "AuraTabIcon",
+      "community": 32,
+      "community_name": "SwiftUI",
       "norm_label": "workoutsettingsview.swift"
     },
     {
@@ -17284,8 +17284,8 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "aurafitness_profile_workoutsettingsview_workoutsettingsview",
-      "community": 108,
-      "community_name": "AuraTabIcon",
+      "community": 32,
+      "community_name": "SwiftUI",
       "norm_label": "workoutsettingsview"
     },
     {
@@ -17295,8 +17295,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "aurafitness_profile_workoutsettingsview_swift_binding",
-      "community": 108,
-      "community_name": "AuraTabIcon",
+      "community": 32,
+      "community_name": "SwiftUI",
       "norm_label": "binding"
     },
     {
@@ -17306,8 +17306,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "aurafitness_profile_workoutsettingsview_swift_string",
-      "community": 108,
-      "community_name": "AuraTabIcon",
+      "community": 32,
+      "community_name": "SwiftUI",
       "norm_label": "string"
     },
     {
@@ -17537,8 +17537,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "aurafitness_progress_logmeasurementsheet",
-      "community": 102,
-      "community_name": "Set",
+      "community": 7,
+      "community_name": "UnitFormatter",
       "norm_label": "logmeasurementsheet.swift"
     },
     {
@@ -17548,8 +17548,8 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "aurafitness_progress_logmeasurementsheet_logmeasurementsheet",
-      "community": 102,
-      "community_name": "Set",
+      "community": 7,
+      "community_name": "UnitFormatter",
       "norm_label": "logmeasurementsheet"
     },
     {
@@ -17559,8 +17559,8 @@
       "source_location": "L61",
       "_origin": "ast",
       "id": "aurafitness_progress_logmeasurementsheet_logmeasurementsheet_numfield",
-      "community": 102,
-      "community_name": "Set",
+      "community": 7,
+      "community_name": "UnitFormatter",
       "norm_label": ".numfield()"
     },
     {
@@ -17570,8 +17570,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "aurafitness_progress_logmeasurementsheet_swift_string",
-      "community": 102,
-      "community_name": "Set",
+      "community": 7,
+      "community_name": "UnitFormatter",
       "norm_label": "string"
     },
     {
@@ -17581,8 +17581,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "aurafitness_progress_logmeasurementsheet_swift_binding",
-      "community": 102,
-      "community_name": "Set",
+      "community": 7,
+      "community_name": "UnitFormatter",
       "norm_label": "binding"
     },
     {
@@ -18164,8 +18164,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "aurafitness_progress_progressphotosview",
-      "community": 32,
-      "community_name": "SwiftUI",
+      "community": 10,
+      "community_name": "WorkoutSessionState",
       "norm_label": "progressphotosview.swift"
     },
     {
@@ -18176,8 +18176,8 @@
       "source_location": "L2",
       "_origin": "ast",
       "id": "photosui",
-      "community": 32,
-      "community_name": "SwiftUI",
+      "community": 10,
+      "community_name": "WorkoutSessionState",
       "norm_label": "photosui"
     },
     {
@@ -18187,8 +18187,8 @@
       "source_location": "L4",
       "_origin": "ast",
       "id": "aurafitness_progress_progressphotosview_progressphotosview",
-      "community": 7,
-      "community_name": "UnitFormatter",
+      "community": 10,
+      "community_name": "WorkoutSessionState",
       "norm_label": "progressphotosview"
     },
     {
@@ -18198,8 +18198,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "photospickeritem",
-      "community": 7,
-      "community_name": "UnitFormatter",
+      "community": 10,
+      "community_name": "WorkoutSessionState",
       "norm_label": "photospickeritem"
     },
     {
@@ -18209,8 +18209,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "aurafitness_progress_progressphotosview_swift_uiimage",
-      "community": 7,
-      "community_name": "UnitFormatter",
+      "community": 10,
+      "community_name": "WorkoutSessionState",
       "norm_label": "uiimage"
     },
     {
@@ -18220,8 +18220,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "aurafitness_progress_progressphotosview_swift_progressphoto",
-      "community": 7,
-      "community_name": "UnitFormatter",
+      "community": 10,
+      "community_name": "WorkoutSessionState",
       "norm_label": "progressphoto"
     },
     {
@@ -18231,8 +18231,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "aurafitness_progress_progressphotosview_swift_string",
-      "community": 7,
-      "community_name": "UnitFormatter",
+      "community": 10,
+      "community_name": "WorkoutSessionState",
       "norm_label": "string"
     },
     {
@@ -18242,8 +18242,8 @@
       "source_location": "L166",
       "_origin": "ast",
       "id": "aurafitness_progress_progressphotosview_progressphotosview_caption",
-      "community": 7,
-      "community_name": "UnitFormatter",
+      "community": 10,
+      "community_name": "WorkoutSessionState",
       "norm_label": ".caption()"
     },
     {
@@ -18253,8 +18253,8 @@
       "source_location": "L172",
       "_origin": "ast",
       "id": "aurafitness_progress_progressphotosview_progressphotosview_compareslot",
-      "community": 7,
-      "community_name": "UnitFormatter",
+      "community": 10,
+      "community_name": "WorkoutSessionState",
       "norm_label": ".compareslot()"
     },
     {
@@ -18264,8 +18264,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "aurafitness_progress_progressphotosview_swift_binding",
-      "community": 7,
-      "community_name": "UnitFormatter",
+      "community": 10,
+      "community_name": "WorkoutSessionState",
       "norm_label": "binding"
     },
     {
@@ -18275,8 +18275,8 @@
       "source_location": "L234",
       "_origin": "ast",
       "id": "aurafitness_progress_progressphotosview_progressphotosview_deltacard",
-      "community": 7,
-      "community_name": "UnitFormatter",
+      "community": 10,
+      "community_name": "WorkoutSessionState",
       "norm_label": ".deltacard()"
     },
     {
@@ -18286,8 +18286,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "aurafitness_progress_progressphotosview_swift_cgfloat",
-      "community": 7,
-      "community_name": "UnitFormatter",
+      "community": 10,
+      "community_name": "WorkoutSessionState",
       "norm_label": "cgfloat"
     },
     {
@@ -18297,8 +18297,8 @@
       "source_location": "L332",
       "_origin": "ast",
       "id": "aurafitness_progress_progressphotosview_progressphotosview_encodedphotodata",
-      "community": 7,
-      "community_name": "UnitFormatter",
+      "community": 10,
+      "community_name": "WorkoutSessionState",
       "norm_label": ".encodedphotodata()"
     },
     {
@@ -18308,8 +18308,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "aurafitness_progress_progressphotosview_swift_data",
-      "community": 7,
-      "community_name": "UnitFormatter",
+      "community": 10,
+      "community_name": "WorkoutSessionState",
       "norm_label": "data"
     },
     {
@@ -18319,8 +18319,8 @@
       "source_location": "L346",
       "_origin": "ast",
       "id": "aurafitness_progress_progressphotosview_progressphotosview_downscaled",
-      "community": 7,
-      "community_name": "UnitFormatter",
+      "community": 10,
+      "community_name": "WorkoutSessionState",
       "norm_label": ".downscaled()"
     },
     {
@@ -18330,8 +18330,8 @@
       "source_location": "L358",
       "_origin": "ast",
       "id": "aurafitness_progress_progressphotosview_progressphotosview_savephoto",
-      "community": 7,
-      "community_name": "UnitFormatter",
+      "community": 10,
+      "community_name": "WorkoutSessionState",
       "norm_label": ".savephoto()"
     },
     {
@@ -18341,8 +18341,8 @@
       "source_location": "L373",
       "_origin": "ast",
       "id": "aurafitness_progress_progressphotosview_progressphotosview_weeksdiff",
-      "community": 7,
-      "community_name": "UnitFormatter",
+      "community": 10,
+      "community_name": "WorkoutSessionState",
       "norm_label": ".weeksdiff()"
     },
     {
@@ -18352,8 +18352,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "aurafitness_progress_progressphotosview_swift_date",
-      "community": 7,
-      "community_name": "UnitFormatter",
+      "community": 10,
+      "community_name": "WorkoutSessionState",
       "norm_label": "date"
     },
     {
@@ -18363,8 +18363,8 @@
       "source_location": "L379",
       "_origin": "ast",
       "id": "aurafitness_progress_progressphotosview_progressphotosview_sharecompare",
-      "community": 7,
-      "community_name": "UnitFormatter",
+      "community": 10,
+      "community_name": "WorkoutSessionState",
       "norm_label": ".sharecompare()"
     },
     {
@@ -19460,7 +19460,7 @@
       "label": ".fetchRows()",
       "file_type": "code",
       "source_file": "AuraFitness/Sync/SupabaseSyncService.swift",
-      "source_location": "L634",
+      "source_location": "L646",
       "_origin": "ast",
       "id": "aurafitness_sync_supabasesyncservice_supabasesyncservice_fetchrows",
       "community": 62,
@@ -19471,7 +19471,7 @@
       "label": ".decode()",
       "file_type": "code",
       "source_file": "AuraFitness/Sync/SupabaseSyncService.swift",
-      "source_location": "L646",
+      "source_location": "L662",
       "_origin": "ast",
       "id": "aurafitness_sync_supabasesyncservice_supabasesyncservice_decode",
       "community": 62,
@@ -19482,7 +19482,7 @@
       "label": ".reconcile()",
       "file_type": "code",
       "source_file": "AuraFitness/Sync/SupabaseSyncService.swift",
-      "source_location": "L664",
+      "source_location": "L680",
       "_origin": "ast",
       "id": "aurafitness_sync_supabasesyncservice_supabasesyncservice_reconcile",
       "community": 62,
@@ -19493,7 +19493,7 @@
       "label": ".reconcileKeyed()",
       "file_type": "code",
       "source_file": "AuraFitness/Sync/SupabaseSyncService.swift",
-      "source_location": "L694",
+      "source_location": "L710",
       "_origin": "ast",
       "id": "aurafitness_sync_supabasesyncservice_supabasesyncservice_reconcilekeyed",
       "community": 62,
@@ -19504,7 +19504,7 @@
       "label": ".cleanupPredefinedRemoteRows()",
       "file_type": "code",
       "source_file": "AuraFitness/Sync/SupabaseSyncService.swift",
-      "source_location": "L739",
+      "source_location": "L755",
       "_origin": "ast",
       "id": "aurafitness_sync_supabasesyncservice_supabasesyncservice_cleanuppredefinedremoterows",
       "community": 62,
@@ -19515,7 +19515,7 @@
       "label": ".deleteNonSyncableRows()",
       "file_type": "code",
       "source_file": "AuraFitness/Sync/SupabaseSyncService.swift",
-      "source_location": "L759",
+      "source_location": "L775",
       "_origin": "ast",
       "id": "aurafitness_sync_supabasesyncservice_supabasesyncservice_deletenonsyncablerows",
       "community": 62,
@@ -19526,7 +19526,7 @@
       "label": ".applyDeletions()",
       "file_type": "code",
       "source_file": "AuraFitness/Sync/SupabaseSyncService.swift",
-      "source_location": "L799",
+      "source_location": "L815",
       "_origin": "ast",
       "id": "aurafitness_sync_supabasesyncservice_supabasesyncservice_applydeletions",
       "community": 62,
@@ -19537,7 +19537,7 @@
       "label": ".localKey()",
       "file_type": "code",
       "source_file": "AuraFitness/Sync/SupabaseSyncService.swift",
-      "source_location": "L830",
+      "source_location": "L846",
       "_origin": "ast",
       "id": "aurafitness_sync_supabasesyncservice_supabasesyncservice_localkey",
       "community": 62,
@@ -19548,7 +19548,7 @@
       "label": ".removeLocalRows()",
       "file_type": "code",
       "source_file": "AuraFitness/Sync/SupabaseSyncService.swift",
-      "source_location": "L839",
+      "source_location": "L855",
       "_origin": "ast",
       "id": "aurafitness_sync_supabasesyncservice_supabasesyncservice_removelocalrows",
       "community": 62,
@@ -19559,7 +19559,7 @@
       "label": ".repushLocal()",
       "file_type": "code",
       "source_file": "AuraFitness/Sync/SupabaseSyncService.swift",
-      "source_location": "L862",
+      "source_location": "L878",
       "_origin": "ast",
       "id": "aurafitness_sync_supabasesyncservice_supabasesyncservice_repushlocal",
       "community": 62,
@@ -19570,7 +19570,7 @@
       "label": ".dropQueuedUpserts()",
       "file_type": "code",
       "source_file": "AuraFitness/Sync/SupabaseSyncService.swift",
-      "source_location": "L910",
+      "source_location": "L926",
       "_origin": "ast",
       "id": "aurafitness_sync_supabasesyncservice_supabasesyncservice_dropqueuedupserts",
       "community": 16,
@@ -19581,7 +19581,7 @@
       "label": ".wipeRemote()",
       "file_type": "code",
       "source_file": "AuraFitness/Sync/SupabaseSyncService.swift",
-      "source_location": "L922",
+      "source_location": "L938",
       "_origin": "ast",
       "id": "aurafitness_sync_supabasesyncservice_supabasesyncservice_wiperemote",
       "community": 16,
@@ -19592,7 +19592,7 @@
       "label": "AppStateBridge",
       "file_type": "code",
       "source_file": "AuraFitness/Sync/SupabaseSyncService.swift",
-      "source_location": "L944",
+      "source_location": "L960",
       "_origin": "ast",
       "id": "aurafitness_sync_supabasesyncservice_appstatebridge",
       "community": 62,
@@ -19603,7 +19603,7 @@
       "label": ".hasAnyUserData()",
       "file_type": "code",
       "source_file": "AuraFitness/Sync/SupabaseSyncService.swift",
-      "source_location": "L952",
+      "source_location": "L968",
       "_origin": "ast",
       "id": "aurafitness_sync_supabasesyncservice_appstatebridge_hasanyuserdata",
       "community": 62,
@@ -50284,7 +50284,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "AuraFitness/Sync/SupabaseSyncService.swift",
-      "source_location": "L799",
+      "source_location": "L815",
       "weight": 1.0,
       "context": "generic_arg",
       "_origin": "ast",
@@ -50320,7 +50320,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "AuraFitness/Sync/SupabaseSyncService.swift",
-      "source_location": "L759",
+      "source_location": "L775",
       "weight": 1.0,
       "context": "parameter_type",
       "_origin": "ast",
@@ -50344,7 +50344,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "AuraFitness/Sync/SupabaseSyncService.swift",
-      "source_location": "L910",
+      "source_location": "L926",
       "weight": 1.0,
       "context": "generic_arg",
       "_origin": "ast",
@@ -50356,7 +50356,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "AuraFitness/Sync/SupabaseSyncService.swift",
-      "source_location": "L634",
+      "source_location": "L646",
       "weight": 1.0,
       "context": "parameter_type",
       "_origin": "ast",
@@ -50392,7 +50392,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "AuraFitness/Sync/SupabaseSyncService.swift",
-      "source_location": "L830",
+      "source_location": "L846",
       "weight": 1.0,
       "context": "parameter_type",
       "_origin": "ast",
@@ -50464,7 +50464,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "AuraFitness/Sync/SupabaseSyncService.swift",
-      "source_location": "L664",
+      "source_location": "L680",
       "weight": 1.0,
       "context": "parameter_type",
       "_origin": "ast",
@@ -50476,7 +50476,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "AuraFitness/Sync/SupabaseSyncService.swift",
-      "source_location": "L694",
+      "source_location": "L710",
       "weight": 1.0,
       "context": "parameter_type",
       "_origin": "ast",
@@ -50488,7 +50488,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "AuraFitness/Sync/SupabaseSyncService.swift",
-      "source_location": "L839",
+      "source_location": "L855",
       "weight": 1.0,
       "context": "generic_arg",
       "_origin": "ast",
@@ -50500,7 +50500,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "AuraFitness/Sync/SupabaseSyncService.swift",
-      "source_location": "L862",
+      "source_location": "L878",
       "weight": 1.0,
       "context": "parameter_type",
       "_origin": "ast",
@@ -51893,7 +51893,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "AuraFitness/Sync/SupabaseSyncService.swift",
-      "source_location": "L950",
+      "source_location": "L966",
       "weight": 1.0,
       "context": "field",
       "_origin": "ast",
@@ -54623,7 +54623,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "AuraFitness/Sync/SupabaseSyncService.swift",
-      "source_location": "L845",
+      "source_location": "L861",
       "weight": 1.0,
       "_origin": "ast",
       "source": "aurafitness_sync_supabasesyncservice_supabasesyncservice_removelocalrows",
@@ -56877,7 +56877,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "AuraFitness/Sync/SupabaseSyncService.swift",
-      "source_location": "L843",
+      "source_location": "L859",
       "weight": 1.0,
       "_origin": "ast",
       "source": "aurafitness_sync_supabasesyncservice_supabasesyncservice_removelocalrows",
@@ -58151,7 +58151,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "AuraFitness/Sync/SupabaseSyncService.swift",
-      "source_location": "L844",
+      "source_location": "L860",
       "weight": 1.0,
       "_origin": "ast",
       "source": "aurafitness_sync_supabasesyncservice_supabasesyncservice_removelocalrows",
@@ -76024,7 +76024,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "AuraFitness/Sync/SupabaseSyncService.swift",
-      "source_location": "L944",
+      "source_location": "L960",
       "weight": 1.0,
       "_origin": "ast",
       "source": "aurafitness_sync_supabasesyncservice",
@@ -76112,7 +76112,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "AuraFitness/Sync/SupabaseSyncService.swift",
-      "source_location": "L799",
+      "source_location": "L815",
       "weight": 1.0,
       "_origin": "ast",
       "source": "aurafitness_sync_supabasesyncservice_supabasesyncservice",
@@ -76134,7 +76134,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "AuraFitness/Sync/SupabaseSyncService.swift",
-      "source_location": "L739",
+      "source_location": "L755",
       "weight": 1.0,
       "_origin": "ast",
       "source": "aurafitness_sync_supabasesyncservice_supabasesyncservice",
@@ -76146,7 +76146,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "AuraFitness/Sync/SupabaseSyncService.swift",
-      "source_location": "L646",
+      "source_location": "L662",
       "weight": 1.0,
       "_origin": "ast",
       "source": "aurafitness_sync_supabasesyncservice_supabasesyncservice",
@@ -76168,7 +76168,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "AuraFitness/Sync/SupabaseSyncService.swift",
-      "source_location": "L759",
+      "source_location": "L775",
       "weight": 1.0,
       "_origin": "ast",
       "source": "aurafitness_sync_supabasesyncservice_supabasesyncservice",
@@ -76190,7 +76190,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "AuraFitness/Sync/SupabaseSyncService.swift",
-      "source_location": "L910",
+      "source_location": "L926",
       "weight": 1.0,
       "_origin": "ast",
       "source": "aurafitness_sync_supabasesyncservice_supabasesyncservice",
@@ -76212,7 +76212,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "AuraFitness/Sync/SupabaseSyncService.swift",
-      "source_location": "L634",
+      "source_location": "L646",
       "weight": 1.0,
       "_origin": "ast",
       "source": "aurafitness_sync_supabasesyncservice_supabasesyncservice",
@@ -76311,7 +76311,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "AuraFitness/Sync/SupabaseSyncService.swift",
-      "source_location": "L830",
+      "source_location": "L846",
       "weight": 1.0,
       "_origin": "ast",
       "source": "aurafitness_sync_supabasesyncservice_supabasesyncservice",
@@ -76400,7 +76400,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "AuraFitness/Sync/SupabaseSyncService.swift",
-      "source_location": "L664",
+      "source_location": "L680",
       "weight": 1.0,
       "_origin": "ast",
       "source": "aurafitness_sync_supabasesyncservice_supabasesyncservice",
@@ -76411,7 +76411,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "AuraFitness/Sync/SupabaseSyncService.swift",
-      "source_location": "L694",
+      "source_location": "L710",
       "weight": 1.0,
       "_origin": "ast",
       "source": "aurafitness_sync_supabasesyncservice_supabasesyncservice",
@@ -76422,7 +76422,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "AuraFitness/Sync/SupabaseSyncService.swift",
-      "source_location": "L839",
+      "source_location": "L855",
       "weight": 1.0,
       "_origin": "ast",
       "source": "aurafitness_sync_supabasesyncservice_supabasesyncservice",
@@ -76433,7 +76433,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "AuraFitness/Sync/SupabaseSyncService.swift",
-      "source_location": "L862",
+      "source_location": "L878",
       "weight": 1.0,
       "_origin": "ast",
       "source": "aurafitness_sync_supabasesyncservice_supabasesyncservice",
@@ -76499,7 +76499,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "AuraFitness/Sync/SupabaseSyncService.swift",
-      "source_location": "L922",
+      "source_location": "L938",
       "weight": 1.0,
       "_origin": "ast",
       "source": "aurafitness_sync_supabasesyncservice_supabasesyncservice",
@@ -76571,7 +76571,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "AuraFitness/Sync/SupabaseSyncService.swift",
-      "source_location": "L806",
+      "source_location": "L822",
       "weight": 1.0,
       "_origin": "ast",
       "source": "aurafitness_sync_supabasesyncservice_supabasesyncservice_applydeletions",
@@ -76594,7 +76594,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "AuraFitness/Sync/SupabaseSyncService.swift",
-      "source_location": "L759",
+      "source_location": "L775",
       "weight": 1.0,
       "context": "parameter_type",
       "_origin": "ast",
@@ -76618,7 +76618,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "AuraFitness/Sync/SupabaseSyncService.swift",
-      "source_location": "L910",
+      "source_location": "L926",
       "weight": 1.0,
       "context": "parameter_type",
       "_origin": "ast",
@@ -76630,7 +76630,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "AuraFitness/Sync/SupabaseSyncService.swift",
-      "source_location": "L634",
+      "source_location": "L646",
       "weight": 1.0,
       "context": "parameter_type",
       "_origin": "ast",
@@ -76654,7 +76654,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "AuraFitness/Sync/SupabaseSyncService.swift",
-      "source_location": "L830",
+      "source_location": "L846",
       "weight": 1.0,
       "context": "parameter_type",
       "_origin": "ast",
@@ -76678,7 +76678,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "AuraFitness/Sync/SupabaseSyncService.swift",
-      "source_location": "L664",
+      "source_location": "L680",
       "weight": 1.0,
       "context": "parameter_type",
       "_origin": "ast",
@@ -76690,7 +76690,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "AuraFitness/Sync/SupabaseSyncService.swift",
-      "source_location": "L694",
+      "source_location": "L710",
       "weight": 1.0,
       "context": "parameter_type",
       "_origin": "ast",
@@ -76702,7 +76702,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "AuraFitness/Sync/SupabaseSyncService.swift",
-      "source_location": "L839",
+      "source_location": "L855",
       "weight": 1.0,
       "context": "parameter_type",
       "_origin": "ast",
@@ -76714,7 +76714,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "AuraFitness/Sync/SupabaseSyncService.swift",
-      "source_location": "L862",
+      "source_location": "L878",
       "weight": 1.0,
       "context": "parameter_type",
       "_origin": "ast",
@@ -76750,7 +76750,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "AuraFitness/Sync/SupabaseSyncService.swift",
-      "source_location": "L922",
+      "source_location": "L938",
       "weight": 1.0,
       "context": "parameter_type",
       "_origin": "ast",
@@ -76919,7 +76919,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "AuraFitness/Sync/SupabaseSyncService.swift",
-      "source_location": "L894",
+      "source_location": "L910",
       "weight": 1.0,
       "_origin": "ast",
       "source": "aurafitness_sync_supabasesyncservice_supabasesyncservice_repushlocal",
@@ -76943,7 +76943,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "AuraFitness/Sync/SupabaseSyncService.swift",
-      "source_location": "L896",
+      "source_location": "L912",
       "weight": 1.0,
       "_origin": "ast",
       "source": "aurafitness_sync_supabasesyncservice_supabasesyncservice_repushlocal",
@@ -76954,7 +76954,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "AuraFitness/Sync/SupabaseSyncService.swift",
-      "source_location": "L952",
+      "source_location": "L968",
       "weight": 1.0,
       "context": "return_type",
       "_origin": "ast",
@@ -76966,7 +76966,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "AuraFitness/Sync/SupabaseSyncService.swift",
-      "source_location": "L759",
+      "source_location": "L775",
       "weight": 1.0,
       "context": "parameter_type",
       "_origin": "ast",
@@ -77062,7 +77062,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "AuraFitness/Sync/SupabaseSyncService.swift",
-      "source_location": "L799",
+      "source_location": "L815",
       "weight": 1.0,
       "context": "return_type",
       "_origin": "ast",
@@ -77194,7 +77194,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.8,
       "source_file": "AuraFitness/Sync/SupabaseSyncService.swift",
-      "source_location": "L913",
+      "source_location": "L929",
       "weight": 1.0,
       "_origin": "ast",
       "source": "aurafitness_sync_supabasesyncservice_supabasesyncservice_dropqueuedupserts",
@@ -77253,7 +77253,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "AuraFitness/Sync/SupabaseSyncService.swift",
-      "source_location": "L648",
+      "source_location": "L664",
       "weight": 1.0,
       "_origin": "ast",
       "source": "aurafitness_sync_supabasesyncservice_supabasesyncservice_decode",
@@ -77265,22 +77265,10 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "AuraFitness/Sync/SupabaseSyncService.swift",
-      "source_location": "L775",
+      "source_location": "L791",
       "weight": 1.0,
       "_origin": "ast",
       "source": "aurafitness_sync_supabasesyncservice_supabasesyncservice_deletenonsyncablerows",
-      "target": "jsondecoder",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "AuraFitness/Sync/SupabaseSyncService.swift",
-      "source_location": "L640",
-      "weight": 1.0,
-      "_origin": "ast",
-      "source": "aurafitness_sync_supabasesyncservice_supabasesyncservice_fetchrows",
       "target": "jsondecoder",
       "confidence_score": 1.0
     },
@@ -77325,7 +77313,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "AuraFitness/Sync/SupabaseSyncService.swift",
-      "source_location": "L840",
+      "source_location": "L856",
       "weight": 1.0,
       "_origin": "ast",
       "source": "aurafitness_sync_supabasesyncservice_supabasesyncservice_removelocalrows",
@@ -77373,7 +77361,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "AuraFitness/Sync/SupabaseSyncService.swift",
-      "source_location": "L801",
+      "source_location": "L817",
       "weight": 1.0,
       "_origin": "ast",
       "source": "aurafitness_sync_supabasesyncservice_supabasesyncservice_applydeletions",
@@ -77397,7 +77385,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "AuraFitness/Sync/SupabaseSyncService.swift",
-      "source_location": "L668",
+      "source_location": "L684",
       "weight": 1.0,
       "_origin": "ast",
       "source": "aurafitness_sync_supabasesyncservice_supabasesyncservice_reconcile",
@@ -77409,7 +77397,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "AuraFitness/Sync/SupabaseSyncService.swift",
-      "source_location": "L698",
+      "source_location": "L714",
       "weight": 1.0,
       "_origin": "ast",
       "source": "aurafitness_sync_supabasesyncservice_supabasesyncservice_reconcilekeyed",
@@ -77421,7 +77409,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "AuraFitness/Sync/SupabaseSyncService.swift",
-      "source_location": "L817",
+      "source_location": "L833",
       "weight": 1.0,
       "_origin": "ast",
       "source": "aurafitness_sync_supabasesyncservice_supabasesyncservice_applydeletions",
@@ -77433,7 +77421,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "AuraFitness/Sync/SupabaseSyncService.swift",
-      "source_location": "L690",
+      "source_location": "L706",
       "weight": 1.0,
       "_origin": "ast",
       "source": "aurafitness_sync_supabasesyncservice_supabasesyncservice_reconcile",
@@ -77445,7 +77433,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "AuraFitness/Sync/SupabaseSyncService.swift",
-      "source_location": "L713",
+      "source_location": "L729",
       "weight": 1.0,
       "_origin": "ast",
       "source": "aurafitness_sync_supabasesyncservice_supabasesyncservice_reconcilekeyed",
@@ -77541,7 +77529,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "AuraFitness/Sync/SupabaseSyncService.swift",
-      "source_location": "L681",
+      "source_location": "L697",
       "weight": 1.0,
       "_origin": "ast",
       "source": "aurafitness_sync_supabasesyncservice_supabasesyncservice_reconcile",
@@ -77553,7 +77541,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "AuraFitness/Sync/SupabaseSyncService.swift",
-      "source_location": "L706",
+      "source_location": "L722",
       "weight": 1.0,
       "_origin": "ast",
       "source": "aurafitness_sync_supabasesyncservice_supabasesyncservice_reconcilekeyed",
@@ -77565,7 +77553,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "AuraFitness/Sync/SupabaseSyncService.swift",
-      "source_location": "L867",
+      "source_location": "L883",
       "weight": 1.0,
       "_origin": "ast",
       "source": "aurafitness_sync_supabasesyncservice_supabasesyncservice_repushlocal",
@@ -77588,7 +77576,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "AuraFitness/Sync/SupabaseSyncService.swift",
-      "source_location": "L646",
+      "source_location": "L662",
       "weight": 1.0,
       "context": "return_type",
       "_origin": "ast",
@@ -77600,7 +77588,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "AuraFitness/Sync/SupabaseSyncService.swift",
-      "source_location": "L759",
+      "source_location": "L775",
       "weight": 1.0,
       "context": "parameter_type",
       "_origin": "ast",
@@ -77612,7 +77600,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "AuraFitness/Sync/SupabaseSyncService.swift",
-      "source_location": "L664",
+      "source_location": "L680",
       "weight": 1.0,
       "context": "parameter_type",
       "_origin": "ast",
@@ -77624,7 +77612,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "AuraFitness/Sync/SupabaseSyncService.swift",
-      "source_location": "L694",
+      "source_location": "L710",
       "weight": 1.0,
       "context": "parameter_type",
       "_origin": "ast",
@@ -77673,7 +77661,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "AuraFitness/Sync/SupabaseSyncService.swift",
-      "source_location": "L927",
+      "source_location": "L943",
       "weight": 1.0,
       "_origin": "ast",
       "source": "aurafitness_sync_supabasesyncservice_supabasesyncservice_wiperemote",
@@ -77709,7 +77697,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "AuraFitness/Sync/SupabaseSyncService.swift",
-      "source_location": "L779",
+      "source_location": "L795",
       "weight": 1.0,
       "_origin": "ast",
       "source": "aurafitness_sync_supabasesyncservice_supabasesyncservice_deletenonsyncablerows",
@@ -77757,7 +77745,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "AuraFitness/Sync/SupabaseSyncService.swift",
-      "source_location": "L911",
+      "source_location": "L927",
       "weight": 1.0,
       "_origin": "ast",
       "source": "aurafitness_sync_supabasesyncservice_supabasesyncservice_dropqueuedupserts",
@@ -77793,7 +77781,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "AuraFitness/Sync/SupabaseSyncService.swift",
-      "source_location": "L915",
+      "source_location": "L931",
       "weight": 1.0,
       "_origin": "ast",
       "source": "aurafitness_sync_supabasesyncservice_supabasesyncservice_dropqueuedupserts",
@@ -77960,7 +77948,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "AuraFitness/Sync/SupabaseSyncService.swift",
-      "source_location": "L634",
+      "source_location": "L646",
       "weight": 1.0,
       "context": "return_type",
       "_origin": "ast",
@@ -77984,7 +77972,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "AuraFitness/Sync/SupabaseSyncService.swift",
-      "source_location": "L664",
+      "source_location": "L680",
       "weight": 1.0,
       "context": "parameter_type",
       "_origin": "ast",
@@ -77996,7 +77984,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "AuraFitness/Sync/SupabaseSyncService.swift",
-      "source_location": "L694",
+      "source_location": "L710",
       "weight": 1.0,
       "context": "parameter_type",
       "_origin": "ast",
@@ -78008,7 +77996,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "AuraFitness/Sync/SupabaseSyncService.swift",
-      "source_location": "L646",
+      "source_location": "L662",
       "weight": 1.0,
       "context": "parameter_type",
       "_origin": "ast",
@@ -78032,7 +78020,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "AuraFitness/Sync/SupabaseSyncService.swift",
-      "source_location": "L799",
+      "source_location": "L815",
       "weight": 1.0,
       "context": "parameter_type",
       "_origin": "ast",
@@ -78224,7 +78212,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "AuraFitness/Sync/SupabaseSyncService.swift",
-      "source_location": "L799",
+      "source_location": "L815",
       "weight": 1.0,
       "context": "return_type",
       "_origin": "ast",
@@ -78236,7 +78224,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "AuraFitness/Sync/SupabaseSyncService.swift",
-      "source_location": "L910",
+      "source_location": "L926",
       "weight": 1.0,
       "context": "parameter_type",
       "_origin": "ast",
@@ -78248,7 +78236,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "AuraFitness/Sync/SupabaseSyncService.swift",
-      "source_location": "L664",
+      "source_location": "L680",
       "weight": 1.0,
       "context": "parameter_type",
       "_origin": "ast",
@@ -78260,7 +78248,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "AuraFitness/Sync/SupabaseSyncService.swift",
-      "source_location": "L694",
+      "source_location": "L710",
       "weight": 1.0,
       "context": "parameter_type",
       "_origin": "ast",
@@ -78272,7 +78260,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "AuraFitness/Sync/SupabaseSyncService.swift",
-      "source_location": "L839",
+      "source_location": "L855",
       "weight": 1.0,
       "context": "parameter_type",
       "_origin": "ast",
@@ -78285,7 +78273,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "AuraFitness/Sync/SupabaseSyncService.swift",
-      "source_location": "L640",
+      "source_location": "L652",
       "weight": 1.0,
       "_origin": "ast",
       "source": "aurafitness_sync_supabasesyncservice_supabasesyncservice_fetchrows",
@@ -78297,7 +78285,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "AuraFitness/Sync/SupabaseSyncService.swift",
-      "source_location": "L775",
+      "source_location": "L791",
       "weight": 1.0,
       "_origin": "ast",
       "source": "aurafitness_sync_supabasesyncservice_supabasesyncservice_deletenonsyncablerows",
@@ -78309,7 +78297,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "AuraFitness/Sync/SupabaseSyncService.swift",
-      "source_location": "L672",
+      "source_location": "L688",
       "weight": 1.0,
       "_origin": "ast",
       "source": "aurafitness_sync_supabasesyncservice_supabasesyncservice_reconcile",
@@ -78321,7 +78309,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "AuraFitness/Sync/SupabaseSyncService.swift",
-      "source_location": "L701",
+      "source_location": "L717",
       "weight": 1.0,
       "_origin": "ast",
       "source": "aurafitness_sync_supabasesyncservice_supabasesyncservice_reconcilekeyed",
@@ -78333,7 +78321,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "AuraFitness/Sync/SupabaseSyncService.swift",
-      "source_location": "L744",
+      "source_location": "L760",
       "weight": 1.0,
       "_origin": "ast",
       "source": "aurafitness_sync_supabasesyncservice_supabasesyncservice_cleanuppredefinedremoterows",
@@ -78345,7 +78333,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "AuraFitness/Sync/SupabaseSyncService.swift",
-      "source_location": "L820",
+      "source_location": "L836",
       "weight": 1.0,
       "_origin": "ast",
       "source": "aurafitness_sync_supabasesyncservice_supabasesyncservice_applydeletions",
@@ -78357,7 +78345,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "AuraFitness/Sync/SupabaseSyncService.swift",
-      "source_location": "L807",
+      "source_location": "L823",
       "weight": 1.0,
       "_origin": "ast",
       "source": "aurafitness_sync_supabasesyncservice_supabasesyncservice_applydeletions",
@@ -78369,7 +78357,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "AuraFitness/Sync/SupabaseSyncService.swift",
-      "source_location": "L821",
+      "source_location": "L837",
       "weight": 1.0,
       "_origin": "ast",
       "source": "aurafitness_sync_supabasesyncservice_supabasesyncservice_applydeletions",
@@ -78381,7 +78369,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "AuraFitness/Sync/SupabaseSyncService.swift",
-      "source_location": "L810",
+      "source_location": "L826",
       "weight": 1.0,
       "_origin": "ast",
       "source": "aurafitness_sync_supabasesyncservice_supabasesyncservice_applydeletions",
@@ -78394,7 +78382,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.8,
       "source_file": "AuraFitness/Sync/SupabaseSyncService.swift",
-      "source_location": "L846",
+      "source_location": "L862",
       "weight": 1.0,
       "_origin": "ast",
       "source": "aurafitness_sync_supabasesyncservice_supabasesyncservice_removelocalrows",
@@ -78406,7 +78394,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.8,
       "source_file": "AuraFitness/Sync/SupabaseSyncService.swift",
-      "source_location": "L878",
+      "source_location": "L894",
       "weight": 1.0,
       "_origin": "ast",
       "source": "aurafitness_sync_supabasesyncservice_supabasesyncservice_repushlocal",
@@ -78416,7 +78404,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "AuraFitness/Sync/SupabaseSyncService.swift",
-      "source_location": "L952",
+      "source_location": "L968",
       "weight": 1.0,
       "_origin": "ast",
       "source": "aurafitness_sync_supabasesyncservice_appstatebridge",
@@ -82187,5 +82175,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "0a96d90575cf36e540a2a8274adf455cd43bb730"
+  "built_at_commit": "211a220ec5121c80964aa4566f81ab3c734ea228"
 }
