@@ -65,9 +65,14 @@ struct AuraFitnessApp: App {
                 await ExerciseDatabase.shared.refreshCatalogFromRemote()
             }
             .onOpenURL { url in
-                Task { @MainActor in
-                    _ = await AuthService.shared.handleAuthCallback(url: url)
-                }
+                Task { await authService.handleAuthCallback(url: url) }
+            }
+            .onChange(of: scenePhase) { _, phase in
+                // A confirmed email change only lands server-side, so the new
+                // address is invisible until the session is re-read. Foreground
+                // is the first moment the user can be back from their mailbox.
+                guard phase == .active else { return }
+                Task { await authService.refreshSession() }
             }
         }
     }
