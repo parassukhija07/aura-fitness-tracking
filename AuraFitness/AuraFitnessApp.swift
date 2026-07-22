@@ -69,18 +69,13 @@ struct AuraFitnessApp: App {
             // the target (Info → URL Types) — see AuthService.authCallbackURL
             // and MANUAL_STEPS.md; without it iOS never delivers the link.
             .onOpenURL { url in
-                Task { await AuthService.shared.handleAuthCallback(url: url) }
+                DispatchQueue.main.async {
+                    Task { await AuthService.shared.handleAuthCallback(url: url) }
+                }
             }
             .onChange(of: scenePhase) { phase in
-                // `authService.userID` is nil for guests, so this already
-                // correctly skips the foreground pull in guest mode — guest mode
-                // intentionally does not pull (there's nothing remote to fetch;
-                // guest data lives purely locally until the user signs in).
                 guard phase == .active, authService.userID != nil else { return }
                 Task {
-                    // A confirmed email change only lands server-side, so the new
-                    // login email surfaces on the next session refresh — do it
-                    // here rather than making the Account screen poll.
                     await authService.refreshSession()
                     await SupabaseSyncService.shared.pullChanges()
                 }
