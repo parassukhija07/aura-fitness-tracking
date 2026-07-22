@@ -228,8 +228,10 @@ Step 2's `0008_exercise_catalog.sql` created two empty tables: `aura_exercise_ca
 Skipping this is safe. With the tables empty the app reads no version marker and keeps the library bundled in the binary, exactly as it behaves today.
 
 1. In **SQL Editor**, click **New query**.
-2. Open `supabase/seed/seed_exercise_catalog.sql` from this repo, copy its **entire** contents (it is ~150 KB — make sure you get all of it), paste, **Run**.
-3. Verify: **Table Editor** → `aura_exercise_catalog` shows 137 rows, and `aura_catalog_meta` shows one row, `catalog_version` = `1`.
+2. Apply the seed. It is ~1.6 MB across 1,316 exercises, which is too much for one paste, so it also ships pre-split:
+   - **Dashboard:** open `supabase/seed/catalog_chunks/01.sql` … `06.sql` and run them **in order**, one query at a time. Only `06.sql` bumps the version marker, so stopping partway leaves clients on the previous catalog rather than a half-applied one.
+   - **psql:** the single `supabase/seed/seed_exercise_catalog.sql` has no size problem — `psql "<connection-string>" -f supabase/seed/seed_exercise_catalog.sql`.
+3. Verify: **Table Editor** → `aura_exercise_catalog` shows 1,316 rows, and `aura_catalog_meta` shows one row, `catalog_version` = `2`.
 4. Confirm it is genuinely read-only: in **SQL Editor**, run
    ```sql
    set role anon;
@@ -237,7 +239,7 @@ Skipping this is safe. With the tables empty the app reads no version marker and
    ```
    This must fail with `42501` / "new row violates row-level security policy". Then run `reset role;`. If the delete SUCCEEDS, stop and re-run `0008_exercise_catalog.sql`.
 
-**To ship a catalog update later:** edit `AuraFitness/Resources/gym_exercise_library.json`, bump `CATALOG_VERSION` in `supabase/seed/generate_seed.py`, run `python supabase/seed/generate_seed.py`, commit the regenerated SQL, and repeat steps 1–3 above. Apps notice the changed version on their next launch and pull the whole catalog. Never rename an exercise expecting the old row to follow it — ids are derived from the name, so a rename creates a new row and the old one stays put for older clients.
+**To ship a catalog update later:** edit `AuraFitness/Resources/gym_exercise_library.json`, bump `CATALOG_VERSION` in `supabase/seed/generate_seed.py`, run `python supabase/seed/generate_seed.py`, commit the regenerated SQL and chunks, and repeat steps 1–3 above. (To re-import from the upstream dataset instead of editing by hand, see `supabase/seed/import_dataset.py` and `THIRD_PARTY_NOTICES.md`.) Apps notice the changed version on their next launch and pull the whole catalog. Never rename an exercise expecting the old row to follow it — ids are derived from the name, so a rename creates a new row and the old one stays put for older clients.
 
 ---
 

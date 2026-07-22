@@ -50,7 +50,14 @@ from pathlib import Path
 # Bump this when shipping a catalog update, then regenerate and re-run the
 # seed. Clients store the version they last applied and refetch the whole
 # catalog whenever the remote value differs from it.
-CATALOG_VERSION = "1"
+CATALOG_VERSION = "2"
+
+# Rows per chunk file. The catalog outgrew a single paste when it went from 137
+# hand-written exercises to the 1,316 imported ones (~1.6 MB of SQL), and the
+# Dashboard SQL editor is not a place to paste megabytes. `catalog_chunks/`
+# holds the same statements split into files a person can actually apply one at
+# a time; the single full file remains for `psql`, which has no such problem.
+CHUNK_ROWS = 250
 
 # FROZEN. This is `StableID.namespace` from AuraFitness/Models/SeedData.swift,
 # byte for byte. Changing it re-issues every catalog id and orphans every row
@@ -61,6 +68,7 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 SEED_DIR = Path(__file__).resolve().parent
 LIBRARY_JSON = REPO_ROOT / "AuraFitness" / "Resources" / "gym_exercise_library.json"
 OUTPUT_SQL = SEED_DIR / "seed_exercise_catalog.sql"
+CHUNK_DIR = SEED_DIR / "catalog_chunks"
 
 # phase5-02 — exercise imagery. Source files in, upload script out.
 MEDIA_DIR = SEED_DIR / "exercise-media"
@@ -344,16 +352,29 @@ def sql_string(value: str) -> str:
     return "'" + value.replace("'", "''") + "'"
 
 
-def build_sql(entries: list[dict]) -> str:
+def build_sql(entries: list[dict], part: int | None = None, parts: int | None = None) -> str:
+    """One transaction of upserts.
+
+    `part`/`parts` produce a chunk of a multi-file split. The VERSION MARKER is
+    written only by the final chunk, and that ordering is load-bearing: clients
+    refetch the whole catalog when the remote version differs from the one they
+    last applied, so bumping it while rows are still missing would advertise a
+    catalog that is only half there. Applied in order, the marker lands last;
+    stop halfway and clients simply keep the version they already had."""
+    is_final = part is None or part == parts
     lines: list[str] = []
     add = lines.append
 
-    add("-- seed_exercise_catalog.sql — GENERATED FILE, DO NOT EDIT BY HAND.")
+    name = "seed_exercise_catalog.sql" if part is None else f"catalog_chunks/{part:02d}.sql"
+    add(f"-- {name} — GENERATED FILE, DO NOT EDIT BY HAND.")
     add("--")
     add("-- Regenerate with:  python supabase/seed/generate_seed.py")
     add("-- Source of truth:  AuraFitness/Resources/gym_exercise_library.json")
     add(f"-- Catalog version:  {CATALOG_VERSION}")
-    add(f"-- Rows:             {len(entries)}")
+    if part is None:
+        add(f"-- Rows:             {len(entries)}")
+    else:
+        add(f"-- Rows:             {len(entries)} (chunk {part} of {parts})")
     add("--")
     add("-- Apply with the SERVICE ROLE (Dashboard SQL editor or psql). RLS on")
     add("-- these tables grants SELECT only; anon/authenticated writes fail with")
@@ -365,6 +386,11 @@ def build_sql(entries: list[dict]) -> str:
     add("-- Rows are never DELETED here. An exercise dropped from the bundled")
     add("-- JSON keeps its catalog row on purpose: ids are derived from the")
     add("-- name, so an older client that still references it can resolve it.")
+    if part is not None:
+        add("--")
+        add(f"-- APPLY THE CHUNKS IN ORDER, 01 through {parts:02d}. Only the last one")
+        add("-- bumps catalog_version, so an interrupted run leaves clients on the")
+        add("-- previous catalog rather than on a partial one.")
     add("")
     add("begin;")
     add("")
@@ -379,12 +405,15 @@ def build_sql(entries: list[dict]) -> str:
     add("  payload    = excluded.payload,")
     add("  updated_at = now();")
     add("")
-    add("insert into aura_catalog_meta (key, value, updated_at) values")
-    add(f"  ('catalog_version', {sql_string(CATALOG_VERSION)}, now())")
-    add("on conflict (key) do update set")
-    add("  value      = excluded.value,")
-    add("  updated_at = now();")
-    add("")
+
+    if is_final:
+        add("insert into aura_catalog_meta (key, value, updated_at) values")
+        add(f"  ('catalog_version', {sql_string(CATALOG_VERSION)}, now())")
+        add("on conflict (key) do update set")
+        add("  value      = excluded.value,")
+        add("  updated_at = now();")
+        add("")
+
     add("commit;")
     add("")
     return "\n".join(lines)
@@ -450,14 +479,32 @@ def main() -> None:
 
     dropped = len(raw_entries) - len(entries)
     OUTPUT_SQL.write_text(build_sql(entries), encoding="utf-8")
+
+    # Chunked copies of the same statements, for applying by hand in the
+    # Dashboard. Regenerated from scratch each run so a shrinking catalog
+    # cannot leave a stale trailing chunk behind that would re-insert rows the
+    # current library no longer has.
+    chunks = [entries[i:i + CHUNK_ROWS] for i in range(0, len(entries), CHUNK_ROWS)]
+    if CHUNK_DIR.exists():
+        for stale in CHUNK_DIR.glob("*.sql"):
+            stale.unlink()
+    CHUNK_DIR.mkdir(parents=True, exist_ok=True)
+    for index, chunk in enumerate(chunks, start=1):
+        (CHUNK_DIR / f"{index:02d}.sql").write_text(
+            build_sql(chunk, part=index, parts=len(chunks)), encoding="utf-8"
+        )
     # newline="" keeps the LF endings verbatim. Generated on Windows without
     # it, every line would end CRLF and bash would choke on the stray \r
     # ("$'\r': command not found").
     with open(UPLOAD_SCRIPT, "w", encoding="utf-8", newline="") as fh:
         fh.write(build_upload_script(uploads))
-    print(f"Wrote {OUTPUT_SQL.relative_to(REPO_ROOT)} — {len(entries)} rows, version {CATALOG_VERSION}.")
+    size_mb = OUTPUT_SQL.stat().st_size / 1024 / 1024
+    print(f"Wrote {OUTPUT_SQL.relative_to(REPO_ROOT)} — {len(entries)} rows, "
+          f"version {CATALOG_VERSION}, {size_mb:.2f} MB.")
     if dropped:
         print(f"  ({dropped} duplicate name(s) collapsed.)")
+    print(f"Wrote {CHUNK_DIR.relative_to(REPO_ROOT)}/ — {len(chunks)} chunk(s) of "
+          f"up to {CHUNK_ROWS} rows, for pasting into the Dashboard SQL editor.")
     print(f"Wrote {UPLOAD_SCRIPT.relative_to(REPO_ROOT)} — {len(uploads)} image(s).")
     if uploads:
         print("  Next: bash supabase/seed/upload_media.sh, then apply the SQL with the service role.")

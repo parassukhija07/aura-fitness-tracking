@@ -38,7 +38,21 @@ enum ActiveWorkoutData {
     ]
 
     // Equipment filter chips for the empty overview (EQUIPS)
-    static let equipmentFilters = ["All", "Barbell", "Dumbbell", "Cable", "Machine", "Bodyweight"]
+    //
+    // Must cover every `equipment` value the library actually carries, or those
+    // exercises are reachable only by search — the chips filter on an exact
+    // string match. Ordered by how many exercises use each, so the common
+    // apparatus sits nearest the leading edge of the scroll.
+    //
+    // KEEP IN SYNC with AuraFitness/Resources/gym_exercise_library.json, whose
+    // vocabulary is set by `EQUIPMENT_MAP` in supabase/seed/import_dataset.py.
+    // Re-derive after a catalog change with:
+    //   python -c "import json, collections; print(collections.Counter(x['equipment'] for x in json.load(open('AuraFitness/Resources/gym_exercise_library.json', encoding='utf-8'))).most_common())"
+    static let equipmentFilters = [
+        "All", "Bodyweight", "Dumbbell", "Barbell", "Cable", "Machine", "Band",
+        "Smith Machine", "Kettlebell", "Stability Ball", "Assisted",
+        "Medicine Ball", "Rope", "Roller", "Cardio Machine", "Bosu Ball", "Other"
+    ]
 
     // Quick-add by muscle (MG)
     static let muscleGroups: [MuscleGroupOption] = [
