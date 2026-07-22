@@ -1,7 +1,7 @@
 {
   ".claude/settings.json": {
-    "mtime": 1784639648.4885838,
-    "ast_hash": "1601beb2868eab67ba856d10b675f620",
+    "mtime": 1784666068.1747327,
+    "ast_hash": "fa5a7d39f1d4725acaabbaf17a35eb7b",
     "semantic_hash": ""
   },
   ".claude/settings.local.json": {
@@ -205,8 +205,8 @@
     "semantic_hash": ""
   },
   "AuraFitness/AuraFitnessApp.swift": {
-    "mtime": 1784623916.102412,
-    "ast_hash": "e2bb913e66b7427a8f2c4c0f5f6f3cfc",
+    "mtime": 1784666315.9409416,
+    "ast_hash": "c0612407854710943e64ab9d168b1279",
     "semantic_hash": ""
   },
   "AuraFitness/Auth/AuthConfig.swift": {
@@ -215,13 +215,13 @@
     "semantic_hash": ""
   },
   "AuraFitness/Auth/AuthGateView.swift": {
-    "mtime": 1784467012.5079997,
-    "ast_hash": "93d19113f2fddc415e2cf5a1ef8c5c67",
+    "mtime": 1784659942.4922044,
+    "ast_hash": "e52bcb888c32de664278da488c164d55",
     "semantic_hash": ""
   },
   "AuraFitness/Auth/AuthService.swift": {
-    "mtime": 1784638464.4130583,
-    "ast_hash": "ef03eb3999151e2d5368fda079f998a5",
+    "mtime": 1784659789.7627075,
+    "ast_hash": "270dafbeadf999e52f8a78c800817fd1",
     "semantic_hash": ""
   },
   "AuraFitness/ContentView.swift": {
@@ -280,8 +280,8 @@
     "semantic_hash": ""
   },
   "AuraFitness/Models/ExerciseDatabase.swift": {
-    "mtime": 1784624109.2037282,
-    "ast_hash": "72b31544d954b11692e85a802fc2f01b",
+    "mtime": 1784666287.911379,
+    "ast_hash": "2a9206bb53b8ba08723245a19081aaa6",
     "semantic_hash": ""
   },
   "AuraFitness/Models/LogDayModel.swift": {
@@ -300,8 +300,8 @@
     "semantic_hash": ""
   },
   "AuraFitness/Models/SeedData.swift": {
-    "mtime": 1784623770.7441435,
-    "ast_hash": "ecd6f579c46a92ffb9c96a22b9c3686a",
+    "mtime": 1784666112.0495803,
+    "ast_hash": "beaad990ccd3737ca933a2bae885987d",
     "semantic_hash": ""
   },
   "AuraFitness/Models/UnitFormatter.swift": {
@@ -420,8 +420,8 @@
     "semantic_hash": ""
   },
   "AuraFitness/Plan/WorkoutEditorView.swift": {
-    "mtime": 1784658310.90315,
-    "ast_hash": "f22ac3a885ecc534c05f420294597991",
+    "mtime": 1784658799.596059,
+    "ast_hash": "ccd775223179d5c72eed3ae3f0481864",
     "semantic_hash": ""
   },
   "AuraFitness/Plan/WorkoutLibraryView.swift": {
@@ -430,8 +430,8 @@
     "semantic_hash": ""
   },
   "AuraFitness/Profile/AccountDetailsView.swift": {
-    "mtime": 1784589506.6677597,
-    "ast_hash": "114e8ed1da3d508a741b37a03884dee3",
+    "mtime": 1784660032.6081245,
+    "ast_hash": "8b3cbe226025e6237d28f2cf9e51745d",
     "semantic_hash": ""
   },
   "AuraFitness/Profile/CSVArchive.swift": {
@@ -530,8 +530,8 @@
     "semantic_hash": ""
   },
   "AuraFitness/Sync/SupabaseSyncService.swift": {
-    "mtime": 1784658176.9390354,
-    "ast_hash": "84ae3642ecc73bbb8078811fc4566fe8",
+    "mtime": 1784659289.2492814,
+    "ast_hash": "9d113f60b3dbd3e8401425ca95bd13be",
     "semantic_hash": ""
   },
   "AuraFitness/Sync/Syncable.swift": {
@@ -585,8 +585,8 @@
     "semantic_hash": ""
   },
   ".github/workflows/ci.yml": {
-    "mtime": 1784639637.4222896,
-    "ast_hash": "60125b630769a46b98340423a41485ef",
+    "mtime": 1784658364.4638278,
+    "ast_hash": "75539320c1b79e069f625cc274be5cb2",
     "semantic_hash": ""
   },
   ".pipeline/backend_phases/00-INDEX.md": {
@@ -870,8 +870,8 @@
     "semantic_hash": ""
   },
   "MANUAL_STEPS.md": {
-    "mtime": 1784638713.5334754,
-    "ast_hash": "9998d429b7ac876748fef298b58edd2e",
+    "mtime": 1784661444.8738923,
+    "ast_hash": "27cdcc60c41ee87f6bf1904af06429c6",
     "semantic_hash": ""
   },
   "App onboarding/scraps/aw-overview.png": {
@@ -1037,6 +1037,31 @@
   "AuraFitness/Sync/ProgressPhotoStorage.swift": {
     "mtime": 1784638477.967514,
     "ast_hash": "d462edf009d944d0309acc1e2bbae5a4",
+    "semantic_hash": ""
+  },
+  "gym_exercise_library copy.json": {
+    "mtime": 1782094227.938458,
+    "ast_hash": "16e9b139f6ad0d077212a5a873b3c6d2",
+    "semantic_hash": ""
+  },
+  "supabase/migrations/0007_function_hardening.sql": {
+    "mtime": 1784661408.9952972,
+    "ast_hash": "5f890d0a365d19e35afdcbb9adcb76a6",
+    "semantic_hash": ""
+  },
+  "supabase/migrations/0008_exercise_catalog.sql": {
+    "mtime": 1784665962.573057,
+    "ast_hash": "ab01b9040798efeed38148c0c678ec01",
+    "semantic_hash": ""
+  },
+  "supabase/seed/generate_seed.py": {
+    "mtime": 1784666060.3634164,
+    "ast_hash": "9218808227ecad9e3b379bbbe5b3b31f",
+    "semantic_hash": ""
+  },
+  "supabase/seed/seed_exercise_catalog.sql": {
+    "mtime": 1784666068.6724713,
+    "ast_hash": "ee6f9b1c930919d6aeb1a4c6b406f339",
     "semantic_hash": ""
   }
 }
