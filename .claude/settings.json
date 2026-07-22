@@ -123,7 +123,27 @@
       "Bash(awk '{print $1}')",
       "Bash(git show *)",
       "Read(//tmp/**)",
-      "Bash(git status *)"
+      "Bash(git status *)",
+      "Bash(python -c \"import json,collections;d=json.load\\(open\\('AuraFitness/Resources/gym_exercise_library.json',encoding='utf-8'\\)\\);print\\(len\\(d\\)\\);print\\(collections.Counter\\(bool\\(e.get\\('image_url'\\)\\) for e in d\\)\\);print\\([e['name'] for e in d[:5]]\\);print\\([e.get\\('image_url'\\) for e in d[:3]]\\)\")",
+      "Bash(python -c \"print\\(repr\\(open\\('supabase/seed/upload_media.sh','rb'\\).read\\(\\)[-60:]\\)\\)\")",
+      "Bash(echo \"exit=$?\")",
+      "Bash(rm -f supabase/seed/exercise-media/*.jpg supabase/seed/exercise-media/*.png)",
+      "PowerShell(Remove-Item -Recurse -Force \"supabase\\\\seed\\\\__pycache__\" -Confirm:$false -ErrorAction SilentlyContinue)",
+      "Bash(python -m py_compile supabase/seed/generate_seed.py)",
+      "Bash(bash -n supabase/seed/upload_media.sh)",
+      "Bash(bash supabase/seed/upload_media.sh)",
+      "Bash(gh auth *)",
+      "WebFetch(domain:api.github.com)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "Bash(rtk curl *)",
+      "Bash(python supabase/seed/import_dataset.py --source \"C:/Users/muska/AppData/Local/Temp/claude/c--Users-muska-OneDrive-Documents-App-Development-Aura-Fitness-Tracker/e2b5953c-1c7c-44ea-8ba7-7abd5b2aee96/scratchpad/exercises.json\" --dry-run)",
+      "Bash(python supabase/seed/import_dataset.py --source \"C:/Users/muska/AppData/Local/Temp/claude/c--Users-muska-OneDrive-Documents-App-Development-Aura-Fitness-Tracker/e2b5953c-1c7c-44ea-8ba7-7abd5b2aee96/scratchpad/exercises.json\")",
+      "Bash(cp \"C:/Users/muska/AppData/Local/Temp/claude/c--Users-muska-OneDrive-Documents-App-Development-Aura-Fitness-Tracker/e2b5953c-1c7c-44ea-8ba7-7abd5b2aee96/scratchpad/UPSTREAM_LICENSE\" supabase/seed/UPSTREAM_LICENSE)",
+      "Bash(graphify explain *)",
+      "Bash(python -c \"import PIL, cairosvg\")",
+      "Bash(python -c \"import PIL; print\\('PIL ok'\\)\")",
+      "Bash(python \"C:/Users/muska/AppData/Local/Temp/claude/c--Users-muska-OneDrive-Documents-App-Development-Aura-Fitness-Tracker/67532ade-b41f-4f25-9068-84875ccde992/scratchpad/render_musclemap.py\")",
+      "Bash(mv musclemap_*.png \"C:/Users/muska/AppData/Local/Temp/claude/c--Users-muska-OneDrive-Documents-App-Development-Aura-Fitness-Tracker/67532ade-b41f-4f25-9068-84875ccde992/scratchpad/\")"
     ]
   },
   "hooks": {
