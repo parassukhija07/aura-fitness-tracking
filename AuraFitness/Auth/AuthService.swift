@@ -385,6 +385,35 @@ final class AuthService: ObservableObject {
         }
         if raw.localizedCaseInsensitiveContains("password") && raw.localizedCaseInsensitiveContains("short") { return "Password is too short (minimum 6 characters)." }
         if raw.localizedCaseInsensitiveContains("network") { return "No network connection. Please try again." }
-        return "Something went wrong. Please try again."
+        // 500 `unexpected_failure` from GoTrue's mailer. The account IS created,
+        // but the confirmation mail never goes out, so the user is stuck — and
+        // the generic fallback below made this look like a client bug.
+        if raw.localizedCaseInsensitiveContains("error sending")
+            || raw.localizedCaseInsensitiveContains("confirmation email")
+            || raw.localizedCaseInsensitiveContains("smtp") {
+            return "We couldn't send the confirmation email. Try again shortly, or contact support if it keeps failing."
+        }
+        // 422 `signup_disabled` — email sign-ups turned off for the project.
+        if raw.localizedCaseInsensitiveContains("signups not allowed")
+            || raw.localizedCaseInsensitiveContains("signup is disabled")
+            || raw.localizedCaseInsensitiveContains("not allowed for this instance") {
+            return "New sign-ups are currently disabled for this app."
+        }
+        // 500 — a failing trigger or constraint on the auth schema.
+        if raw.localizedCaseInsensitiveContains("database error") {
+            return "Account setup failed on the server. Please contact support."
+        }
+        if raw.localizedCaseInsensitiveContains("invalid email")
+            || raw.localizedCaseInsensitiveContains("unable to validate email") {
+            return "That email address doesn't look valid."
+        }
+        // Unrecognised: show the server's own wording rather than swallowing it.
+        // A user who can read the real reason can act on it, and a bug report
+        // quoting it is diagnosable — the bare "Something went wrong" was
+        // neither. Nothing sensitive reaches here: GoTrue error text describes
+        // the failure, and no call site passes a password into one.
+        let detail = raw.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !detail.isEmpty else { return "Something went wrong. Please try again." }
+        return "Something went wrong: \(detail)"
     }
 }
