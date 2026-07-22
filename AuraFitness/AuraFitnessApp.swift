@@ -64,13 +64,6 @@ struct AuraFitnessApp: App {
                 // usual case; failure leaves the bundled library in place.
                 await ExerciseDatabase.shared.refreshCatalogFromRemote()
             }
-            .onChange(of: scenePhase) { phase in
-                guard phase == .active, authService.userID != nil else { return }
-                Task {
-                    await authService.refreshSession()
-                    await SupabaseSyncService.shared.pullChanges()
-                }
-            }
         }
     }
 }
