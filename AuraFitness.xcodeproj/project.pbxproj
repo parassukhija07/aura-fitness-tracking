@@ -32,6 +32,8 @@
 		AA000006000000000000006B /* AuraComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000006000000000000006B /* AuraComponents.swift */; };
 		AAD5000000000000000000E1 /* AuraVideoPlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABD5000000000000000000E1 /* AuraVideoPlayer.swift */; };
 		AAD5000000000000000000E2 /* RemoteExerciseImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABD5000000000000000000E2 /* RemoteExerciseImage.swift */; };
+		AAD5000000000000000000E3 /* MuscleMap.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABD5000000000000000000E3 /* MuscleMap.swift */; };
+		AAD5000000000000000000E4 /* MuscleMapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABD5000000000000000000E4 /* MuscleMapView.swift */; };
 		AAEE0001000000000000001B /* AuraTabBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABEE0001000000000000001B /* AuraTabBar.swift */; };
 		AAEE0002000000000000002B /* AuraScreenScroll.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABEE0002000000000000002B /* AuraScreenScroll.swift */; };
 		AAEE0003000000000000003B /* ResumeBanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABEE0003000000000000003B /* ResumeBanner.swift */; };
@@ -129,6 +131,8 @@
 		AB000006000000000000006B /* AuraComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuraComponents.swift; sourceTree = "<group>"; };
 		ABD5000000000000000000E1 /* AuraVideoPlayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuraVideoPlayer.swift; sourceTree = "<group>"; };
 		ABD5000000000000000000E2 /* RemoteExerciseImage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteExerciseImage.swift; sourceTree = "<group>"; };
+		ABD5000000000000000000E3 /* MuscleMap.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MuscleMap.swift; sourceTree = "<group>"; };
+		ABD5000000000000000000E4 /* MuscleMapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MuscleMapView.swift; sourceTree = "<group>"; };
 		ABEE0001000000000000001B /* AuraTabBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuraTabBar.swift; sourceTree = "<group>"; };
 		ABEE0002000000000000002B /* AuraScreenScroll.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuraScreenScroll.swift; sourceTree = "<group>"; };
 		ABEE0003000000000000003B /* ResumeBanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResumeBanner.swift; sourceTree = "<group>"; };
@@ -282,6 +286,8 @@
 				ABEE0003000000000000003B /* ResumeBanner.swift */,
 				ABD5000000000000000000E1 /* AuraVideoPlayer.swift */,
 				ABD5000000000000000000E2 /* RemoteExerciseImage.swift */,
+				ABD5000000000000000000E3 /* MuscleMap.swift */,
+				ABD5000000000000000000E4 /* MuscleMapView.swift */,
 			);
 			path = DesignSystem;
 			sourceTree = "<group>";
@@ -525,6 +531,8 @@
 				AA000006000000000000006B /* AuraComponents.swift in Sources */,
 				AAD5000000000000000000E1 /* AuraVideoPlayer.swift in Sources */,
 				AAD5000000000000000000E2 /* RemoteExerciseImage.swift in Sources */,
+				AAD5000000000000000000E3 /* MuscleMap.swift in Sources */,
+				AAD5000000000000000000E4 /* MuscleMapView.swift in Sources */,
 				AAEE0001000000000000001B /* AuraTabBar.swift in Sources */,
 				AAEE0002000000000000002B /* AuraScreenScroll.swift in Sources */,
 				AAEE0003000000000000003B /* ResumeBanner.swift in Sources */,
