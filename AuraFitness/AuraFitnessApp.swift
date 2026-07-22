@@ -64,15 +64,6 @@ struct AuraFitnessApp: App {
                 // usual case; failure leaves the bundled library in place.
                 await ExerciseDatabase.shared.refreshCatalogFromRemote()
             }
-            // Password-reset / email-confirmation links come back in through
-            // here. Requires the `aurafitness` URL scheme to be declared on
-            // the target (Info → URL Types) — see AuthService.authCallbackURL
-            // and MANUAL_STEPS.md; without it iOS never delivers the link.
-            .onOpenURL { url in
-                DispatchQueue.main.async {
-                    Task { await AuthService.shared.handleAuthCallback(url: url) }
-                }
-            }
             .onChange(of: scenePhase) { phase in
                 guard phase == .active, authService.userID != nil else { return }
                 Task {
