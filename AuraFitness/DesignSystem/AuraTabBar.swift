@@ -46,26 +46,25 @@ extension Notification.Name {
 /// The design's Log/Plan/Progress/Profile bar: flat, transparent, four equal
 /// tabs pinned to the bottom. No pill, no glass, no FAB. Inactive tabs use
 /// `--text-3`; the active tab is `--accent` with an accent drop-shadow glow on
-/// its icon. A home-indicator bar sits below.
+/// its icon.
+///
+/// The design's `.home-indicator` bar is deliberately NOT ported. In the HTML
+/// prototype that capsule stood in for iOS chrome the browser could not draw;
+/// on device the system draws the real home indicator in the same place, so
+/// rendering it ourselves put a second black bar under the first. Do not
+/// re-add it — the safe-area inset below the tab row is where the system one
+/// goes.
 struct AuraTabBar: View {
     @Binding var selection: AuraTab
 
     var body: some View {
-        VStack(spacing: 0) {
-            HStack(spacing: 0) {
-                ForEach(AuraTab.allCases) { tab in
-                    tabButton(tab)
-                }
+        HStack(spacing: 0) {
+            ForEach(AuraTab.allCases) { tab in
+                tabButton(tab)
             }
-            .padding(.top, 6)
-
-            // Home indicator — 134×5, --text @ 85%, bottom 8 (aura.css .home-indicator)
-            Capsule()
-                .fill(Color.aura.text.opacity(0.85))
-                .frame(width: 134, height: 5)
-                .padding(.top, 6)
-                .padding(.bottom, 8)
         }
+        .padding(.top, 6)
+        .padding(.bottom, 6)
         .background(Color.clear)
     }
 
