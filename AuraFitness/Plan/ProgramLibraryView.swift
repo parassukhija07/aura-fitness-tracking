@@ -55,8 +55,9 @@ struct ProgramLibraryView: View {
                 .listStyle(.insetGrouped)
                 .safeAreaInset(edge: .bottom) {
                     if embedded {
-                        // Flat tab bar is in-flow now; only a small gap is needed.
-                        Color.clear.frame(height: AuraSpacing.s2)
+                        // Hosted under the floating tab bar, which contributes
+                        // no layout height — reserve the full bar depth.
+                        Color.clear.frame(height: AuraSpacing.tabBarClearance)
                     }
                 }
             }

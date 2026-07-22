@@ -16,11 +16,9 @@ enum AuraTab: Int, CaseIterable, Identifiable {
     }
 }
 
-// MARK: - FAB quick action model (retained for deep-link routing; the design's
-// Log screen has no FAB, so the flat tab bar no longer renders these. Kept so
-// ContentView's existing quick-action routing continues to compile.)
+// MARK: - FAB quick action model (mirrors ui.jsx ACTIONS)
 
-enum AuraQuickAction: Identifiable {
+enum AuraQuickAction: Identifiable, CaseIterable {
     case startWorkout, logMeasurement, progressPhoto
     var id: String { label }
 
@@ -31,66 +29,259 @@ enum AuraQuickAction: Identifiable {
         case .progressPhoto:  return "Progress Photo"
         }
     }
+
+    var icon: String {
+        switch self {
+        case .startWorkout:   return "play.circle.fill"
+        case .logMeasurement: return "square.and.pencil"
+        case .progressPhoto:  return "medal.fill"
+        }
+    }
+
+    /// Chip accent per 02-shell-nav "The three actions".
+    var color: Color {
+        switch self {
+        case .startWorkout:   return .aura.accent
+        case .logMeasurement: return .aura.blue
+        case .progressPhoto:  return .aura.green
+        }
+    }
 }
 
 // MARK: - Scroll-direction preference
 
-/// Posted by tab content scroll views. The design's flat bar does not collapse,
-/// so this is currently inert, but the symbol stays defined for AuraScreenScroll.
+/// Posted by `AuraScreenScroll` so the floating bar can collapse on downward
+/// scroll and re-expand on upward scroll (design: `aura:scroll`).
 extension Notification.Name {
     static let auraScroll = Notification.Name("aura:scroll")
 }
 
-// MARK: - Flat bottom tab bar (matches aura.css `.tabbar` / screens/Log.html)
-
-/// The design's Log/Plan/Progress/Profile bar: flat, transparent, four equal
-/// tabs pinned to the bottom. No pill, no glass, no FAB. Inactive tabs use
-/// `--text-3`; the active tab is `--accent` with an accent drop-shadow glow on
-/// its icon.
-///
-/// The design's `.home-indicator` bar is deliberately NOT ported. In the HTML
-/// prototype that capsule stood in for iOS chrome the browser could not draw;
-/// on device the system draws the real home indicator in the same place, so
-/// rendering it ourselves put a second black bar under the first. Do not
-/// re-add it — the safe-area inset below the tab row is where the system one
-/// goes.
+// MARK: - Floating glass tab bar + FAB
+//
+// Ports `combined/ui.jsx` TabBarEl as specified in handoff chapter
+// 02-shell-nav: a floating glass pill holding the four tabs with ONE accent
+// indicator sliding beneath them, plus a separate circular FAB to its right
+// that fans out three quick-action chips.
+//
+// An earlier pass replaced all of this with a flat in-flow four-icon row, on
+// the grounds that `screens/Log.html` draws a plain bar. That prototype screen
+// is a static mock of the Log body; chapter 2 is the authority on the shell,
+// and it specifies the pill, the sliding indicator, the collapse-on-scroll and
+// the FAB. Do not flatten it again.
+//
+// The design's `.home-indicator` capsule is still deliberately NOT ported: on
+// device the system draws the real one in the same place, and drawing our own
+// put a second bar under the first. The bottom padding below is where it goes.
 struct AuraTabBar: View {
     @Binding var selection: AuraTab
+    var collapsed: Bool = false
+    let onQuickAction: (AuraQuickAction) -> Void
+
+    @State private var fabOpen = false
+    /// Live swipe offset in tab units, −1…1. Lets the indicator preview the
+    /// destination under the finger instead of only settling after release.
+    @State private var swipeProgress: CGFloat = 0
+    @State private var dragging = false
+
+    private var barHeight: CGFloat { collapsed ? 66 : 96 }
+    private var pillHeight: CGFloat { collapsed ? 50 : 62 }
+    private var fabSize: CGFloat { collapsed ? 34 : 46 }
 
     var body: some View {
-        HStack(spacing: 0) {
-            ForEach(AuraTab.allCases) { tab in
-                tabButton(tab)
+        ZStack(alignment: .bottom) {
+            // Invisible full-screen catcher: any outside tap closes the menu.
+            // Below the chips in z-order so the chips stay tappable.
+            if fabOpen {
+                Color.black.opacity(0.001)
+                    .ignoresSafeArea()
+                    .onTapGesture { closeFab() }
             }
+
+            if fabOpen {
+                VStack(alignment: .trailing, spacing: 10) {
+                    ForEach(Array(AuraQuickAction.allCases.enumerated()), id: \.element.id) { idx, action in
+                        quickActionChip(action)
+                            .transition(.move(edge: .bottom).combined(with: .opacity))
+                            // Staggered so the stack cascades rather than
+                            // arriving as one block (design: 0.06 + i × 0.05).
+                            .animation(.spring(response: 0.3, dampingFraction: 0.72)
+                                .delay(0.06 + Double(idx) * 0.05), value: fabOpen)
+                    }
+                }
+                .frame(maxWidth: .infinity, alignment: .trailing)
+                .padding(.horizontal, AuraSpacing.s4)
+                .padding(.bottom, barHeight + 10)
+                .zIndex(90)
+            }
+
+            HStack(spacing: collapsed ? 6 : 10) {
+                glassPill
+                fab
+            }
+            // Collapsed shrinks the pill toward the design's 72% width by
+            // widening the gutters; the FAB stays put on the right.
+            .padding(.horizontal, collapsed ? 40 : 10)
+            .padding(.bottom, collapsed ? 30 : 38)
         }
-        .padding(.top, 6)
-        .padding(.bottom, 6)
-        .background(Color.clear)
+        .animation(.easeInOut(duration: 0.25), value: collapsed)
     }
 
-    private func tabButton(_ tab: AuraTab) -> some View {
+    // MARK: Glass pill
+
+    private var glassPill: some View {
+        GeometryReader { geo in
+            let count = CGFloat(AuraTab.allCases.count)
+            let inset: CGFloat = 4
+            let slot = (geo.size.width - inset * 2) / count
+            // Follows the finger mid-swipe, so the pill previews where you are
+            // heading rather than jumping only once the gesture commits.
+            let target = min(max(CGFloat(selection.rawValue) + swipeProgress, 0), count - 1)
+
+            ZStack(alignment: .leading) {
+                RoundedRectangle(cornerRadius: AuraRadius.pill)
+                    .fill(Color.aura.accent)
+                    .frame(width: slot, height: geo.size.height - inset * 2)
+                    .shadow(color: Color.aura.accent.opacity(0.5), radius: 7, x: 0, y: 2)
+                    .offset(x: inset + target * slot, y: inset)
+                    // No animation while dragging: the indicator has to track
+                    // the finger 1:1 or it visibly lags the gesture.
+                    .animation(dragging ? nil : .timingCurve(0.4, 0, 0.2, 1, duration: 0.32),
+                               value: target)
+
+                HStack(spacing: 0) {
+                    ForEach(AuraTab.allCases) { tab in
+                        tabButton(tab, height: geo.size.height)
+                    }
+                }
+            }
+        }
+        .frame(height: pillHeight)
+        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: AuraRadius.pill))
+        .overlay(
+            RoundedRectangle(cornerRadius: AuraRadius.pill)
+                .stroke(Color.aura.text.opacity(0.11), lineWidth: 1)
+        )
+        .clipShape(RoundedRectangle(cornerRadius: AuraRadius.pill))
+        .shadow(color: .black.opacity(0.14), radius: 16, x: 0, y: 4)
+        .gesture(swipeGesture)
+    }
+
+    private func tabButton(_ tab: AuraTab, height: CGFloat) -> some View {
         let active = selection == tab
         return Button {
-            selection = tab
+            // Tapping a tab also dismisses an open FAB menu.
+            if fabOpen { closeFab() }
+            withAnimation(.timingCurve(0.4, 0, 0.2, 1, duration: 0.32)) { selection = tab }
         } label: {
             VStack(spacing: 3) {
                 AuraTabIcon(tab: tab)
-                    .stroke(active ? Color.aura.accent : Color.aura.text3,
+                    .stroke(active ? Color.white : Color.aura.text3,
                             style: StrokeStyle(lineWidth: 1.7, lineCap: .round, lineJoin: .round))
-                    .frame(width: 25, height: 25)
-                    // .tab.active svg { filter: drop-shadow(0 0 6px accent 55%) }
-                    .shadow(color: active ? Color.aura.accent.opacity(0.55) : .clear,
-                            radius: active ? 6 : 0)
-                Text(tab.title)
-                    .font(AuraFont.jakarta(10, .semibold))
-                    .tracking(0.1) // letter-spacing: 0.01em × 10
-                    .foregroundColor(active ? .aura.accent : .aura.text3)
+                    .frame(width: 22, height: 22)
+                if !collapsed {
+                    Text(tab.title)
+                        .font(AuraFont.jakarta(10, .semibold))
+                        .tracking(0.1) // letter-spacing: 0.01em × 10
+                        .foregroundColor(active ? .white : .aura.text3)
+                }
             }
             .frame(maxWidth: .infinity)
+            .frame(height: height)
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
-        .animation(.easeInOut(duration: 0.15), value: active) // .tab { transition: color .15s }
+        .animation(.easeInOut(duration: 0.2), value: active)
+    }
+
+    // MARK: FAB
+
+    private var fab: some View {
+        Button {
+            withAnimation(.spring(response: 0.3, dampingFraction: 0.72)) { fabOpen.toggle() }
+        } label: {
+            Image(systemName: "plus")
+                .font(.system(size: collapsed ? 15 : 22, weight: .semibold))
+                .foregroundColor(fabOpen ? .aura.text : .white)
+                // + becomes × while the menu is open.
+                .rotationEffect(.degrees(fabOpen ? 45 : 0))
+                .frame(width: fabSize, height: fabSize)
+                .background {
+                    if fabOpen {
+                        Circle().fill(.ultraThinMaterial)
+                    } else {
+                        Circle().fill(Color.aura.accent)
+                    }
+                }
+                .overlay(Circle().stroke(Color.aura.text.opacity(0.12), lineWidth: 1))
+                .shadow(color: fabOpen ? .black.opacity(0.14) : Color.aura.accent.opacity(0.55),
+                        radius: fabOpen ? 8 : 10, x: 0, y: 4)
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(fabOpen ? "Close quick actions" : "Quick actions")
+    }
+
+    private func quickActionChip(_ action: AuraQuickAction) -> some View {
+        Button {
+            closeFab()
+            onQuickAction(action)
+        } label: {
+            HStack(spacing: 12) {
+                ZStack {
+                    Circle().fill(action.color).frame(width: 32, height: 32)
+                    Image(systemName: action.icon)
+                        .font(.system(size: 15, weight: .bold))
+                        .foregroundColor(.white)
+                }
+                Text(action.label)
+                    .font(AuraFont.jakarta(14, .bold))
+                    .foregroundColor(.aura.text)
+            }
+            .padding(.leading, 12)
+            .padding(.trailing, 18)
+            .padding(.vertical, 10)
+            .background(.ultraThinMaterial, in: Capsule())
+            .overlay(Capsule().stroke(Color.aura.text.opacity(0.14), lineWidth: 1))
+            .shadow(color: .black.opacity(0.22), radius: 16, x: 0, y: 8)
+        }
+        .buttonStyle(.plain)
+    }
+
+    private func closeFab() {
+        withAnimation(.easeOut(duration: 0.18)) { fabOpen = false }
+    }
+
+    // MARK: Swipe between tabs
+
+    /// Horizontal drag on the bar moves one tab over, previewing the
+    /// destination live. Guarded at both ends so you can never swipe past Log
+    /// or Profile — and so the indicator shows no drift when you try.
+    private var swipeGesture: some Gesture {
+        DragGesture(minimumDistance: 12)
+            .onChanged { value in
+                dragging = true
+                let idx = selection.rawValue
+                // ~70pt of travel is one tab's worth, matching the design's
+                // "quarter of the pill width" on a phone-width bar.
+                let progress = max(min(value.translation.width / 70, 1), -1)
+                let canGoNext = progress < 0 && idx < AuraTab.allCases.count - 1
+                let canGoPrev = progress > 0 && idx > 0
+                swipeProgress = (canGoNext || canGoPrev) ? -progress : 0
+            }
+            .onEnded { value in
+                dragging = false
+                withAnimation(.timingCurve(0.4, 0, 0.2, 1, duration: 0.32)) { swipeProgress = 0 }
+
+                let dx = value.translation.width
+                guard abs(dx) >= 35 else { return }   // below threshold: snap back
+                let idx = selection.rawValue
+                withAnimation(.timingCurve(0.4, 0, 0.2, 1, duration: 0.32)) {
+                    if dx < 0, idx < AuraTab.allCases.count - 1 {
+                        selection = AuraTab(rawValue: idx + 1) ?? selection
+                    } else if dx > 0, idx > 0 {
+                        selection = AuraTab(rawValue: idx - 1) ?? selection
+                    }
+                }
+            }
     }
 }
 

@@ -22,11 +22,11 @@ enum AuraSpacing {
     static let s10: CGFloat = 40
     /// Screen horizontal padding (`.pad` in the design = 20px).
     static let screenPad: CGFloat = 20
-    /// Bottom breathing room above the flat in-flow tab bar. The bar now occupies
-    /// real layout height (it is a bottom row in ContentView, not a floating
-    /// overlay), so content only needs a small gap — not the full bar height that
-    /// the design's `position:absolute` `.pad-b: 110px` reserved.
-    static let tabBarClearance: CGFloat = 24
+    /// Bottom breathing room reserved for the floating tab bar. The bar is an
+    /// overlay, not a layout row, so it contributes no height of its own and
+    /// every scrollable screen has to leave this gap or its last item sits
+    /// under the glass. Matches the design's `.pad-b: 110px` (96pt bar + margin).
+    static let tabBarClearance: CGFloat = 110
 }
 
 // MARK: - Shadow tokens (mirrors aura.css --shadow / --shadow-sm)

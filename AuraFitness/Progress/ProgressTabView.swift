@@ -43,8 +43,9 @@ struct ProgressTabView: View {
             .background(Color.aura.bgGrouped)
             .toolbar(.hidden, for: .navigationBar)
             .safeAreaInset(edge: .bottom) {
-                // Flat tab bar is in-flow now; only a small gap is needed.
-                Color.clear.frame(height: AuraSpacing.s2)
+                // The tab bar floats over the content and contributes no layout
+                // height, so the full bar depth has to be reserved here.
+                Color.clear.frame(height: AuraSpacing.tabBarClearance)
             }
             // FAB deep links (Log Measurements / Progress Photo) open the Body
             // tab; MeasurementsView then raises the matching sheet.
