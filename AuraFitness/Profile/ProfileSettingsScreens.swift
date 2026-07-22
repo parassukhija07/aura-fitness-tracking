@@ -373,13 +373,12 @@ struct ProfileConfirmSheet: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            SheetGrabber()
             content
                 .padding(.horizontal, AuraSpacing.s4)
                 .padding(.bottom, AuraSpacing.s5)
         }
         .presentationDetents([.height(detentHeight)])
-        .presentationDragIndicator(.hidden)
+        .presentationDragIndicator(.visible)
         .background(Color.aura.surface)
         .alert("Reset everything?", isPresented: $showFullResetConfirm) {
             Button("Cancel", role: .cancel) {}

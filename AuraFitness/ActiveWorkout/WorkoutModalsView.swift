@@ -37,7 +37,6 @@ struct WorkoutModalsView: View {
         .background(Color.aura.bg)
     }
 
-    private func grabber() -> some View { SheetGrabber().frame(maxWidth: .infinity) }
 
     // MARK: Substitute
 
@@ -45,7 +44,6 @@ struct WorkoutModalsView: View {
         let cur = session.workout.exercises.indices.contains(ei) ? session.workout.exercises[ei] : nil
         return ScrollView {
             VStack(spacing: AuraSpacing.s3) {
-                grabber()
                 VStack(spacing: 3) {
                     Text("Substitute Exercise").font(AuraFont.jakarta(15, .bold)).foregroundColor(.aura.text)
                     Text("Replacing: \(cur?.name ?? "")").font(AuraFont.jakarta(12)).foregroundColor(.aura.text2)
@@ -68,6 +66,7 @@ struct WorkoutModalsView: View {
             .padding(.bottom, AuraSpacing.s6)
         }
         .presentationDetents([.medium, .large])
+        .presentationDragIndicator(.visible)
     }
 
     // MARK: Create superset (ss-pick)
@@ -77,7 +76,6 @@ struct WorkoutModalsView: View {
         let others = Array(session.workout.exercises.enumerated()).filter { $0.offset != ei }
         return ScrollView {
             VStack(alignment: .leading, spacing: AuraSpacing.s3) {
-                grabber()
                 HStack {
                     Text("Create Superset").font(AuraFont.navTitle()).foregroundColor(.aura.text)
                     Spacer()
@@ -153,6 +151,7 @@ struct WorkoutModalsView: View {
             .padding(.bottom, AuraSpacing.s6)
         }
         .presentationDetents([.large])
+        .presentationDragIndicator(.visible)
     }
 
     // MARK: Remove superset confirmation
@@ -162,7 +161,6 @@ struct WorkoutModalsView: View {
         let b = session.workout.exercises.indices.contains(ei + 1) ? session.workout.exercises[ei + 1] : nil
         return ScrollView {
             VStack(spacing: AuraSpacing.s3) {
-                grabber()
                 VStack(spacing: 6) {
                     ZStack {
                         Circle().fill(Color.aura.red.opacity(0.12)).frame(width: 48, height: 48)
@@ -197,6 +195,7 @@ struct WorkoutModalsView: View {
             .padding(.bottom, AuraSpacing.s6)
         }
         .presentationDetents([.medium])
+        .presentationDragIndicator(.visible)
     }
 
     private func ssSummaryRow(_ letter: String, _ ex: Exercise, color: Color) -> some View {
@@ -217,7 +216,6 @@ struct WorkoutModalsView: View {
     private func addExerciseSheet(forSS: Int?) -> some View {
         ScrollView {
             VStack(alignment: .leading, spacing: AuraSpacing.s3) {
-                grabber()
                 VStack(spacing: 3) {
                     Text(forSS != nil ? "Add Exercise to Superset" : "Add Exercise")
                         .font(AuraFont.jakarta(15, .bold)).foregroundColor(.aura.text)
@@ -262,6 +260,7 @@ struct WorkoutModalsView: View {
             .padding(.bottom, AuraSpacing.s6)
         }
         .presentationDetents([.large])
+        .presentationDragIndicator(.visible)
     }
 
     private var filteredAddOptions: [WorkoutExerciseOption] {

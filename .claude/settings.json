@@ -143,7 +143,9 @@
       "Bash(python -c \"import PIL, cairosvg\")",
       "Bash(python -c \"import PIL; print\\('PIL ok'\\)\")",
       "Bash(python \"C:/Users/muska/AppData/Local/Temp/claude/c--Users-muska-OneDrive-Documents-App-Development-Aura-Fitness-Tracker/67532ade-b41f-4f25-9068-84875ccde992/scratchpad/render_musclemap.py\")",
-      "Bash(mv musclemap_*.png \"C:/Users/muska/AppData/Local/Temp/claude/c--Users-muska-OneDrive-Documents-App-Development-Aura-Fitness-Tracker/67532ade-b41f-4f25-9068-84875ccde992/scratchpad/\")"
+      "Bash(mv musclemap_*.png \"C:/Users/muska/AppData/Local/Temp/claude/c--Users-muska-OneDrive-Documents-App-Development-Aura-Fitness-Tracker/67532ade-b41f-4f25-9068-84875ccde992/scratchpad/\")",
+      "Bash(python \"C:/Users/muska/AppData/Local/Temp/claude/c--Users-muska-OneDrive-Documents-App-Development-Aura-Fitness-Tracker/e7762d0d-76ec-48c5-aedd-87410f52a684/scratchpad/gen_library.py\" .)",
+      "Bash(rtk du *)"
     ]
   },
   "hooks": {

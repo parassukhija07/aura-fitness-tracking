@@ -259,7 +259,6 @@ struct ExerciseMenuSheet: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            SheetGrabber()
             if let ex = exercise {
                 VStack(spacing: 2) {
                     Text(ex.name).font(AuraFont.jakarta(15, .bold)).foregroundColor(.aura.text)

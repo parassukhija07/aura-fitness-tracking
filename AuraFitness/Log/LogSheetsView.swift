@@ -21,6 +21,9 @@ struct LogSheetsView: View {
     // MARK: Build-from-library state
     @StateObject private var exerciseDB = ExerciseDatabase.shared
     @State private var libQuery = ""
+    /// Search text for the bundled workout library (distinct from `libQuery`,
+    /// which searches exercises).
+    @State private var wkLibQuery = ""
     @State private var libCategory = "All"
     @State private var libSelected: [UUID] = []
 
@@ -38,7 +41,8 @@ struct LogSheetsView: View {
             case .switchWorkout(let planId):     switchSheet(planId: planId)
             case .move:                          moveSheet
             case .edit:                          editSheet
-            case .add:                           addSheet
+            case .add(let mode, let date):       addSheet(mode: mode, date: date)
+            case .workoutLibrary(let mode, let date): workoutLibrarySheet(mode: mode, date: date)
             case .logPast(let date, let show):   logPastSheet(date: date, showToday: show)
             case .pick(let mode, let date):      pickSheet(mode: mode, date: date)
             case .buildFromLibrary(let mode, let date): buildFromLibrarySheet(mode: mode, date: date)
@@ -56,6 +60,10 @@ struct LogSheetsView: View {
         ))
         .animation(.easeInOut(duration: 0.28), value: sheet.id)
         .presentationDetents(detents)
+        // The system grabber, rather than one drawn into each sheet's content.
+        // The design prototype had to draw its own because a web page has no
+        // sheet chrome; on iOS that produced a second bar under the real one.
+        .presentationDragIndicator(.visible)
     }
 
     /// Per-sheet detents: compact sheets fit their content; tall/scrolling sheets get full height.
@@ -66,11 +74,16 @@ struct LogSheetsView: View {
             return [.fraction(0.55)]
         case .add:
             // Sized to its three source cards rather than `.medium`. The sheet
-            // holds a grabber, a title, one line of subtitle and 3 × 76pt rows
-            // — about 350pt — so `.medium` left a slab of empty background
-            // under the last card. `.large` stays available as a second detent
-            // for the small screens where 0.42 would clip it.
+            // holds a title, one line of subtitle and 3 × 76pt rows — about
+            // 350pt — so `.medium` left a slab of empty background under the
+            // last card. `.large` stays available as a second detent for the
+            // small screens where 0.42 would clip it.
             return [.fraction(0.42), .large]
+        case .pick:
+            // A handful of workout rows, not a full screen of them. Was
+            // falling through to `[.large]`, which left most of the sheet
+            // empty below the list.
+            return [.fraction(0.55), .large]
         case .move:
             return [.medium, .large]
         default:
@@ -79,8 +92,6 @@ struct LogSheetsView: View {
     }
 
     // MARK: Reusable chrome
-
-    private func grabber() -> some View { SheetGrabber() }
 
     /// Sheet title, with an optional circular ✕ on the trailing edge.
     ///
@@ -205,7 +216,6 @@ struct LogSheetsView: View {
     private var menuSheet: some View {
         ScrollView {
             VStack(spacing: 0) {
-                grabber()
                 VStack(spacing: 2) {
                     Text(info.workout?.name ?? "Workout").font(AuraFont.jakarta(15, .bold)).foregroundColor(.aura.text)
                     Text("Planned for today").font(AuraFont.jakarta(12)).foregroundColor(.aura.text2)
@@ -269,7 +279,6 @@ struct LogSheetsView: View {
     private var switchLevel1: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: AuraSpacing.s3) {
-                grabber().frame(maxWidth: .infinity)
                 sheetHeader("Switch Workout", sub: "For today only · your program stays unchanged")
 
                 // Active program workouts
@@ -328,7 +337,6 @@ struct LogSheetsView: View {
     private func switchLevel2(_ plan: Program) -> some View {
         ScrollView {
             VStack(alignment: .leading, spacing: AuraSpacing.s3) {
-                grabber().frame(maxWidth: .infinity)
                 // Back header
                 HStack(spacing: 10) {
                     Button { parentSheet = .switchWorkout() } label: {
@@ -368,7 +376,6 @@ struct LogSheetsView: View {
         let days = (0..<7).compactMap { cal.date(byAdding: .day, value: $0, to: weekStart) }
         return ScrollView {
             VStack(alignment: .leading, spacing: AuraSpacing.s3) {
-                grabber().frame(maxWidth: .infinity)
                 sheetHeader("Move to Another Day", sub: "Today only · your program stays unchanged")
                 VStack(spacing: 0) {
                     ForEach(Array(days.enumerated()), id: \.offset) { idx, d in
@@ -419,7 +426,6 @@ struct LogSheetsView: View {
     private var editSheet: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: AuraSpacing.s3) {
-                grabber().frame(maxWidth: .infinity)
                 sheetHeader("Edit Workout", sub: "Changes apply to today only")
                 VStack(spacing: 9) {
                     ForEach(Array(editExercises.enumerated()), id: \.element.id) { i, e in
@@ -476,22 +482,25 @@ struct LogSheetsView: View {
 
     // MARK: Add sheet
 
-    private var addSheet: some View {
+    private func addSheet(mode: LogSheet.PickMode, date: String) -> some View {
         ScrollView {
             VStack(alignment: .leading, spacing: AuraSpacing.s3) {
-                grabber().frame(maxWidth: .infinity)
-                sheetHeader("Add a Workout") { parentSheet = nil }
+                sheetHeader(mode == .logpast ? "Log a Workout" : "Add a Workout") { parentSheet = nil }
                 Text("Where should this workout come from?")
                     .font(AuraFont.jakarta(12)).foregroundColor(.aura.text2)
                     .padding(.horizontal, AuraSpacing.screenPad)
                 VStack(spacing: 12) {
                     srcCard(icon: "sparkles", bg: .aura.accentSoft, color: .aura.accent,
-                            title: "From your programs", sub: "Your active PPL plan & saved programs") {
-                        parentSheet = .pick(mode: .add, date: info.iso)
+                            title: "From your programs", sub: programSourceSub) {
+                        parentSheet = .pick(mode: mode, date: date)
                     }
+                    // The bundled workout library — 46 ready-made sessions.
+                    // This used to open the EXERCISE library, which is a
+                    // different thing: that builds a workout one movement at a
+                    // time, which is what "Empty Workout" below is for.
                     srcCard(icon: "magnifyingglass", bg: .aura.green.opacity(0.16), color: .aura.green,
-                            title: "From Workout Library", sub: "Pick exercises from scratch") {
-                        parentSheet = .buildFromLibrary(mode: .add, date: info.iso)
+                            title: "From Workout Library", sub: "Browse every ready-made workout") {
+                        parentSheet = .workoutLibrary(mode: mode, date: date)
                     }
                     srcCard(icon: "plus", bg: .aura.fill, color: .aura.text2,
                             title: "Empty Workout", sub: "Start blank, add as you go") {
@@ -506,6 +515,13 @@ struct LogSheetsView: View {
         .background(Color.aura.bg)
     }
 
+    /// Names the plan the "From your programs" route will actually show, so
+    /// the row isn't advertising content the user hasn't got.
+    private var programSourceSub: String {
+        if let plan = appState.defaultPlan { return "\(plan.name) & saved programs" }
+        return programWorkouts.isEmpty ? "No programs yet" : "Your saved programs"
+    }
+
     // MARK: Log-past sheet
 
     private func logPastSheet(date: String, showToday: Bool) -> some View {
@@ -513,7 +529,6 @@ struct LogSheetsView: View {
         let twoAgo = cal.date(byAdding: .day, value: -2, to: cal.startOfDay(for: Date()))!
         return ScrollView {
             VStack(alignment: .leading, spacing: AuraSpacing.s3) {
-                grabber().frame(maxWidth: .infinity)
                 sheetHeader("Log a Past Workout")
                 Text("WHEN DID YOU TRAIN?")
                     .font(AuraFont.jakarta(11, .bold)).foregroundColor(.aura.text2)
@@ -615,7 +630,6 @@ struct LogSheetsView: View {
 
     private func buildFromLibrarySheet(mode: LogSheet.PickMode, date: String) -> some View {
         VStack(spacing: 0) {
-            grabber().frame(maxWidth: .infinity).padding(.top, AuraSpacing.s2)
             sheetHeader("Build a Workout", sub: "Select exercises, then confirm")
                 .padding(.horizontal, AuraSpacing.screenPad)
 
@@ -723,7 +737,6 @@ struct LogSheetsView: View {
     private func pickSheet(mode: LogSheet.PickMode, date: String) -> some View {
         ScrollView {
             VStack(alignment: .leading, spacing: AuraSpacing.s3) {
-                grabber().frame(maxWidth: .infinity)
                 sheetHeader("Pick a Workout", sub: pickSub(mode: mode, date: date))
                 VStack(spacing: 10) {
                     ForEach(programWorkouts) { w in
@@ -745,6 +758,67 @@ struct LogSheetsView: View {
         return "Added to \(isToday ? "today" : dowFull[cal.component(.weekday, from: selected) - 1])"
     }
 
+    // MARK: Workout library sheet
+
+    /// Every workout the app ships, across every program, searchable — the
+    /// "From Workout Library" destination. `pickSheet` above is deliberately
+    /// narrower: it shows only the user's own program, which is the point of
+    /// the "From your programs" route.
+    private func workoutLibrarySheet(mode: LogSheet.PickMode, date: String) -> some View {
+        let all = ProgramDatabase.shared.allWorkouts
+        let q = wkLibQuery.trimmingCharacters(in: .whitespaces)
+        let matches = q.isEmpty ? all : all.filter {
+            $0.name.localizedCaseInsensitiveContains(q)
+            || $0.primaryMuscles.localizedCaseInsensitiveContains(q)
+        }
+
+        return VStack(alignment: .leading, spacing: AuraSpacing.s3) {
+            sheetHeader("Workout Library", sub: pickSub(mode: mode, date: date)) { parentSheet = nil }
+
+            HStack(spacing: AuraSpacing.s2) {
+                Image(systemName: "magnifyingglass").foregroundColor(.aura.text3)
+                TextField("Search workouts", text: $wkLibQuery)
+                    .font(AuraFont.body())
+                    .autocorrectionDisabled()
+                if !wkLibQuery.isEmpty {
+                    Button { wkLibQuery = "" } label: {
+                        Image(systemName: "xmark.circle.fill").foregroundColor(.aura.text3)
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+            .padding(AuraSpacing.s3)
+            .background(Color.aura.fill)
+            .clipShape(RoundedRectangle(cornerRadius: AuraRadius.md))
+            .padding(.horizontal, AuraSpacing.screenPad)
+
+            if matches.isEmpty {
+                // Distinguishes "your search matched nothing" from "there is no
+                // library", which are different problems with different fixes.
+                Text(all.isEmpty
+                     ? "No workouts in the library yet."
+                     : "No workouts match “\(q)”.")
+                    .font(AuraFont.secondary())
+                    .foregroundColor(.aura.text2)
+                    .frame(maxWidth: .infinity, alignment: .center)
+                    .padding(.top, AuraSpacing.s6)
+                Spacer()
+            } else {
+                ScrollView {
+                    VStack(spacing: 10) {
+                        ForEach(matches) { w in
+                            workoutRow(w) { assign(w.id, mode: mode, dateIso: date) }
+                        }
+                    }
+                    .padding(.horizontal, AuraSpacing.screenPad)
+                    .padding(.bottom, AuraSpacing.s6)
+                }
+            }
+        }
+        .padding(.top, AuraSpacing.s3)
+        .background(Color.aura.bg)
+    }
+
     // MARK: Calendar sheet
 
     @State private var calMonth = Date()
@@ -763,7 +837,6 @@ struct LogSheetsView: View {
 
         return ScrollView {
             VStack(spacing: AuraSpacing.s3) {
-                grabber()
                 HStack {
                     Text("\(monFull[cal.component(.month, from: calMonth) - 1]) \(cal.component(.year, from: calMonth))")
                         .font(AuraFont.navTitle()).foregroundColor(.aura.text)
@@ -875,7 +948,6 @@ struct LogSheetsView: View {
         }
         return ScrollView {
             VStack(alignment: .leading, spacing: AuraSpacing.s3) {
-                grabber().frame(maxWidth: .infinity)
                 sheetHeader("Workout Log", sub: (info.workout?.name ?? "")
                     + (log != nil ? "  ·  \(log!.time)" : "")
                     + (log.map { $0.durationMinutes > 0 ? "  ·  \($0.durationMinutes) min" : "" } ?? ""))
@@ -926,7 +998,6 @@ struct LogSheetsView: View {
         let workout = info.workout
         return ScrollView {
             VStack(alignment: .leading, spacing: AuraSpacing.s3) {
-                grabber().frame(maxWidth: .infinity)
                 sheetHeader(workout?.name ?? "Workout", sub: "Planned · read-only")
                 VStack(spacing: 12) {
                     ForEach(workout?.exercises ?? []) { ex in
@@ -969,7 +1040,6 @@ struct LogSheetsView: View {
     private func quickLogForm(title: String, sub: String, showTime: Bool, iso: String, saveLabel: String) -> some View {
         ScrollView {
             VStack(alignment: .leading, spacing: AuraSpacing.s4) {
-                grabber().frame(maxWidth: .infinity)
                 sheetHeader(title, sub: sub)
                 if showTime {
                     HStack(spacing: 14) {

@@ -46,7 +46,6 @@ struct EndWorkoutSheet: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            SheetGrabber()
             VStack(spacing: AuraSpacing.s3) {
                 VStack(spacing: 4) {
                     Text("End this workout?")

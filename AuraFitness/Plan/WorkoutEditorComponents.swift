@@ -168,8 +168,6 @@ struct ExerciseEditMenuSheet: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: AuraSpacing.s4) {
-            SheetGrabber()
-                .frame(maxWidth: .infinity)
 
             Text(exercise.name)
                 .font(AuraFont.cardTitle(size: 20))

@@ -18,8 +18,6 @@ struct SupersetPickSheet: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: AuraSpacing.s4) {
-            SheetGrabber()
-                .frame(maxWidth: .infinity)
 
             Text("Create Superset")
                 .font(AuraFont.cardTitle(size: 20))

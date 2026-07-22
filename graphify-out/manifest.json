@@ -1,7 +1,7 @@
 {
   ".claude/settings.json": {
-    "mtime": 1784731243.4001558,
-    "ast_hash": "be97dfc019cca0ec0c203216cfc16033",
+    "mtime": 1784750688.9181914,
+    "ast_hash": "4cf9e35550c45e2517ad4182bf06bf34",
     "semantic_hash": ""
   },
   ".claude/settings.local.json": {
@@ -125,8 +125,8 @@
     "semantic_hash": ""
   },
   "AuraFitness/ActiveWorkout/ActiveWorkoutView.swift": {
-    "mtime": 1784330839.1491258,
-    "ast_hash": "b1a7ebf87e9108fa5688d67cfc59a28f",
+    "mtime": 1784752325.6385162,
+    "ast_hash": "23a087ea0e6a0b01c780bb22259649fc",
     "semantic_hash": ""
   },
   "AuraFitness/ActiveWorkout/CelebrationOverlay.swift": {
@@ -155,8 +155,8 @@
     "semantic_hash": ""
   },
   "AuraFitness/ActiveWorkout/SetRowView.swift": {
-    "mtime": 1784573671.0342052,
-    "ast_hash": "af04bfdec43740e5dd5ceaf945207fe2",
+    "mtime": 1784752598.694558,
+    "ast_hash": "cfd2b8f72b1ba0f3d7d7ed9d71678cbc",
     "semantic_hash": ""
   },
   "AuraFitness/ActiveWorkout/SupersetView.swift": {
@@ -165,13 +165,13 @@
     "semantic_hash": ""
   },
   "AuraFitness/ActiveWorkout/WorkoutModalsView.swift": {
-    "mtime": 1784467054.718947,
-    "ast_hash": "90ab2e178769b3a7770e55373702b9e2",
+    "mtime": 1784752803.2737868,
+    "ast_hash": "fabfbf4070e170252dcd542e716a5173",
     "semantic_hash": ""
   },
   "AuraFitness/ActiveWorkout/WorkoutOverviewView.swift": {
-    "mtime": 1784482144.910488,
-    "ast_hash": "9b2ad5e187d9734fa6facf7f954ee899",
+    "mtime": 1784752613.7405367,
+    "ast_hash": "b6c6e4925a0e5714e1497cffa142be7b",
     "semantic_hash": ""
   },
   "AuraFitness/ActiveWorkout/WorkoutPersistence.swift": {
@@ -215,8 +215,8 @@
     "semantic_hash": ""
   },
   "AuraFitness/Auth/AuthGateView.swift": {
-    "mtime": 1784659942.4922044,
-    "ast_hash": "e52bcb888c32de664278da488c164d55",
+    "mtime": 1784752712.2057414,
+    "ast_hash": "0cc7eea9d78d92d67bdb802ecd6c74ec",
     "semantic_hash": ""
   },
   "AuraFitness/Auth/AuthService.swift": {
@@ -225,8 +225,8 @@
     "semantic_hash": ""
   },
   "AuraFitness/ContentView.swift": {
-    "mtime": 1784466245.4898748,
-    "ast_hash": "89107a60a9b0903d567006f07c9439a4",
+    "mtime": 1784750144.1592157,
+    "ast_hash": "dd834f07864bbc0013c752942297fb90",
     "semantic_hash": ""
   },
   "AuraFitness/DesignSystem/AuraColors.swift": {
@@ -235,8 +235,8 @@
     "semantic_hash": ""
   },
   "AuraFitness/DesignSystem/AuraComponents.swift": {
-    "mtime": 1784571638.7777328,
-    "ast_hash": "2c9b54ad0f953b0cca5d070a19849a80",
+    "mtime": 1784752843.4425442,
+    "ast_hash": "af3c3db0bf9a1057d6a77dcce250ebc0",
     "semantic_hash": ""
   },
   "AuraFitness/DesignSystem/AuraScreenScroll.swift": {
@@ -245,13 +245,13 @@
     "semantic_hash": ""
   },
   "AuraFitness/DesignSystem/AuraSpacing.swift": {
-    "mtime": 1784466282.2591102,
-    "ast_hash": "f43ac05baadcd17516ab736cb926269c",
+    "mtime": 1784749159.82119,
+    "ast_hash": "d9ef1779b8d39596a7c8c1c0894fef87",
     "semantic_hash": ""
   },
   "AuraFitness/DesignSystem/AuraTabBar.swift": {
-    "mtime": 1784731846.6107867,
-    "ast_hash": "d5004dc34057fdf709597a6cb2879888",
+    "mtime": 1784749091.1845262,
+    "ast_hash": "104608eb6c270442eaab0259d4714b8e",
     "semantic_hash": ""
   },
   "AuraFitness/DesignSystem/AuraTypography.swift": {
@@ -265,13 +265,13 @@
     "semantic_hash": ""
   },
   "AuraFitness/Log/LogSheetsView.swift": {
-    "mtime": 1784591305.5876942,
-    "ast_hash": "3410137e5b9315075fba7b16b4d2729d",
+    "mtime": 1784752267.4900067,
+    "ast_hash": "047d31534b0712f35f2a58e4c81fef6d",
     "semantic_hash": ""
   },
   "AuraFitness/Log/LogTabView.swift": {
-    "mtime": 1784480964.1058488,
-    "ast_hash": "72f21f08e164c3ea5b2c05aae54aae62",
+    "mtime": 1784752132.6213243,
+    "ast_hash": "ad780f1338898e56b1732eeea1c7db4d",
     "semantic_hash": ""
   },
   "AuraFitness/Models/AppState.swift": {
@@ -290,8 +290,8 @@
     "semantic_hash": ""
   },
   "AuraFitness/Models/ProgramDatabase.swift": {
-    "mtime": 1784732639.579336,
-    "ast_hash": "654f364ab5f426c46d3b0cd9d399787a",
+    "mtime": 1784748591.8610466,
+    "ast_hash": "1942c9c66a8110cfc4592714137d7e48",
     "semantic_hash": ""
   },
   "AuraFitness/Models/ProgressModels.swift": {
@@ -300,8 +300,8 @@
     "semantic_hash": ""
   },
   "AuraFitness/Models/SeedData.swift": {
-    "mtime": 1784732408.3267224,
-    "ast_hash": "3e349f77d1f45d91cc2d4b9384ee7706",
+    "mtime": 1784748153.6723862,
+    "ast_hash": "e5fe6aecd55e92bca3693abd9dc3bffc",
     "semantic_hash": ""
   },
   "AuraFitness/Models/UnitFormatter.swift": {
@@ -310,8 +310,8 @@
     "semantic_hash": ""
   },
   "AuraFitness/Models/WorkoutModels.swift": {
-    "mtime": 1784573420.8296795,
-    "ast_hash": "606ba4fa629a319b83d1d4db62b83851",
+    "mtime": 1784748069.687786,
+    "ast_hash": "72b3a7a5fa9619d5234e8da637bab387",
     "semantic_hash": ""
   },
   "AuraFitness/Plan/CreateExerciseView.swift": {
@@ -350,8 +350,8 @@
     "semantic_hash": ""
   },
   "AuraFitness/Plan/PlanComponents.swift": {
-    "mtime": 1784590796.4589121,
-    "ast_hash": "18eb9566d6b2fe6d11e9fa751f04b71e",
+    "mtime": 1784752624.1284866,
+    "ast_hash": "004cf94b115c5a8fc54f43ec8195e28a",
     "semantic_hash": ""
   },
   "AuraFitness/Plan/PlanExerciseDetailData.swift": {
@@ -395,8 +395,8 @@
     "semantic_hash": ""
   },
   "AuraFitness/Plan/ProgramLibraryView.swift": {
-    "mtime": 1784467012.5534248,
-    "ast_hash": "20d07e22aa87dcba4e5322592ba6b2c3",
+    "mtime": 1784749275.7658474,
+    "ast_hash": "d9f8c8f48b9e34a9bc25f664cdf749ae",
     "semantic_hash": ""
   },
   "AuraFitness/Plan/SaveEditScopeSheet.swift": {
@@ -405,8 +405,8 @@
     "semantic_hash": ""
   },
   "AuraFitness/Plan/SupersetPickSheet.swift": {
-    "mtime": 1784545500.6995401,
-    "ast_hash": "788baeb22bd4c2235fb1ef2abaec1e30",
+    "mtime": 1784752644.378858,
+    "ast_hash": "9bc59ff6e117fd2a511e15c2e13202be",
     "semantic_hash": ""
   },
   "AuraFitness/Plan/WeekStrip.swift": {
@@ -415,8 +415,8 @@
     "semantic_hash": ""
   },
   "AuraFitness/Plan/WorkoutEditorComponents.swift": {
-    "mtime": 1784545401.3475358,
-    "ast_hash": "c666b85162f29ee3c2d1e561dcf9a23a",
+    "mtime": 1784752655.0311096,
+    "ast_hash": "5f6e9277c360286132df41f764f04b22",
     "semantic_hash": ""
   },
   "AuraFitness/Plan/WorkoutEditorView.swift": {
@@ -455,8 +455,8 @@
     "semantic_hash": ""
   },
   "AuraFitness/Profile/DataResetService.swift": {
-    "mtime": 1784637516.8089023,
-    "ast_hash": "f51949b6d55e6153810f866f3fab4b1e",
+    "mtime": 1784748413.5794606,
+    "ast_hash": "347177156c1d4e19c5a1a1e14ff5b2a3",
     "semantic_hash": ""
   },
   "AuraFitness/Profile/HealthKitService.swift": {
@@ -465,8 +465,8 @@
     "semantic_hash": ""
   },
   "AuraFitness/Profile/ProfileSettingsScreens.swift": {
-    "mtime": 1784589623.542246,
-    "ast_hash": "abaa2a8bfadb0d2f84aaf177740a3a02",
+    "mtime": 1784752738.227695,
+    "ast_hash": "7659a70c3ff1624edc283686cd6237b7",
     "semantic_hash": ""
   },
   "AuraFitness/Profile/ProfileTabView.swift": {
@@ -515,13 +515,13 @@
     "semantic_hash": ""
   },
   "AuraFitness/Progress/ProgressTabView.swift": {
-    "mtime": 1784466339.802928,
-    "ast_hash": "08eec207599788c5d0ac4b614a8ec5d2",
+    "mtime": 1784749258.079304,
+    "ast_hash": "0c181e348e7b9fe2a470aeb99dd9dd13",
     "semantic_hash": ""
   },
   "AuraFitness/Progress/StatsView.swift": {
-    "mtime": 1784571645.8398514,
-    "ast_hash": "d6d7b9e1e7d732c8322932b82b94d509",
+    "mtime": 1784752676.0803509,
+    "ast_hash": "39f1eec3e244c1d8ba966688c1939f21",
     "semantic_hash": ""
   },
   "AuraFitness/Progress/WeeklyVolumeView.swift": {
@@ -1125,13 +1125,683 @@
     "semantic_hash": ""
   },
   "script_excercise_library.py": {
-    "mtime": 1784732600.514005,
-    "ast_hash": "f3bc81a076afd80340d97c5be4bd6983",
+    "mtime": 1784734997.8607125,
+    "ast_hash": "327988a2af541249e4860ae61a912247",
     "semantic_hash": ""
   },
   "AuraFitness/DesignSystem/MuscleMapView.swift": {
     "mtime": 1784730742.6356103,
     "ast_hash": "c893e098db689d838ae8e77b92e5e1fd",
+    "semantic_hash": ""
+  },
+  "exercise_images/3-4-sit-up.jpg": {
+    "mtime": 1784735007.0972457,
+    "ast_hash": "f7d53af8f01ecc3d6090c476947d2afe",
+    "semantic_hash": ""
+  },
+  "exercise_images/air-bike.jpg": {
+    "mtime": 1784735009.3610475,
+    "ast_hash": "3997e16a3ae597a9e44eeb4861467a3f",
+    "semantic_hash": ""
+  },
+  "exercise_images/alternate-heel-touchers.jpg": {
+    "mtime": 1784735011.8104882,
+    "ast_hash": "5a2016bdbf2186b2058e089aa47f4371",
+    "semantic_hash": ""
+  },
+  "exercise_images/ankle-circles.jpg": {
+    "mtime": 1784735014.1408112,
+    "ast_hash": "e11a386c71145c216f2a29d7f1ea26d3",
+    "semantic_hash": ""
+  },
+  "exercise_images/balance-board.jpg": {
+    "mtime": 1784735050.8819952,
+    "ast_hash": "d85a7c157020c2c4a33235088cfff9b7",
+    "semantic_hash": ""
+  },
+  "exercise_images/band-assisted-pull-up.jpg": {
+    "mtime": 1784735054.0713594,
+    "ast_hash": "b8144bf5623c1c5ee87d5662bcb38152",
+    "semantic_hash": ""
+  },
+  "exercise_images/barbell-curl.jpg": {
+    "mtime": 1784735121.9192727,
+    "ast_hash": "0fbc4f566c62088cff7e3a84a5952a31",
+    "semantic_hash": ""
+  },
+  "exercise_images/barbell-deadlift.jpg": {
+    "mtime": 1784735123.1327431,
+    "ast_hash": "4487963f124aa02702ce38e4d57d83b6",
+    "semantic_hash": ""
+  },
+  "exercise_images/barbell-full-squat.jpg": {
+    "mtime": 1784735136.6748126,
+    "ast_hash": "a00043339a8c33072cf9277c4e963aae",
+    "semantic_hash": ""
+  },
+  "exercise_images/barbell-glute-bridge.jpg": {
+    "mtime": 1784735140.899317,
+    "ast_hash": "0375f022bdf189b0fc7c3965caa735b1",
+    "semantic_hash": ""
+  },
+  "exercise_images/barbell-guillotine-bench-press.jpg": {
+    "mtime": 1784735144.4097092,
+    "ast_hash": "83e2a3653e8957bc52b601b5fc424a35",
+    "semantic_hash": ""
+  },
+  "exercise_images/barbell-hack-squat.jpg": {
+    "mtime": 1784735145.8472154,
+    "ast_hash": "cc95be5d008334caa629a23930c030cf",
+    "semantic_hash": ""
+  },
+  "exercise_images/barbell-incline-shoulder-raise.jpg": {
+    "mtime": 1784735151.9920197,
+    "ast_hash": "7f3b38454c9c96485a4a068b6f62c726",
+    "semantic_hash": ""
+  },
+  "exercise_images/barbell-lunge.jpg": {
+    "mtime": 1784735158.4095821,
+    "ast_hash": "2d478efc2cdfa879be709b61051ddd24",
+    "semantic_hash": ""
+  },
+  "exercise_images/barbell-rear-delt-row.jpg": {
+    "mtime": 1784735186.7171874,
+    "ast_hash": "4fdf556c5b97d042fb681c093ef7c6c2",
+    "semantic_hash": ""
+  },
+  "exercise_images/barbell-seated-calf-raise.jpg": {
+    "mtime": 1784735206.490975,
+    "ast_hash": "e161719905ae86ca82f1843a978081ea",
+    "semantic_hash": ""
+  },
+  "exercise_images/barbell-shrug.jpg": {
+    "mtime": 1784735213.5258887,
+    "ast_hash": "0aeffaf8158f06b429f271166fc289c3",
+    "semantic_hash": ""
+  },
+  "exercise_images/barbell-side-split-squat.jpg": {
+    "mtime": 1784735215.888263,
+    "ast_hash": "1cfd6f20a00211708592c67c568f5114",
+    "semantic_hash": ""
+  },
+  "exercise_images/battling-ropes.jpg": {
+    "mtime": 1784735258.4381084,
+    "ast_hash": "4958ebfa68590c1ac45df8e1800187cd",
+    "semantic_hash": ""
+  },
+  "exercise_images/behind-head-chest-stretch.jpg": {
+    "mtime": 1784735260.905913,
+    "ast_hash": "ff00cd33b12cf7a44cfa48ae7ff1afba",
+    "semantic_hash": ""
+  },
+  "exercise_images/body-up.jpg": {
+    "mtime": 1784735269.4423947,
+    "ast_hash": "28f48608a49f26767e590f8e89eac9c0",
+    "semantic_hash": ""
+  },
+  "exercise_images/bottoms-up.jpg": {
+    "mtime": 1784735283.9270682,
+    "ast_hash": "c899a3627d2a081c7b9c8846a18c1139",
+    "semantic_hash": ""
+  },
+  "exercise_images/butt-ups.jpg": {
+    "mtime": 1784735288.501432,
+    "ast_hash": "4b2da4fef77db7272138f14039055140",
+    "semantic_hash": ""
+  },
+  "exercise_images/cable-hip-adduction.jpg": {
+    "mtime": 1784735318.7137146,
+    "ast_hash": "d67a1a1c5045252ec8016abe522c9b0b",
+    "semantic_hash": ""
+  },
+  "exercise_images/cable-incline-pushdown.jpg": {
+    "mtime": 1784735324.1554976,
+    "ast_hash": "b84a272cf5514187482dfefec2881116",
+    "semantic_hash": ""
+  },
+  "exercise_images/cable-incline-triceps-extension.jpg": {
+    "mtime": 1784735325.620467,
+    "ast_hash": "0383417112266021875b8e422176f91b",
+    "semantic_hash": ""
+  },
+  "exercise_images/cable-judo-flip.jpg": {
+    "mtime": 1784735327.0988305,
+    "ast_hash": "3b4ebf29e09b4fba7920d89f3f09e145",
+    "semantic_hash": ""
+  },
+  "exercise_images/cable-preacher-curl.jpg": {
+    "mtime": 1784735374.0136495,
+    "ast_hash": "c7d69eaaf8e4b7d09a7133e7f4be2cb7",
+    "semantic_hash": ""
+  },
+  "exercise_images/cable-reverse-crunch.jpg": {
+    "mtime": 1784735387.5173414,
+    "ast_hash": "0a5a239383f29d4655b87b98bff22a27",
+    "semantic_hash": ""
+  },
+  "exercise_images/cable-seated-crunch.jpg": {
+    "mtime": 1784735407.7705574,
+    "ast_hash": "ba14954f610ffc5a3c923cdf901a2190",
+    "semantic_hash": ""
+  },
+  "exercise_images/cable-shoulder-press.jpg": {
+    "mtime": 1784735420.2110057,
+    "ast_hash": "9f482451eefc68174b76f76aa722809e",
+    "semantic_hash": ""
+  },
+  "exercise_images/cable-wrist-curl.jpg": {
+    "mtime": 1784735463.6018126,
+    "ast_hash": "35d142b9b9bce1fba4d5e6bddde7bdb2",
+    "semantic_hash": ""
+  },
+  "exercise_images/chair-leg-extended-stretch.jpg": {
+    "mtime": 1784735470.0990813,
+    "ast_hash": "0756fb1cebf6486713cee60cfd611866",
+    "semantic_hash": ""
+  },
+  "exercise_images/chest-and-front-of-shoulder-stretch.jpg": {
+    "mtime": 1784735471.5990808,
+    "ast_hash": "1e2beedd9834c3f708644f973277fff1",
+    "semantic_hash": ""
+  },
+  "exercise_images/chin-up.jpg": {
+    "mtime": 1784735478.4576225,
+    "ast_hash": "6f6326293aedd84ef1e47b9194f7545d",
+    "semantic_hash": ""
+  },
+  "exercise_images/clock-push-up.jpg": {
+    "mtime": 1784735482.917664,
+    "ast_hash": "1209904da776cbbfdd9237c8cbcd795f",
+    "semantic_hash": ""
+  },
+  "exercise_images/cocoons.jpg": {
+    "mtime": 1784735487.1169457,
+    "ast_hash": "8659246ea88f601d62b253ff919f92bc",
+    "semantic_hash": ""
+  },
+  "exercise_images/cross-body-crunch.jpg": {
+    "mtime": 1784735491.133483,
+    "ast_hash": "b54cdbd39c7f010c0da0bf9bbf990283",
+    "semantic_hash": ""
+  },
+  "exercise_images/crunch-hands-overhead.jpg": {
+    "mtime": 1784735492.5251834,
+    "ast_hash": "6bff7bf8b4d9e4a17b3c152d4193c6f2",
+    "semantic_hash": ""
+  },
+  "exercise_images/dead-bug.jpg": {
+    "mtime": 1784735499.9929898,
+    "ast_hash": "dbbac5fb07bbfd2117bb140b80cd43b2",
+    "semantic_hash": ""
+  },
+  "exercise_images/decline-crunch.jpg": {
+    "mtime": 1784735501.9615018,
+    "ast_hash": "f13d1622c0c80961b217db1c87bc6af5",
+    "semantic_hash": ""
+  },
+  "exercise_images/decline-push-up.jpg": {
+    "mtime": 1784735503.3869252,
+    "ast_hash": "a600d0452cb98ca7976e1c7dc53012b9",
+    "semantic_hash": ""
+  },
+  "exercise_images/dumbbell-bench-press.jpg": {
+    "mtime": 1784735523.9277186,
+    "ast_hash": "b2a82416ba297a3a6af2522a954abddc",
+    "semantic_hash": ""
+  },
+  "exercise_images/dumbbell-clean.jpg": {
+    "mtime": 1784735536.8079886,
+    "ast_hash": "a71ad1f231edf7a022165cd6d02d4c24",
+    "semantic_hash": ""
+  },
+  "exercise_images/dumbbell-incline-row.jpg": {
+    "mtime": 1784735592.2472417,
+    "ast_hash": "593529ec2295800069ee372659e5c75c",
+    "semantic_hash": ""
+  },
+  "exercise_images/dumbbell-incline-shoulder-raise.jpg": {
+    "mtime": 1784735593.5127006,
+    "ast_hash": "ee163c9fead9b759d1c5c48baf58b329",
+    "semantic_hash": ""
+  },
+  "exercise_images/dumbbell-lying-one-arm-rear-lateral-raise.jpg": {
+    "mtime": 1784735621.3395,
+    "ast_hash": "efc06711c0cb604cc11fb52cab62e052",
+    "semantic_hash": ""
+  },
+  "exercise_images/dumbbell-lying-pronation.jpg": {
+    "mtime": 1784735626.1469505,
+    "ast_hash": "cb5dbf717520ec6daefc6eeb39e92aa9",
+    "semantic_hash": ""
+  },
+  "exercise_images/dumbbell-lying-rear-lateral-raise.jpg": {
+    "mtime": 1784735630.6361983,
+    "ast_hash": "81f09f6c9dd4a01ac4eefe94cfecffb1",
+    "semantic_hash": ""
+  },
+  "exercise_images/dumbbell-lying-supination.jpg": {
+    "mtime": 1784735632.7417705,
+    "ast_hash": "e78c0111998c60ed12b666d5bccc6c6b",
+    "semantic_hash": ""
+  },
+  "exercise_images/dumbbell-one-arm-shoulder-press.jpg": {
+    "mtime": 1784735669.7913318,
+    "ast_hash": "a147420db30253f7346e292ebc60efdc",
+    "semantic_hash": ""
+  },
+  "exercise_images/dumbbell-one-arm-upright-row.jpg": {
+    "mtime": 1784735675.755099,
+    "ast_hash": "f02125b029ae4628bce98269eefdc795",
+    "semantic_hash": ""
+  },
+  "exercise_images/dumbbell-prone-incline-curl.jpg": {
+    "mtime": 1784735693.162617,
+    "ast_hash": "1eb74a47c6b93a15261728fcf866596e",
+    "semantic_hash": ""
+  },
+  "exercise_images/dumbbell-raise.jpg": {
+    "mtime": 1784735701.1915195,
+    "ast_hash": "ea6b7f7c59471576790f03d38f1a07d5",
+    "semantic_hash": ""
+  },
+  "exercise_images/dumbbell-rear-lunge.jpg": {
+    "mtime": 1784735707.4506793,
+    "ast_hash": "dadf28542726100ba325bd3e3be04dd7",
+    "semantic_hash": ""
+  },
+  "exercise_images/dumbbell-seated-one-leg-calf-raise.jpg": {
+    "mtime": 1784735745.4896584,
+    "ast_hash": "3fce516092f6b010b69b9d46f8245eab",
+    "semantic_hash": ""
+  },
+  "exercise_images/dumbbell-shrug.jpg": {
+    "mtime": 1784735756.105936,
+    "ast_hash": "9cff869f1aa48b00988adb41d66f0713",
+    "semantic_hash": ""
+  },
+  "exercise_images/dumbbell-side-bend.jpg": {
+    "mtime": 1784735757.3593514,
+    "ast_hash": "0e1a3ff48123347c5d78ad85c31c5200",
+    "semantic_hash": ""
+  },
+  "exercise_images/dumbbell-squat.jpg": {
+    "mtime": 1784735767.4589517,
+    "ast_hash": "9dfe954dec14650413c728565aa9bcd7",
+    "semantic_hash": ""
+  },
+  "exercise_images/elbow-to-knee.jpg": {
+    "mtime": 1784735817.0572174,
+    "ast_hash": "c652c245d98307b2580bef249776fa71",
+    "semantic_hash": ""
+  },
+  "exercise_images/farmers-walk.jpg": {
+    "mtime": 1784735874.6085434,
+    "ast_hash": "8ddb4a5fb942e3b7786e8505f2afd9ba",
+    "semantic_hash": ""
+  },
+  "exercise_images/finger-curls.jpg": {
+    "mtime": 1784735876.5609994,
+    "ast_hash": "ade8226f317ab50a03ff6ee8ae409fdf",
+    "semantic_hash": ""
+  },
+  "exercise_images/flutter-kicks.jpg": {
+    "mtime": 1784735882.2473533,
+    "ast_hash": "8018890396a8b2e114accc8fe784d14b",
+    "semantic_hash": ""
+  },
+  "exercise_images/frankenstein-squat.jpg": {
+    "mtime": 1784735885.6527903,
+    "ast_hash": "fcebde1a018c2dab428845f0cba41721",
+    "semantic_hash": ""
+  },
+  "exercise_images/glute-ham-raise.jpg": {
+    "mtime": 1784735897.843996,
+    "ast_hash": "813f7f69b6028efb55b23d27c76a189d",
+    "semantic_hash": ""
+  },
+  "exercise_images/hamstring-stretch.jpg": {
+    "mtime": 1784735904.9602542,
+    "ast_hash": "cf82402c041d6de4d25c3b1892347987",
+    "semantic_hash": ""
+  },
+  "exercise_images/hanging-leg-raise.jpg": {
+    "mtime": 1784735912.3167295,
+    "ast_hash": "0e019245bdc8f7bec8842632db073f1d",
+    "semantic_hash": ""
+  },
+  "exercise_images/hanging-pike.jpg": {
+    "mtime": 1784735914.952572,
+    "ast_hash": "2de782327ebbe885d135078bd552d7ff",
+    "semantic_hash": ""
+  },
+  "exercise_images/inchworm.jpg": {
+    "mtime": 1784735926.1734126,
+    "ast_hash": "36899ee3e953095df13d03c8e31bff77",
+    "semantic_hash": ""
+  },
+  "exercise_images/incline-push-up-depth-jump.jpg": {
+    "mtime": 1784735930.368791,
+    "ast_hash": "727a3421cc61e6359c4fc60291b154b9",
+    "semantic_hash": ""
+  },
+  "exercise_images/incline-push-up.jpg": {
+    "mtime": 1784735931.7097485,
+    "ast_hash": "e5b516887720ace028f00f1ee536ef19",
+    "semantic_hash": ""
+  },
+  "exercise_images/intermediate-hip-flexor-and-quad-stretch.jpg": {
+    "mtime": 1784735937.1212115,
+    "ast_hash": "ff5c27a85b506a6230b0b23a94bdff91",
+    "semantic_hash": ""
+  },
+  "exercise_images/inverted-row-with-straps.jpg": {
+    "mtime": 1784735945.507036,
+    "ast_hash": "d68969eae19f3757434758b9d269c616",
+    "semantic_hash": ""
+  },
+  "exercise_images/inverted-row.jpg": {
+    "mtime": 1784735941.164311,
+    "ast_hash": "e2623228543e54c6697b07a3d588d1bf",
+    "semantic_hash": ""
+  },
+  "exercise_images/isometric-wipers.jpg": {
+    "mtime": 1784735948.9747994,
+    "ast_hash": "b3b7bde65aa548558e5354784e572e27",
+    "semantic_hash": ""
+  },
+  "exercise_images/jackknife-sit-up.jpg": {
+    "mtime": 1784735952.1733856,
+    "ast_hash": "11f266d00f6ce62b737143dd00643b27",
+    "semantic_hash": ""
+  },
+  "exercise_images/janda-sit-up.jpg": {
+    "mtime": 1784735954.1578405,
+    "ast_hash": "8bb12c8bd6db2ebc95a6995b7fdbdfb9",
+    "semantic_hash": ""
+  },
+  "exercise_images/kettlebell-arnold-press.jpg": {
+    "mtime": 1784735966.7771306,
+    "ast_hash": "b0653c3239af895e8d644630ca817577",
+    "semantic_hash": ""
+  },
+  "exercise_images/kettlebell-figure-8.jpg": {
+    "mtime": 1784735976.7985947,
+    "ast_hash": "c49f21aa18f02d24d276efbbd9619b3c",
+    "semantic_hash": ""
+  },
+  "exercise_images/kettlebell-hang-clean.jpg": {
+    "mtime": 1784735980.3022573,
+    "ast_hash": "1a8be00f4c916aa8fb8a337892451ad2",
+    "semantic_hash": ""
+  },
+  "exercise_images/kettlebell-pistol-squat.jpg": {
+    "mtime": 1784735995.853258,
+    "ast_hash": "5426726328a8b40ccfe3351be97ccc37",
+    "semantic_hash": ""
+  },
+  "exercise_images/kettlebell-seated-press.jpg": {
+    "mtime": 1784735998.0438125,
+    "ast_hash": "a03a3d276cb21aab8b8ee83d3dfeba55",
+    "semantic_hash": ""
+  },
+  "exercise_images/kettlebell-seesaw-press.jpg": {
+    "mtime": 1784736000.2796648,
+    "ast_hash": "7af6774bb9ebd26e4b9595a2ca08de44",
+    "semantic_hash": ""
+  },
+  "exercise_images/kettlebell-sumo-high-pull.jpg": {
+    "mtime": 1784736001.7404332,
+    "ast_hash": "903433aacd5908f80e1d6cdcd700ec78",
+    "semantic_hash": ""
+  },
+  "exercise_images/kettlebell-thruster.jpg": {
+    "mtime": 1784736004.140472,
+    "ast_hash": "a2d3bdab1d1f811ad6c1e69c0eed8f79",
+    "semantic_hash": ""
+  },
+  "exercise_images/kettlebell-turkish-get-up-squat-style.jpg": {
+    "mtime": 1784736005.5853486,
+    "ast_hash": "4448217b788311416436f7728838a88d",
+    "semantic_hash": ""
+  },
+  "exercise_images/kettlebell-windmill.jpg": {
+    "mtime": 1784736009.9862733,
+    "ast_hash": "3dc79ec0bd0b858aa1a69ba523646635",
+    "semantic_hash": ""
+  },
+  "exercise_images/kipping-muscle-up.jpg": {
+    "mtime": 1784736012.7776926,
+    "ast_hash": "0715e64b8b82f274186a028a8cbf6761",
+    "semantic_hash": ""
+  },
+  "exercise_images/kneeling-jump-squat.jpg": {
+    "mtime": 1784736017.546832,
+    "ast_hash": "0d0b90b2b3da9d5276c3d975f34b00ec",
+    "semantic_hash": ""
+  },
+  "exercise_images/leg-up-hamstring-stretch.jpg": {
+    "mtime": 1784736029.0756238,
+    "ast_hash": "9c347affdacbe057f6c5baca7052dac5",
+    "semantic_hash": ""
+  },
+  "exercise_images/lower-back-curl.jpg": {
+    "mtime": 1784736104.4646342,
+    "ast_hash": "3f6a613629fe38e20c76a9961aa91789",
+    "semantic_hash": ""
+  },
+  "exercise_images/medicine-ball-chest-pass.jpg": {
+    "mtime": 1784736115.0932863,
+    "ast_hash": "2641056ca12bb4dc4be31e0211718c0d",
+    "semantic_hash": ""
+  },
+  "exercise_images/monster-walk.jpg": {
+    "mtime": 1784736126.6990142,
+    "ast_hash": "5cc252ee9061f1a0b391c3c46d4d1e2c",
+    "semantic_hash": ""
+  },
+  "exercise_images/muscle-up.jpg": {
+    "mtime": 1784736128.7100494,
+    "ast_hash": "9adc9bbfee909f7bc29937dce7fc8c81",
+    "semantic_hash": ""
+  },
+  "exercise_images/one-arm-against-wall.jpg": {
+    "mtime": 1784736138.4789498,
+    "ast_hash": "6fb9ca2245d9442bd4b70f35350f43a7",
+    "semantic_hash": ""
+  },
+  "exercise_images/one-arm-chin-up.jpg": {
+    "mtime": 1784736139.892106,
+    "ast_hash": "830f00c531916c2bd39734f4013a0269",
+    "semantic_hash": ""
+  },
+  "exercise_images/otis-up.jpg": {
+    "mtime": 1784736148.0624673,
+    "ast_hash": "f29e06651a49c058bc65a7aa220829ad",
+    "semantic_hash": ""
+  },
+  "exercise_images/pelvic-tilt-into-bridge.jpg": {
+    "mtime": 1784736152.341995,
+    "ast_hash": "5f645c579022420567ac34ffe29fe385",
+    "semantic_hash": ""
+  },
+  "exercise_images/peroneals-stretch.jpg": {
+    "mtime": 1784736153.7927308,
+    "ast_hash": "4bc246a6bda332e5ad947ad42f049680",
+    "semantic_hash": ""
+  },
+  "exercise_images/plyo-push-up.jpg": {
+    "mtime": 1784736156.0143576,
+    "ast_hash": "ebceb00280b0087190911476f18b4e2d",
+    "semantic_hash": ""
+  },
+  "exercise_images/posterior-tibialis-stretch.jpg": {
+    "mtime": 1784736158.4020536,
+    "ast_hash": "12491efc7b6327bf40a427944a2ca9e6",
+    "semantic_hash": ""
+  },
+  "exercise_images/power-clean.jpg": {
+    "mtime": 1784736161.9312649,
+    "ast_hash": "8e09a0ba00329e3ff284aeb5b81fe051",
+    "semantic_hash": ""
+  },
+  "exercise_images/push-up-to-side-plank.jpg": {
+    "mtime": 1784736185.8628943,
+    "ast_hash": "d8d72aa6da9461fa12f3dbec8e1b3a9e",
+    "semantic_hash": ""
+  },
+  "exercise_images/reverse-crunch.jpg": {
+    "mtime": 1784736202.6916592,
+    "ast_hash": "0e085345f3bbeefafbedb7235341831c",
+    "semantic_hash": ""
+  },
+  "exercise_images/ring-dips.jpg": {
+    "mtime": 1784736209.993586,
+    "ast_hash": "5699e7f7d26b403e4347254d8e3de67b",
+    "semantic_hash": ""
+  },
+  "exercise_images/rope-climb.jpg": {
+    "mtime": 1784736221.1977465,
+    "ast_hash": "da29fc3919e8efea29c5cd6fd458706b",
+    "semantic_hash": ""
+  },
+  "exercise_images/runners-stretch.jpg": {
+    "mtime": 1784736224.4307623,
+    "ast_hash": "116dcb0f3eeda2d8557054b6059e9d5e",
+    "semantic_hash": ""
+  },
+  "exercise_images/russian-twist.jpg": {
+    "mtime": 1784736225.7471464,
+    "ast_hash": "29cefe8c2f55e5ff55e5dda9d6c18a4c",
+    "semantic_hash": ""
+  },
+  "exercise_images/scapular-pull-up.jpg": {
+    "mtime": 1784736229.5004678,
+    "ast_hash": "b231fbe1027f104b760e4adc88b522d1",
+    "semantic_hash": ""
+  },
+  "exercise_images/side-lying-floor-stretch.jpg": {
+    "mtime": 1784736253.886122,
+    "ast_hash": "d3514331f8e1810137384e319929c31c",
+    "semantic_hash": ""
+  },
+  "exercise_images/single-arm-push-up.jpg": {
+    "mtime": 1784736262.9051373,
+    "ast_hash": "8761fd58e65799c1333694781dbeae6b",
+    "semantic_hash": ""
+  },
+  "exercise_images/smith-single-leg-split-squat.jpg": {
+    "mtime": 1784736324.8764489,
+    "ast_hash": "dd4130e2ef7a9e9c90637b3f09e5d400",
+    "semantic_hash": ""
+  },
+  "exercise_images/snatch-pull.jpg": {
+    "mtime": 1784736337.5476754,
+    "ast_hash": "4f9a0d2941abdf6930827bba591123ff",
+    "semantic_hash": ""
+  },
+  "exercise_images/spell-caster.jpg": {
+    "mtime": 1784736338.533596,
+    "ast_hash": "de592f9ccb2d57f74a2aa7665050ddb0",
+    "semantic_hash": ""
+  },
+  "exercise_images/split-squats.jpg": {
+    "mtime": 1784736344.370824,
+    "ast_hash": "b57d2ffbdae3f57650e69d40a7c284c1",
+    "semantic_hash": ""
+  },
+  "exercise_images/squat-jerk.jpg": {
+    "mtime": 1784736345.6325016,
+    "ast_hash": "6567c1e31a6a6d34f3904a728cc91e2b",
+    "semantic_hash": ""
+  },
+  "exercise_images/standing-lateral-stretch.jpg": {
+    "mtime": 1784736357.9041114,
+    "ast_hash": "dd946c09c4ef8444381e1b55915f2afb",
+    "semantic_hash": ""
+  },
+  "exercise_images/standing-pelvic-tilt.jpg": {
+    "mtime": 1784736359.251033,
+    "ast_hash": "d8a614ffab4ae01facc59c6059cead93",
+    "semantic_hash": ""
+  },
+  "exercise_images/suspended-push-up.jpg": {
+    "mtime": 1784736370.4384081,
+    "ast_hash": "d1110cc2e06c6bbaa6fc3a0469f7b6aa",
+    "semantic_hash": ""
+  },
+  "exercise_images/suspended-reverse-crunch.jpg": {
+    "mtime": 1784736371.775487,
+    "ast_hash": "c4c353d3dbbd81abf8eb52bc5a134222",
+    "semantic_hash": ""
+  },
+  "exercise_images/suspended-row.jpg": {
+    "mtime": 1784736373.048569,
+    "ast_hash": "6dd948daa7992e16c300392299ca47c1",
+    "semantic_hash": ""
+  },
+  "exercise_images/suspended-split-squat.jpg": {
+    "mtime": 1784736374.3770483,
+    "ast_hash": "72d96b2d2458b17822838f530544c16b",
+    "semantic_hash": ""
+  },
+  "exercise_images/tire-flip.jpg": {
+    "mtime": 1784736378.6524923,
+    "ast_hash": "7305ecf8d6bfaa89670d4505b49c470d",
+    "semantic_hash": ""
+  },
+  "exercise_images/trap-bar-deadlift.jpg": {
+    "mtime": 1784736379.9513474,
+    "ast_hash": "66212ed464015c7cda80b79d7cce1c13",
+    "semantic_hash": ""
+  },
+  "exercise_images/triceps-stretch.jpg": {
+    "mtime": 1784736387.1313858,
+    "ast_hash": "40e0c238f56395230015659af6068b50",
+    "semantic_hash": ""
+  },
+  "exercise_images/tuck-crunch.jpg": {
+    "mtime": 1784736388.987607,
+    "ast_hash": "e4b2c889557ced83dc22e9d9960db12d",
+    "semantic_hash": ""
+  },
+  "exercise_images/upper-back-stretch.jpg": {
+    "mtime": 1784736395.2853832,
+    "ast_hash": "d8a614ffab4ae01facc59c6059cead93",
+    "semantic_hash": ""
+  },
+  "exercise_images/weighted-bench-dip.jpg": {
+    "mtime": 1784736404.6449542,
+    "ast_hash": "bccd15f114e3f2860d9930538dfa7be9",
+    "semantic_hash": ""
+  },
+  "exercise_images/weighted-sissy-squat.jpg": {
+    "mtime": 1784736429.781515,
+    "ast_hash": "1fedcd2facc953a3816a5a26473064dc",
+    "semantic_hash": ""
+  },
+  "exercise_images/weighted-squat.jpg": {
+    "mtime": 1784736431.7356958,
+    "ast_hash": "0f3f26b372342fe262cb31e952178fc0",
+    "semantic_hash": ""
+  },
+  "exercise_images/wide-grip-rear-pull-up.jpg": {
+    "mtime": 1784736444.2796311,
+    "ast_hash": "659a29cce36568feb5bcbc97254bb361",
+    "semantic_hash": ""
+  },
+  "exercise_images/wind-sprints.jpg": {
+    "mtime": 1784736447.554235,
+    "ast_hash": "1c14d8826060ae7c9c78137e927c0eb1",
+    "semantic_hash": ""
+  },
+  "exercise_images/wrist-circles.jpg": {
+    "mtime": 1784736449.7479193,
+    "ast_hash": "f92355c61302d228f31d0dc469f56ba0",
+    "semantic_hash": ""
+  },
+  "AuraFitness/Resources/program_library.json": {
+    "mtime": 1784748032.2865453,
+    "ast_hash": "df52567c90e940d47050c6863fad58f4",
     "semantic_hash": ""
   }
 }

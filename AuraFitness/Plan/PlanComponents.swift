@@ -83,7 +83,6 @@ struct PlanSheet<Content: View>: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            SheetGrabber()
             if let title {
                 HStack(alignment: .top) {
                     VStack(alignment: .leading, spacing: 2) {

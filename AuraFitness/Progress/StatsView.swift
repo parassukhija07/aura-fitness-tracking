@@ -727,7 +727,6 @@ private struct ExerciseTrendPicker: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            SheetGrabber()
             Text("Choose Exercise")
                 .font(AuraFont.navTitle())
                 .foregroundColor(.aura.text)

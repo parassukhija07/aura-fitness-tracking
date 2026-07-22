@@ -365,16 +365,10 @@ extension View {
     }
 }
 
-// MARK: - Grabber
-struct SheetGrabber: View {
-    var body: some View {
-        RoundedRectangle(cornerRadius: 3)
-            .fill(Color.aura.text3.opacity(0.4))
-            .frame(width: 36, height: 5)
-            .padding(.top, 8)
-            .padding(.bottom, 4)
-    }
-}
+// Sheet grabbers are the system's, via `.presentationDragIndicator(.visible)`.
+// The design prototype drew its own because a web page has no sheet chrome; on
+// iOS that rendered a second bar directly under the real one. Don't reintroduce
+// it — set the modifier on the presentation instead.
 
 // MARK: - AuraStepper
 /// Pill stepper: − [value] + with min/max clamping and an optional value formatter.

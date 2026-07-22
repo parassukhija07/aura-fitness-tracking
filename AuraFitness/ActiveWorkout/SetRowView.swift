@@ -176,7 +176,6 @@ struct SetTypeMenuSheet: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            SheetGrabber()
             HStack {
                 Text("Set type")
                     .font(AuraFont.navTitle())

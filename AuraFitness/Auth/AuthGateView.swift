@@ -201,7 +201,6 @@ private struct ForgotPasswordSheet: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            SheetGrabber()
             VStack(spacing: AuraSpacing.s3) {
                 if sent { confirmation } else { form }
             }
@@ -209,7 +208,7 @@ private struct ForgotPasswordSheet: View {
             .padding(.bottom, AuraSpacing.s5)
         }
         .presentationDetents([.height(sent ? 300 : 330)])
-        .presentationDragIndicator(.hidden)
+        .presentationDragIndicator(.visible)
         .background(Color.aura.surface)
         .auraToast(toast)
         .onAppear { if email.isEmpty { email = initialEmail } }
@@ -291,7 +290,6 @@ private struct SetNewPasswordSheet: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            SheetGrabber()
             VStack(spacing: AuraSpacing.s3) {
                 Text("Set a new password")
                     .font(AuraFont.jakarta(20, .bold))
@@ -325,7 +323,7 @@ private struct SetNewPasswordSheet: View {
             .padding(.bottom, AuraSpacing.s5)
         }
         .presentationDetents([.height(430)])
-        .presentationDragIndicator(.hidden)
+        .presentationDragIndicator(.visible)
         .background(Color.aura.surface)
         // No swipe-away mid-request: the update is in flight against a
         // one-shot recovery session.

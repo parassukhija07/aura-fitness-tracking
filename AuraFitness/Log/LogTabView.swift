@@ -9,11 +9,18 @@ enum LogSheet: Identifiable {
     case switchWorkout(planId: UUID? = nil)
     case move
     case edit
-    case add
+    /// "Where should this workout come from?" — the three-source chooser.
+    /// Carries the mode and target date so the same sheet serves adding to
+    /// today and logging to a past day, instead of the past-day path skipping
+    /// the chooser and dropping the user straight into one program's list.
+    case add(mode: PickMode, date: String)
     case logPast(date: String, showToday: Bool)
     case pick(mode: PickMode, date: String)
+    /// The bundled workout library — every workout across every program, with
+    /// search. What "From Workout Library" means.
+    case workoutLibrary(mode: PickMode, date: String)
     /// Multi-select exercise picker over the full Exercise Library, assembles
-    /// a from-scratch workout (§2.9 "Build from Library" / "From Workout Library").
+    /// a from-scratch workout (§2.9 "Build from Library").
     case buildFromLibrary(mode: PickMode, date: String)
     case calendar(forLogPast: Bool)
     case viewLog
@@ -30,7 +37,7 @@ enum LogSheet: Identifiable {
         case .switchWorkout(let planId): return "switch-\(planId?.uuidString ?? "root")"
         case .move: return "move"
         case .edit: return "edit"
-        case .add: return "add"
+        case .add(let mode, let date): return "add-\(mode)-\(date)"
         case .logPast: return "logpast"
         case .pick: return "pick"
         case .calendar: return "cal"
@@ -38,6 +45,7 @@ enum LogSheet: Identifiable {
         case .editLog: return "editlog"
         case .logQuick: return "logquick"
         case .viewWorkout(let iso): return "viewworkout-\(iso)"
+        case .workoutLibrary(let mode, let date): return "wklib-\(mode)-\(date)"
         case .buildFromLibrary(let mode, let date): return "buildlib-\(mode)-\(date)"
         }
     }
@@ -129,10 +137,10 @@ struct LogTabView: View {
         .sheet(item: $sheet) { logSheet($0) }
         // FAB "Start Workout" deep link → open the add-workout source sheet.
         .onChange(of: appState.requestLogAddSheet) { _, want in
-            if want { sheet = .add; appState.requestLogAddSheet = false }
+            if want { sheet = .add(mode: .add, date: info.iso); appState.requestLogAddSheet = false }
         }
         .onAppear {
-            if appState.requestLogAddSheet { sheet = .add; appState.requestLogAddSheet = false }
+            if appState.requestLogAddSheet { sheet = .add(mode: .add, date: info.iso); appState.requestLogAddSheet = false }
         }
     }
 
@@ -340,9 +348,12 @@ struct LogTabView: View {
             if info.relation != .future {
                 AuraSectionLabel(title: empty ? " " : "Did you train\(isToday ? "" : " that day") anyway?")
                 VStack(spacing: AuraSpacing.s2) {
+                    // Both paths open the same three-source chooser. Logging to
+                    // a past day used to skip it and drop the user straight
+                    // into one program's workout list, so the library and
+                    // empty-workout routes were unreachable from a rest day.
                     AuraTintedButton(label: isToday ? "Add a Workout" : "Log a Workout", icon: "plus") {
-                        if isToday { sheet = .add }
-                        else { sheet = .pick(mode: .logpast, date: info.iso) }
+                        sheet = .add(mode: isToday ? .add : .logpast, date: info.iso)
                     }
                     if isToday {
                         AuraGrayButton(label: "Log a Past Workout", icon: "clock") {
