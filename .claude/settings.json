@@ -111,7 +111,19 @@
       "Bash(git update-index *)",
       "Bash(git ls-tree *)",
       "Bash(git reset *)",
-      "Bash(swiftc -parse AuraFitness/Sync/SupabaseSyncService.swift)"
+      "Bash(swiftc -parse AuraFitness/Sync/SupabaseSyncService.swift)",
+      "Bash(node --check supabase/functions/delete-account/index.ts)",
+      "Bash(gh pr *)",
+      "Bash(ruby -c -e ' *)",
+      "Bash(python -c \"import yaml,sys; yaml.safe_load\\(open\\('.github/workflows/ci.yml'\\)\\); print\\('yaml ok'\\)\")",
+      "Bash(awk '/\\\\/\\\\* Plan \\\\*\\\\/ = \\\\{/,/^\\\\t\\\\t\\\\};/' AuraFitness.xcodeproj/project.pbxproj)",
+      "Bash(python -c \"import json;d=json.load\\(open\\('AuraFitness/Resources/gym_exercise_library.json'\\)\\);print\\(len\\(d\\)\\);print\\(sorted\\(d[0].keys\\(\\)\\)\\)\")",
+      "Bash(python supabase/seed/generate_seed.py)",
+      "Bash(rtk xcodebuild *)",
+      "Bash(awk '{print $1}')",
+      "Bash(git show *)",
+      "Read(//tmp/**)",
+      "Bash(git status *)"
     ]
   },
   "hooks": {

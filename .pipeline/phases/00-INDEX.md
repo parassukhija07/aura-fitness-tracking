@@ -1,6 +1,9 @@
 # Aura Fitness — Remaining Build: Phase Index
 
 Design source of truth: `App onboarding (10).zip` (claude.ai design bundle — handoff chapters 1–8).
+That 2.4 MB bundle is no longer checked out at the repo root — it lives only in git
+history. Retrieve it with:
+`git show eafa21b:"App onboarding (10).zip" > "App onboarding (10).zip"`
 Phases 1 (Log shell/icon/fonts, commit `a9fa7bf`) and 2 (Active Workout fidelity, commit `a623c63`) are DONE.
 Log tab behaviour updates (LOG-01b/c/d/e, past/future day states) are DONE and verified in `AuraFitness/Log/`.
 The flat 4-icon tab bar (no FAB, no glass pill) is a SETTLED product decision from Phase 1 — do not re-add FAB.
