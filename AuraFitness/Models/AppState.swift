@@ -271,6 +271,32 @@ class AppState: ObservableObject {
         dayOverrides = merged
     }
 
+    /// Clears `DayOverride.workoutId` wherever it points at a workout that no
+    /// longer exists, so a purged seed workout does not linger on the Log
+    /// calendar as an unresolvable day. Called once by `SeedPurgeMigration`.
+    ///
+    /// The override itself is kept — it may also carry notes or a completion
+    /// mark the user set — only the dangling workout reference is dropped.
+    ///
+    /// Guarded by `isApplyingRemote` unlike `remapSeedReferences` above: the
+    /// referenced workout is gone on every device that ran this migration, so
+    /// there is nothing for the others to converge ON and no reason to spend a
+    /// push per override saying so.
+    func purgeDayOverrides(workoutIDs: Set<UUID>) {
+        guard !workoutIDs.isEmpty else { return }
+        var merged = dayOverrides
+        var changed = false
+        for (iso, override) in merged {
+            guard let workoutID = override.workoutId, workoutIDs.contains(workoutID) else { continue }
+            merged[iso]?.workoutId = nil
+            changed = true
+        }
+        guard changed else { return }
+        isApplyingRemote = true
+        defer { isApplyingRemote = false }
+        dayOverrides = merged
+    }
+
     // MARK: - Remote deletion hooks (aura_deletions tombstone target)
     //
     // The `applyRemote*` merges above are unions — they can only ever ADD

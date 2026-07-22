@@ -89,13 +89,23 @@ struct MacroTargets {
 }
 
 // MARK: - BodyStats
+//
+// Measurements default to 0 = "not entered yet", which is what
+// `hasCompleteDetails` below tests for; every derived figure (BMI/BMR/TDEE/
+// macros) stays hidden until the user supplies real numbers. They previously
+// shipped as a filled-in 178 cm / 78.4 kg / 28 y example, which read as the
+// user's own data on a brand-new account.
+//
+// `sex`, `activityLevel`, `goalType` and `macroSplit` keep their defaults on
+// purpose: they are keys into `NutritionConstants.ACT` / `GOAL_ADJ` /
+// `MACRO_SPLIT`, and an empty string is not a member of any of those.
 struct BodyStats: Codable {
-    var height: Double = 178       // cm
-    var weight: Double = 78.4      // kg
-    var age: Int = 28
+    var height: Double = 0         // cm — 0 = unset
+    var weight: Double = 0         // kg — 0 = unset
+    var age: Int = 0               // 0 = unset
     var sex: String = "Male"       // "Male" | "Female"
     var activityLevel: String = "Moderate"  // key into NutritionConstants.ACT
-    var targetWeight: Double = 80          // kg
+    var targetWeight: Double = 0            // kg — 0 = unset
     var goalType: String = "Lean gain"      // key into GOAL_ADJ
     var macroSplit: String = "Balanced"     // key into MACRO_SPLIT
 
@@ -139,17 +149,24 @@ struct BodyStats: Codable {
 }
 
 // MARK: - UserProfile
+/// Every field starts empty. The name/location fields used to ship as
+/// "Alex Jordan · Austin, TX, United States", which showed up on a brand-new
+/// account as if the user had entered it.
+///
+/// `birthday` has no empty representation (non-optional `Date`, and the editor
+/// binds a `DatePicker` straight to it), so it keeps a neutral 25-years-ago
+/// starting point rather than a made-up birth date.
 struct UserProfile: Codable {
-    var firstName: String = "Alex"
-    var lastName: String = "Jordan"
+    var firstName: String = ""
+    var lastName: String = ""
     var email: String = ""
     var phone: String = ""
     var birthday: Date = Calendar.current.date(byAdding: .year, value: -25, to: Date()) ?? Date()
-    var gender: String = "Male"
+    var gender: String = ""
     var location: String = ""
-    var country: String = "United States"
-    var city: String = "Austin"
-    var state: String = "TX"
+    var country: String = ""
+    var city: String = ""
+    var state: String = ""
     var photoURL: String? = nil
 }
 

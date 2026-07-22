@@ -94,7 +94,17 @@ struct PlanProgramsBody: View {
 
             AuraScreenScroll {
                 if filtered.isEmpty {
-                    PlanEmptyState(title: "No programs found", subtitle: "Try a different filter")
+                    // Two different empties: nothing matched the filter, versus
+                    // no programs exist at all. The app ships without any, so
+                    // the second is what a new user actually hits — telling
+                    // them to "try a different filter" would send them looking
+                    // for content that was never there.
+                    if programs.isEmpty {
+                        PlanEmptyState(title: "No programs yet",
+                                       subtitle: "Build one to plan your training week")
+                    } else {
+                        PlanEmptyState(title: "No programs found", subtitle: "Try a different filter")
+                    }
                 } else {
                     VStack(spacing: 10) {
                         ForEach(filtered) { p in

@@ -382,233 +382,27 @@ enum ExerciseLibrary {
     }
 }
 
-// MARK: - Seed Programs
+// MARK: - SeedData
+//
+// Ships NO starter content. Every install — signed in, or guest — opens with an
+// empty Plan library, an empty Log and an empty Progress tab; the user builds
+// their own programs from the exercise catalog.
+//
+// The five bundled programs (Push · Pull · Legs, StrongLifts 5×5, Upper /
+// Lower, Full Body 3×, HIIT Cardio) and the default "My PPL Plan" they seeded
+// were removed deliberately. Do not reintroduce them: every store below now
+// treats "no programs" as the normal steady state rather than a condition to
+// heal, and re-adding a seed would resurrect content on installs that have
+// already been purged of it (see `SeedPurgeMigration`).
+//
+// `ExerciseLibrary` above is NOT seed content in that sense — it is part of the
+// exercise catalog (see `ExerciseDatabase.legacyEntries()`), i.e. the reference
+// data the user picks FROM, not prefilled user data. It stays.
 enum SeedData {
-    // MARK: PPL
-    private static func pplPushA() -> Workout {
-        var w = Workout(id: StableID.workout("Push Day A"), name: "Push Day A", primaryMuscles: "Chest · Shoulders · Triceps",
-                        estimatedMinutes: 60, exercises: [])
-        let lib = ExerciseLibrary.all
-        func find(_ name: String) -> Exercise { lib.first { $0.name == name } ?? ExerciseLibrary.chest[0] }
-        w.exercises = [
-            find("Barbell Bench Press"),
-            find("Incline Dumbbell Press"),
-            find("Cable Fly"),
-            find("Dumbbell Bench Press"),
-            find("Seated Shoulder Press"),
-            find("Cable Lateral Raise"),
-            find("Triceps Rope Pushdown"),
-            find("Skull Crushers")
-        ]
-        return w
-    }
-    private static func pplPullA() -> Workout {
-        var w = Workout(id: StableID.workout("Pull Day A"), name: "Pull Day A", primaryMuscles: "Back · Biceps",
-                        estimatedMinutes: 55, exercises: [])
-        let lib = ExerciseLibrary.all
-        func find(_ name: String) -> Exercise { lib.first { $0.name == name } ?? ExerciseLibrary.back[0] }
-        w.exercises = [
-            find("Barbell Row"),
-            find("Pull-Ups"),
-            find("Seated Cable Row"),
-            find("Lat Pulldown"),
-            find("Face Pulls"),
-            find("Barbell Curl"),
-            find("Hammer Curl"),
-            find("Cable Curl")
-        ]
-        return w
-    }
-    private static func pplLegsA() -> Workout {
-        var w = Workout(id: StableID.workout("Leg Day A"), name: "Leg Day A", primaryMuscles: "Quads · Hamstrings · Calves",
-                        estimatedMinutes: 65, exercises: [])
-        let lib = ExerciseLibrary.all
-        func find(_ name: String) -> Exercise { lib.first { $0.name == name } ?? ExerciseLibrary.legs[0] }
-        w.exercises = [
-            find("Barbell Squat"),
-            find("Romanian Deadlift"),
-            find("Leg Press"),
-            find("Leg Curl"),
-            find("Leg Extension"),
-            find("Hip Thrust"),
-            find("Calf Raises"),
-            find("Hanging Leg Raise")
-        ]
-        return w
-    }
-    private static func pplPushB() -> Workout {
-        var w = Workout(id: StableID.workout("Push Day B"), name: "Push Day B", primaryMuscles: "Shoulders · Chest · Triceps",
-                        estimatedMinutes: 58, exercises: [])
-        let lib = ExerciseLibrary.all
-        func find(_ name: String) -> Exercise { lib.first { $0.name == name } ?? ExerciseLibrary.shoulders[0] }
-        w.exercises = [
-            find("Overhead Press"),
-            find("Dumbbell Lateral Raise"),
-            find("Incline Dumbbell Press"),
-            find("Cable Lateral Raise"),
-            find("Arnold Press"),
-            find("Rear Delt Fly"),
-            find("Skull Crushers"),
-            find("Tricep Dips")
-        ]
-        return w
-    }
-    private static func pplPullB() -> Workout {
-        var w = Workout(id: StableID.workout("Pull Day B"), name: "Pull Day B", primaryMuscles: "Back · Biceps",
-                        estimatedMinutes: 60, exercises: [])
-        let lib = ExerciseLibrary.all
-        func find(_ name: String) -> Exercise { lib.first { $0.name == name } ?? ExerciseLibrary.back[0] }
-        w.exercises = [
-            find("Deadlift"),
-            find("Weighted Pull-Ups"),
-            find("Seated Cable Row"),
-            find("T-Bar Row"),
-            find("Face Pulls"),
-            find("Hammer Curl"),
-            find("Concentration Curl"),
-            find("Reverse Curl")
-        ]
-        return w
-    }
-    private static func pplLegsB() -> Workout {
-        var w = Workout(id: StableID.workout("Leg Day B"), name: "Leg Day B", primaryMuscles: "Glutes · Quads · Hamstrings",
-                        estimatedMinutes: 65, exercises: [])
-        let lib = ExerciseLibrary.all
-        func find(_ name: String) -> Exercise { lib.first { $0.name == name } ?? ExerciseLibrary.legs[0] }
-        w.exercises = [
-            find("Front Squat"),
-            find("Sumo Deadlift"),
-            find("Walking Lunges"),
-            find("Leg Press"),
-            find("Leg Curl"),
-            find("Bulgarian Split Squat"),
-            find("Seated Calf Raise"),
-            find("Ab Wheel")
-        ]
-        return w
-    }
-
-    // MARK: StrongLifts 5×5
-    private static func sl5x5WorkoutA() -> Workout {
-        let lib = ExerciseLibrary.all
-        func find(_ name: String) -> Exercise {
-            var e = lib.first { $0.name == name } ?? ExerciseLibrary.chest[0]
-            e.plannedSets = 5
-            e.sets = (0..<5).map { _ in WorkoutSet() }
-            e.repRange = "5"
-            return e
-        }
-        return Workout(id: StableID.workout("Workout A"), name: "Workout A", primaryMuscles: "Full Body", estimatedMinutes: 45,
-                       exercises: [find("Barbell Squat"), find("Barbell Bench Press"), find("Barbell Row")])
-    }
-    private static func sl5x5WorkoutB() -> Workout {
-        let lib = ExerciseLibrary.all
-        func find(_ name: String) -> Exercise {
-            var e = lib.first { $0.name == name } ?? ExerciseLibrary.chest[0]
-            e.plannedSets = 5
-            e.sets = (0..<5).map { _ in WorkoutSet() }
-            e.repRange = "5"
-            return e
-        }
-        return Workout(id: StableID.workout("Workout B"), name: "Workout B", primaryMuscles: "Full Body", estimatedMinutes: 45,
-                       exercises: [find("Barbell Squat"), find("Overhead Press"), find("Deadlift")])
-    }
-
-    // MARK: Upper/Lower
-    private static func ulUpper() -> Workout {
-        let lib = ExerciseLibrary.all
-        func find(_ name: String) -> Exercise { lib.first { $0.name == name } ?? ExerciseLibrary.chest[0] }
-        return Workout(id: StableID.workout("Upper Body"), name: "Upper Body", primaryMuscles: "Chest · Back · Shoulders · Arms", estimatedMinutes: 60,
-                       exercises: [find("Barbell Bench Press"), find("Barbell Row"), find("Overhead Press"),
-                                   find("Lat Pulldown"), find("Dumbbell Lateral Raise"), find("Barbell Curl"), find("Skull Crushers")])
-    }
-    private static func ulLower() -> Workout {
-        let lib = ExerciseLibrary.all
-        func find(_ name: String) -> Exercise { lib.first { $0.name == name } ?? ExerciseLibrary.legs[0] }
-        return Workout(id: StableID.workout("Lower Body"), name: "Lower Body", primaryMuscles: "Quads · Hamstrings · Glutes", estimatedMinutes: 55,
-                       exercises: [find("Barbell Squat"), find("Romanian Deadlift"), find("Leg Press"),
-                                   find("Leg Curl"), find("Calf Raises"), find("Hip Thrust")])
-    }
-
-    // MARK: Full Body
-    private static func fullBodyWorkout() -> Workout {
-        let lib = ExerciseLibrary.all
-        func find(_ name: String) -> Exercise { lib.first { $0.name == name } ?? ExerciseLibrary.chest[0] }
-        return Workout(id: StableID.workout("Full Body"), name: "Full Body", primaryMuscles: "Full Body", estimatedMinutes: 50,
-                       exercises: [find("Barbell Squat"), find("Barbell Bench Press"), find("Barbell Row"),
-                                   find("Overhead Press"), find("Romanian Deadlift"), find("Barbell Curl"), find("Triceps Rope Pushdown")])
-    }
-
-    // MARK: HIIT
-    private static func hiitWorkout() -> Workout {
-        let lib = ExerciseLibrary.all
-        func find(_ name: String) -> Exercise { lib.first { $0.name == name } ?? ExerciseLibrary.cardio[0] }
-        return Workout(id: StableID.workout("HIIT Circuit"), name: "HIIT Circuit", primaryMuscles: "Cardio · Full Body", estimatedMinutes: 30,
-                       exercises: [find("Burpees"), find("Box Jump"), find("Jump Rope"),
-                                   find("Cycling"), find("Hanging Leg Raise")])
-    }
-
-    // MARK: - Programs
-    static let programs: [Program] = [
-        Program(
-            id: StableID.program("Push · Pull · Legs"),
-            name: "Push · Pull · Legs",
-            daysPerWeek: 6, level: "Intermediate", style: "Hypertrophy",
-            description: "The classic PPL split targets each muscle group twice per week with dedicated push, pull, and leg sessions. Ideal for intermediate lifters looking to build size and strength simultaneously.",
-            workouts: [pplPushA(), pplPullA(), pplLegsA(), pplPushB(), pplPullB(), pplLegsB()]
-        ),
-        Program(
-            id: StableID.program("StrongLifts 5×5"),
-            name: "StrongLifts 5×5",
-            daysPerWeek: 3, level: "Beginner", style: "Strength",
-            description: "A proven strength program built around 5 compound lifts. Alternate Workout A and B three times a week with a rest day between each. Add 2.5 kg per session.",
-            workouts: [sl5x5WorkoutA(), sl5x5WorkoutB()]
-        ),
-        Program(
-            id: StableID.program("Upper / Lower"),
-            name: "Upper / Lower",
-            daysPerWeek: 4, level: "Intermediate", style: "Strength + Hypertrophy",
-            description: "Alternate upper and lower body days four times per week. Balances frequency with volume — great transition from full-body to more advanced splits.",
-            workouts: [ulUpper(), ulLower()]
-        ),
-        Program(
-            id: StableID.program("Full Body 3×"),
-            name: "Full Body 3×",
-            daysPerWeek: 3, level: "Beginner", style: "Strength",
-            description: "Hit every major muscle group three times a week. Perfect for beginners who want to build a foundation of strength and movement patterns.",
-            workouts: [fullBodyWorkout()]
-        ),
-        Program(
-            id: StableID.program("HIIT Cardio"),
-            name: "HIIT Cardio",
-            daysPerWeek: 3, level: "All Levels", style: "Cardio",
-            description: "High-intensity interval training to maximize calorie burn and improve cardiovascular fitness. Short sessions with maximal effort intervals.",
-            workouts: [hiitWorkout()]
-        )
-    ]
-
-    // MARK: - Default user plan
-    static func makeDefaultPlan() -> UserPlan {
-        let ppl = programs[0]
-        let workouts = ppl.workouts
-        // Classic 6-day PPL: Mon Push A, Tue Pull A, Wed Legs A, Thu rest, Fri Push B, Sat Pull B, Sun Legs B
-        var schedule: [Int: UUID?] = [:]
-        schedule[0] = workouts[5].id   // Sun = Legs B
-        schedule[1] = workouts[0].id   // Mon = Push A
-        schedule[2] = workouts[1].id   // Tue = Pull A
-        schedule[3] = workouts[2].id   // Wed = Legs A
-        schedule[4] = .some(nil)          // Thu = rest (explicit)
-        schedule[5] = workouts[3].id   // Fri = Push B
-        schedule[6] = workouts[4].id   // Sat = Pull B
-
-        return UserPlan(
-            name: "My PPL Plan",
-            isDefault: true,
-            sourceProgramID: ppl.id,
-            weekSchedule: schedule,
-            customWorkouts: []
-        )
-    }
+    /// Always empty. Kept as a symbol rather than deleted so the stores have a
+    /// single place to consult, and so the decision above is visible at the
+    /// point of use instead of being an absence.
+    static let programs: [Program] = []
 
     // MARK: - Empty workout (FAB quick-action "Start Workout" with no plan)
     static func emptyWorkout() -> Workout {

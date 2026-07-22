@@ -2,8 +2,11 @@ import SwiftUI
 import Combine
 
 // MARK: - ProgramDatabase
-// Owns all programs (predefined seed + user-created).
-// Predefined programs mirror SeedData.programs but are editable per-user.
+// Owns all programs. `SeedData.programs` is empty by design (see SeedData.swift),
+// so a fresh install starts with NO programs at all and everything here is
+// user-created. The `isPredefined` flag and the predefined/custom split are kept
+// because installs made before the seed was dropped still hold predefined rows
+// on disk until `SeedPurgeMigration` removes them.
 @MainActor
 final class ProgramDatabase: ObservableObject {
     static let shared = ProgramDatabase()
@@ -166,18 +169,17 @@ final class ProgramDatabase: ObservableObject {
         persist()
     }
 
-    /// Resets predefined programs to the shipped seed, preserving any
-    /// user-created custom programs (used by DataResetService — NOT full
-    /// wipe; see `hardReset()` for that).
+    /// Drops predefined programs, preserving any user-created custom programs
+    /// (used by DataResetService — NOT a full wipe; see `hardReset()`). There
+    /// is no seed to restore any more, so this only ever removes.
     func resetToSeed() {
         resetSeedPrograms()
     }
 
-    /// Drops ALL programs (predefined + custom) back to the raw seed —
-    /// distinct from `resetToSeed()`/`resetSeedPrograms()` which preserves
-    /// customs.
+    /// Drops ALL programs (predefined + custom) — distinct from
+    /// `resetToSeed()`/`resetSeedPrograms()` which preserves customs.
     func hardReset() {
-        programs = SeedData.programs
+        programs = []
         persist()
     }
 
@@ -189,6 +191,12 @@ final class ProgramDatabase: ObservableObject {
     ///
     /// Custom programs are untouched — their ids were user-generated and are
     /// already unique and meaningful.
+    ///
+    /// Inert now that `SeedData.programs` is empty: the name lookup below finds
+    /// nothing, so the map comes back empty and every caller no-ops. Kept
+    /// because `SeedIDMigration` still runs on upgrade, and deleting it would
+    /// only move the no-op somewhere less obvious. `SeedPurgeMigration` removes
+    /// the rows this used to renumber.
     func migrateSeedIDs() -> [UUID: UUID] {
         var map: [UUID: UUID] = [:]
         let seedByName = Dictionary(SeedData.programs.map { ($0.name, $0) },
@@ -227,19 +235,17 @@ final class ProgramDatabase: ObservableObject {
     }
 
     private func load() {
-        if let data = UserDefaults.standard.data(forKey: storageKey),
-           let saved = try? JSONDecoder().decode([Program].self, from: data),
-           !saved.isEmpty {
-            programs = saved
-        } else {
-            programs = SeedData.programs
-            persist()
-        }
+        guard let data = UserDefaults.standard.data(forKey: storageKey),
+              let saved = try? JSONDecoder().decode([Program].self, from: data) else { return }
+        // An empty array is now a legitimate persisted state, not a signal to
+        // re-seed, so it is decoded and kept like any other. Nothing is written
+        // back here: an install with no programs must leave the key absent so
+        // this stays a pure read.
+        programs = saved
     }
 
     func resetSeedPrograms() {
-        let userCustom = programs.filter { !$0.isPredefined }
-        programs = SeedData.programs + userCustom
+        programs = programs.filter { !$0.isPredefined }
         persist()
     }
 }
@@ -399,8 +405,11 @@ final class UserPlanDatabase: ObservableObject {
     }
 
     /// Replaces `plans` with pulled remote rows merged over local (LWW
-    /// already decided direction upstream), without re-pushing. Never leaves
-    /// `plans` empty — re-seeds the default plan if the merge is empty.
+    /// already decided direction upstream), without re-pushing.
+    ///
+    /// An empty result is left empty. This used to re-seed a default plan, but
+    /// with no seed programs to build one from, "no plans" is simply the state
+    /// of an account whose owner has not made one yet.
     func applyRemote(_ remotePlans: [UserPlan]) {
         isApplyingRemote = true
         defer { isApplyingRemote = false }
@@ -408,11 +417,7 @@ final class UserPlanDatabase: ObservableObject {
         for p in plans { byID[p.id] = p }
         for p in remotePlans { byID[p.id] = p }
         plans = Array(byID.values)
-        if plans.isEmpty, let prog = SeedData.programs.first {
-            _ = addPlan(from: prog)
-        } else {
-            persist()
-        }
+        persist()
     }
 
     /// Repoints every reference a plan holds at a seeded program or workout
@@ -445,9 +450,11 @@ final class UserPlanDatabase: ObservableObject {
     }
 
     /// Drops plans deleted on another device, as reported by the
-    /// `aura_deletions` tombstones in a delta pull. Holds the same invariant
-    /// `applyRemote` does — `plans` is never left empty — by re-seeding the
-    /// default plan if the tombstones removed the last one.
+    /// `aura_deletions` tombstones in a delta pull.
+    ///
+    /// If the tombstones remove the last plan, the user is left with none —
+    /// that is what they asked for on the other device. Re-seeding one here
+    /// would resurrect a plan the delete was meant to get rid of.
     func applyRemoteDeletions(ids: Set<UUID>) {
         guard !ids.isEmpty else { return }
         isApplyingRemote = true
@@ -455,21 +462,48 @@ final class UserPlanDatabase: ObservableObject {
         let before = plans.count
         plans.removeAll { ids.contains($0.id) }
         guard plans.count != before else { return }
-        if plans.isEmpty, let prog = SeedData.programs.first {
-            _ = addPlan(from: prog)
-        } else {
-            persist()
-        }
+        persist()
     }
 
-    /// Re-seed the default plan from the first seed program — never leaves
-    /// `plans` empty (mirrors the boot-time seeding at `load()`).
+    /// Removes plans adopted from programs that no longer exist, and clears
+    /// any scheduled day still pointing at one of their workouts. Used once, by
+    /// `SeedPurgeMigration`; plans the user built themselves are untouched.
+    ///
+    /// A dropped reference becomes an explicit rest day (`.some(nil)`) rather
+    /// than a removed key, so the week keeps its shape instead of silently
+    /// re-collapsing to "unplanned".
+    func purge(programIDs: Set<UUID>, workoutIDs: Set<UUID>) {
+        guard !programIDs.isEmpty || !workoutIDs.isEmpty else { return }
+        isApplyingRemote = true
+        defer { isApplyingRemote = false }
+
+        plans.removeAll { plan in
+            guard let source = plan.sourceProgramID else { return false }
+            return programIDs.contains(source)
+        }
+        for i in plans.indices {
+            for (day, entry) in plans[i].weekSchedule {
+                guard let workoutID = entry, workoutIDs.contains(workoutID) else { continue }
+                plans[i].weekSchedule[day] = .some(nil)
+            }
+        }
+
+        // `isDefault` can leave with the plan that held it.
+        if !plans.isEmpty, !plans.contains(where: { $0.isDefault }) {
+            plans[0].isDefault = true
+        }
+        // Persisted unconditionally: this runs once behind a done-flag, so a
+        // redundant write costs one encode rather than needing `UserPlan` to
+        // gain an `Equatable` conformance purely to detect a no-op.
+        persist()
+    }
+
+    /// Drops every plan. Named `resetToSeed()` for symmetry with the other
+    /// stores' reset entry points (DataResetService calls all three); there is
+    /// no seed to restore, so reset means empty.
     func resetToSeed() {
         plans = []
         persist()
-        if let prog = SeedData.programs.first {
-            _ = addPlan(from: prog)
-        }
     }
 
     // MARK: Persistence
@@ -483,16 +517,11 @@ final class UserPlanDatabase: ObservableObject {
     }
 
     private func load() {
-        if let data = UserDefaults.standard.data(forKey: storageKey),
-           let saved = try? JSONDecoder().decode([UserPlan].self, from: data),
-           !saved.isEmpty {
-            plans = saved
-        } else {
-            // Boot: create default plan from first seed program
-            if let prog = SeedData.programs.first {
-                addPlan(from: prog)
-            }
-        }
+        guard let data = UserDefaults.standard.data(forKey: storageKey),
+              let saved = try? JSONDecoder().decode([UserPlan].self, from: data) else { return }
+        // No boot-time seeding: a fresh install has no plans until the user
+        // creates one. An empty persisted array is decoded and kept as-is.
+        plans = saved
     }
 }
 
@@ -523,5 +552,72 @@ enum SeedIDMigration {
         // Set on completion regardless of whether anything moved: an empty map
         // means there was nothing to migrate, which is just as done.
         UserDefaults.standard.set(true, forKey: doneKey)
+    }
+}
+
+// MARK: - SeedPurgeMigration
+//
+// One-shot cleanup for installs created while the app still shipped starter
+// content: five predefined programs, a "My PPL Plan" adopted from the first of
+// them, and an example body profile (Alex Jordan, 178 cm / 78.4 kg).
+//
+// Dropping the seed from the source only changes what a FRESH install builds.
+// Everything above was written to UserDefaults the first time the app launched,
+// so without this pass an existing device keeps showing all of it forever.
+//
+// Deliberately surgical rather than a `DataResetService.resetAll`: it removes
+// only rows the app itself created, and never touches a program, plan, log,
+// measurement or PR the user entered. Anything the user made survives — that is
+// the difference between clearing seed data and wiping an account.
+@MainActor
+enum SeedPurgeMigration {
+    private static let doneKey = "aura_seed_purge_v1"
+
+    /// The example profile as it shipped. Matched in full before clearing, so a
+    /// user who edited even one field keeps everything they typed.
+    private static let mockFirstName = "Alex"
+    private static let mockLastName = "Jordan"
+    private static let mockHeight: Double = 178
+    private static let mockWeight: Double = 78.4
+
+    static func runIfNeeded() {
+        guard !UserDefaults.standard.bool(forKey: doneKey) else { return }
+        // Set first: a crash midway must not leave this looping on every launch,
+        // and each step below is independently safe to have skipped.
+        UserDefaults.standard.set(true, forKey: doneKey)
+
+        purgeSeededPrograms()
+        purgeMockProfile()
+    }
+
+    /// Order matters: the program ids have to be collected BEFORE the programs
+    /// are removed, or there is nothing left to match the plans against.
+    private static func purgeSeededPrograms() {
+        let seeded = ProgramDatabase.shared.predefined
+        guard !seeded.isEmpty else { return }
+
+        let programIDs = Set(seeded.map(\.id))
+        let workoutIDs = Set(seeded.flatMap { $0.workouts.map(\.id) })
+
+        ProgramDatabase.shared.resetSeedPrograms()   // keeps user-created customs
+        UserPlanDatabase.shared.purge(programIDs: programIDs, workoutIDs: workoutIDs)
+        AppStateBridge.shared?.purgeDayOverrides(workoutIDs: workoutIDs)
+    }
+
+    /// Clears the example body profile only while it is still untouched. The
+    /// email is left alone either way — it comes from the account, not the seed.
+    private static func purgeMockProfile() {
+        guard let state = AppStateBridge.shared else { return }
+
+        if state.userProfile.firstName == mockFirstName,
+           state.userProfile.lastName == mockLastName {
+            let email = state.userProfile.email
+            state.resetUserProfile()
+            state.userProfile.email = email
+        }
+
+        if state.bodyStats.height == mockHeight, state.bodyStats.weight == mockWeight {
+            state.resetBodyStats()
+        }
     }
 }

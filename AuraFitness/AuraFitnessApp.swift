@@ -24,6 +24,10 @@ struct AuraFitnessApp: App {
         // row is stamped as a local change, so the first sign-in reconcile
         // carries the stable ids up.
         SeedIDMigration.runIfNeeded()
+        // Strictly after the id migration: the purge matches plans against the
+        // program ids currently on disk, and running it first would leave the
+        // migration renumbering rows the purge had already removed.
+        SeedPurgeMigration.runIfNeeded()
         _appState = StateObject(wrappedValue: state)
         _authService = StateObject(wrappedValue: AuthService.shared)
         _syncService = StateObject(wrappedValue: SupabaseSyncService.shared)
