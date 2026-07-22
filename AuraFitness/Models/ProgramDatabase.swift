@@ -2,11 +2,15 @@ import SwiftUI
 import Combine
 
 // MARK: - ProgramDatabase
-// Owns all programs. `SeedData.programs` is empty by design (see SeedData.swift),
-// so a fresh install starts with NO programs at all and everything here is
-// user-created. The `isPredefined` flag and the predefined/custom split are kept
-// because installs made before the seed was dropped still hold predefined rows
-// on disk until `SeedPurgeMigration` removes them.
+// Owns all programs: the bundled library (`SeedData.programs`, flagged
+// `isPredefined`) plus everything the user built. The library is reference
+// content — it backs the Plan tab's Programs and Workouts subtabs, and nothing
+// here adopts any of it into My Plans; see the policy note in SeedData.swift.
+//
+// `mergeLibrary()` keeps that library present rather than trusting whatever was
+// last persisted, so a device that has been through a version carrying a
+// different library — including the version that shipped none at all — picks up
+// the current one on its next launch.
 @MainActor
 final class ProgramDatabase: ObservableObject {
     static let shared = ProgramDatabase()
@@ -150,6 +154,10 @@ final class ProgramDatabase: ObservableObject {
         for p in programs { byID[p.id] = p }
         for p in remotePrograms where p.isSyncable { byID[p.id] = p }
         programs = Array(byID.values)
+        // `byID.values` comes out in hash order, which would reshuffle the
+        // Programs list on every pull. Restores the library's own order at the
+        // front and persists if anything moved.
+        mergeLibrary()
         persist()
     }
 
@@ -169,17 +177,16 @@ final class ProgramDatabase: ObservableObject {
         persist()
     }
 
-    /// Drops predefined programs, preserving any user-created custom programs
-    /// (used by DataResetService — NOT a full wipe; see `hardReset()`). There
-    /// is no seed to restore any more, so this only ever removes.
+    /// Restores the bundled library, preserving any user-created custom
+    /// programs (used by DataResetService — NOT a full wipe; see `hardReset()`).
     func resetToSeed() {
         resetSeedPrograms()
     }
 
-    /// Drops ALL programs (predefined + custom) — distinct from
-    /// `resetToSeed()`/`resetSeedPrograms()` which preserves customs.
+    /// Drops user-created programs and returns the library to what shipped —
+    /// distinct from `resetToSeed()`/`resetSeedPrograms()`, which keep customs.
     func hardReset() {
-        programs = []
+        programs = SeedData.programs
         persist()
     }
 
@@ -192,11 +199,10 @@ final class ProgramDatabase: ObservableObject {
     /// Custom programs are untouched — their ids were user-generated and are
     /// already unique and meaningful.
     ///
-    /// Inert now that `SeedData.programs` is empty: the name lookup below finds
-    /// nothing, so the map comes back empty and every caller no-ops. Kept
-    /// because `SeedIDMigration` still runs on upgrade, and deleting it would
-    /// only move the no-op somewhere less obvious. `SeedPurgeMigration` removes
-    /// the rows this used to renumber.
+    /// Only matches by name, so it renumbers a persisted program solely when
+    /// the CURRENT library ships one under the same name. The five retired
+    /// programs are no longer in the library, so they fall through to
+    /// `SeedPurgeMigration`, which removes them outright.
     func migrateSeedIDs() -> [UUID: UUID] {
         var map: [UUID: UUID] = [:]
         let seedByName = Dictionary(SeedData.programs.map { ($0.name, $0) },
@@ -235,17 +241,61 @@ final class ProgramDatabase: ObservableObject {
     }
 
     private func load() {
-        guard let data = UserDefaults.standard.data(forKey: storageKey),
-              let saved = try? JSONDecoder().decode([Program].self, from: data) else { return }
-        // An empty array is now a legitimate persisted state, not a signal to
-        // re-seed, so it is decoded and kept like any other. Nothing is written
-        // back here: an install with no programs must leave the key absent so
-        // this stays a pure read.
-        programs = saved
+        if let data = UserDefaults.standard.data(forKey: storageKey),
+           let saved = try? JSONDecoder().decode([Program].self, from: data) {
+            programs = saved
+        }
+        // Runs whether or not anything was decoded: a fresh install has no key
+        // at all, and an install upgrading from the version that shipped no
+        // library has the key with the library missing from it. Both need the
+        // same fill.
+        mergeLibrary()
     }
 
+    /// Puts the bundled library at the front of `programs`, in the library's
+    /// own order, adding any entry that isn't already there.
+    ///
+    /// A library program ALREADY on disk is kept as-is rather than replaced:
+    /// `addWorkout`/`updateWorkout` can write to a predefined program, and
+    /// overwriting here would silently revert that. New releases therefore add
+    /// programs and reorder them, but never rewrite one the device already has.
+    private func mergeLibrary() {
+        let library = SeedData.programs
+        guard !library.isEmpty else { return }
+
+        let onDisk = Dictionary(programs.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
+        let libraryIDs = Set(library.map(\.id))
+        let merged = library.map { onDisk[$0.id] ?? $0 }
+                   + programs.filter { !libraryIDs.contains($0.id) }
+
+        // Comparing the id sequence catches an addition, a removal and a
+        // reorder in one go, and avoids needing `Program: Equatable`.
+        guard merged.map(\.id) != programs.map(\.id) else { return }
+        programs = merged
+        persist()
+    }
+
+    /// Removes specific programs by id, whatever their `isPredefined` flag —
+    /// the one path that can drop a predefined program, used by
+    /// `SeedPurgeMigration` to retire content that shipped in an earlier
+    /// version. Deliberately not routed through `deleteProgram(id:)`, which
+    /// refuses predefined rows by policy and would push a tombstone for a row
+    /// that never synced.
+    func removePrograms(ids: Set<UUID>) {
+        guard !ids.isEmpty else { return }
+        let before = programs.count
+        programs.removeAll { ids.contains($0.id) }
+        guard programs.count != before else { return }
+        persist()
+    }
+
+    /// Discards local edits to library programs and restores them as shipped,
+    /// keeping user-created ones. The filter-then-merge is what makes it a
+    /// RESTORE rather than a top-up: `mergeLibrary()` alone would keep whatever
+    /// is already on disk, which is the opposite of what a reset is for.
     func resetSeedPrograms() {
         programs = programs.filter { !$0.isPredefined }
+        mergeLibrary()
         persist()
     }
 }
@@ -373,10 +423,19 @@ final class UserPlanDatabase: ObservableObject {
         syncPush(plans[pi])
     }
 
-    /// Auto-assign workouts sequentially to weekdays, then insert + persist.
+    /// Lay the program's week onto the user's calendar, then insert + persist.
     /// `startDay` is 0=Sunday, 1=Monday — pass `appState.calendarStartDay`
     /// (defaults to Monday, matching most training-split conventions when no
-    /// preference is available, e.g. during boot-time seeding).
+    /// preference is available).
+    ///
+    /// A program that declares a `weekPattern` is copied day for day from its
+    /// own day 1, rest days included: a lower-body program that trains days 2,
+    /// 4 and 6 must not collapse into three sessions back to back, and one that
+    /// repeats a session inside the week has to repeat it here too. Rest lands
+    /// as `.some(nil)` — an explicit rest day, not an unplanned one.
+    ///
+    /// Programs without a pattern (anything built in the editor) keep the old
+    /// behaviour: workouts fill consecutive days from `startDay`.
     @discardableResult
     func addPlan(from program: Program, name: String? = nil, startDay: Int = 1) -> UserPlan {
         var plan = UserPlan(
@@ -386,9 +445,14 @@ final class UserPlanDatabase: ObservableObject {
             weekSchedule: [:],
             customWorkouts: []
         )
-        for (i, workout) in program.workouts.prefix(program.daysPerWeek).enumerated() {
-            let dayIdx = (startDay + i) % 7
-            plan.weekSchedule[dayIdx] = workout.id
+        if program.weekPattern.isEmpty {
+            for (i, workout) in program.workouts.prefix(program.daysPerWeek).enumerated() {
+                plan.weekSchedule[(startDay + i) % 7] = workout.id
+            }
+        } else {
+            for (i, workoutID) in program.weekPattern.prefix(7).enumerated() {
+                plan.weekSchedule[(startDay + i) % 7] = .some(workoutID)
+            }
         }
         addPlan(plan)
         return plan
@@ -580,6 +644,17 @@ enum SeedPurgeMigration {
     private static let mockHeight: Double = 178
     private static let mockWeight: Double = 78.4
 
+    /// The five programs that shipped as starter content, matched BY NAME.
+    ///
+    /// Name, not id, and not the `isPredefined` flag: these installs may hold
+    /// either the old random ids or the `StableID` ones depending on when they
+    /// upgraded, and `isPredefined` is now also worn by the bundled library —
+    /// purging on that flag would wipe the library this migration runs
+    /// alongside. Nothing else is retired, so this list stays frozen.
+    private static let retiredPrograms: Set<String> = [
+        "Push · Pull · Legs", "StrongLifts 5×5", "Upper / Lower", "Full Body 3×", "HIIT Cardio"
+    ]
+
     static func runIfNeeded() {
         guard !UserDefaults.standard.bool(forKey: doneKey) else { return }
         // Set first: a crash midway must not leave this looping on every launch,
@@ -593,13 +668,13 @@ enum SeedPurgeMigration {
     /// Order matters: the program ids have to be collected BEFORE the programs
     /// are removed, or there is nothing left to match the plans against.
     private static func purgeSeededPrograms() {
-        let seeded = ProgramDatabase.shared.predefined
-        guard !seeded.isEmpty else { return }
+        let retired = ProgramDatabase.shared.programs.filter { retiredPrograms.contains($0.name) }
+        guard !retired.isEmpty else { return }
 
-        let programIDs = Set(seeded.map(\.id))
-        let workoutIDs = Set(seeded.flatMap { $0.workouts.map(\.id) })
+        let programIDs = Set(retired.map(\.id))
+        let workoutIDs = Set(retired.flatMap { $0.workouts.map(\.id) })
 
-        ProgramDatabase.shared.resetSeedPrograms()   // keeps user-created customs
+        ProgramDatabase.shared.removePrograms(ids: programIDs)
         UserPlanDatabase.shared.purge(programIDs: programIDs, workoutIDs: workoutIDs)
         AppStateBridge.shared?.purgeDayOverrides(workoutIDs: workoutIDs)
     }

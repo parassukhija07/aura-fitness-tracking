@@ -384,25 +384,27 @@ enum ExerciseLibrary {
 
 // MARK: - SeedData
 //
-// Ships NO starter content. Every install — signed in, or guest — opens with an
-// empty Plan library, an empty Log and an empty Progress tab; the user builds
-// their own programs from the exercise catalog.
+// Ships NO prefilled USER data. Every install — signed in, or guest — opens
+// with an empty My Plans, an empty Log and an empty Progress tab. Nothing here
+// adopts a plan, schedules a day or writes a body profile on the user's behalf;
+// the app's own five bundled programs and the "My PPL Plan" adopted from them
+// were removed for exactly that reason, and `SeedPurgeMigration` still clears
+// them from devices that already hold them.
 //
-// The five bundled programs (Push · Pull · Legs, StrongLifts 5×5, Upper /
-// Lower, Full Body 3×, HIIT Cardio) and the default "My PPL Plan" they seeded
-// were removed deliberately. Do not reintroduce them: every store below now
-// treats "no programs" as the normal steady state rather than a condition to
-// heal, and re-adding a seed would resurrect content on installs that have
-// already been purged of it (see `SeedPurgeMigration`).
+// What it DOES ship is reference data — the material the user picks FROM:
 //
-// `ExerciseLibrary` above is NOT seed content in that sense — it is part of the
-// exercise catalog (see `ExerciseDatabase.legacyEntries()`), i.e. the reference
-// data the user picks FROM, not prefilled user data. It stays.
+//  - `ExerciseLibrary` above, which feeds `ExerciseDatabase.legacyEntries()`.
+//  - `ProgramLibrary` below: the workout and program libraries behind the Plan
+//    tab's Workouts and Programs subtabs. Browsable, never auto-adopted; a
+//    program enters My Plans only when the user taps "Add to My Plans".
+//
+// The distinction is the whole policy. Reference data is what makes the empty
+// tabs fillable; prefilled user data is someone else's training week.
 enum SeedData {
-    /// Always empty. Kept as a symbol rather than deleted so the stores have a
-    /// single place to consult, and so the decision above is visible at the
-    /// point of use instead of being an absence.
-    static let programs: [Program] = []
+    /// The bundled program library. Reference content, not user data — see the
+    /// note above and `ProgramLibrary`.
+    @MainActor
+    static var programs: [Program] { ProgramLibrary.programs }
 
     // MARK: - Empty workout (FAB quick-action "Start Workout" with no plan)
     static func emptyWorkout() -> Workout {
@@ -413,5 +415,146 @@ enum SeedData {
             exercises: [],
             program: nil
         )
+    }
+}
+
+// MARK: - ProgramLibrary
+//
+// Builds the bundled workout + program libraries from
+// `Resources/program_library.json`, which is generated from
+// comprehensive_workout_library-v3.csv and comprehensive_program_library-v3.csv.
+// The data lives in the resource rather than in this file, so refreshing the
+// library is a data change instead of a source change.
+//
+// Exercises resolve through `ExerciseDatabase` BY NAME so a library workout
+// carries the same record the user would get picking that exercise themselves:
+// same id, same warm-up protocol, same coaching cue, same tutorial link, and
+// the same over-the-air catalog updates. The generator records which entry to
+// use in `catalog`. A minority of movements (Turkish Get-Up, Bird Dog, the
+// olympic lifts…) have no catalog equivalent; those ship the minimum needed to
+// render, from the record's own `equipment` / `primaryMuscle` fields.
+//
+// A missing or unreadable resource yields an empty library — the state the app
+// shipped in before this existed, and one every screen already handles.
+@MainActor
+enum ProgramLibrary {
+    /// Built once per launch. `Exercise` ids are sourced from the catalog, so
+    /// rebuilding this after `ExerciseDatabase` has changed mid-session could
+    /// hand two evaluations different ids for the same library workout.
+    static let programs: [Program] = build()
+
+    // MARK: Resource shape
+    private struct Payload: Decodable {
+        let programs: [ProgramJSON]
+        let workouts: [WorkoutJSON]
+    }
+
+    private struct ProgramJSON: Decodable {
+        let name: String
+        let level: String
+        let style: String
+        let description: String
+        /// 7 entries, day 1 first. `nil` = rest day.
+        let week: [String?]
+    }
+
+    private struct WorkoutJSON: Decodable {
+        let name: String
+        let primaryMuscles: String
+        let estimatedMinutes: Int
+        let exercises: [ExerciseJSON]
+    }
+
+    private struct ExerciseJSON: Decodable {
+        let name: String
+        let sets: Int
+        let reps: String
+        /// Catalog entry to source this exercise from. Absent when the catalog
+        /// has no usable equivalent, in which case the fields below stand in.
+        let catalog: String?
+        let equipment: String?
+        let primaryMuscle: String?
+        let muscleGroups: [String]?
+    }
+
+    // MARK: Build
+    private static func build() -> [Program] {
+        guard let url = Bundle.main.url(forResource: "program_library", withExtension: "json"),
+              let data = try? Data(contentsOf: url) else {
+            print("⚠️ ProgramLibrary: program_library.json not found in the app bundle — shipping no program library. Check the Resources build phase.")
+            return []
+        }
+        guard let payload = try? JSONDecoder().decode(Payload.self, from: data) else {
+            print("⚠️ ProgramLibrary: program_library.json could not be decoded — shipping no program library.")
+            return []
+        }
+
+        let byName = Dictionary(payload.workouts.map { ($0.name, workout($0)) },
+                                uniquingKeysWith: { first, _ in first })
+
+        return payload.programs.map { p in
+            // `weekPattern` keeps the program's own day order; `workouts` is
+            // the DISTINCT sessions in the order they first come up, because a
+            // week can run the same session twice — Court Athlete trains
+            // Explosive Power on days 1 and 5 — and listing it twice would
+            // show the user a duplicate.
+            let week = p.week.map { $0.flatMap { byName[$0] } }
+            var seen = Set<UUID>()
+            let distinct = week.compactMap { $0 }.filter { seen.insert($0.id).inserted }
+
+            return Program(
+                id: StableID.program(p.name),
+                name: p.name,
+                daysPerWeek: week.compactMap { $0 }.count,
+                level: p.level,
+                style: p.style,
+                description: p.description,
+                workouts: distinct,
+                isPredefined: true,
+                weekPattern: week.map { $0?.id }
+            )
+        }
+    }
+
+    private static func workout(_ w: WorkoutJSON) -> Workout {
+        Workout(
+            id: StableID.workout(w.name),
+            name: w.name,
+            primaryMuscles: w.primaryMuscles,
+            estimatedMinutes: w.estimatedMinutes,
+            exercises: w.exercises.map { exercise($0, in: w.name) },
+            program: nil
+        )
+    }
+
+    private static func exercise(_ e: ExerciseJSON, in workoutName: String) -> Exercise {
+        // The library's sets and reps override the catalog's defaults: the
+        // whole point of a program is that IT prescribes the volume.
+        if let catalog = e.catalog, let entry = ExerciseDatabase.shared.entry(named: catalog) {
+            var ex = ExerciseDatabase.shared.toExercise(entry, sets: e.sets)
+            ex.repRange = e.reps
+            return ex
+        }
+        if let catalog = e.catalog {
+            print("⚠️ ProgramLibrary: \(workoutName) asks for catalog entry '\(catalog)' (as '\(e.name)'), which is not in the library — falling back to a bare record.")
+        }
+
+        let groups = e.muscleGroups ?? []
+        var ex = Exercise(
+            // Keyed like every other catalog record, so if one of these
+            // movements is ever added to the catalog the two land on the same
+            // id instead of appearing twice.
+            id: StableID.exercise(e.name),
+            name: e.name,
+            primaryMuscle: e.primaryMuscle ?? groups.first ?? "Full Body",
+            muscleGroups: groups,
+            equipment: e.equipment ?? "Bodyweight",
+            difficulty: "Intermediate",
+            isCable: false,
+            repRange: e.reps,
+            plannedSets: e.sets
+        )
+        ex.sets = (0..<e.sets).map { _ in WorkoutSet() }
+        return ex
     }
 }

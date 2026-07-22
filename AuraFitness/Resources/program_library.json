@@ -1,0 +1,1976 @@
+{
+  "version": 1,
+  "programs": [
+    {
+      "name": "5-Day Bro Split",
+      "level": "Intermediate",
+      "style": "Bodybuilding",
+      "description": "One muscle group per day across five days, then a full weekend off. Maximum volume per session, a week of recovery between hits.",
+      "week": [
+        "Chest Day",
+        "Back Day",
+        "Leg Day",
+        "Shoulder Day",
+        "Arms & Core",
+        null,
+        null
+      ]
+    },
+    {
+      "name": "Calisthenics Mastery",
+      "level": "Intermediate",
+      "style": "Calisthenics",
+      "description": "Bodyweight push, pull and leg days built around progressions toward the handstand push-up, muscle-up and pistol squat.",
+      "week": [
+        "Bodyweight Push",
+        "Bodyweight Pull",
+        "Bodyweight Legs",
+        null,
+        null,
+        null,
+        null
+      ]
+    },
+    {
+      "name": "Court Athlete",
+      "level": "Intermediate",
+      "style": "Athletic",
+      "description": "Explosive power twice a week with a court-endurance circuit in between, for sports built on repeat sprints and jumps.",
+      "week": [
+        "Explosive Power",
+        null,
+        "Court Endurance",
+        null,
+        "Explosive Power",
+        null,
+        null
+      ]
+    },
+    {
+      "name": "Metabolic Fat Loss Circuit",
+      "level": "Beginner",
+      "style": "Conditioning",
+      "description": "Three metabolic circuits a week at 45 seconds on and 15 seconds off, with a full rest day between each.",
+      "week": [
+        "Full Body Metabolic Circuit A",
+        null,
+        "Full Body Metabolic Circuit B",
+        null,
+        "Full Body Metabolic Circuit A",
+        null,
+        null
+      ]
+    },
+    {
+      "name": "3-Day Full Body",
+      "level": "Beginner",
+      "style": "Full Body",
+      "description": "Three full-body sessions a week with a rest day after each. The simplest way to hit every major lift when you can only train three times.",
+      "week": [
+        "Full Body A",
+        null,
+        "Full Body B",
+        null,
+        "Full Body C",
+        null,
+        null
+      ]
+    },
+    {
+      "name": "Glute & Lower Body Focus",
+      "level": "Intermediate",
+      "style": "Hypertrophy",
+      "description": "Three lower-body days spread across the week, weighted toward glutes and posterior chain.",
+      "week": [
+        null,
+        "Glute Hypertrophy A",
+        null,
+        "Glute Hypertrophy B",
+        null,
+        "Glute Hypertrophy A",
+        null
+      ]
+    },
+    {
+      "name": "HIIT & Core Burner",
+      "level": "Beginner",
+      "style": "HIIT",
+      "description": "Short interval sessions alternating full-body cardio and core, at 45 seconds on and 15 seconds off.",
+      "week": [
+        "Cardio Blast",
+        "Core Crusher",
+        null,
+        "Cardio Blast",
+        null,
+        null,
+        null
+      ]
+    },
+    {
+      "name": "Hotel Minimalist Bodyweight",
+      "level": "Beginner",
+      "style": "Bodyweight",
+      "description": "One zero-equipment full-body session, three times a week. Nothing here needs more than a floor.",
+      "week": [
+        "Zero-Equipment Full Body",
+        null,
+        "Zero-Equipment Full Body",
+        null,
+        "Zero-Equipment Full Body",
+        null,
+        null
+      ]
+    },
+    {
+      "name": "Kettlebell Functional",
+      "level": "Intermediate",
+      "style": "Kettlebell",
+      "description": "Two kettlebell sessions -- hinge and swing, then press and pull -- for conditioning that needs one bell and no gym.",
+      "week": [
+        "Hinge & Swing",
+        null,
+        "Press & Pull",
+        null,
+        "Hinge & Swing",
+        null,
+        null
+      ]
+    },
+    {
+      "name": "Senior Longevity & Balance",
+      "level": "Beginner",
+      "style": "Longevity",
+      "description": "Joint-friendly strength and balance work twice a week, aimed at functional independence and fall prevention.",
+      "week": [
+        null,
+        "Functional Longevity Strength",
+        null,
+        "Balance & Core Stability",
+        null,
+        null,
+        null
+      ]
+    },
+    {
+      "name": "Posture Correction",
+      "level": "Beginner",
+      "style": "Mobility",
+      "description": "Low-load spine, shoulder and hip work for desk-bound weeks. Costs nothing in recovery, so it stacks on top of anything else.",
+      "week": [
+        "Spine & Shoulders",
+        "Hips & Lower Back",
+        null,
+        "Spine & Shoulders",
+        "Hips & Lower Back",
+        null,
+        null
+      ]
+    },
+    {
+      "name": "Olympic Weightlifting",
+      "level": "Advanced",
+      "style": "Olympic",
+      "description": "Snatch and clean & jerk days at low reps, with the squat and pull variations that support them.",
+      "week": [
+        "Snatch Day",
+        null,
+        "Clean & Jerk Day",
+        null,
+        "Snatch Day",
+        null,
+        null
+      ]
+    },
+    {
+      "name": "Powerlifting 5x5",
+      "level": "Advanced",
+      "style": "Powerlifting",
+      "description": "Squat, bench and deadlift each get their own 5x5 day, backed by the accessories that carry them.",
+      "week": [
+        "Squat Focus",
+        null,
+        "Bench Focus",
+        null,
+        "Deadlift Focus",
+        null,
+        null
+      ]
+    },
+    {
+      "name": "Powerbuilding Hybrid",
+      "level": "Advanced",
+      "style": "Powerbuilding",
+      "description": "Heavy compound work in the 6-10 range followed by hypertrophy volume, upper and lower, twice each.",
+      "week": [
+        "Powerbuilding Upper",
+        "Powerbuilding Lower",
+        null,
+        "Powerbuilding Upper",
+        "Powerbuilding Lower",
+        null,
+        null
+      ]
+    },
+    {
+      "name": "Classic 6-Day PPL",
+      "level": "Intermediate",
+      "style": "Push/Pull/Legs",
+      "description": "Push, pull and legs run twice a week, with different exercise selection on the A and B rotations.",
+      "week": [
+        "PPL Push A",
+        "PPL Pull A",
+        "PPL Legs A",
+        "PPL Push B",
+        "PPL Pull B",
+        "PPL Legs B",
+        null
+      ]
+    },
+    {
+      "name": "Runner Strength & Stability",
+      "level": "Beginner",
+      "style": "Running",
+      "description": "Two short strength days built around single-leg stability and posture, placed so they never crowd a key run.",
+      "week": [
+        null,
+        "Runner Leg & Core Stability",
+        null,
+        null,
+        "Runner Upper Body Armor",
+        null,
+        null
+      ]
+    },
+    {
+      "name": "Strongman Work Capacity",
+      "level": "Advanced",
+      "style": "Strongman",
+      "description": "Two carry-and-throw conditioning sessions a week for grip, work capacity and raw grit.",
+      "week": [
+        null,
+        "Strongman Conditioning",
+        null,
+        null,
+        "Strongman Conditioning",
+        null,
+        null
+      ]
+    },
+    {
+      "name": "4-Day Upper/Lower",
+      "level": "Intermediate",
+      "style": "Upper/Lower",
+      "description": "Two upper and two lower days. Heavy power work early in the week, higher-rep hypertrophy at the end of it.",
+      "week": [
+        "Upper Power",
+        "Lower Power",
+        null,
+        "Upper Hypertrophy",
+        "Lower Hypertrophy",
+        null,
+        null
+      ]
+    }
+  ],
+  "workouts": [
+    {
+      "name": "Full Body A",
+      "primaryMuscles": "Full Body",
+      "estimatedMinutes": 45,
+      "exercises": [
+        {
+          "name": "Barbell Squat",
+          "sets": 3,
+          "reps": "8–12",
+          "catalog": "Barbell Squat"
+        },
+        {
+          "name": "Barbell Bench Press",
+          "sets": 3,
+          "reps": "8–12",
+          "catalog": "Barbell Bench Press"
+        },
+        {
+          "name": "Barbell Row",
+          "sets": 3,
+          "reps": "8–12",
+          "catalog": "Barbell Row"
+        },
+        {
+          "name": "Overhead Press",
+          "sets": 3,
+          "reps": "8–12",
+          "catalog": "Overhead Press"
+        }
+      ]
+    },
+    {
+      "name": "Full Body B",
+      "primaryMuscles": "Full Body",
+      "estimatedMinutes": 45,
+      "exercises": [
+        {
+          "name": "Deadlift",
+          "sets": 3,
+          "reps": "8–12",
+          "catalog": "Deadlift"
+        },
+        {
+          "name": "Incline Dumbbell Press",
+          "sets": 3,
+          "reps": "8–12",
+          "catalog": "Incline Dumbbell Press"
+        },
+        {
+          "name": "Lat Pulldown",
+          "sets": 3,
+          "reps": "8–12",
+          "catalog": "Lat Pulldown"
+        },
+        {
+          "name": "Dumbbell Lateral Raise",
+          "sets": 3,
+          "reps": "8–12",
+          "catalog": "Dumbbell Lateral Raise"
+        }
+      ]
+    },
+    {
+      "name": "Full Body C",
+      "primaryMuscles": "Full Body",
+      "estimatedMinutes": 45,
+      "exercises": [
+        {
+          "name": "Leg Press",
+          "sets": 3,
+          "reps": "10–15",
+          "catalog": "Leg Press"
+        },
+        {
+          "name": "Chest Dip",
+          "sets": 3,
+          "reps": "10–15",
+          "catalog": "Chest Dips"
+        },
+        {
+          "name": "Seated Cable Row",
+          "sets": 3,
+          "reps": "10–15",
+          "catalog": "Seated Cable Row"
+        },
+        {
+          "name": "Arnold Press",
+          "sets": 3,
+          "reps": "10–15",
+          "catalog": "Arnold Press"
+        }
+      ]
+    },
+    {
+      "name": "Upper Power",
+      "primaryMuscles": "Upper",
+      "estimatedMinutes": 45,
+      "exercises": [
+        {
+          "name": "Barbell Bench Press",
+          "sets": 4,
+          "reps": "4–6",
+          "catalog": "Barbell Bench Press"
+        },
+        {
+          "name": "Barbell Row",
+          "sets": 4,
+          "reps": "4–6",
+          "catalog": "Barbell Row"
+        },
+        {
+          "name": "Overhead Press",
+          "sets": 4,
+          "reps": "4–6",
+          "catalog": "Overhead Press"
+        }
+      ]
+    },
+    {
+      "name": "Lower Power",
+      "primaryMuscles": "Lower",
+      "estimatedMinutes": 45,
+      "exercises": [
+        {
+          "name": "Barbell Squat",
+          "sets": 4,
+          "reps": "4–6",
+          "catalog": "Barbell Squat"
+        },
+        {
+          "name": "Romanian Deadlift",
+          "sets": 4,
+          "reps": "4–6",
+          "catalog": "Romanian Deadlift"
+        },
+        {
+          "name": "Standing Calf Raise",
+          "sets": 4,
+          "reps": "4–6",
+          "catalog": "Calf Raises"
+        }
+      ]
+    },
+    {
+      "name": "Upper Hypertrophy",
+      "primaryMuscles": "Upper",
+      "estimatedMinutes": 35,
+      "exercises": [
+        {
+          "name": "Incline Dumbbell Press",
+          "sets": 3,
+          "reps": "10–12",
+          "catalog": "Incline Dumbbell Press"
+        },
+        {
+          "name": "Seated Cable Row",
+          "sets": 3,
+          "reps": "10–12",
+          "catalog": "Seated Cable Row"
+        },
+        {
+          "name": "Barbell Curl",
+          "sets": 3,
+          "reps": "10–12",
+          "catalog": "Barbell Curl"
+        }
+      ]
+    },
+    {
+      "name": "Lower Hypertrophy",
+      "primaryMuscles": "Lower",
+      "estimatedMinutes": 35,
+      "exercises": [
+        {
+          "name": "Hack Squat",
+          "sets": 3,
+          "reps": "10–12",
+          "catalog": "Sled Hack Squat"
+        },
+        {
+          "name": "Lying Leg Curl",
+          "sets": 3,
+          "reps": "10–12",
+          "catalog": "Leg Curl"
+        },
+        {
+          "name": "Seated Calf Raise",
+          "sets": 3,
+          "reps": "10–12",
+          "catalog": "Seated Calf Raise"
+        }
+      ]
+    },
+    {
+      "name": "Chest Day",
+      "primaryMuscles": "Chest",
+      "estimatedMinutes": 45,
+      "exercises": [
+        {
+          "name": "Barbell Bench Press",
+          "sets": 4,
+          "reps": "8–12",
+          "catalog": "Barbell Bench Press"
+        },
+        {
+          "name": "Incline Dumbbell Press",
+          "sets": 4,
+          "reps": "8–12",
+          "catalog": "Incline Dumbbell Press"
+        },
+        {
+          "name": "Cable Crossover",
+          "sets": 4,
+          "reps": "8–12",
+          "catalog": "Cable Crossover"
+        }
+      ]
+    },
+    {
+      "name": "Back Day",
+      "primaryMuscles": "Back",
+      "estimatedMinutes": 45,
+      "exercises": [
+        {
+          "name": "Pull-up",
+          "sets": 4,
+          "reps": "8–12",
+          "catalog": "Pull-Ups"
+        },
+        {
+          "name": "Deadlift",
+          "sets": 4,
+          "reps": "8–12",
+          "catalog": "Deadlift"
+        },
+        {
+          "name": "Lat Pulldown",
+          "sets": 4,
+          "reps": "8–12",
+          "catalog": "Lat Pulldown"
+        }
+      ]
+    },
+    {
+      "name": "Leg Day",
+      "primaryMuscles": "Legs",
+      "estimatedMinutes": 45,
+      "exercises": [
+        {
+          "name": "Barbell Squat",
+          "sets": 4,
+          "reps": "8–12",
+          "catalog": "Barbell Squat"
+        },
+        {
+          "name": "Leg Press",
+          "sets": 4,
+          "reps": "8–12",
+          "catalog": "Leg Press"
+        },
+        {
+          "name": "Leg Extension",
+          "sets": 4,
+          "reps": "8–12",
+          "catalog": "Leg Extension"
+        }
+      ]
+    },
+    {
+      "name": "Shoulder Day",
+      "primaryMuscles": "Shoulders",
+      "estimatedMinutes": 45,
+      "exercises": [
+        {
+          "name": "Overhead Press",
+          "sets": 4,
+          "reps": "8–12",
+          "catalog": "Overhead Press"
+        },
+        {
+          "name": "Dumbbell Lateral Raise",
+          "sets": 4,
+          "reps": "8–12",
+          "catalog": "Dumbbell Lateral Raise"
+        },
+        {
+          "name": "Reverse Pec Deck",
+          "sets": 4,
+          "reps": "8–12",
+          "catalog": "Lever Seated Reverse Fly"
+        }
+      ]
+    },
+    {
+      "name": "Arms & Core",
+      "primaryMuscles": "Arms",
+      "estimatedMinutes": 35,
+      "exercises": [
+        {
+          "name": "Barbell Curl",
+          "sets": 3,
+          "reps": "10–15",
+          "catalog": "Barbell Curl"
+        },
+        {
+          "name": "Skullcrusher",
+          "sets": 3,
+          "reps": "10–15",
+          "catalog": "Skull Crushers"
+        },
+        {
+          "name": "Hammer Curl",
+          "sets": 3,
+          "reps": "10–15",
+          "catalog": "Hammer Curl"
+        }
+      ]
+    },
+    {
+      "name": "Explosive Power",
+      "primaryMuscles": "Full Body",
+      "estimatedMinutes": 45,
+      "exercises": [
+        {
+          "name": "Box Jump",
+          "sets": 3,
+          "reps": "5–8",
+          "catalog": "Box Jump"
+        },
+        {
+          "name": "Lateral Bounds",
+          "sets": 3,
+          "reps": "5–8",
+          "equipment": "Bodyweight",
+          "primaryMuscle": "Legs",
+          "muscleGroups": [
+            "Quads",
+            "Glutes",
+            "Calves"
+          ]
+        },
+        {
+          "name": "Medicine Ball Slam",
+          "sets": 3,
+          "reps": "5–8",
+          "catalog": "Medicine Ball Overhead Slam"
+        },
+        {
+          "name": "Kettlebell Swing",
+          "sets": 3,
+          "reps": "5–8",
+          "catalog": "Kettlebell Swing"
+        }
+      ]
+    },
+    {
+      "name": "Court Endurance",
+      "primaryMuscles": "Endurance",
+      "estimatedMinutes": 45,
+      "exercises": [
+        {
+          "name": "Agility Ladder Drills",
+          "sets": 3,
+          "reps": "60 sec",
+          "equipment": "Bodyweight",
+          "primaryMuscle": "Cardio",
+          "muscleGroups": [
+            "Cardio",
+            "Calves"
+          ]
+        },
+        {
+          "name": "Lunges",
+          "sets": 3,
+          "reps": "60 sec",
+          "catalog": "Walking Lunges"
+        },
+        {
+          "name": "Plank",
+          "sets": 3,
+          "reps": "60 sec",
+          "catalog": "Plank"
+        },
+        {
+          "name": "Russian Twist",
+          "sets": 3,
+          "reps": "60 sec",
+          "catalog": "Russian Twist"
+        }
+      ]
+    },
+    {
+      "name": "Squat Focus",
+      "primaryMuscles": "Legs · Core",
+      "estimatedMinutes": 70,
+      "exercises": [
+        {
+          "name": "Barbell Squat",
+          "sets": 5,
+          "reps": "5",
+          "catalog": "Barbell Squat"
+        },
+        {
+          "name": "Paused Squat",
+          "sets": 5,
+          "reps": "5",
+          "equipment": "Barbell",
+          "primaryMuscle": "Quads",
+          "muscleGroups": [
+            "Quads",
+            "Glutes",
+            "Core"
+          ]
+        },
+        {
+          "name": "Good Mornings",
+          "sets": 5,
+          "reps": "5",
+          "catalog": "Barbell Good Morning"
+        },
+        {
+          "name": "Weighted Plank",
+          "sets": 5,
+          "reps": "5",
+          "catalog": "Weighted Front Plank"
+        }
+      ]
+    },
+    {
+      "name": "Bench Focus",
+      "primaryMuscles": "Chest · Triceps",
+      "estimatedMinutes": 70,
+      "exercises": [
+        {
+          "name": "Barbell Bench Press",
+          "sets": 5,
+          "reps": "5",
+          "catalog": "Barbell Bench Press"
+        },
+        {
+          "name": "Close-Grip Bench Press",
+          "sets": 5,
+          "reps": "5",
+          "catalog": "Close-Grip Bench Press"
+        },
+        {
+          "name": "Spoto Press",
+          "sets": 5,
+          "reps": "5",
+          "equipment": "Barbell",
+          "primaryMuscle": "Chest",
+          "muscleGroups": [
+            "Chest",
+            "Triceps",
+            "Front Delts"
+          ]
+        },
+        {
+          "name": "Face Pull",
+          "sets": 5,
+          "reps": "5",
+          "catalog": "Face Pulls"
+        }
+      ]
+    },
+    {
+      "name": "Deadlift Focus",
+      "primaryMuscles": "Back · Hamstrings",
+      "estimatedMinutes": 70,
+      "exercises": [
+        {
+          "name": "Deadlift",
+          "sets": 5,
+          "reps": "5",
+          "catalog": "Deadlift"
+        },
+        {
+          "name": "Deficit Deadlift",
+          "sets": 5,
+          "reps": "5",
+          "equipment": "Barbell",
+          "primaryMuscle": "Back",
+          "muscleGroups": [
+            "Back",
+            "Hamstrings",
+            "Glutes"
+          ]
+        },
+        {
+          "name": "Barbell Row",
+          "sets": 5,
+          "reps": "5",
+          "catalog": "Barbell Row"
+        },
+        {
+          "name": "Farmer's Walk",
+          "sets": 5,
+          "reps": "5",
+          "catalog": "Farmers Walk"
+        }
+      ]
+    },
+    {
+      "name": "Bodyweight Push",
+      "primaryMuscles": "Chest · Triceps",
+      "estimatedMinutes": 55,
+      "exercises": [
+        {
+          "name": "Handstand Push-up Progression",
+          "sets": 4,
+          "reps": "To Failure",
+          "catalog": "Handstand Push-Up"
+        },
+        {
+          "name": "Dips",
+          "sets": 4,
+          "reps": "To Failure",
+          "catalog": "Tricep Dips"
+        },
+        {
+          "name": "Diamond Push-up",
+          "sets": 4,
+          "reps": "To Failure",
+          "catalog": "Diamond Push-Up"
+        },
+        {
+          "name": "Pike Push-up",
+          "sets": 4,
+          "reps": "To Failure",
+          "equipment": "Bodyweight",
+          "primaryMuscle": "Shoulders",
+          "muscleGroups": [
+            "Front Delts",
+            "Triceps"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Bodyweight Pull",
+      "primaryMuscles": "Back · Biceps",
+      "estimatedMinutes": 55,
+      "exercises": [
+        {
+          "name": "Muscle-up Progression",
+          "sets": 4,
+          "reps": "To Failure",
+          "catalog": "Muscle Up"
+        },
+        {
+          "name": "Pull-up",
+          "sets": 4,
+          "reps": "To Failure",
+          "catalog": "Pull-Ups"
+        },
+        {
+          "name": "Front Lever Raises",
+          "sets": 4,
+          "reps": "To Failure",
+          "catalog": "Front Lever Reps"
+        },
+        {
+          "name": "Inverted Row",
+          "sets": 4,
+          "reps": "To Failure",
+          "catalog": "Inverted Row"
+        }
+      ]
+    },
+    {
+      "name": "Bodyweight Legs",
+      "primaryMuscles": "Legs",
+      "estimatedMinutes": 55,
+      "exercises": [
+        {
+          "name": "Pistol Squat",
+          "sets": 4,
+          "reps": "10–15",
+          "equipment": "Bodyweight",
+          "primaryMuscle": "Quads",
+          "muscleGroups": [
+            "Quads",
+            "Glutes",
+            "Core"
+          ]
+        },
+        {
+          "name": "Shrimp Squat",
+          "sets": 4,
+          "reps": "10–15",
+          "equipment": "Bodyweight",
+          "primaryMuscle": "Quads",
+          "muscleGroups": [
+            "Quads",
+            "Glutes"
+          ]
+        },
+        {
+          "name": "Nordic Hamstring Curl",
+          "sets": 4,
+          "reps": "10–15",
+          "catalog": "Nordic Hamstring Curl"
+        },
+        {
+          "name": "Jumping Lunges",
+          "sets": 4,
+          "reps": "10–15",
+          "equipment": "Bodyweight",
+          "primaryMuscle": "Quads",
+          "muscleGroups": [
+            "Quads",
+            "Glutes",
+            "Calves"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Cardio Blast",
+      "primaryMuscles": "Cardio",
+      "estimatedMinutes": 70,
+      "exercises": [
+        {
+          "name": "Burpees",
+          "sets": 5,
+          "reps": "45s on/15s off",
+          "catalog": "Burpees"
+        },
+        {
+          "name": "Mountain Climbers",
+          "sets": 5,
+          "reps": "45s on/15s off",
+          "catalog": "Mountain Climbers"
+        },
+        {
+          "name": "High Knees",
+          "sets": 5,
+          "reps": "45s on/15s off",
+          "equipment": "Bodyweight",
+          "primaryMuscle": "Cardio",
+          "muscleGroups": [
+            "Cardio",
+            "Hip Flexors"
+          ]
+        },
+        {
+          "name": "Jumping Jacks",
+          "sets": 5,
+          "reps": "45s on/15s off",
+          "equipment": "Bodyweight",
+          "primaryMuscle": "Cardio",
+          "muscleGroups": [
+            "Cardio",
+            "Calves",
+            "Side Delts"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Core Crusher",
+      "primaryMuscles": "Core",
+      "estimatedMinutes": 55,
+      "exercises": [
+        {
+          "name": "Bicycle Crunch",
+          "sets": 4,
+          "reps": "45s on/15s off",
+          "catalog": "Cross Body Crunch"
+        },
+        {
+          "name": "V-Ups",
+          "sets": 4,
+          "reps": "45s on/15s off",
+          "equipment": "Bodyweight",
+          "primaryMuscle": "Abs",
+          "muscleGroups": [
+            "Abs",
+            "Hip Flexors"
+          ]
+        },
+        {
+          "name": "Hollow Body Hold",
+          "sets": 4,
+          "reps": "45s on/15s off",
+          "equipment": "Bodyweight",
+          "primaryMuscle": "Core",
+          "muscleGroups": [
+            "Core",
+            "Abs"
+          ]
+        },
+        {
+          "name": "Plank Jacks",
+          "sets": 4,
+          "reps": "45s on/15s off",
+          "equipment": "Bodyweight",
+          "primaryMuscle": "Core",
+          "muscleGroups": [
+            "Core",
+            "Abs",
+            "Cardio"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Hinge & Swing",
+      "primaryMuscles": "Full Body",
+      "estimatedMinutes": 55,
+      "exercises": [
+        {
+          "name": "Kettlebell Swing",
+          "sets": 4,
+          "reps": "12–15",
+          "catalog": "Kettlebell Swing"
+        },
+        {
+          "name": "Kettlebell Snatch",
+          "sets": 4,
+          "reps": "12–15",
+          "catalog": "Kettlebell One Arm Snatch"
+        },
+        {
+          "name": "Kettlebell Goblet Squat",
+          "sets": 4,
+          "reps": "12–15",
+          "catalog": "Kettlebell Goblet Squat"
+        },
+        {
+          "name": "Turkish Get-Up",
+          "sets": 4,
+          "reps": "12–15",
+          "equipment": "Kettlebell",
+          "primaryMuscle": "Full Body",
+          "muscleGroups": [
+            "Core",
+            "Shoulders",
+            "Glutes"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Press & Pull",
+      "primaryMuscles": "Upper",
+      "estimatedMinutes": 55,
+      "exercises": [
+        {
+          "name": "Kettlebell Clean and Press",
+          "sets": 4,
+          "reps": "10–12",
+          "equipment": "Kettlebell",
+          "primaryMuscle": "Shoulders",
+          "muscleGroups": [
+            "Front Delts",
+            "Traps",
+            "Core"
+          ]
+        },
+        {
+          "name": "Kettlebell Row",
+          "sets": 4,
+          "reps": "10–12",
+          "catalog": "Kettlebell One Arm Row"
+        },
+        {
+          "name": "Kettlebell Halo",
+          "sets": 4,
+          "reps": "10–12",
+          "equipment": "Kettlebell",
+          "primaryMuscle": "Shoulders",
+          "muscleGroups": [
+            "Front Delts",
+            "Rear Delts",
+            "Core"
+          ]
+        },
+        {
+          "name": "Kettlebell Windmill",
+          "sets": 4,
+          "reps": "10–12",
+          "catalog": "Kettlebell Windmill"
+        }
+      ]
+    },
+    {
+      "name": "Spine & Shoulders",
+      "primaryMuscles": "Mobility",
+      "estimatedMinutes": 45,
+      "exercises": [
+        {
+          "name": "Cat-Cow Stretch",
+          "sets": 3,
+          "reps": "15–20",
+          "equipment": "Bodyweight",
+          "primaryMuscle": "Mobility",
+          "muscleGroups": [
+            "Spine",
+            "Core"
+          ]
+        },
+        {
+          "name": "Thoracic Rotation",
+          "sets": 3,
+          "reps": "15–20",
+          "equipment": "Bodyweight",
+          "primaryMuscle": "Mobility",
+          "muscleGroups": [
+            "Spine",
+            "Rear Delts"
+          ]
+        },
+        {
+          "name": "Wall Angels",
+          "sets": 3,
+          "reps": "15–20",
+          "equipment": "Bodyweight",
+          "primaryMuscle": "Mobility",
+          "muscleGroups": [
+            "Shoulders",
+            "Upper Back"
+          ]
+        },
+        {
+          "name": "Band Pull-Aparts",
+          "sets": 3,
+          "reps": "15–20",
+          "equipment": "Band",
+          "primaryMuscle": "Rear Delts",
+          "muscleGroups": [
+            "Rear Delts",
+            "Rhomboids"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Hips & Lower Back",
+      "primaryMuscles": "Mobility",
+      "estimatedMinutes": 45,
+      "exercises": [
+        {
+          "name": "90/90 Hip Stretch",
+          "sets": 3,
+          "reps": "15–20",
+          "equipment": "Bodyweight",
+          "primaryMuscle": "Mobility",
+          "muscleGroups": [
+            "Hips",
+            "Glutes"
+          ]
+        },
+        {
+          "name": "Couch Stretch",
+          "sets": 3,
+          "reps": "15–20",
+          "equipment": "Bodyweight",
+          "primaryMuscle": "Mobility",
+          "muscleGroups": [
+            "Hip Flexors",
+            "Quads"
+          ]
+        },
+        {
+          "name": "Glute Bridge",
+          "sets": 3,
+          "reps": "15–20",
+          "equipment": "Bodyweight",
+          "primaryMuscle": "Glutes",
+          "muscleGroups": [
+            "Glutes",
+            "Hamstrings"
+          ]
+        },
+        {
+          "name": "Bird Dog",
+          "sets": 3,
+          "reps": "15–20",
+          "equipment": "Bodyweight",
+          "primaryMuscle": "Core",
+          "muscleGroups": [
+            "Core",
+            "Glutes",
+            "Lower Back"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Snatch Day",
+      "primaryMuscles": "Full Body",
+      "estimatedMinutes": 70,
+      "exercises": [
+        {
+          "name": "Snatch",
+          "sets": 5,
+          "reps": "3–5",
+          "equipment": "Barbell",
+          "primaryMuscle": "Full Body",
+          "muscleGroups": [
+            "Shoulders",
+            "Back",
+            "Quads"
+          ]
+        },
+        {
+          "name": "Hang Snatch",
+          "sets": 5,
+          "reps": "3–5",
+          "equipment": "Barbell",
+          "primaryMuscle": "Full Body",
+          "muscleGroups": [
+            "Shoulders",
+            "Traps",
+            "Quads"
+          ]
+        },
+        {
+          "name": "Overhead Squat",
+          "sets": 5,
+          "reps": "3–5",
+          "catalog": "Barbell Overhead Squat"
+        },
+        {
+          "name": "Snatch Pull",
+          "sets": 5,
+          "reps": "3–5",
+          "catalog": "Snatch Pull"
+        }
+      ]
+    },
+    {
+      "name": "Clean & Jerk Day",
+      "primaryMuscles": "Full Body",
+      "estimatedMinutes": 70,
+      "exercises": [
+        {
+          "name": "Clean and Jerk",
+          "sets": 5,
+          "reps": "3–5",
+          "equipment": "Barbell",
+          "primaryMuscle": "Full Body",
+          "muscleGroups": [
+            "Quads",
+            "Shoulders",
+            "Traps"
+          ]
+        },
+        {
+          "name": "Power Clean",
+          "sets": 5,
+          "reps": "3–5",
+          "catalog": "Power Clean"
+        },
+        {
+          "name": "Front Squat",
+          "sets": 5,
+          "reps": "3–5",
+          "catalog": "Front Squat"
+        },
+        {
+          "name": "Push Press",
+          "sets": 5,
+          "reps": "3–5",
+          "equipment": "Barbell",
+          "primaryMuscle": "Shoulders",
+          "muscleGroups": [
+            "Front Delts",
+            "Triceps",
+            "Quads"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "PPL Push A",
+      "primaryMuscles": "Chest · Shoulders · Triceps",
+      "estimatedMinutes": 55,
+      "exercises": [
+        {
+          "name": "Barbell Bench Press",
+          "sets": 4,
+          "reps": "8–12",
+          "catalog": "Barbell Bench Press"
+        },
+        {
+          "name": "Incline Dumbbell Press",
+          "sets": 4,
+          "reps": "8–12",
+          "catalog": "Incline Dumbbell Press"
+        },
+        {
+          "name": "Dumbbell Lateral Raise",
+          "sets": 4,
+          "reps": "8–12",
+          "catalog": "Dumbbell Lateral Raise"
+        },
+        {
+          "name": "Cable Triceps Pushdown",
+          "sets": 4,
+          "reps": "8–12",
+          "catalog": "Triceps Rope Pushdown"
+        }
+      ]
+    },
+    {
+      "name": "PPL Pull A",
+      "primaryMuscles": "Back · Biceps",
+      "estimatedMinutes": 55,
+      "exercises": [
+        {
+          "name": "Barbell Row",
+          "sets": 4,
+          "reps": "8–12",
+          "catalog": "Barbell Row"
+        },
+        {
+          "name": "Cable Lat Pulldown",
+          "sets": 4,
+          "reps": "8–12",
+          "catalog": "Lat Pulldown"
+        },
+        {
+          "name": "Face Pull",
+          "sets": 4,
+          "reps": "8–12",
+          "catalog": "Face Pulls"
+        },
+        {
+          "name": "Barbell Bicep Curl",
+          "sets": 4,
+          "reps": "8–12",
+          "catalog": "Barbell Curl"
+        }
+      ]
+    },
+    {
+      "name": "PPL Legs A",
+      "primaryMuscles": "Quads · Hamstrings",
+      "estimatedMinutes": 70,
+      "exercises": [
+        {
+          "name": "Barbell Squat",
+          "sets": 4,
+          "reps": "8–12",
+          "catalog": "Barbell Squat"
+        },
+        {
+          "name": "Romanian Deadlift",
+          "sets": 4,
+          "reps": "8–12",
+          "catalog": "Romanian Deadlift"
+        },
+        {
+          "name": "Leg Extension",
+          "sets": 4,
+          "reps": "8–12",
+          "catalog": "Leg Extension"
+        },
+        {
+          "name": "Lying Leg Curl",
+          "sets": 4,
+          "reps": "8–12",
+          "catalog": "Leg Curl"
+        },
+        {
+          "name": "Standing Calf Raise",
+          "sets": 4,
+          "reps": "8–12",
+          "catalog": "Calf Raises"
+        }
+      ]
+    },
+    {
+      "name": "PPL Push B",
+      "primaryMuscles": "Chest · Shoulders · Triceps",
+      "estimatedMinutes": 55,
+      "exercises": [
+        {
+          "name": "Seated Barbell Overhead Press",
+          "sets": 4,
+          "reps": "8–12",
+          "catalog": "Barbell Seated Overhead Press"
+        },
+        {
+          "name": "Chest Dip",
+          "sets": 4,
+          "reps": "8–12",
+          "catalog": "Chest Dips"
+        },
+        {
+          "name": "Cable Lateral Raise",
+          "sets": 4,
+          "reps": "8–12",
+          "catalog": "Cable Lateral Raise"
+        },
+        {
+          "name": "Overhead Cable Extension",
+          "sets": 4,
+          "reps": "8–12",
+          "catalog": "Overhead Triceps Extension"
+        }
+      ]
+    },
+    {
+      "name": "PPL Pull B",
+      "primaryMuscles": "Back · Biceps",
+      "estimatedMinutes": 55,
+      "exercises": [
+        {
+          "name": "Deadlift",
+          "sets": 4,
+          "reps": "8–12",
+          "catalog": "Deadlift"
+        },
+        {
+          "name": "Seated Cable Row",
+          "sets": 4,
+          "reps": "8–12",
+          "catalog": "Seated Cable Row"
+        },
+        {
+          "name": "Dumbbell Pullover",
+          "sets": 4,
+          "reps": "8–12",
+          "catalog": "Dumbbell Pullover"
+        },
+        {
+          "name": "Dumbbell Hammer Curl",
+          "sets": 4,
+          "reps": "8–12",
+          "catalog": "Dumbbell Hammer Curl"
+        }
+      ]
+    },
+    {
+      "name": "PPL Legs B",
+      "primaryMuscles": "Quads · Hamstrings",
+      "estimatedMinutes": 70,
+      "exercises": [
+        {
+          "name": "Leg Press",
+          "sets": 4,
+          "reps": "10–15",
+          "catalog": "Leg Press"
+        },
+        {
+          "name": "Hack Squat",
+          "sets": 4,
+          "reps": "10–15",
+          "catalog": "Sled Hack Squat"
+        },
+        {
+          "name": "Bulgarian Split Squat",
+          "sets": 4,
+          "reps": "10–15",
+          "catalog": "Bulgarian Split Squat"
+        },
+        {
+          "name": "Seated Calf Raise",
+          "sets": 4,
+          "reps": "10–15",
+          "catalog": "Seated Calf Raise"
+        },
+        {
+          "name": "Cable Crunch",
+          "sets": 4,
+          "reps": "10–15",
+          "catalog": "Cable Crunch"
+        }
+      ]
+    },
+    {
+      "name": "Runner Leg & Core Stability",
+      "primaryMuscles": "Legs · Core",
+      "estimatedMinutes": 55,
+      "exercises": [
+        {
+          "name": "Bulgarian Split Squat",
+          "sets": 3,
+          "reps": "12–15",
+          "catalog": "Bulgarian Split Squat"
+        },
+        {
+          "name": "Romanian Deadlift",
+          "sets": 3,
+          "reps": "12–15",
+          "catalog": "Romanian Deadlift"
+        },
+        {
+          "name": "Single-Leg Calf Raise",
+          "sets": 3,
+          "reps": "12–15",
+          "catalog": "Dumbbell Single Leg Calf Raise"
+        },
+        {
+          "name": "Plank",
+          "sets": 3,
+          "reps": "12–15",
+          "catalog": "Plank"
+        },
+        {
+          "name": "Bird Dog",
+          "sets": 3,
+          "reps": "12–15",
+          "equipment": "Bodyweight",
+          "primaryMuscle": "Core",
+          "muscleGroups": [
+            "Core",
+            "Glutes",
+            "Lower Back"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Runner Upper Body Armor",
+      "primaryMuscles": "Upper · Core",
+      "estimatedMinutes": 55,
+      "exercises": [
+        {
+          "name": "Pull-up",
+          "sets": 3,
+          "reps": "12–15",
+          "catalog": "Pull-Ups"
+        },
+        {
+          "name": "Push-up",
+          "sets": 3,
+          "reps": "12–15",
+          "catalog": "Push-Up"
+        },
+        {
+          "name": "Dumbbell Row",
+          "sets": 3,
+          "reps": "12–15",
+          "catalog": "Single-Arm Dumbbell Row"
+        },
+        {
+          "name": "Face Pull",
+          "sets": 3,
+          "reps": "12–15",
+          "catalog": "Face Pulls"
+        },
+        {
+          "name": "Russian Twist",
+          "sets": 3,
+          "reps": "12–15",
+          "catalog": "Russian Twist"
+        }
+      ]
+    },
+    {
+      "name": "Full Body Metabolic Circuit A",
+      "primaryMuscles": "Full Body",
+      "estimatedMinutes": 70,
+      "exercises": [
+        {
+          "name": "Kettlebell Swing",
+          "sets": 4,
+          "reps": "45s work / 15s rest",
+          "catalog": "Kettlebell Swing"
+        },
+        {
+          "name": "Med Ball Slam",
+          "sets": 4,
+          "reps": "45s work / 15s rest",
+          "catalog": "Medicine Ball Overhead Slam"
+        },
+        {
+          "name": "Push-up",
+          "sets": 4,
+          "reps": "45s work / 15s rest",
+          "catalog": "Push-Up"
+        },
+        {
+          "name": "Jump Squat",
+          "sets": 4,
+          "reps": "45s work / 15s rest",
+          "catalog": "Jump Squat"
+        },
+        {
+          "name": "Mountain Climbers",
+          "sets": 4,
+          "reps": "45s work / 15s rest",
+          "catalog": "Mountain Climbers"
+        }
+      ]
+    },
+    {
+      "name": "Full Body Metabolic Circuit B",
+      "primaryMuscles": "Full Body",
+      "estimatedMinutes": 70,
+      "exercises": [
+        {
+          "name": "Burpees",
+          "sets": 4,
+          "reps": "45s work / 15s rest",
+          "catalog": "Burpees"
+        },
+        {
+          "name": "Dumbbell Thrusters",
+          "sets": 4,
+          "reps": "45s work / 15s rest",
+          "equipment": "Dumbbell",
+          "primaryMuscle": "Full Body",
+          "muscleGroups": [
+            "Quads",
+            "Front Delts",
+            "Glutes"
+          ]
+        },
+        {
+          "name": "Lunges",
+          "sets": 4,
+          "reps": "45s work / 15s rest",
+          "catalog": "Walking Lunges"
+        },
+        {
+          "name": "Plank Jacks",
+          "sets": 4,
+          "reps": "45s work / 15s rest",
+          "equipment": "Bodyweight",
+          "primaryMuscle": "Core",
+          "muscleGroups": [
+            "Core",
+            "Abs",
+            "Cardio"
+          ]
+        },
+        {
+          "name": "High Knees",
+          "sets": 4,
+          "reps": "45s work / 15s rest",
+          "equipment": "Bodyweight",
+          "primaryMuscle": "Cardio",
+          "muscleGroups": [
+            "Cardio",
+            "Hip Flexors"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Functional Longevity Strength",
+      "primaryMuscles": "Full Body",
+      "estimatedMinutes": 40,
+      "exercises": [
+        {
+          "name": "Goblet Squat to Box",
+          "sets": 2,
+          "reps": "10–12",
+          "catalog": "Goblet Squat"
+        },
+        {
+          "name": "Incline Push-up",
+          "sets": 2,
+          "reps": "10–12",
+          "catalog": "Incline Push-Up"
+        },
+        {
+          "name": "Dumbbell Row",
+          "sets": 2,
+          "reps": "10–12",
+          "catalog": "Single-Arm Dumbbell Row"
+        },
+        {
+          "name": "Step-ups",
+          "sets": 2,
+          "reps": "10–12",
+          "catalog": "Dumbbell Step-Up"
+        },
+        {
+          "name": "Seated Leg Raise",
+          "sets": 2,
+          "reps": "10–12",
+          "catalog": "Seated Leg Raise"
+        }
+      ]
+    },
+    {
+      "name": "Balance & Core Stability",
+      "primaryMuscles": "Balance · Core",
+      "estimatedMinutes": 40,
+      "exercises": [
+        {
+          "name": "Single-Leg Stand",
+          "sets": 2,
+          "reps": "10",
+          "equipment": "Bodyweight",
+          "primaryMuscle": "Balance",
+          "muscleGroups": [
+            "Core",
+            "Calves",
+            "Glutes"
+          ]
+        },
+        {
+          "name": "Wall Sit",
+          "sets": 2,
+          "reps": "10",
+          "equipment": "Bodyweight",
+          "primaryMuscle": "Quads",
+          "muscleGroups": [
+            "Quads",
+            "Glutes"
+          ]
+        },
+        {
+          "name": "Seated Arm Circles",
+          "sets": 2,
+          "reps": "10",
+          "equipment": "Bodyweight",
+          "primaryMuscle": "Shoulders",
+          "muscleGroups": [
+            "Front Delts",
+            "Rear Delts"
+          ]
+        },
+        {
+          "name": "Bridge",
+          "sets": 2,
+          "reps": "10",
+          "equipment": "Bodyweight",
+          "primaryMuscle": "Glutes",
+          "muscleGroups": [
+            "Glutes",
+            "Core"
+          ]
+        },
+        {
+          "name": "Cat-Cow Stretch",
+          "sets": 2,
+          "reps": "10",
+          "equipment": "Bodyweight",
+          "primaryMuscle": "Mobility",
+          "muscleGroups": [
+            "Spine",
+            "Core"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Zero-Equipment Full Body",
+      "primaryMuscles": "Full Body",
+      "estimatedMinutes": 70,
+      "exercises": [
+        {
+          "name": "Diamond Push-up",
+          "sets": 4,
+          "reps": "15–20",
+          "catalog": "Diamond Push-Up"
+        },
+        {
+          "name": "Air Squat",
+          "sets": 4,
+          "reps": "15–20",
+          "equipment": "Bodyweight",
+          "primaryMuscle": "Quads",
+          "muscleGroups": [
+            "Quads",
+            "Glutes"
+          ]
+        },
+        {
+          "name": "Walking Lunges",
+          "sets": 4,
+          "reps": "15–20",
+          "catalog": "Walking Lunges"
+        },
+        {
+          "name": "V-Ups",
+          "sets": 4,
+          "reps": "15–20",
+          "equipment": "Bodyweight",
+          "primaryMuscle": "Abs",
+          "muscleGroups": [
+            "Abs",
+            "Hip Flexors"
+          ]
+        },
+        {
+          "name": "Prone Cobra",
+          "sets": 4,
+          "reps": "15–20",
+          "equipment": "Bodyweight",
+          "primaryMuscle": "Back",
+          "muscleGroups": [
+            "Upper Back",
+            "Rear Delts",
+            "Lower Back"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Powerbuilding Upper",
+      "primaryMuscles": "Upper",
+      "estimatedMinutes": 70,
+      "exercises": [
+        {
+          "name": "Barbell Bench Press",
+          "sets": 4,
+          "reps": "6–10",
+          "catalog": "Barbell Bench Press"
+        },
+        {
+          "name": "Barbell Row",
+          "sets": 4,
+          "reps": "6–10",
+          "catalog": "Barbell Row"
+        },
+        {
+          "name": "Overhead Press",
+          "sets": 4,
+          "reps": "6–10",
+          "catalog": "Overhead Press"
+        },
+        {
+          "name": "Incline Dumbbell Press",
+          "sets": 4,
+          "reps": "6–10",
+          "catalog": "Incline Dumbbell Press"
+        },
+        {
+          "name": "Seated Cable Row",
+          "sets": 4,
+          "reps": "6–10",
+          "catalog": "Seated Cable Row"
+        }
+      ]
+    },
+    {
+      "name": "Powerbuilding Lower",
+      "primaryMuscles": "Lower",
+      "estimatedMinutes": 70,
+      "exercises": [
+        {
+          "name": "Barbell Squat",
+          "sets": 4,
+          "reps": "6–10",
+          "catalog": "Barbell Squat"
+        },
+        {
+          "name": "Romanian Deadlift",
+          "sets": 4,
+          "reps": "6–10",
+          "catalog": "Romanian Deadlift"
+        },
+        {
+          "name": "Hack Squat",
+          "sets": 4,
+          "reps": "6–10",
+          "catalog": "Sled Hack Squat"
+        },
+        {
+          "name": "Lying Leg Curl",
+          "sets": 4,
+          "reps": "6–10",
+          "catalog": "Leg Curl"
+        },
+        {
+          "name": "Standing Calf Raise",
+          "sets": 4,
+          "reps": "6–10",
+          "catalog": "Calf Raises"
+        }
+      ]
+    },
+    {
+      "name": "Glute Hypertrophy A",
+      "primaryMuscles": "Lower · Glutes",
+      "estimatedMinutes": 70,
+      "exercises": [
+        {
+          "name": "Barbell Squat",
+          "sets": 4,
+          "reps": "10–12",
+          "catalog": "Barbell Squat"
+        },
+        {
+          "name": "Romanian Deadlift",
+          "sets": 4,
+          "reps": "10–12",
+          "catalog": "Romanian Deadlift"
+        },
+        {
+          "name": "Bulgarian Split Squat",
+          "sets": 4,
+          "reps": "10–12",
+          "catalog": "Bulgarian Split Squat"
+        },
+        {
+          "name": "Glute Bridge",
+          "sets": 4,
+          "reps": "10–12",
+          "equipment": "Bodyweight",
+          "primaryMuscle": "Glutes",
+          "muscleGroups": [
+            "Glutes",
+            "Hamstrings"
+          ]
+        },
+        {
+          "name": "Standing Calf Raise",
+          "sets": 4,
+          "reps": "10–12",
+          "catalog": "Calf Raises"
+        }
+      ]
+    },
+    {
+      "name": "Glute Hypertrophy B",
+      "primaryMuscles": "Lower · Glutes",
+      "estimatedMinutes": 70,
+      "exercises": [
+        {
+          "name": "Hack Squat",
+          "sets": 4,
+          "reps": "10–12",
+          "catalog": "Sled Hack Squat"
+        },
+        {
+          "name": "Leg Press",
+          "sets": 4,
+          "reps": "10–12",
+          "catalog": "Leg Press"
+        },
+        {
+          "name": "Lying Leg Curl",
+          "sets": 4,
+          "reps": "10–12",
+          "catalog": "Leg Curl"
+        },
+        {
+          "name": "Lunges",
+          "sets": 4,
+          "reps": "10–12",
+          "catalog": "Walking Lunges"
+        },
+        {
+          "name": "Cable Crunch",
+          "sets": 4,
+          "reps": "10–12",
+          "catalog": "Cable Crunch"
+        }
+      ]
+    },
+    {
+      "name": "Strongman Conditioning",
+      "primaryMuscles": "Full Body",
+      "estimatedMinutes": 70,
+      "exercises": [
+        {
+          "name": "Farmer's Walk",
+          "sets": 4,
+          "reps": "50 meters / 12 reps",
+          "catalog": "Farmers Walk"
+        },
+        {
+          "name": "Kettlebell Snatch",
+          "sets": 4,
+          "reps": "50 meters / 12 reps",
+          "catalog": "Kettlebell One Arm Snatch"
+        },
+        {
+          "name": "Medicine Ball Slam",
+          "sets": 4,
+          "reps": "50 meters / 12 reps",
+          "catalog": "Medicine Ball Overhead Slam"
+        },
+        {
+          "name": "Tire Flip (Simulated)",
+          "sets": 4,
+          "reps": "50 meters / 12 reps",
+          "equipment": "Machine",
+          "primaryMuscle": "Full Body",
+          "muscleGroups": [
+            "Quads",
+            "Back",
+            "Traps"
+          ]
+        },
+        {
+          "name": "Sled Push (Simulated)",
+          "sets": 4,
+          "reps": "50 meters / 12 reps",
+          "equipment": "Machine",
+          "primaryMuscle": "Full Body",
+          "muscleGroups": [
+            "Quads",
+            "Glutes",
+            "Calves"
+          ]
+        }
+      ]
+    }
+  ]
+}

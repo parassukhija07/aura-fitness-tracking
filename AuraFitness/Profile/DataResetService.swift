@@ -26,12 +26,14 @@ enum DataResetService {
         UserDefaults.standard.removeObject(forKey: "aura_exercise_db_v1")
 
         // Reload the singleton stores from the now-cleared keys. Full reset
-        // ("Reset everything" / Delete Account) drops ALL programs/exercises
-        // including user-created customs — hardReset(); workout-data-only
-        // reset preserves customs — resetToSeed(). (UserPlanDatabase has no
-        // custom/predefined distinction of its own; its plans always derive
-        // from programs, so resetToSeed() re-seeding the default plan is
-        // correct for both modes.)
+        // ("Reset everything" / Delete Account) drops user-created programs and
+        // exercises too — hardReset(); workout-data-only reset preserves those
+        // customs — resetToSeed(). Both leave the bundled libraries standing:
+        // they are reference content rather than the user's data, and a reset
+        // that took them would leave nothing to build a workout out of.
+        //
+        // UserPlanDatabase has no custom/predefined distinction — every plan is
+        // the user's — so its resetToSeed() empties outright in both modes.
         if workoutOnly {
             ProgramDatabase.shared.resetToSeed()
             ExerciseDatabase.shared.resetToSeed()

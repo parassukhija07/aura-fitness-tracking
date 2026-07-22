@@ -26,6 +26,7 @@
 		AAF0700400000000000000F1 /* PlusJakartaSans-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = ABF0700400000000000000F1 /* PlusJakartaSans-Bold.ttf */; };
 		AAF0700500000000000000F1 /* PlusJakartaSans-ExtraBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = ABF0700500000000000000F1 /* PlusJakartaSans-ExtraBold.ttf */; };
 		AAF0709900000000000000F1 /* gym_exercise_library.json in Resources */ = {isa = PBXBuildFile; fileRef = ABF0709900000000000000F1 /* gym_exercise_library.json */; };
+		AAF0709A00000000000000F1 /* program_library.json in Resources */ = {isa = PBXBuildFile; fileRef = ABF0709A00000000000000F1 /* program_library.json */; };
 		AA000003000000000000003B /* AuraColors.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000003000000000000003B /* AuraColors.swift */; };
 		AA000004000000000000004B /* AuraTypography.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000004000000000000004B /* AuraTypography.swift */; };
 		AA000005000000000000005B /* AuraSpacing.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB000005000000000000005B /* AuraSpacing.swift */; };
@@ -125,6 +126,7 @@
 		ABF0700400000000000000F1 /* PlusJakartaSans-Bold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "PlusJakartaSans-Bold.ttf"; sourceTree = "<group>"; };
 		ABF0700500000000000000F1 /* PlusJakartaSans-ExtraBold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "PlusJakartaSans-ExtraBold.ttf"; sourceTree = "<group>"; };
 		ABF0709900000000000000F1 /* gym_exercise_library.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = gym_exercise_library.json; sourceTree = "<group>"; };
+		ABF0709A00000000000000F1 /* program_library.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = program_library.json; sourceTree = "<group>"; };
 		AB000003000000000000003B /* AuraColors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuraColors.swift; sourceTree = "<group>"; };
 		AB000004000000000000004B /* AuraTypography.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuraTypography.swift; sourceTree = "<group>"; };
 		AB000005000000000000005B /* AuraSpacing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuraSpacing.swift; sourceTree = "<group>"; };
@@ -258,6 +260,7 @@
 			isa = PBXGroup;
 			children = (
 				ABF0709900000000000000F1 /* gym_exercise_library.json */,
+				ABF0709A00000000000000F1 /* program_library.json */,
 			);
 			path = Resources;
 			sourceTree = "<group>";
@@ -508,6 +511,7 @@
 			files = (
 				AAA55E70000000000000001B /* Assets.xcassets in Resources */,
 				AAF0709900000000000000F1 /* gym_exercise_library.json in Resources */,
+				AAF0709A00000000000000F1 /* program_library.json in Resources */,
 				AAF0700100000000000000F1 /* PlusJakartaSans-Regular.ttf in Resources */,
 				AAF0700200000000000000F1 /* PlusJakartaSans-Medium.ttf in Resources */,
 				AAF0700300000000000000F1 /* PlusJakartaSans-SemiBold.ttf in Resources */,

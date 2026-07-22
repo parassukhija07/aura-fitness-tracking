@@ -138,6 +138,18 @@ struct Program: Identifiable, Codable {
     var description: String
     var workouts: [Workout]
     var isPredefined: Bool = true
+
+    /// The week the program actually prescribes: 7 entries, day 1 first,
+    /// `nil` = rest. Rest placement is part of the program — three lower-body
+    /// days on Tue/Thu/Sat is a different program from the same three stacked
+    /// Mon/Tue/Wed — and a day may repeat a workout, which `workouts` (the set
+    /// of distinct sessions) cannot express on its own.
+    ///
+    /// Empty means "no pattern given" and `UserPlanDatabase.addPlan(from:)`
+    /// falls back to filling weekdays sequentially. Custom programs built in
+    /// the editor leave it empty, as do programs persisted before this field
+    /// existed — hence the default, which keeps those rows decodable.
+    var weekPattern: [UUID?] = []
 }
 
 // MARK: - UserPlan
