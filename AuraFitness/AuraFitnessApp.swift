@@ -49,13 +49,6 @@ struct AuraFitnessApp: App {
             }
             .environmentObject(authService)
             .environmentObject(syncService)
-            .onChange(of: scenePhase) { phase in
-                if phase == .active {
-                    Task {
-                        await AuthService.shared.refreshSession()
-                    }
-                }
-            }
             .task {
                 // AppStateBridge.shared is already set (see init() above) by
                 // the time this fires, so restoreSession's onSignedIn ->
@@ -72,7 +65,7 @@ struct AuraFitnessApp: App {
                 await ExerciseDatabase.shared.refreshCatalogFromRemote()
             }
             .onOpenURL { url in
-                Task {
+                Task { @MainActor in
                     _ = await AuthService.shared.handleAuthCallback(url: url)
                 }
             }
