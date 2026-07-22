@@ -64,7 +64,14 @@ struct LogSheetsView: View {
         case .menu:
             // Compact bottom sheet — sized to the 5-row menu, not full screen.
             return [.fraction(0.55)]
-        case .move, .add:
+        case .add:
+            // Sized to its three source cards rather than `.medium`. The sheet
+            // holds a grabber, a title, one line of subtitle and 3 × 76pt rows
+            // — about 350pt — so `.medium` left a slab of empty background
+            // under the last card. `.large` stays available as a second detent
+            // for the small screens where 0.42 would clip it.
+            return [.fraction(0.42), .large]
+        case .move:
             return [.medium, .large]
         default:
             return [.large]
@@ -75,12 +82,34 @@ struct LogSheetsView: View {
 
     private func grabber() -> some View { SheetGrabber() }
 
-    private func sheetHeader(_ title: String, sub: String? = nil) -> some View {
-        VStack(alignment: .leading, spacing: 2) {
-            Text(title).font(AuraFont.navTitle()).foregroundColor(.aura.text)
-            if let sub { Text(sub).font(AuraFont.jakarta(12)).foregroundColor(.aura.text2) }
+    /// Sheet title, with an optional circular ✕ on the trailing edge.
+    ///
+    /// Opt-in rather than always-on: every sheet here shares this helper, and
+    /// most of them are pushed onto rather than dismissed from — a close button
+    /// on a mid-flow step would read as "back" and take the user further than
+    /// they meant to go. Pass `onClose` only where the sheet is a real exit.
+    private func sheetHeader(_ title: String, sub: String? = nil,
+                             onClose: (() -> Void)? = nil) -> some View {
+        HStack(alignment: .top, spacing: AuraSpacing.s2) {
+            VStack(alignment: .leading, spacing: 2) {
+                Text(title).font(AuraFont.navTitle()).foregroundColor(.aura.text)
+                if let sub { Text(sub).font(AuraFont.jakarta(12)).foregroundColor(.aura.text2) }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+
+            if let onClose {
+                Button(action: onClose) {
+                    Image(systemName: "xmark")
+                        .font(AuraFont.jakarta(13, .bold))
+                        .foregroundColor(.aura.text2)
+                        .frame(width: 30, height: 30)
+                        .background(Color.aura.fill)
+                        .clipShape(Circle())
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel("Close")
+            }
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.horizontal, AuraSpacing.screenPad)
     }
 
@@ -451,7 +480,7 @@ struct LogSheetsView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: AuraSpacing.s3) {
                 grabber().frame(maxWidth: .infinity)
-                sheetHeader("Add a Workout")
+                sheetHeader("Add a Workout") { parentSheet = nil }
                 Text("Where should this workout come from?")
                     .font(AuraFont.jakarta(12)).foregroundColor(.aura.text2)
                     .padding(.horizontal, AuraSpacing.screenPad)

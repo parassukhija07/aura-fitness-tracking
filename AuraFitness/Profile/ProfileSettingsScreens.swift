@@ -8,10 +8,31 @@ import UserNotifications
 struct GeneralSettingsView: View {
     @EnvironmentObject var appState: AppState
 
-    /// Dark Mode toggle maps to the on/off ends of the 3-way preference.
+    /// The scheme actually on screen. With the preference on `.auto` — the
+    /// default until the user picks a side — `preferredColorScheme` is nil and
+    /// the app follows the system, so this is the only thing that knows whether
+    /// the app is currently rendering dark.
+    @Environment(\.colorScheme) private var colorScheme
+
+    /// Dark Mode is a 2-way toggle over a 3-way preference, so `.auto` has to
+    /// resolve to whichever side it is currently rendering as. Reading
+    /// `== .on` instead made a fresh install on a dark phone show a dark app
+    /// with the switch off, and the first tap then appeared to do nothing —
+    /// it moved `.auto` → `.on`, which looks identical. Only the second tap,
+    /// to `.off`, visibly changed anything.
+    ///
+    /// Writing always commits an explicit `.on`/`.off`: once the user has
+    /// touched the switch the choice is theirs, and it should stop tracking
+    /// the system.
     private var darkOn: Binding<Bool> {
         Binding(
-            get: { appState.darkModePreference == .on },
+            get: {
+                switch appState.darkModePreference {
+                case .on:   return true
+                case .off:  return false
+                case .auto: return colorScheme == .dark
+                }
+            },
             set: { appState.darkModePreference = $0 ? .on : .off }
         )
     }

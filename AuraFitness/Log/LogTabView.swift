@@ -110,9 +110,8 @@ struct LogTabView: View {
             }
             .background(Color.aura.bg)
 
-            // Resume banner (shell · resume): accent pill above the flat tab bar,
-            // sides 14 per combined/log.jsx. The bar is now in-flow (a bottom row
-            // in ContentView), so the banner sits just above the content edge.
+            // Resume banner (shell · resume): accent pill floating in the gap
+            // above the tab bar — bottom 96, sides 14 per combined/log.jsx.
             if appState.workoutInProgress {
                 ResumeBanner {
                     withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
@@ -120,7 +119,7 @@ struct LogTabView: View {
                     }
                 }
                 .padding(.horizontal, 14)
-                .padding(.bottom, 12)
+                .padding(.bottom, 96)
                 .transition(.move(edge: .bottom).combined(with: .opacity))
             }
             if let toast {
@@ -170,17 +169,28 @@ struct LogTabView: View {
 
     private var weekBar: some View {
         VStack(spacing: 8) {
-            // aura.css `.between`: range label on the left, one contextual text
-            // button on the right (‹ This week / ‹ Prev week / Today ›). No
-            // circular arrows — week nav is a horizontal swipe on the strip.
-            HStack {
+            // 03-log "Week strip": ‹ / › step the selection by ±7 days, with the
+            // range label between them, plus a separate "Today ›" ghost button
+            // that appears whenever the user is off today. An earlier pass
+            // folded all three into one contextual text button and dropped the
+            // arrows entirely — the arrows are the primary week nav, not a
+            // duplicate of the swipe gesture below.
+            HStack(spacing: 6) {
+                weekArrow("chevron.left", enabled: true) { shiftWeek(-7) }
+
                 Text(rangeLabel)
                     .font(AuraFont.jakarta(14, .bold))
                     .foregroundColor(.aura.text)
+
+                // Disabled on the current week: no browsing forward past the
+                // live week.
+                weekArrow("chevron.right", enabled: !isCurrentWeek) { shiftWeek(7) }
+
                 Spacer()
+
                 if !(isCurrentWeek && isToday) {
                     Button { selected = today } label: {
-                        Text(weekButtonLabel)
+                        Text("Today ›")
                             .font(AuraFont.jakarta(12, .bold))
                             .foregroundColor(.aura.accent)
                     }
@@ -198,7 +208,8 @@ struct LogTabView: View {
         .padding(.horizontal, 14)
         .padding(.top, 6)
         .padding(.bottom, 12)
-        // Swipe the strip left/right to page weeks (replaces the circular arrows).
+        // Swiping the strip pages weeks too — an additional affordance
+        // alongside the arrows, held to the same forward boundary.
         .contentShape(Rectangle())
         .gesture(
             DragGesture(minimumDistance: 24)
@@ -209,11 +220,21 @@ struct LogTabView: View {
         )
     }
 
-    /// Right-hand contextual button label, matching the design's four variants.
-    private var weekButtonLabel: String {
-        if weekStart < todayWeekStart { return "‹ Prev week" }   // viewing a past week
-        if weekStart > todayWeekStart { return "‹ This week" }   // viewing a future week
-        return "Today ›"                                          // current week, off today
+    /// One week-step arrow. A disabled arrow stays on screen but dimmed and
+    /// untappable, so the strip keeps its shape at the forward boundary
+    /// instead of the label jumping sideways when the button disappears.
+    private func weekArrow(_ symbol: String, enabled: Bool, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            Image(systemName: symbol)
+                .font(AuraFont.jakarta(12, .bold))
+                .foregroundColor(enabled ? .aura.text2 : .aura.text3.opacity(0.4))
+                .frame(width: 26, height: 26)
+                .background(Color.aura.fill.opacity(enabled ? 0.5 : 0.22))
+                .clipShape(Circle())
+        }
+        .buttonStyle(.plain)
+        .disabled(!enabled)
+        .accessibilityLabel(symbol == "chevron.left" ? "Previous week" : "Next week")
     }
 
     @ViewBuilder
