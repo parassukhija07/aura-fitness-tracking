@@ -72,7 +72,7 @@ struct AuraFitnessApp: App {
                 Task { await authService.handleAuthCallback(url: url) }
             }
         }
-        .onChange(of: scenePhase) { _, phase in
+        .onChange(of: scenePhase) { phase in
             // `authService.userID` is nil for guests, so this already
             // correctly skips the foreground pull in guest mode — guest mode
             // intentionally does not pull (there's nothing remote to fetch;
