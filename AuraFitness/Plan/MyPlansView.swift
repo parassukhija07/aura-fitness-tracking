@@ -32,6 +32,8 @@ struct MyPlansView: View {
         case dayMenu(day: Int)
         case addWorkout
         case createWorkout
+        /// "Set as active" → choose the day the plan starts scheduling from.
+        case activate(planID: UUID)
 
         var id: String {
             switch self {
@@ -40,9 +42,15 @@ struct MyPlansView: View {
             case .dayMenu(let d): return "dayMenu-\(d)"
             case .addWorkout:     return "addWorkout"
             case .createWorkout:  return "createWorkout"
+            case .activate(let p): return "activate-\(p)"
             }
         }
     }
+
+    /// Chosen start day for the activation sheet's "Pick a date" option.
+    @State private var activateDate = Date()
+    /// Reveals the inline calendar in the activation sheet.
+    @State private var showActivatePicker = false
 
     /// 12 create-workout picker tiles (4×3), in exact design order.
     struct CreateWorkoutIcon: Identifiable {
@@ -233,7 +241,12 @@ struct MyPlansView: View {
         .frame(width: plan.isDefault ? 150 : 130, height: 120)
         .contextMenu {
             Button {
-                planDB.setDefault(id: plan.id)
+                // Don't activate immediately — let the user choose the start day
+                // (today / tomorrow / a date) so it schedules forward without
+                // rewriting the past.
+                activateDate = Date()
+                showActivatePicker = false
+                activeSheet = .activate(planID: plan.id)
             } label: {
                 Label("Set as Active", systemImage: "star.fill")
             }
@@ -401,7 +414,68 @@ struct MyPlansView: View {
         case .dayMenu(let day):   dayMenuSheet(day: day)
         case .addWorkout:         addWorkoutSheet
         case .createWorkout:      createWorkoutSheet
+        case .activate(let pid):  activateSheet(planID: pid)
         }
+    }
+
+    // MARK: activate (choose start day)
+
+    private func activateSheet(planID: UUID) -> some View {
+        let plan = planDB.plans.first { $0.id == planID }
+        let tomorrow = Calendar.current.date(byAdding: .day, value: 1, to: Date()) ?? Date()
+        return PlanSheet(title: "Set as Active Plan", subtitle: plan?.name,
+                         onClose: { activeSheet = nil }) {
+            ScrollView {
+                VStack(alignment: .leading, spacing: 12) {
+                    Text("Pick when this plan starts scheduling. Earlier days keep your current plan — nothing already logged is changed.")
+                        .font(AuraFont.secondary()).foregroundColor(.aura.text2)
+                        .fixedSize(horizontal: false, vertical: true)
+
+                    PlanSourceCard(icon: "bolt.fill", iconBg: .aura.accentSoft, iconTint: .aura.accent,
+                                   title: "Start Today", subtitle: "Schedule from today forward") {
+                        activate(planID: planID, on: Date())
+                    }
+                    PlanSourceCard(icon: "sunrise.fill", iconBg: .aura.blue.opacity(0.16), iconTint: .aura.blue,
+                                   title: "Start Tomorrow", subtitle: "Keep today on your current plan") {
+                        activate(planID: planID, on: tomorrow)
+                    }
+                    PlanSourceCard(icon: "calendar", iconBg: .aura.green.opacity(0.16), iconTint: .aura.green,
+                                   title: "Pick a date",
+                                   subtitle: showActivatePicker ? activateDateLabel : "Choose a start day") {
+                        withAnimation(.easeInOut(duration: 0.22)) { showActivatePicker.toggle() }
+                    }
+
+                    if showActivatePicker {
+                        DatePicker("", selection: $activateDate,
+                                   in: Calendar.current.startOfDay(for: Date())...,
+                                   displayedComponents: .date)
+                            .datePickerStyle(.graphical)
+                            .tint(.aura.accent)
+                            .padding(.horizontal, 4)
+
+                        AuraPrimaryButton(label: "Start on \(activateDateLabel)") {
+                            activate(planID: planID, on: activateDate)
+                        }
+                    }
+                }
+                .padding(.horizontal, AuraSpacing.screenPad)
+                .padding(.top, AuraSpacing.s2)
+                .padding(.bottom, AuraSpacing.s4)
+            }
+        }
+    }
+
+    private var activateDateLabel: String {
+        let f = DateFormatter(); f.dateFormat = "EEE, MMM d"
+        return f.string(from: activateDate)
+    }
+
+    /// Commit the activation: the plan becomes default and starts scheduling on
+    /// `date`; days before it keep the previously-active plan.
+    private func activate(planID: UUID, on date: Date) {
+        planDB.setDefault(id: planID, activationDate: date)
+        showActivatePicker = false
+        activeSheet = nil
     }
 
     // MARK: add-plan

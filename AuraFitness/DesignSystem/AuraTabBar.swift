@@ -83,8 +83,8 @@ struct AuraTabBar: View {
     @State private var swipeProgress: CGFloat = 0
     @State private var dragging = false
 
-    private var barHeight: CGFloat { collapsed ? 66 : 96 }
-    private var pillHeight: CGFloat { collapsed ? 50 : 62 }
+    private var barHeight: CGFloat { collapsed ? 62 : 84 }
+    private var pillHeight: CGFloat { collapsed ? 46 : 56 }
     private var fabSize: CGFloat { collapsed ? 34 : 46 }
 
     var body: some View {
@@ -121,7 +121,10 @@ struct AuraTabBar: View {
             // Collapsed shrinks the pill toward the design's 72% width by
             // widening the gutters; the FAB stays put on the right.
             .padding(.horizontal, collapsed ? 40 : 10)
-            .padding(.bottom, collapsed ? 30 : 38)
+            // Docked just above the bottom safe-area (the system home indicator
+            // sits inside it). The previous 38pt floated the bar well up the
+            // screen; this brings it down to sit near the bottom edge.
+            .padding(.bottom, collapsed ? 12 : 16)
         }
         .animation(.easeInOut(duration: 0.25), value: collapsed)
     }
@@ -133,19 +136,25 @@ struct AuraTabBar: View {
             let count = CGFloat(AuraTab.allCases.count)
             let inset: CGFloat = 4
             let slot = (geo.size.width - inset * 2) / count
+            // Horizontal breathing room so the accent indicator reads as a
+            // pill sitting *inside* its slot with a gap to the neighbours,
+            // matching the template — not a block filling the whole slot.
+            let pillGap: CGFloat = 6
             // Follows the finger mid-swipe, so the pill previews where you are
             // heading rather than jumping only once the gesture commits.
             let target = min(max(CGFloat(selection.rawValue) + swipeProgress, 0), count - 1)
 
             ZStack(alignment: .leading) {
-                RoundedRectangle(cornerRadius: AuraRadius.pill)
+                RoundedRectangle(cornerRadius: 18, style: .continuous)
                     .fill(Color.aura.accent)
-                    .frame(width: slot, height: geo.size.height - inset * 2)
+                    .frame(width: slot - pillGap * 2, height: geo.size.height - inset * 2)
                     .shadow(color: Color.aura.accent.opacity(0.5), radius: 7, x: 0, y: 2)
-                    .offset(x: inset + target * slot, y: inset)
+                    .offset(x: inset + pillGap + target * slot, y: inset)
                     // No animation while dragging: the indicator has to track
-                    // the finger 1:1 or it visibly lags the gesture.
-                    .animation(dragging ? nil : .timingCurve(0.4, 0, 0.2, 1, duration: 0.32),
+                    // the finger 1:1 or it visibly lags the gesture. Off the
+                    // finger it glides on a spring so tapping a distant tab
+                    // slides the pill across rather than snapping.
+                    .animation(dragging ? nil : .spring(response: 0.34, dampingFraction: 0.82),
                                value: target)
 
                 HStack(spacing: 0) {

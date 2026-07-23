@@ -162,6 +162,16 @@ struct UserPlan: Identifiable, Codable {
     var weekSchedule: [Int: UUID?] = [:]
     var customWorkouts: [Workout] = []
 
+    /// The calendar day (start-of-day) this plan's schedule begins applying
+    /// from. Days *before* it resolve to whichever plan was active earlier (or
+    /// stay empty), so making a plan default never rewrites the past.
+    ///
+    /// `nil` = a legacy plan that never recorded an activation; treated as
+    /// active from the distant past so existing installs keep showing their
+    /// week unchanged. Added after initial ship, so old persisted rows decode
+    /// to `nil` (Optional → `decodeIfPresent`).
+    var activationDate: Date? = nil
+
     func workout(for dayIndex: Int, programs: [Program]) -> Workout? {
         guard let entry = weekSchedule[dayIndex], let wid = entry else { return nil }
         if let cw = customWorkouts.first(where: { $0.id == wid }) { return cw }

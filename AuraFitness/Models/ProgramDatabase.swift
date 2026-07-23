@@ -353,8 +353,25 @@ final class UserPlanDatabase: ObservableObject {
         syncDelete(id: id)
     }
 
-    func setDefault(id: UUID) {
-        for i in plans.indices { plans[i].isDefault = (plans[i].id == id) }
+    /// Make a plan the default, recording the day its schedule starts applying.
+    ///
+    /// `activationDate` (start-of-day) gates the Log calendar: the plan only
+    /// schedules workouts on that day and after. Days before it fall back to
+    /// the previously-active plan, so the switch never rewrites past days.
+    /// Defaults to today. A plan being *demoted* keeps (or inherits
+    /// `.distantPast`) its activation so it stays the schedule source for the
+    /// dates before the new plan begins.
+    func setDefault(id: UUID, activationDate: Date? = nil) {
+        let effective = Calendar.current.startOfDay(for: activationDate ?? Date())
+        for i in plans.indices {
+            if plans[i].id == id {
+                plans[i].isDefault = true
+                plans[i].activationDate = effective
+            } else {
+                plans[i].isDefault = false
+                if plans[i].activationDate == nil { plans[i].activationDate = .distantPast }
+            }
+        }
         persist()
         for plan in plans { syncPush(plan) }
     }

@@ -699,6 +699,28 @@ class AppState: ObservableObject {
     // MARK: - Computed
     var defaultPlan: UserPlan? { userPlans.first(where: { $0.isDefault }) }
 
+    /// The plan whose schedule governs a given calendar day: the activated plan
+    /// with the latest activation on or before that day. This is what makes
+    /// "set as default from date X" not rewrite the past — days before X keep
+    /// resolving to the plan that was active then (or to none, staying empty).
+    ///
+    /// A plan counts as a schedule source once it is `isDefault` or has ever
+    /// recorded an `activationDate`; legacy plans with no activation are read as
+    /// active since `.distantPast`, preserving existing installs' behaviour.
+    func plan(effectiveFor date: Date) -> UserPlan? {
+        let day = Calendar.current.startOfDay(for: date)
+        return userPlans
+            .filter { ($0.isDefault || $0.activationDate != nil)
+                      && ($0.activationDate ?? .distantPast) <= day }
+            .sorted { a, b in
+                let da = a.activationDate ?? .distantPast
+                let db = b.activationDate ?? .distantPast
+                if da != db { return da < db }                     // later activation sorts last
+                return (a.isDefault ? 1 : 0) < (b.isDefault ? 1 : 0) // tie → current default wins
+            }
+            .last
+    }
+
     // MARK: - Workout overlay lifecycle (mirrors shell.jsx startWorkout / onMinimize / onExit)
 
     /// Launch the Active Workout overlay for the SELECTED workout.
@@ -903,13 +925,13 @@ class AppState: ObservableObject {
 
     // MARK: - Week schedule helper
     func todayWorkout() -> Workout? {
-        guard let plan = defaultPlan else { return nil }
+        guard let plan = plan(effectiveFor: Date()) else { return nil }
         let dayIndex = Calendar.current.component(.weekday, from: Date()) - 1
         return plan.workout(for: dayIndex, programs: ProgramDatabase.shared.programs)
     }
 
     func isRestDay(for date: Date = Date()) -> Bool {
-        guard let plan = defaultPlan else { return false }
+        guard let plan = plan(effectiveFor: date) else { return false }
         let dayIndex = Calendar.current.component(.weekday, from: date) - 1
         guard plan.weekSchedule.keys.contains(dayIndex) else { return false } // unkeyed = empty/unplanned, not rest
         return plan.weekSchedule[dayIndex] == .some(nil) // explicit nil entry = rest day
@@ -993,8 +1015,12 @@ class AppState: ObservableObject {
         let ov = dayOverrides[iso]
 
         // Resolve the workout for this day (program schedule, then overrides).
+        // Uses the plan effective for THIS date, not simply the current
+        // default: a plan only schedules from its activation day forward, so
+        // days before it keep resolving to the previously-active plan (or to
+        // nothing) instead of the new plan rewriting the past.
         var workout: Workout? = {
-            guard let plan = defaultPlan else { return nil }
+            guard let plan = plan(effectiveFor: date) else { return nil }
             return plan.workout(for: dow, programs: ProgramDatabase.shared.programs)
         }()
 

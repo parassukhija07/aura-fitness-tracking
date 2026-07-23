@@ -345,25 +345,33 @@ struct LogTabView: View {
                     .foregroundColor(.aura.separator.opacity(empty ? 1 : 0.5))
             )
 
-            if info.relation != .future {
-                AuraSectionLabel(title: empty ? " " : "Did you train\(isToday ? "" : " that day") anyway?")
-                VStack(spacing: AuraSpacing.s2) {
-                    // Both paths open the same three-source chooser. Logging to
-                    // a past day used to skip it and drop the user straight
-                    // into one program's workout list, so the library and
-                    // empty-workout routes were unreachable from a rest day.
-                    AuraTintedButton(label: isToday ? "Add a Workout" : "Log a Workout", icon: "plus") {
-                        sheet = .add(mode: isToday ? .add : .logpast, date: info.iso)
-                    }
-                    if isToday {
-                        AuraGrayButton(label: "Log a Past Workout", icon: "clock") {
-                            sheet = .logPast(date: AppState.iso(cal.date(byAdding: .day, value: -1, to: today)!), showToday: false)
-                        }
+            // A scheduled rest day is never a dead end: today/past can add or
+            // log what was actually trained, and a FUTURE rest day can still
+            // have a session added (you decide to train on a planned rest day)
+            // — previously the future branch showed only a read-only card, so
+            // the add/log screen was unreachable from a program rest day.
+            if info.relation == .future {
+                infoCard(text: "Scheduled rest day. Enjoy the recovery — or add a session if your plans change.",
+                         tint: false)
+            }
+            AuraSectionLabel(title: empty ? " "
+                : (isToday ? "Did you train anyway?"
+                   : info.relation == .future ? "Change of plans?"
+                   : "Did you train that day anyway?"))
+            VStack(spacing: AuraSpacing.s2) {
+                // Both paths open the same three-source chooser. Logging to
+                // a past day used to skip it and drop the user straight
+                // into one program's workout list, so the library and
+                // empty-workout routes were unreachable from a rest day.
+                let addMode: LogSheet.PickMode = (isToday || info.relation == .future) ? .add : .logpast
+                AuraTintedButton(label: addMode == .add ? "Add a Workout" : "Log a Workout", icon: "plus") {
+                    sheet = .add(mode: addMode, date: info.iso)
+                }
+                if isToday {
+                    AuraGrayButton(label: "Log a Past Workout", icon: "clock") {
+                        sheet = .logPast(date: AppState.iso(cal.date(byAdding: .day, value: -1, to: today)!), showToday: false)
                     }
                 }
-            } else {
-                infoCard(text: "Scheduled rest day. Enjoy the recovery — your next session is just around the corner.",
-                         tint: false)
             }
         }
     }
@@ -375,7 +383,7 @@ struct LogTabView: View {
         return VStack(alignment: .leading, spacing: AuraSpacing.s4) {
             // Badges
             HStack(spacing: AuraSpacing.s2) {
-                badge(icon: "sparkles", text: appState.defaultPlan?.name ?? "Program", color: .aura.accent)
+                badge(icon: "sparkles", text: appState.plan(effectiveFor: selected)?.name ?? appState.defaultPlan?.name ?? "Program", color: .aura.accent)
                 switch info.state {
                 case .done:   badge(icon: "checkmark", text: "Completed", color: .aura.green)
                 case .missed: badge(icon: "xmark", text: "Missed", color: .aura.red)

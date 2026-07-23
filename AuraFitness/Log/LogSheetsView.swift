@@ -86,6 +86,14 @@ struct LogSheetsView: View {
             return [.fraction(0.55), .large]
         case .move:
             return [.medium, .large]
+        case .logPast:
+            // Two short sections (a few date rows + three source cards). The
+            // template opens this fitted, not full-screen; `.large` left a
+            // slab of empty background below the last card.
+            return [.fraction(0.82), .large]
+        case .switchWorkout, .viewWorkout:
+            // Content-sized lists, expandable to full height when long.
+            return [.fraction(0.7), .large]
         default:
             return [.large]
         }
