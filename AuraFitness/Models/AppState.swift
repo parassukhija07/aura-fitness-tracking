@@ -251,6 +251,107 @@ class AppState: ObservableObject {
         userProfile = profile
     }
 
+    /// Repoints `DayOverride.workoutId` from the old random seed ids to the
+    /// deterministic `StableID` ones. Day overrides sync, so a stale id here
+    /// would travel to other devices and resolve to nothing. Called once by
+    /// `SeedIDMigration`.
+    ///
+    /// NOT guarded by `isApplyingRemote`: this is a genuine local change that
+    /// SHOULD be pushed, so other devices converge on the stable ids too.
+    func remapSeedReferences(_ map: [UUID: UUID]) {
+        guard !map.isEmpty else { return }
+        var merged = dayOverrides
+        var changed = false
+        for (iso, override) in merged {
+            guard let workoutID = override.workoutId, let newID = map[workoutID] else { continue }
+            merged[iso]?.workoutId = newID
+            changed = true
+        }
+        guard changed else { return }
+        dayOverrides = merged
+    }
+
+    /// Clears `DayOverride.workoutId` wherever it points at a workout that no
+    /// longer exists, so a purged seed workout does not linger on the Log
+    /// calendar as an unresolvable day. Called once by `SeedPurgeMigration`.
+    ///
+    /// The override itself is kept — it may also carry notes or a completion
+    /// mark the user set — only the dangling workout reference is dropped.
+    ///
+    /// Guarded by `isApplyingRemote` unlike `remapSeedReferences` above: the
+    /// referenced workout is gone on every device that ran this migration, so
+    /// there is nothing for the others to converge ON and no reason to spend a
+    /// push per override saying so.
+    func purgeDayOverrides(workoutIDs: Set<UUID>) {
+        guard !workoutIDs.isEmpty else { return }
+        var merged = dayOverrides
+        var changed = false
+        for (iso, override) in merged {
+            guard let workoutID = override.workoutId, workoutIDs.contains(workoutID) else { continue }
+            merged[iso]?.workoutId = nil
+            changed = true
+        }
+        guard changed else { return }
+        isApplyingRemote = true
+        defer { isApplyingRemote = false }
+        dayOverrides = merged
+    }
+
+    // MARK: - Remote deletion hooks (aura_deletions tombstone target)
+    //
+    // The `applyRemote*` merges above are unions — they can only ever ADD
+    // rows, so a row deleted on another device stays local forever and gets
+    // re-pushed on the next write ("resurrection"). These apply the tombstones
+    // a delta pull carries, removing exactly the listed keys and nothing else.
+    // Same `isApplyingRemote` guard: removing the row must not echo a delete
+    // back up to Supabase (the row is already gone there).
+
+    func applyRemoteWorkoutLogDeletions(ids: Set<UUID>) {
+        guard !ids.isEmpty else { return }
+        isApplyingRemote = true
+        defer { isApplyingRemote = false }
+        workoutLogs.removeAll { ids.contains($0.id) }
+    }
+
+    func applyRemoteMeasurementDeletions(ids: Set<UUID>) {
+        guard !ids.isEmpty else { return }
+        isApplyingRemote = true
+        defer { isApplyingRemote = false }
+        measurements.removeAll { ids.contains($0.id) }
+    }
+
+    func applyRemotePersonalRecordDeletions(ids: Set<UUID>) {
+        guard !ids.isEmpty else { return }
+        isApplyingRemote = true
+        defer { isApplyingRemote = false }
+        personalRecords.removeAll { ids.contains($0.id) }
+    }
+
+    func applyRemoteProgressPhotoDeletions(ids: Set<UUID>) {
+        guard !ids.isEmpty else { return }
+        isApplyingRemote = true
+        defer { isApplyingRemote = false }
+        progressPhotos.removeAll { ids.contains($0.id) }
+    }
+
+    func applyRemoteDayOverrideDeletions(keys: Set<String>) {
+        guard !keys.isEmpty else { return }
+        isApplyingRemote = true
+        defer { isApplyingRemote = false }
+        var merged = dayOverrides
+        for key in keys { merged.removeValue(forKey: key) }
+        dayOverrides = merged
+    }
+
+    func applyRemoteQuickLogDeletions(keys: Set<String>) {
+        guard !keys.isEmpty else { return }
+        isApplyingRemote = true
+        defer { isApplyingRemote = false }
+        var merged = quickLogs
+        for key in keys { merged.removeValue(forKey: key) }
+        quickLogs = merged
+    }
+
     // MARK: - Reset support (hard REPLACE, not merge)
     //
     // `applyRemote*` above are union-merge helpers for pull reconcile and
@@ -373,6 +474,12 @@ class AppState: ObservableObject {
     /// consumes it to open the add-workout source sheet (03-log §misc).
     @Published var requestLogAddSheet: Bool = false
 
+    // MARK: - Plan subtab deep link (My Plans sheets → library subtabs)
+    enum PlanSubtabTarget: Equatable { case programs, workouts }
+    /// Set by a My Plans sheet ("Browse programs" / "From Workout Library");
+    /// PlanTabView consumes it to switch its active subtab, then clears it.
+    @Published var planSubtabRequest: PlanSubtabTarget? = nil
+
     // MARK: - User data
     var userPlans: [UserPlan] { UserPlanDatabase.shared.plans }
     @Published var workoutLogs: [WorkoutLog] = [] {
@@ -421,12 +528,43 @@ class AppState: ObservableObject {
             syncSingleton(userProfile, table: .userProfile)
         }
     }
-    // TODO: migrate progressPhotos image blobs to file storage (UserDefaults size pressure)
+    /// Photo BYTES belong in the `progress-photos` Storage bucket, not in this
+    /// array and not in the synced row (phase3-01). `ProgressPhotoStorage`
+    /// uploads them and then clears `imageData`, leaving a metadata-only row;
+    /// `shouldPush` withholds the push until it does, so a full base64 payload
+    /// is never sent to Postgres just to be superseded seconds later.
     @Published var progressPhotos: [ProgressPhoto] = [] {
         didSet {
             persistCodable(progressPhotos, Keys.progressPhotos)
-            syncDiff(old: oldValue, new: progressPhotos, table: .progressPhotos, idOf: { $0.id.uuidString })
+            syncDiff(old: oldValue, new: progressPhotos, table: .progressPhotos,
+                     idOf: { $0.id.uuidString },
+                     shouldPush: { !ProgressPhotoStorage.shared.isUploadPending($0.id) })
+            guard !isLoading else { return }
+            ProgressPhotoStorage.shared.photosDidChange(
+                old: oldValue, new: progressPhotos, isApplyingRemote: isApplyingRemote)
         }
+    }
+
+    /// Storage upload finished: the bytes are durable in the bucket, so the row
+    /// keeps the path only and the inline base64 goes. Applied as ONE
+    /// assignment so `didSet` fires once, and deliberately NOT under
+    /// `isApplyingRemote` — this is a real local change that must be pushed so
+    /// other devices converge off the blob too.
+    func attachProgressPhotoStoragePath(_ path: String, photoID: UUID) {
+        guard let idx = progressPhotos.firstIndex(where: { $0.id == photoID }) else { return }
+        guard progressPhotos[idx].storagePath != path || progressPhotos[idx].imageData != nil else { return }
+        var photo = progressPhotos[idx]
+        photo.storagePath = path
+        photo.imageData = nil
+        progressPhotos[idx] = photo
+    }
+
+    /// Releases a push `shouldPush` withheld while an upload was queued. Called
+    /// only when that upload permanently failed, so the row goes up on the
+    /// legacy path — base64 and all — rather than never going up at all.
+    func pushProgressPhotoRow(id: UUID) {
+        guard let photo = progressPhotos.first(where: { $0.id == id }) else { return }
+        SupabaseSyncService.shared.push(photo, id: id.uuidString, table: .progressPhotos)
     }
 
     // MARK: - Write-through diff helpers (whole-array `didSet` hazard)
@@ -438,7 +576,14 @@ class AppState: ObservableObject {
     // (both guarded, mirroring the `isLoading` guard already used for local
     // persistence).
 
-    private func syncDiff<T: Encodable>(old: [T], new: [T], table: SupabaseSyncService.Table, idOf: (T) -> String) {
+    /// `shouldPush` lets a store defer the row until its out-of-band work is
+    /// done — progress photos hold theirs back until the Storage upload has
+    /// stripped the base64 (phase3-01). It gates ONLY upserts: a deleted row
+    /// has nothing left to wait for, and withholding its delete would leave a
+    /// live remote row pointing at bytes that are on their way out.
+    private func syncDiff<T: Encodable>(old: [T], new: [T], table: SupabaseSyncService.Table,
+                                        idOf: (T) -> String,
+                                        shouldPush: (T) -> Bool = { _ in true }) {
         guard !isLoading, !isApplyingRemote else { return }
         let oldByID = Dictionary(uniqueKeysWithValues: old.map { (idOf($0), $0) })
         let newByID = Dictionary(uniqueKeysWithValues: new.map { (idOf($0), $0) })
@@ -447,8 +592,16 @@ class AppState: ObservableObject {
             // so compare via JSON bytes (cheap relative to a network round
             // trip, and correct without requiring every model to add
             // Equatable just for this).
-            if oldByID[id] == nil || !jsonEqual(oldByID[id]!, value) {
+            guard oldByID[id] == nil || !jsonEqual(oldByID[id]!, value) else { continue }
+            if shouldPush(value) {
                 SupabaseSyncService.shared.push(value, id: id, table: table)
+            } else {
+                // A withheld row still gets stamped. `push` stamps even when
+                // signed out (see its doc comment) precisely because that
+                // timestamp is how LWW knows a local edit is newer than the
+                // remote row; skipping it here would let an older cloud row
+                // silently win the next reconcile.
+                SupabaseSyncService.shared.stampLocalChange(table: table, id: id)
             }
         }
         for id in oldByID.keys where newByID[id] == nil {
@@ -491,7 +644,10 @@ class AppState: ObservableObject {
         didSet { persistWorkoutPrefs() }
     }
     /// Derived "lo–hi" display string (mirrors the prototype's defRepsLo/Hi pair).
-    var defaultRepRange: String { "\(defaultRepLow)–\(defaultRepHigh)" }
+    /// A single-value range collapses to just that number ("8", not "8–8").
+    var defaultRepRange: String {
+        defaultRepLow == defaultRepHigh ? "\(defaultRepLow)" : "\(defaultRepLow)–\(defaultRepHigh)"
+    }
     @Published var defaultRestBetweenSets: Int = 60 {
         didSet { persistWorkoutPrefs() }
     }
@@ -542,6 +698,28 @@ class AppState: ObservableObject {
 
     // MARK: - Computed
     var defaultPlan: UserPlan? { userPlans.first(where: { $0.isDefault }) }
+
+    /// The plan whose schedule governs a given calendar day: the activated plan
+    /// with the latest activation on or before that day. This is what makes
+    /// "set as default from date X" not rewrite the past — days before X keep
+    /// resolving to the plan that was active then (or to none, staying empty).
+    ///
+    /// A plan counts as a schedule source once it is `isDefault` or has ever
+    /// recorded an `activationDate`; legacy plans with no activation are read as
+    /// active since `.distantPast`, preserving existing installs' behaviour.
+    func plan(effectiveFor date: Date) -> UserPlan? {
+        let day = Calendar.current.startOfDay(for: date)
+        return userPlans
+            .filter { ($0.isDefault || $0.activationDate != nil)
+                      && ($0.activationDate ?? .distantPast) <= day }
+            .sorted { a, b in
+                let da = a.activationDate ?? .distantPast
+                let db = b.activationDate ?? .distantPast
+                if da != db { return da < db }                     // later activation sorts last
+                return (a.isDefault ? 1 : 0) < (b.isDefault ? 1 : 0) // tie → current default wins
+            }
+            .last
+    }
 
     // MARK: - Workout overlay lifecycle (mirrors shell.jsx startWorkout / onMinimize / onExit)
 
@@ -747,13 +925,13 @@ class AppState: ObservableObject {
 
     // MARK: - Week schedule helper
     func todayWorkout() -> Workout? {
-        guard let plan = defaultPlan else { return nil }
+        guard let plan = plan(effectiveFor: Date()) else { return nil }
         let dayIndex = Calendar.current.component(.weekday, from: Date()) - 1
         return plan.workout(for: dayIndex, programs: ProgramDatabase.shared.programs)
     }
 
     func isRestDay(for date: Date = Date()) -> Bool {
-        guard let plan = defaultPlan else { return false }
+        guard let plan = plan(effectiveFor: date) else { return false }
         let dayIndex = Calendar.current.component(.weekday, from: date) - 1
         guard plan.weekSchedule.keys.contains(dayIndex) else { return false } // unkeyed = empty/unplanned, not rest
         return plan.weekSchedule[dayIndex] == .some(nil) // explicit nil entry = rest day
@@ -837,8 +1015,12 @@ class AppState: ObservableObject {
         let ov = dayOverrides[iso]
 
         // Resolve the workout for this day (program schedule, then overrides).
+        // Uses the plan effective for THIS date, not simply the current
+        // default: a plan only schedules from its activation day forward, so
+        // days before it keep resolving to the previously-active plan (or to
+        // nothing) instead of the new plan rewriting the past.
         var workout: Workout? = {
-            guard let plan = defaultPlan else { return nil }
+            guard let plan = plan(effectiveFor: date) else { return nil }
             return plan.workout(for: dow, programs: ProgramDatabase.shared.programs)
         }()
 

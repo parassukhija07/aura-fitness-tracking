@@ -249,8 +249,11 @@ class WorkoutSessionState: ObservableObject {
         let ex = workout.exercises[ei]
         let s = ex.sets[si]
 
-        // Celebration checks
-        if let w = s.weight, let pr = ex.lastPR, w > pr.weight {
+        // Celebration checks. The PR celebration is display-only — when
+        // "Show PRs during workout" is off the record is still detected and
+        // saved at workout completion, it just isn't announced here.
+        let announcePRs = appState?.showPRsDuringWorkout ?? true
+        if announcePRs, let w = s.weight, let pr = ex.lastPR, w > pr.weight {
             let u = appState?.weightUnit ?? "kg"
             triggerCelebration(emoji: "🏆", title: "New PR!",
                 message: "\(UnitFormatter.weight(w, unit: u)) beats your \(UnitFormatter.weight(pr.weight, unit: u)) best.")

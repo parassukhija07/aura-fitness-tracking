@@ -17,6 +17,17 @@ struct AuraFitnessApp: App {
     init() {
         let state = AppState()
         AppStateBridge.shared = state
+        // Must run before AuthService is touched below: `restoreSession` can
+        // kick off a pull, and pulling remote plans onto still-random local
+        // seed ids is exactly the mismatch this migration exists to remove.
+        // Nothing pushes here — there is no session yet — but every rewritten
+        // row is stamped as a local change, so the first sign-in reconcile
+        // carries the stable ids up.
+        SeedIDMigration.runIfNeeded()
+        // Strictly after the id migration: the purge matches plans against the
+        // program ids currently on disk, and running it first would leave the
+        // migration renumbering rows the purge had already removed.
+        SeedPurgeMigration.runIfNeeded()
         _appState = StateObject(wrappedValue: state)
         _authService = StateObject(wrappedValue: AuthService.shared)
         _syncService = StateObject(wrappedValue: SupabaseSyncService.shared)
@@ -27,6 +38,12 @@ struct AuraFitnessApp: App {
             Group {
                 switch authService.sessionState {
                 case .signedIn:
+                    ContentView()
+                        .environmentObject(appState)
+                case .guest:
+                    // Guest mode runs the exact same UI as .signedIn — every
+                    // store already works with no userID (SupabaseSyncService
+                    // push()/pull() no-op locally without one).
                     ContentView()
                         .environmentObject(appState)
                 default:
@@ -42,10 +59,25 @@ struct AuraFitnessApp: App {
                 // pullAll/backfill can safely read/apply AppState.
                 await authService.restoreSession()
             }
-        }
-        .onChange(of: scenePhase) { _, phase in
-            guard phase == .active, authService.userID != nil else { return }
-            Task { await SupabaseSyncService.shared.pullAll() }
+            .task(priority: .background) {
+                // Over-the-air exercise-library refresh. Independent of
+                // `restoreSession` above and deliberately not sequenced after
+                // it: the catalog is world-readable, so it works signed out
+                // and in guest mode, and it must never delay sign-in. Costs
+                // one small GET when the catalog is unchanged, which is the
+                // usual case; failure leaves the bundled library in place.
+                await ExerciseDatabase.shared.refreshCatalogFromRemote()
+            }
+            .onOpenURL { url in
+                Task { await authService.handleAuthCallback(url: url) }
+            }
+            .onChange(of: scenePhase) { _, phase in
+                // A confirmed email change only lands server-side, so the new
+                // address is invisible until the session is re-read. Foreground
+                // is the first moment the user can be back from their mailbox.
+                guard phase == .active else { return }
+                Task { await authService.refreshSession() }
+            }
         }
     }
 }

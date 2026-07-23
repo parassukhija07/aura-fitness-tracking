@@ -7,7 +7,7 @@ enum ProfileScreen: Hashable {
 
 /// Which confirm sheet is open on Profile.
 enum ProfileSheet: Identifiable {
-    case export, reset, delete, logout
+    case export, reset, delete, logout, importData
     var id: Int { hashValue }
 }
 
@@ -25,7 +25,9 @@ struct ProfileTabView: View {
 
     // MARK: Derived stats
     var totalSessions: Int { appState.workoutLogs.count }
-    var totalPRs: Int { appState.personalRecords.count }
+    /// Distinct exercises with a PR — `personalRecords` is an append-only log,
+    /// so a raw `.count` over-reports. Must stay in step with `StatsView.totalPRs`.
+    var totalPRs: Int { Set(appState.personalRecords.map { $0.exerciseName.lowercased() }).count }
     var streak: Int {
         var count = 0
         var day = Date()
@@ -41,20 +43,26 @@ struct ProfileTabView: View {
     private var initials: String {
         "\(profile.firstName.prefix(1))\(profile.lastName.prefix(1))"
     }
+    /// "{age} · {height} · {weight} · {gender}" — any unset field is dropped so
+    /// the line never renders a zero, an empty segment or a doubled separator.
     private var identitySubtitle: String {
-        let age = appState.bodyStats.age
-        let h = UnitFormatter.length(appState.bodyStats.height, unit: appState.lengthUnit)
-        let w = UnitFormatter.weight(appState.bodyStats.weight, unit: appState.weightUnit)
-        return "\(age) · \(h) · \(w) · \(profile.gender)"
+        let stats = appState.bodyStats
+        var parts: [String] = []
+        if stats.age > 0 { parts.append("\(stats.age)") }
+        if stats.height > 0 { parts.append(UnitFormatter.length(stats.height, unit: appState.lengthUnit)) }
+        if stats.weight > 0 { parts.append(UnitFormatter.weight(stats.weight, unit: appState.weightUnit)) }
+        let gender = profile.gender.trimmingCharacters(in: .whitespaces)
+        if !gender.isEmpty { parts.append(gender) }
+        return parts.joined(separator: " · ")
     }
     private var unitsSubtitle: String { "\(appState.weightUnit) · \(appState.lengthUnit)" }
     private var connectedSubtitle: String {
-        appState.appleHealthConnected ? "Apple Health connected" : "None connected"
+        appState.appleHealthConnected ? "Apple Health connected" : "Not connected"
     }
 
     var body: some View {
         NavigationStack {
-            ScrollView {
+            AuraScreenScroll {
                 VStack(spacing: AuraSpacing.s4) {
                     identityCard
                     statTiles
@@ -68,11 +76,23 @@ struct ProfileTabView: View {
                 }
                 .padding(.horizontal, AuraSpacing.s4)
                 .padding(.top, AuraSpacing.s3)
-                .padding(.bottom, AuraSpacing.tabBarClearance)
             }
             .background(Color.aura.bgGrouped.ignoresSafeArea())
-            .navigationTitle("Profile")
-            .navigationBarTitleDisplayMode(.large)
+            .toolbar(.hidden, for: .navigationBar)
+            .safeAreaInset(edge: .top, spacing: 0) {
+                // Custom large-title navbar (nav-title-lg · 30/800), matching Log/Plan.
+                HStack {
+                    Text("Profile")
+                        .font(AuraFont.largeTitleStyle())
+                        .tracking(AuraFont.largeTitleTracking)
+                        .foregroundColor(.aura.text)
+                    Spacer()
+                }
+                .padding(.horizontal, 14)
+                .padding(.top, AuraSpacing.s1)
+                .padding(.bottom, AuraSpacing.s2)
+                .background(Color.aura.bgGrouped)
+            }
             .navigationDestination(for: ProfileScreen.self) { screen in
                 switch screen {
                 case .general:       GeneralSettingsView()
@@ -106,7 +126,7 @@ struct ProfileTabView: View {
                 AvatarCircle(initials: initials, size: 60, fontSize: 22)
                 VStack(alignment: .leading, spacing: 2) {
                     Text("\(profile.firstName) \(profile.lastName)")
-                        .font(.system(size: 19, weight: .bold))
+                        .font(AuraFont.jakarta(19, .bold))
                         .foregroundColor(.aura.text)
                     Text(identitySubtitle)
                         .font(AuraFont.secondary())
@@ -114,7 +134,7 @@ struct ProfileTabView: View {
                 }
                 Spacer()
                 Image(systemName: "chevron.right")
-                    .font(.system(size: 14, weight: .semibold))
+                    .font(AuraFont.jakarta(14, .semibold))
                     .foregroundColor(.aura.text3)
             }
             .padding(AuraSpacing.s4)
@@ -188,7 +208,7 @@ struct AvatarCircle: View {
 
     var body: some View {
         Text(initials)
-            .font(.system(size: fontSize, weight: .heavy))
+            .font(AuraFont.jakarta(fontSize, .heavy))
             .foregroundColor(.white)
             .frame(width: size, height: size)
             .background(
@@ -227,7 +247,7 @@ struct SettingsRowLabel: View {
                     .fill(iconColor)
                     .frame(width: 32, height: 32)
                 Image(systemName: icon)
-                    .font(.system(size: 14, weight: .semibold))
+                    .font(AuraFont.jakarta(14, .semibold))
                     .foregroundColor(.white)
             }
             VStack(alignment: .leading, spacing: 2) {
@@ -243,7 +263,7 @@ struct SettingsRowLabel: View {
             Spacer()
             if showChevron {
                 Image(systemName: "chevron.right")
-                    .font(.system(size: 13, weight: .semibold))
+                    .font(AuraFont.jakarta(13, .semibold))
                     .foregroundColor(.aura.text3)
             }
         }
@@ -259,7 +279,7 @@ struct SettingsSectionLabel: View {
     let title: String
     var body: some View {
         Text(title.uppercased())
-            .font(.system(size: 12, weight: .semibold))
+            .font(AuraFont.jakarta(12, .semibold))
             .foregroundColor(.aura.text2)
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.top, AuraSpacing.s4)
@@ -283,7 +303,7 @@ struct SettingsControlRow<Trailing: View>: View {
                         .fill(iconColor)
                         .frame(width: 32, height: 32)
                     Image(systemName: iconName)
-                        .font(.system(size: 14, weight: .semibold))
+                        .font(AuraFont.jakarta(14, .semibold))
                         .foregroundColor(.white)
                 }
             }

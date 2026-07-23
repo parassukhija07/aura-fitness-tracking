@@ -9,20 +9,22 @@ struct WorkoutSummaryView: View {
             VStack(spacing: 0) {
                 // Gradient hero
                 ZStack {
+                    // Design .summary-hero: linear-gradient(160deg, accent,
+                    // oklch(0.66 0.17 45)) — accent into a deeper warm orange.
                     LinearGradient(
-                        colors: [Color.aura.accent.opacity(0.9), Color.aura.accent.opacity(0.4)],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
+                        colors: [Color.aura.accent, Color(hex: "#D9660E")],
+                        startPoint: .top,
+                        endPoint: .bottom
                     )
                     .frame(height: 220)
 
                     VStack(spacing: 8) {
                         Text("🔥")
-                            .font(.system(size: 48))
+                            .font(AuraFont.jakarta(46))
                         Text("Workout Complete")
-                            .font(.system(size: 26, weight: .heavy))
+                            .font(AuraFont.jakarta(26, .heavy))
                             .foregroundColor(.white)
-                        Text("\(session.workout.name)")
+                        Text(session.workout.program.map { "\(session.workout.name) · \($0)" } ?? session.workout.name)
                             .font(AuraFont.secondary())
                             .foregroundColor(.white.opacity(0.85))
                     }
@@ -48,10 +50,10 @@ struct WorkoutSummaryView: View {
                         HStack(spacing: AuraSpacing.s3) {
                             Image(systemName: "trophy.fill")
                                 .foregroundColor(.aura.accent)
-                                .font(.system(size: 18))
+                                .font(AuraFont.jakarta(18))
                             VStack(alignment: .leading, spacing: 2) {
                                 Text("\(session.newPRsCount) new personal record\(session.newPRsCount > 1 ? "s" : "")!")
-                                    .font(.system(size: 14, weight: .bold))
+                                    .font(AuraFont.jakarta(14, .bold))
                                     .foregroundColor(.aura.text)
                                 Text("Logged to your Progress tab.")
                                     .font(AuraFont.secondary())
@@ -77,7 +79,7 @@ struct WorkoutSummaryView: View {
                                 HStack {
                                     VStack(alignment: .leading, spacing: 2) {
                                         Text(ex.name)
-                                            .font(.system(size: 15, weight: .semibold))
+                                            .font(AuraFont.jakarta(15, .semibold))
                                             .foregroundColor(.aura.text)
                                         let d = ex.sets.filter { $0.done }.count
                                         let vol = ex.sets.filter { $0.done }.reduce(0.0) { $0 + ($1.weight ?? 0) * Double($1.reps ?? 0) }
@@ -88,7 +90,7 @@ struct WorkoutSummaryView: View {
                                     Spacer()
                                     Image(systemName: "checkmark.circle.fill")
                                         .foregroundColor(.aura.green)
-                                        .font(.system(size: 20))
+                                        .font(AuraFont.jakarta(20))
                                 }
                                 .padding(.horizontal, AuraSpacing.s4)
                                 .padding(.vertical, 12)

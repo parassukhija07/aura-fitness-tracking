@@ -19,9 +19,9 @@ struct PlanNavbar<Trailing: View>: View {
             Button(action: onBack) {
                 HStack(spacing: 2) {
                     Image(systemName: "chevron.left")
-                        .font(.system(size: 20, weight: .semibold))
+                        .font(AuraFont.jakarta(20, .semibold))
                     if let backLabel {
-                        Text(backLabel).font(.system(size: 17, weight: .regular))
+                        Text(backLabel).font(AuraFont.jakarta(17, .regular))
                     }
                 }
                 .foregroundColor(.aura.accent)
@@ -62,7 +62,7 @@ struct PlanIconButton: View {
     var body: some View {
         Button(action: action) {
             Image(systemName: icon)
-                .font(.system(size: size, weight: .semibold))
+                .font(AuraFont.jakarta(size, .semibold))
                 .foregroundColor(accent ? .aura.accent : .aura.text)
                 .frame(width: diameter, height: diameter)
                 .background(accent ? Color.aura.accentSoft : Color.aura.fill.opacity(0.5))
@@ -83,13 +83,12 @@ struct PlanSheet<Content: View>: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            SheetGrabber()
             if let title {
                 HStack(alignment: .top) {
                     VStack(alignment: .leading, spacing: 2) {
-                        Text(title).font(.system(size: 15, weight: .bold)).foregroundColor(.aura.text)
+                        Text(title).font(AuraFont.jakarta(15, .bold)).foregroundColor(.aura.text)
                         if let subtitle {
-                            Text(subtitle).font(.system(size: 12)).foregroundColor(.aura.text2)
+                            Text(subtitle).font(AuraFont.jakarta(12)).foregroundColor(.aura.text2)
                         }
                     }
                     Spacer()
@@ -102,9 +101,9 @@ struct PlanSheet<Content: View>: View {
             }
             if let centeredTitle {
                 VStack(spacing: 3) {
-                    Text(centeredTitle).font(.system(size: 17, weight: .heavy)).foregroundColor(.aura.text)
+                    Text(centeredTitle).font(AuraFont.jakarta(17, .heavy)).foregroundColor(.aura.text)
                     if let centeredSubtitle {
-                        Text(centeredSubtitle).font(.system(size: 12)).foregroundColor(.aura.text2)
+                        Text(centeredSubtitle).font(AuraFont.jakarta(12)).foregroundColor(.aura.text2)
                     }
                 }
                 .frame(maxWidth: .infinity)
@@ -140,11 +139,11 @@ struct PlanRow: View {
                         .fill(color.opacity(0.15))
                         .frame(width: 36, height: 36)
                     Image(systemName: icon)
-                        .font(.system(size: 16, weight: .semibold))
+                        .font(AuraFont.jakarta(16, .semibold))
                         .foregroundColor(color)
                 }
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(label).font(.system(size: 16, weight: .medium)).foregroundColor(textColor)
+                    Text(label).font(AuraFont.jakarta(16, .medium)).foregroundColor(textColor)
                     if let sub {
                         Text(sub).font(AuraFont.secondary()).foregroundColor(.aura.text2)
                     }
@@ -152,7 +151,7 @@ struct PlanRow: View {
                 Spacer()
                 if chevron {
                     Image(systemName: "chevron.right")
-                        .font(.system(size: 14, weight: .semibold))
+                        .font(AuraFont.jakarta(14, .semibold))
                         .foregroundColor(.aura.text3)
                 }
             }
@@ -196,18 +195,18 @@ struct PlanSourceCard: View {
                         .fill(iconBg)
                         .frame(width: 44, height: 44)
                     Image(systemName: icon)
-                        .font(.system(size: 20, weight: .semibold))
+                        .font(AuraFont.jakarta(20, .semibold))
                         .foregroundColor(iconTint)
                 }
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(title).font(.system(size: 15, weight: .bold)).foregroundColor(.aura.text)
+                    Text(title).font(AuraFont.jakarta(15, .bold)).foregroundColor(.aura.text)
                     Text(subtitle).font(AuraFont.secondary()).foregroundColor(.aura.text2)
                         .fixedSize(horizontal: false, vertical: true)
                         .multilineTextAlignment(.leading)
                 }
                 Spacer()
                 Image(systemName: "chevron.right")
-                    .font(.system(size: 14, weight: .semibold))
+                    .font(AuraFont.jakarta(14, .semibold))
                     .foregroundColor(.aura.text3)
             }
             .padding(13)
@@ -232,7 +231,7 @@ struct PlanSearchField: View {
     var body: some View {
         HStack(spacing: 8) {
             Image(systemName: "magnifyingglass")
-                .font(.system(size: 16, weight: .medium))
+                .font(AuraFont.jakarta(16, .medium))
                 .foregroundColor(.aura.text3)
             TextField(placeholder, text: $text)
                 .font(AuraFont.body())
@@ -262,11 +261,11 @@ struct PlanFilterChip: View {
         Button(action: action) {
             HStack(spacing: 5) {
                 if leadingClose {
-                    Image(systemName: "xmark").font(.system(size: 11, weight: .bold))
+                    Image(systemName: "xmark").font(AuraFont.jakarta(11, .bold))
                 }
-                Text(label).font(.system(size: 12, weight: .bold))
+                Text(label).font(AuraFont.jakarta(12, .bold))
                 if trailingChevron {
-                    Image(systemName: "chevron.down").font(.system(size: 11, weight: .bold))
+                    Image(systemName: "chevron.down").font(AuraFont.jakarta(11, .bold))
                         .foregroundColor(active ? .aura.accent : .aura.text3)
                 }
             }
@@ -312,9 +311,13 @@ struct PlanCatalogGrid: View {
                 Button { onTap(e) } label: {
                     VStack(alignment: .leading, spacing: 0) {
                         ZStack {
-                            RoundedRectangle(cornerRadius: AuraRadius.sm).fill(th.bg)
+                            // Cached remote still; muscle-tinted gradient is the
+                            // loading/failure fallback. No play button in cells —
+                            // tapping the cell already opens the detail.
+                            RemoteExerciseImage(urlString: e.imageURL, fallbackMuscle: e.muscle)
+                                .clipShape(RoundedRectangle(cornerRadius: AuraRadius.sm))
                             Text(PlanMusclePalette.displayLabel(e.muscle).uppercased())
-                                .font(.system(size: 10, weight: .heavy))
+                                .font(AuraFont.jakarta(10, .heavy))
                                 .tracking(0.7)
                                 .foregroundColor(th.tx)
                                 .multilineTextAlignment(.center)
@@ -322,13 +325,13 @@ struct PlanCatalogGrid: View {
                         .aspectRatio(1.5, contentMode: .fit)
                         .frame(maxWidth: .infinity)
                         Text(e.name)
-                            .font(.system(size: 14, weight: .bold))
+                            .font(AuraFont.jakarta(14, .bold))
                             .foregroundColor(.aura.text)
                             .lineLimit(2)
                             .multilineTextAlignment(.leading)
                             .padding(.top, 8)
                         Text("\(e.muscle) · \(e.equip)")
-                            .font(.system(size: 12))
+                            .font(AuraFont.jakarta(12))
                             .foregroundColor(.aura.text2)
                             .padding(.top, 2)
                     }
@@ -354,8 +357,8 @@ struct PlanEmptyState: View {
     var subtitle: String
     var body: some View {
         VStack(spacing: 4) {
-            Text(title).font(.system(size: 16, weight: .bold)).foregroundColor(.aura.text3)
-            Text(subtitle).font(.system(size: 13)).foregroundColor(.aura.text3)
+            Text(title).font(AuraFont.jakarta(16, .bold)).foregroundColor(.aura.text3)
+            Text(subtitle).font(AuraFont.jakarta(13)).foregroundColor(.aura.text3)
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 44)
@@ -366,19 +369,36 @@ struct PlanEmptyState: View {
 
 struct PlanLibraryCard<Trailing: View>: View {
     var thumbMuscle: String? = nil
+    /// When set, the thumb is keyword-tinted via `workoutTheme(for:)` and shows
+    /// its icon instead of the plain fill (used by the workout library cards).
+    var themeName: String? = nil
     var title: String
     var meta: AnyView
     @ViewBuilder var trailing: () -> Trailing
     let action: () -> Void
 
+    @ViewBuilder private var thumb: some View {
+        if let themeName {
+            let t = workoutTheme(for: themeName)
+            ZStack {
+                RoundedRectangle(cornerRadius: AuraRadius.sm)
+                    .fill(t.color.opacity(0.14))
+                Image(systemName: t.icon)
+                    .font(AuraFont.jakarta(22)).foregroundColor(t.color)
+            }
+        } else {
+            RoundedRectangle(cornerRadius: AuraRadius.sm)
+                .fill(Color.aura.fill)
+        }
+    }
+
     var body: some View {
         Button(action: action) {
             HStack(spacing: AuraSpacing.s3) {
-                RoundedRectangle(cornerRadius: AuraRadius.sm)
-                    .fill(Color.aura.fill)
+                thumb
                     .frame(width: 56, height: 56)
                 VStack(alignment: .leading, spacing: 3) {
-                    Text(title).font(.system(size: 16, weight: .bold)).foregroundColor(.aura.text)
+                    Text(title).font(AuraFont.jakarta(16, .bold)).foregroundColor(.aura.text)
                     meta
                 }
                 Spacer()
@@ -414,7 +434,7 @@ struct RestPicker: View {
     var body: some View {
         VStack(spacing: 10) {
             Text(label.uppercased())
-                .font(.system(size: 11, weight: .bold))
+                .font(AuraFont.jakarta(11, .bold))
                 .tracking(0.55)
                 .foregroundColor(.aura.text2)
                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -423,7 +443,7 @@ struct RestPicker: View {
                     stepGlyph("minus", accent: false)
                 }
                 Text(Self.fmt(value))
-                    .font(.system(size: 26, weight: .heavy).monospacedDigit())
+                    .font(AuraFont.jakarta(26, .heavy).monospacedDigit())
                     .tracking(-0.78)
                     .foregroundColor(.aura.accent)
                     .frame(maxWidth: .infinity)
@@ -452,7 +472,7 @@ struct RestPicker: View {
 
     private func stepGlyph(_ icon: String, accent: Bool) -> some View {
         Image(systemName: icon)
-            .font(.system(size: 17, weight: .semibold))
+            .font(AuraFont.jakarta(17, .semibold))
             .foregroundColor(accent ? .aura.accent : .aura.text)
             .frame(width: 34, height: 34)
             .background(accent ? Color.aura.accentSoft : Color.aura.fill.opacity(0.5))
@@ -493,7 +513,7 @@ struct WeekStrip: View {
         Button { isRest ? onDayPlus(day) : onDayMenu(day) } label: {
             VStack(spacing: 6) {
                 Text(day.shortLabel.uppercased())
-                    .font(.system(size: 9, weight: .bold))
+                    .font(AuraFont.jakarta(9, .bold))
                     .tracking(0.6)
                     .foregroundColor(isRest ? .aura.text3 : c.tint)
                 ZStack {
@@ -505,11 +525,11 @@ struct WeekStrip: View {
                                 .stroke(isRest ? Color.aura.separator2 : c.border.opacity(0.45), lineWidth: 1.5)
                         )
                     Image(systemName: isRest ? "moon.fill" : planWkIcon(w?.name))
-                        .font(.system(size: isRest ? 14 : 16))
+                        .font(AuraFont.jakarta(isRest ? 14 : 16))
                         .foregroundColor(isRest ? .aura.text3 : c.tint)
                 }
                 Text(shortName)
-                    .font(.system(size: 8, weight: .bold))
+                    .font(AuraFont.jakarta(8, .bold))
                     .foregroundColor(isRest ? .aura.text3 : c.tint)
                     .lineLimit(1)
                     .frame(maxWidth: 34)
@@ -526,4 +546,21 @@ struct WeekStrip: View {
         }
         .buttonStyle(.plain)
     }
+}
+
+// MARK: - Workout keyword theming (shared)
+//
+// One rule for tile colour + SF Symbol icon across My Plans rows, the week
+// strip, and the libraries. First keyword match wins in the fixed order
+// push → pull → leg → upper; anything else falls back to accent + dumbbell
+// (the fallback is by design, e.g. "Chest Day"). Colour reuses the existing
+// `planWkStyle` tint / `planWkIcon` glyph so there's a single keyword table.
+
+struct WorkoutTheme {
+    let color: Color
+    let icon: String
+}
+
+func workoutTheme(for name: String) -> WorkoutTheme {
+    WorkoutTheme(color: planWkStyle(name).tint, icon: planWkIcon(name))
 }

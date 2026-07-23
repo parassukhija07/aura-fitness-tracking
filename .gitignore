@@ -3,3 +3,8 @@ AUDIT_REPORT.md
 # H8 — Supabase secrets (real values live only on the developer's machine)
 AuraFitness/Secrets.xcconfig
 
+# Supabase CLI version-check cache — rewritten on every CLI invocation.
+# The rest of supabase/.temp/ (project ref, version pins) is tracked on purpose
+# and contains no credentials.
+supabase/.temp/cli-latest
+

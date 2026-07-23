@@ -1,0 +1,190 @@
+workout_id,workout_name,exercise_name,target_muscle,sets,reps,notes
+FB_A,Full Body A,Barbell Squat,Mixed,3,8-12,Standard form
+FB_A,Full Body A,Barbell Bench Press,Mixed,3,8-12,Standard form
+FB_A,Full Body A,Barbell Row,Mixed,3,8-12,Standard form
+FB_A,Full Body A,Overhead Press,Mixed,3,8-12,Standard form
+FB_B,Full Body B,Deadlift,Mixed,3,8-12,Standard form
+FB_B,Full Body B,Incline Dumbbell Press,Mixed,3,8-12,Standard form
+FB_B,Full Body B,Lat Pulldown,Mixed,3,8-12,Standard form
+FB_B,Full Body B,Dumbbell Lateral Raise,Mixed,3,8-12,Standard form
+FB_C,Full Body C,Leg Press,Mixed,3,10-15,Standard form
+FB_C,Full Body C,Chest Dip,Mixed,3,10-15,Standard form
+FB_C,Full Body C,Seated Cable Row,Mixed,3,10-15,Standard form
+FB_C,Full Body C,Arnold Press,Mixed,3,10-15,Standard form
+UL_UP_A,Upper Power,Barbell Bench Press,Upper,4,4-6,Standard form
+UL_UP_A,Upper Power,Barbell Row,Upper,4,4-6,Standard form
+UL_UP_A,Upper Power,Overhead Press,Upper,4,4-6,Standard form
+UL_LOW_A,Lower Power,Barbell Squat,Lower,4,4-6,Standard form
+UL_LOW_A,Lower Power,Romanian Deadlift,Lower,4,4-6,Standard form
+UL_LOW_A,Lower Power,Standing Calf Raise,Lower,4,4-6,Standard form
+UL_UP_B,Upper Hypertrophy,Incline Dumbbell Press,Upper,3,10-12,Standard form
+UL_UP_B,Upper Hypertrophy,Seated Cable Row,Upper,3,10-12,Standard form
+UL_UP_B,Upper Hypertrophy,Barbell Curl,Upper,3,10-12,Standard form
+UL_LOW_B,Lower Hypertrophy,Hack Squat,Lower,3,10-12,Standard form
+UL_LOW_B,Lower Hypertrophy,Lying Leg Curl,Lower,3,10-12,Standard form
+UL_LOW_B,Lower Hypertrophy,Seated Calf Raise,Lower,3,10-12,Standard form
+BRO_CHEST,Chest Day,Barbell Bench Press,Chest,4,8-12,Standard form
+BRO_CHEST,Chest Day,Incline Dumbbell Press,Chest,4,8-12,Standard form
+BRO_CHEST,Chest Day,Cable Crossover,Chest,4,8-12,Standard form
+BRO_BACK,Back Day,Pull-up,Back,4,8-12,Standard form
+BRO_BACK,Back Day,Deadlift,Back,4,8-12,Standard form
+BRO_BACK,Back Day,Lat Pulldown,Back,4,8-12,Standard form
+BRO_LEGS,Leg Day,Barbell Squat,Legs,4,8-12,Standard form
+BRO_LEGS,Leg Day,Leg Press,Legs,4,8-12,Standard form
+BRO_LEGS,Leg Day,Leg Extension,Legs,4,8-12,Standard form
+BRO_SHOULDERS,Shoulder Day,Overhead Press,Shoulders,4,8-12,Standard form
+BRO_SHOULDERS,Shoulder Day,Dumbbell Lateral Raise,Shoulders,4,8-12,Standard form
+BRO_SHOULDERS,Shoulder Day,Reverse Pec Deck,Shoulders,4,8-12,Standard form
+BRO_ARMS,Arms & Core,Barbell Curl,Arms,3,10-15,Standard form
+BRO_ARMS,Arms & Core,Skullcrusher,Arms,3,10-15,Standard form
+BRO_ARMS,Arms & Core,Hammer Curl,Arms,3,10-15,Standard form
+ATH_POWER,Explosive Power,Box Jump,Full Body,3,5-8,Standard form
+ATH_POWER,Explosive Power,Lateral Bounds,Full Body,3,5-8,Standard form
+ATH_POWER,Explosive Power,Medicine Ball Slam,Full Body,3,5-8,Standard form
+ATH_POWER,Explosive Power,Kettlebell Swing,Full Body,3,5-8,Standard form
+ATH_ENDURANCE,Court Endurance,Agility Ladder Drills,Endurance,3,60 sec,Standard form
+ATH_ENDURANCE,Court Endurance,Lunges,Endurance,3,60 sec,Standard form
+ATH_ENDURANCE,Court Endurance,Plank,Endurance,3,60 sec,Standard form
+ATH_ENDURANCE,Court Endurance,Russian Twist,Endurance,3,60 sec,Standard form
+PL_SQUAT,Squat Focus,Barbell Squat,Legs/Core,5,5,Standard form
+PL_SQUAT,Squat Focus,Paused Squat,Legs/Core,5,5,Standard form
+PL_SQUAT,Squat Focus,Good Mornings,Legs/Core,5,5,Standard form
+PL_SQUAT,Squat Focus,Weighted Plank,Legs/Core,5,5,Standard form
+PL_BENCH,Bench Focus,Barbell Bench Press,Chest/Triceps,5,5,Standard form
+PL_BENCH,Bench Focus,Close-Grip Bench Press,Chest/Triceps,5,5,Standard form
+PL_BENCH,Bench Focus,Spoto Press,Chest/Triceps,5,5,Standard form
+PL_BENCH,Bench Focus,Face Pull,Chest/Triceps,5,5,Standard form
+PL_DEADLIFT,Deadlift Focus,Deadlift,Back/Hamstrings,5,5,Standard form
+PL_DEADLIFT,Deadlift Focus,Deficit Deadlift,Back/Hamstrings,5,5,Standard form
+PL_DEADLIFT,Deadlift Focus,Barbell Row,Back/Hamstrings,5,5,Standard form
+PL_DEADLIFT,Deadlift Focus,Farmer's Walk,Back/Hamstrings,5,5,Standard form
+CALI_PUSH,Bodyweight Push,Handstand Push-up Progression,Chest/Triceps,4,To Failure,Standard form
+CALI_PUSH,Bodyweight Push,Dips,Chest/Triceps,4,To Failure,Standard form
+CALI_PUSH,Bodyweight Push,Diamond Push-up,Chest/Triceps,4,To Failure,Standard form
+CALI_PUSH,Bodyweight Push,Pike Push-up,Chest/Triceps,4,To Failure,Standard form
+CALI_PULL,Bodyweight Pull,Muscle-up Progression,Back/Biceps,4,To Failure,Standard form
+CALI_PULL,Bodyweight Pull,Pull-up,Back/Biceps,4,To Failure,Standard form
+CALI_PULL,Bodyweight Pull,Front Lever Raises,Back/Biceps,4,To Failure,Standard form
+CALI_PULL,Bodyweight Pull,Inverted Row,Back/Biceps,4,To Failure,Standard form
+CALI_LEGS,Bodyweight Legs,Pistol Squat,Legs,4,10-15,Standard form
+CALI_LEGS,Bodyweight Legs,Shrimp Squat,Legs,4,10-15,Standard form
+CALI_LEGS,Bodyweight Legs,Nordic Hamstring Curl,Legs,4,10-15,Standard form
+CALI_LEGS,Bodyweight Legs,Jumping Lunges,Legs,4,10-15,Standard form
+HIIT_CARDIO,Cardio Blast,Burpees,Cardio,5,45s on/15s off,Standard form
+HIIT_CARDIO,Cardio Blast,Mountain Climbers,Cardio,5,45s on/15s off,Standard form
+HIIT_CARDIO,Cardio Blast,High Knees,Cardio,5,45s on/15s off,Standard form
+HIIT_CARDIO,Cardio Blast,Jumping Jacks,Cardio,5,45s on/15s off,Standard form
+HIIT_CORE,Core Crusher,Bicycle Crunch,Core,4,45s on/15s off,Standard form
+HIIT_CORE,Core Crusher,V-Ups,Core,4,45s on/15s off,Standard form
+HIIT_CORE,Core Crusher,Hollow Body Hold,Core,4,45s on/15s off,Standard form
+HIIT_CORE,Core Crusher,Plank Jacks,Core,4,45s on/15s off,Standard form
+KB_SWING,Hinge & Swing,Kettlebell Swing,Full Body,4,12-15,Standard form
+KB_SWING,Hinge & Swing,Kettlebell Snatch,Full Body,4,12-15,Standard form
+KB_SWING,Hinge & Swing,Kettlebell Goblet Squat,Full Body,4,12-15,Standard form
+KB_SWING,Hinge & Swing,Turkish Get-Up,Full Body,4,12-15,Standard form
+KB_PRESS,Press & Pull,Kettlebell Clean and Press,Upper,4,10-12,Standard form
+KB_PRESS,Press & Pull,Kettlebell Row,Upper,4,10-12,Standard form
+KB_PRESS,Press & Pull,Kettlebell Halo,Upper,4,10-12,Standard form
+KB_PRESS,Press & Pull,Kettlebell Windmill,Upper,4,10-12,Standard form
+MOB_SPINE,Spine & Shoulders,Cat-Cow Stretch,Mobility,3,15-20,Standard form
+MOB_SPINE,Spine & Shoulders,Thoracic Rotation,Mobility,3,15-20,Standard form
+MOB_SPINE,Spine & Shoulders,Wall Angels,Mobility,3,15-20,Standard form
+MOB_SPINE,Spine & Shoulders,Band Pull-Aparts,Mobility,3,15-20,Standard form
+MOB_HIPS,Hips & Lower Back,90/90 Hip Stretch,Mobility,3,15-20,Standard form
+MOB_HIPS,Hips & Lower Back,Couch Stretch,Mobility,3,15-20,Standard form
+MOB_HIPS,Hips & Lower Back,Glute Bridge,Mobility,3,15-20,Standard form
+MOB_HIPS,Hips & Lower Back,Bird Dog,Mobility,3,15-20,Standard form
+OLY_SNATCH,Snatch Day,Snatch,Full Body,5,3-5,Standard form
+OLY_SNATCH,Snatch Day,Hang Snatch,Full Body,5,3-5,Standard form
+OLY_SNATCH,Snatch Day,Overhead Squat,Full Body,5,3-5,Standard form
+OLY_SNATCH,Snatch Day,Snatch Pull,Full Body,5,3-5,Standard form
+OLY_CLEAN,Clean & Jerk Day,Clean and Jerk,Full Body,5,3-5,Standard form
+OLY_CLEAN,Clean & Jerk Day,Power Clean,Full Body,5,3-5,Standard form
+OLY_CLEAN,Clean & Jerk Day,Front Squat,Full Body,5,3-5,Standard form
+OLY_CLEAN,Clean & Jerk Day,Push Press,Full Body,5,3-5,Standard form
+PPL_PUSH_A,PPL Push A,Barbell Bench Press,Chest/Shoulders/Triceps,4,8-12,Standard form
+PPL_PUSH_A,PPL Push A,Incline Dumbbell Press,Chest/Shoulders/Triceps,4,8-12,Standard form
+PPL_PUSH_A,PPL Push A,Dumbbell Lateral Raise,Chest/Shoulders/Triceps,4,8-12,Standard form
+PPL_PUSH_A,PPL Push A,Cable Triceps Pushdown,Chest/Shoulders/Triceps,4,8-12,Standard form
+PPL_PULL_A,PPL Pull A,Barbell Row,Back/Biceps,4,8-12,Standard form
+PPL_PULL_A,PPL Pull A,Cable Lat Pulldown,Back/Biceps,4,8-12,Standard form
+PPL_PULL_A,PPL Pull A,Face Pull,Back/Biceps,4,8-12,Standard form
+PPL_PULL_A,PPL Pull A,Barbell Bicep Curl,Back/Biceps,4,8-12,Standard form
+PPL_LEGS_A,PPL Legs A,Barbell Squat,Quads/Hamstrings,4,8-12,Standard form
+PPL_LEGS_A,PPL Legs A,Romanian Deadlift,Quads/Hamstrings,4,8-12,Standard form
+PPL_LEGS_A,PPL Legs A,Leg Extension,Quads/Hamstrings,4,8-12,Standard form
+PPL_LEGS_A,PPL Legs A,Lying Leg Curl,Quads/Hamstrings,4,8-12,Standard form
+PPL_LEGS_A,PPL Legs A,Standing Calf Raise,Quads/Hamstrings,4,8-12,Standard form
+PPL_PUSH_B,PPL Push B,Seated Barbell Overhead Press,Chest/Shoulders/Triceps,4,8-12,Standard form
+PPL_PUSH_B,PPL Push B,Chest Dip,Chest/Shoulders/Triceps,4,8-12,Standard form
+PPL_PUSH_B,PPL Push B,Cable Lateral Raise,Chest/Shoulders/Triceps,4,8-12,Standard form
+PPL_PUSH_B,PPL Push B,Overhead Cable Extension,Chest/Shoulders/Triceps,4,8-12,Standard form
+PPL_PULL_B,PPL Pull B,Deadlift,Back/Biceps,4,8-12,Standard form
+PPL_PULL_B,PPL Pull B,Seated Cable Row,Back/Biceps,4,8-12,Standard form
+PPL_PULL_B,PPL Pull B,Dumbbell Pullover,Back/Biceps,4,8-12,Standard form
+PPL_PULL_B,PPL Pull B,Dumbbell Hammer Curl,Back/Biceps,4,8-12,Standard form
+PPL_LEGS_B,PPL Legs B,Leg Press,Quads/Hamstrings,4,10-15,Standard form
+PPL_LEGS_B,PPL Legs B,Hack Squat,Quads/Hamstrings,4,10-15,Standard form
+PPL_LEGS_B,PPL Legs B,Bulgarian Split Squat,Quads/Hamstrings,4,10-15,Standard form
+PPL_LEGS_B,PPL Legs B,Seated Calf Raise,Quads/Hamstrings,4,10-15,Standard form
+PPL_LEGS_B,PPL Legs B,Cable Crunch,Quads/Hamstrings,4,10-15,Standard form
+RUN_STRENGTH_1,Runner Leg & Core Stability,Bulgarian Split Squat,Legs/Core,3,12-15,"Low injury risk, high stability"
+RUN_STRENGTH_1,Runner Leg & Core Stability,Romanian Deadlift,Legs/Core,3,12-15,"Low injury risk, high stability"
+RUN_STRENGTH_1,Runner Leg & Core Stability,Single-Leg Calf Raise,Legs/Core,3,12-15,"Low injury risk, high stability"
+RUN_STRENGTH_1,Runner Leg & Core Stability,Plank,Legs/Core,3,12-15,"Low injury risk, high stability"
+RUN_STRENGTH_1,Runner Leg & Core Stability,Bird Dog,Legs/Core,3,12-15,"Low injury risk, high stability"
+RUN_STRENGTH_2,Runner Upper Body Armor,Pull-up,Upper/Core,3,12-15,Maintain posture over long miles
+RUN_STRENGTH_2,Runner Upper Body Armor,Push-up,Upper/Core,3,12-15,Maintain posture over long miles
+RUN_STRENGTH_2,Runner Upper Body Armor,Dumbbell Row,Upper/Core,3,12-15,Maintain posture over long miles
+RUN_STRENGTH_2,Runner Upper Body Armor,Face Pull,Upper/Core,3,12-15,Maintain posture over long miles
+RUN_STRENGTH_2,Runner Upper Body Armor,Russian Twist,Upper/Core,3,12-15,Maintain posture over long miles
+FAT_CIRCUIT_1,Full Body Metabolic Circuit A,Kettlebell Swing,Full Body,4,45s work / 15s rest,Continuous flow
+FAT_CIRCUIT_1,Full Body Metabolic Circuit A,Med Ball Slam,Full Body,4,45s work / 15s rest,Continuous flow
+FAT_CIRCUIT_1,Full Body Metabolic Circuit A,Push-up,Full Body,4,45s work / 15s rest,Continuous flow
+FAT_CIRCUIT_1,Full Body Metabolic Circuit A,Jump Squat,Full Body,4,45s work / 15s rest,Continuous flow
+FAT_CIRCUIT_1,Full Body Metabolic Circuit A,Mountain Climbers,Full Body,4,45s work / 15s rest,Continuous flow
+FAT_CIRCUIT_2,Full Body Metabolic Circuit B,Burpees,Full Body,4,45s work / 15s rest,High caloric burn
+FAT_CIRCUIT_2,Full Body Metabolic Circuit B,Dumbbell Thrusters,Full Body,4,45s work / 15s rest,High caloric burn
+FAT_CIRCUIT_2,Full Body Metabolic Circuit B,Lunges,Full Body,4,45s work / 15s rest,High caloric burn
+FAT_CIRCUIT_2,Full Body Metabolic Circuit B,Plank Jacks,Full Body,4,45s work / 15s rest,High caloric burn
+FAT_CIRCUIT_2,Full Body Metabolic Circuit B,High Knees,Full Body,4,45s work / 15s rest,High caloric burn
+SENIOR_STRENGTH,Functional Longevity Strength,Goblet Squat to Box,Full Body,2,10-12,"Joint friendly, focus on functional independence"
+SENIOR_STRENGTH,Functional Longevity Strength,Incline Push-up,Full Body,2,10-12,"Joint friendly, focus on functional independence"
+SENIOR_STRENGTH,Functional Longevity Strength,Dumbbell Row,Full Body,2,10-12,"Joint friendly, focus on functional independence"
+SENIOR_STRENGTH,Functional Longevity Strength,Step-ups,Full Body,2,10-12,"Joint friendly, focus on functional independence"
+SENIOR_STRENGTH,Functional Longevity Strength,Seated Leg Raise,Full Body,2,10-12,"Joint friendly, focus on functional independence"
+SENIOR_BALANCE,Balance & Core Stability,Single-Leg Stand,Balance/Core,2,10,Prevent falls and maintain posture
+SENIOR_BALANCE,Balance & Core Stability,Wall Sit,Balance/Core,2,10,Prevent falls and maintain posture
+SENIOR_BALANCE,Balance & Core Stability,Seated Arm Circles,Balance/Core,2,10,Prevent falls and maintain posture
+SENIOR_BALANCE,Balance & Core Stability,Bridge,Balance/Core,2,10,Prevent falls and maintain posture
+SENIOR_BALANCE,Balance & Core Stability,Cat-Cow Stretch,Balance/Core,2,10,Prevent falls and maintain posture
+HOTEL_BODYWEIGHT,Zero-Equipment Full Body,Diamond Push-up,Full Body,4,15-20,Travel friendly
+HOTEL_BODYWEIGHT,Zero-Equipment Full Body,Air Squat,Full Body,4,15-20,Travel friendly
+HOTEL_BODYWEIGHT,Zero-Equipment Full Body,Walking Lunges,Full Body,4,15-20,Travel friendly
+HOTEL_BODYWEIGHT,Zero-Equipment Full Body,V-Ups,Full Body,4,15-20,Travel friendly
+HOTEL_BODYWEIGHT,Zero-Equipment Full Body,Prone Cobra,Full Body,4,15-20,Travel friendly
+PB_POWER_UPPER,Powerbuilding Upper,Barbell Bench Press,Upper,4,6-10,Heavy compound base with volume follow-up
+PB_POWER_UPPER,Powerbuilding Upper,Barbell Row,Upper,4,6-10,Heavy compound base with volume follow-up
+PB_POWER_UPPER,Powerbuilding Upper,Overhead Press,Upper,4,6-10,Heavy compound base with volume follow-up
+PB_POWER_UPPER,Powerbuilding Upper,Incline Dumbbell Press,Upper,4,6-10,Heavy compound base with volume follow-up
+PB_POWER_UPPER,Powerbuilding Upper,Seated Cable Row,Upper,4,6-10,Heavy compound base with volume follow-up
+PB_POWER_LOWER,Powerbuilding Lower,Barbell Squat,Lower,4,6-10,Heavy strength sets followed by hypertrophy work
+PB_POWER_LOWER,Powerbuilding Lower,Romanian Deadlift,Lower,4,6-10,Heavy strength sets followed by hypertrophy work
+PB_POWER_LOWER,Powerbuilding Lower,Hack Squat,Lower,4,6-10,Heavy strength sets followed by hypertrophy work
+PB_POWER_LOWER,Powerbuilding Lower,Lying Leg Curl,Lower,4,6-10,Heavy strength sets followed by hypertrophy work
+PB_POWER_LOWER,Powerbuilding Lower,Standing Calf Raise,Lower,4,6-10,Heavy strength sets followed by hypertrophy work
+GLUTE_BUILDER_A,Glute Hypertrophy A,Barbell Squat,Lower/Glutes,4,10-12,Targeted lower body focus
+GLUTE_BUILDER_A,Glute Hypertrophy A,Romanian Deadlift,Lower/Glutes,4,10-12,Targeted lower body focus
+GLUTE_BUILDER_A,Glute Hypertrophy A,Bulgarian Split Squat,Lower/Glutes,4,10-12,Targeted lower body focus
+GLUTE_BUILDER_A,Glute Hypertrophy A,Glute Bridge,Lower/Glutes,4,10-12,Targeted lower body focus
+GLUTE_BUILDER_A,Glute Hypertrophy A,Standing Calf Raise,Lower/Glutes,4,10-12,Targeted lower body focus
+GLUTE_BUILDER_B,Glute Hypertrophy B,Hack Squat,Lower/Glutes,4,10-12,High volume tension
+GLUTE_BUILDER_B,Glute Hypertrophy B,Leg Press,Lower/Glutes,4,10-12,High volume tension
+GLUTE_BUILDER_B,Glute Hypertrophy B,Lying Leg Curl,Lower/Glutes,4,10-12,High volume tension
+GLUTE_BUILDER_B,Glute Hypertrophy B,Lunges,Lower/Glutes,4,10-12,High volume tension
+GLUTE_BUILDER_B,Glute Hypertrophy B,Cable Crunch,Lower/Glutes,4,10-12,High volume tension
+STRONGMAN_COND,Strongman Conditioning,Farmer's Walk,Full Body,4,50 meters / 12 reps,Max grit and work capacity
+STRONGMAN_COND,Strongman Conditioning,Kettlebell Snatch,Full Body,4,50 meters / 12 reps,Max grit and work capacity
+STRONGMAN_COND,Strongman Conditioning,Medicine Ball Slam,Full Body,4,50 meters / 12 reps,Max grit and work capacity
+STRONGMAN_COND,Strongman Conditioning,Tire Flip (Simulated),Full Body,4,50 meters / 12 reps,Max grit and work capacity
+STRONGMAN_COND,Strongman Conditioning,Sled Push (Simulated),Full Body,4,50 meters / 12 reps,Max grit and work capacity

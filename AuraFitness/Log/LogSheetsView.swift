@@ -21,6 +21,9 @@ struct LogSheetsView: View {
     // MARK: Build-from-library state
     @StateObject private var exerciseDB = ExerciseDatabase.shared
     @State private var libQuery = ""
+    /// Search text for the bundled workout library (distinct from `libQuery`,
+    /// which searches exercises).
+    @State private var wkLibQuery = ""
     @State private var libCategory = "All"
     @State private var libSelected: [UUID] = []
 
@@ -38,7 +41,8 @@ struct LogSheetsView: View {
             case .switchWorkout(let planId):     switchSheet(planId: planId)
             case .move:                          moveSheet
             case .edit:                          editSheet
-            case .add:                           addSheet
+            case .add(let mode, let date):       addSheet(mode: mode, date: date)
+            case .workoutLibrary(let mode, let date): workoutLibrarySheet(mode: mode, date: date)
             case .logPast(let date, let show):   logPastSheet(date: date, showToday: show)
             case .pick(let mode, let date):      pickSheet(mode: mode, date: date)
             case .buildFromLibrary(let mode, let date): buildFromLibrarySheet(mode: mode, date: date)
@@ -56,6 +60,10 @@ struct LogSheetsView: View {
         ))
         .animation(.easeInOut(duration: 0.28), value: sheet.id)
         .presentationDetents(detents)
+        // The system grabber, rather than one drawn into each sheet's content.
+        // The design prototype had to draw its own because a web page has no
+        // sheet chrome; on iOS that produced a second bar under the real one.
+        .presentationDragIndicator(.visible)
     }
 
     /// Per-sheet detents: compact sheets fit their content; tall/scrolling sheets get full height.
@@ -64,8 +72,28 @@ struct LogSheetsView: View {
         case .menu:
             // Compact bottom sheet — sized to the 5-row menu, not full screen.
             return [.fraction(0.55)]
-        case .move, .add:
+        case .add:
+            // Sized to its three source cards rather than `.medium`. The sheet
+            // holds a title, one line of subtitle and 3 × 76pt rows — about
+            // 350pt — so `.medium` left a slab of empty background under the
+            // last card. `.large` stays available as a second detent for the
+            // small screens where 0.42 would clip it.
+            return [.fraction(0.42), .large]
+        case .pick:
+            // A handful of workout rows, not a full screen of them. Was
+            // falling through to `[.large]`, which left most of the sheet
+            // empty below the list.
+            return [.fraction(0.55), .large]
+        case .move:
             return [.medium, .large]
+        case .logPast:
+            // Two short sections (a few date rows + three source cards). The
+            // template opens this fitted, not full-screen; `.large` left a
+            // slab of empty background below the last card.
+            return [.fraction(0.82), .large]
+        case .switchWorkout, .viewWorkout:
+            // Content-sized lists, expandable to full height when long.
+            return [.fraction(0.7), .large]
         default:
             return [.large]
         }
@@ -73,14 +101,34 @@ struct LogSheetsView: View {
 
     // MARK: Reusable chrome
 
-    private func grabber() -> some View { SheetGrabber() }
+    /// Sheet title, with an optional circular ✕ on the trailing edge.
+    ///
+    /// Opt-in rather than always-on: every sheet here shares this helper, and
+    /// most of them are pushed onto rather than dismissed from — a close button
+    /// on a mid-flow step would read as "back" and take the user further than
+    /// they meant to go. Pass `onClose` only where the sheet is a real exit.
+    private func sheetHeader(_ title: String, sub: String? = nil,
+                             onClose: (() -> Void)? = nil) -> some View {
+        HStack(alignment: .top, spacing: AuraSpacing.s2) {
+            VStack(alignment: .leading, spacing: 2) {
+                Text(title).font(AuraFont.navTitle()).foregroundColor(.aura.text)
+                if let sub { Text(sub).font(AuraFont.jakarta(12)).foregroundColor(.aura.text2) }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
 
-    private func sheetHeader(_ title: String, sub: String? = nil) -> some View {
-        VStack(alignment: .leading, spacing: 2) {
-            Text(title).font(AuraFont.navTitle()).foregroundColor(.aura.text)
-            if let sub { Text(sub).font(.system(size: 12)).foregroundColor(.aura.text2) }
+            if let onClose {
+                Button(action: onClose) {
+                    Image(systemName: "xmark")
+                        .font(AuraFont.jakarta(13, .bold))
+                        .foregroundColor(.aura.text2)
+                        .frame(width: 30, height: 30)
+                        .background(Color.aura.fill)
+                        .clipShape(Circle())
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel("Close")
+            }
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.horizontal, AuraSpacing.screenPad)
     }
 
@@ -90,14 +138,14 @@ struct LogSheetsView: View {
                 RoundedRectangle(cornerRadius: AuraRadius.md)
                     .fill(Color.aura.surface2)
                     .frame(width: 44, height: 44)
-                    .overlay(Image(systemName: "dumbbell.fill").foregroundColor(.aura.text3).font(.system(size: 16)))
+                    .overlay(Image(systemName: "dumbbell.fill").foregroundColor(.aura.text3).font(AuraFont.jakarta(16)))
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(w.name).font(.system(size: 15, weight: .bold)).foregroundColor(.aura.text)
+                    Text(w.name).font(AuraFont.jakarta(15, .bold)).foregroundColor(.aura.text)
                     Text("\(w.exercises.count) exercises · \(w.primaryMuscles)")
-                        .font(.system(size: 13)).foregroundColor(.aura.text2)
+                        .font(AuraFont.jakarta(13)).foregroundColor(.aura.text2)
                 }
                 Spacer()
-                Image(systemName: "chevron.right").font(.system(size: 14)).foregroundColor(.aura.text3)
+                Image(systemName: "chevron.right").font(AuraFont.jakarta(14)).foregroundColor(.aura.text3)
             }
             .padding(13)
             .background(Color.aura.surface)
@@ -113,11 +161,11 @@ struct LogSheetsView: View {
             HStack(spacing: 12) {
                 ZStack {
                     RoundedRectangle(cornerRadius: AuraRadius.xs).fill(bg).frame(width: 30, height: 30)
-                    Image(systemName: icon).foregroundColor(.white).font(.system(size: 15, weight: .semibold))
+                    Image(systemName: icon).foregroundColor(.white).font(AuraFont.jakarta(15, .semibold))
                 }
                 VStack(alignment: .leading, spacing: 1) {
-                    Text(label).font(.system(size: 16, weight: .medium)).foregroundColor(danger ? .aura.red : .aura.text)
-                    if let sub { Text(sub).font(.system(size: 13)).foregroundColor(.aura.text2) }
+                    Text(label).font(AuraFont.jakarta(16, .medium)).foregroundColor(danger ? .aura.red : .aura.text)
+                    if let sub { Text(sub).font(AuraFont.jakarta(13)).foregroundColor(.aura.text2) }
                 }
                 Spacer()
             }
@@ -132,14 +180,14 @@ struct LogSheetsView: View {
             HStack(spacing: 12) {
                 ZStack {
                     RoundedRectangle(cornerRadius: AuraRadius.md).fill(bg).frame(width: 44, height: 44)
-                    Image(systemName: icon).foregroundColor(color).font(.system(size: 20))
+                    Image(systemName: icon).foregroundColor(color).font(AuraFont.jakarta(20))
                 }
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(title).font(.system(size: 15, weight: .bold)).foregroundColor(.aura.text)
-                    Text(sub).font(.system(size: 13)).foregroundColor(.aura.text2)
+                    Text(title).font(AuraFont.jakarta(15, .bold)).foregroundColor(.aura.text)
+                    Text(sub).font(AuraFont.jakarta(13)).foregroundColor(.aura.text2)
                 }
                 Spacer()
-                Image(systemName: "chevron.right").font(.system(size: 14)).foregroundColor(.aura.text3)
+                Image(systemName: "chevron.right").font(AuraFont.jakarta(14)).foregroundColor(.aura.text3)
             }
             .padding(13)
             .background(Color.aura.surface)
@@ -176,10 +224,9 @@ struct LogSheetsView: View {
     private var menuSheet: some View {
         ScrollView {
             VStack(spacing: 0) {
-                grabber()
                 VStack(spacing: 2) {
-                    Text(info.workout?.name ?? "Workout").font(.system(size: 15, weight: .bold)).foregroundColor(.aura.text)
-                    Text("Planned for today").font(.system(size: 12)).foregroundColor(.aura.text2)
+                    Text(info.workout?.name ?? "Workout").font(AuraFont.jakarta(15, .bold)).foregroundColor(.aura.text)
+                    Text("Planned for today").font(AuraFont.jakarta(12)).foregroundColor(.aura.text2)
                 }
                 .padding(.vertical, AuraSpacing.s3)
 
@@ -207,7 +254,7 @@ struct LogSheetsView: View {
                 .padding(.horizontal, AuraSpacing.screenPad)
 
                 Text("All changes apply to today only and won't affect your program.")
-                    .font(.system(size: 12)).foregroundColor(.aura.text2)
+                    .font(AuraFont.jakarta(12)).foregroundColor(.aura.text2)
                     .multilineTextAlignment(.center)
                     .padding(.top, AuraSpacing.s3).padding(.horizontal, AuraSpacing.s6)
             }
@@ -240,7 +287,6 @@ struct LogSheetsView: View {
     private var switchLevel1: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: AuraSpacing.s3) {
-                grabber().frame(maxWidth: .infinity)
                 sheetHeader("Switch Workout", sub: "For today only · your program stays unchanged")
 
                 // Active program workouts
@@ -263,14 +309,14 @@ struct LogSheetsView: View {
                                 HStack(spacing: 12) {
                                     ZStack {
                                         RoundedRectangle(cornerRadius: AuraRadius.md).fill(Color.aura.surface2).frame(width: 40, height: 40)
-                                        Image(systemName: "square.stack.3d.up.fill").foregroundColor(.aura.text3).font(.system(size: 16))
+                                        Image(systemName: "square.stack.3d.up.fill").foregroundColor(.aura.text3).font(AuraFont.jakarta(16))
                                     }
                                     VStack(alignment: .leading, spacing: 1) {
-                                        Text(prog.name).font(.system(size: 15, weight: .bold)).foregroundColor(.aura.text)
-                                        Text("\(prog.workouts.count) workouts · \(prog.style)").font(.system(size: 13)).foregroundColor(.aura.text2)
+                                        Text(prog.name).font(AuraFont.jakarta(15, .bold)).foregroundColor(.aura.text)
+                                        Text("\(prog.workouts.count) workouts · \(prog.style)").font(AuraFont.jakarta(13)).foregroundColor(.aura.text2)
                                     }
                                     Spacer()
-                                    Image(systemName: "chevron.right").font(.system(size: 14)).foregroundColor(.aura.text3)
+                                    Image(systemName: "chevron.right").font(AuraFont.jakarta(14)).foregroundColor(.aura.text3)
                                 }
                                 .padding(.horizontal, 16).padding(.vertical, 11)
                             }
@@ -299,18 +345,17 @@ struct LogSheetsView: View {
     private func switchLevel2(_ plan: Program) -> some View {
         ScrollView {
             VStack(alignment: .leading, spacing: AuraSpacing.s3) {
-                grabber().frame(maxWidth: .infinity)
                 // Back header
                 HStack(spacing: 10) {
                     Button { parentSheet = .switchWorkout() } label: {
-                        Image(systemName: "chevron.left").font(.system(size: 16, weight: .semibold))
+                        Image(systemName: "chevron.left").font(AuraFont.jakarta(16, .semibold))
                             .foregroundColor(.aura.text)
                             .frame(width: 34, height: 34)
                             .background(Color.aura.fill.opacity(0.5)).clipShape(Circle())
                     }.buttonStyle(.plain)
                     VStack(alignment: .leading, spacing: 2) {
                         Text(plan.name).font(AuraFont.navTitle()).foregroundColor(.aura.text)
-                        Text("Pick a workout to use today").font(.system(size: 12)).foregroundColor(.aura.text2)
+                        Text("Pick a workout to use today").font(AuraFont.jakarta(12)).foregroundColor(.aura.text2)
                     }
                     Spacer()
                 }
@@ -339,7 +384,6 @@ struct LogSheetsView: View {
         let days = (0..<7).compactMap { cal.date(byAdding: .day, value: $0, to: weekStart) }
         return ScrollView {
             VStack(alignment: .leading, spacing: AuraSpacing.s3) {
-                grabber().frame(maxWidth: .infinity)
                 sheetHeader("Move to Another Day", sub: "Today only · your program stays unchanged")
                 VStack(spacing: 0) {
                     ForEach(Array(days.enumerated()), id: \.offset) { idx, d in
@@ -353,18 +397,18 @@ struct LogSheetsView: View {
                         } label: {
                             HStack(spacing: 12) {
                                 VStack(spacing: 0) {
-                                    Text(dowShort[di.dowIndex]).font(.system(size: 9, weight: .heavy)).foregroundColor(.aura.text3)
-                                    Text("\(cal.component(.day, from: d))").font(.system(size: 13, weight: .bold)).foregroundColor(.aura.text)
+                                    Text(dowShort[di.dowIndex]).font(AuraFont.jakarta(9, .heavy)).foregroundColor(.aura.text3)
+                                    Text("\(cal.component(.day, from: d))").font(AuraFont.jakarta(13, .bold)).foregroundColor(.aura.text)
                                 }
                                 .frame(width: 38, height: 38)
                                 .background(Color.aura.fill).clipShape(RoundedRectangle(cornerRadius: 11))
                                 VStack(alignment: .leading, spacing: 1) {
                                     Text(dowFull[di.dowIndex] + (isSel ? " (today)" : ""))
-                                        .font(.system(size: 16, weight: .medium)).foregroundColor(.aura.text)
-                                    Text(di.workout?.name ?? "Rest day").font(.system(size: 13)).foregroundColor(.aura.text2)
+                                        .font(AuraFont.jakarta(16, .medium)).foregroundColor(.aura.text)
+                                    Text(di.workout?.name ?? "Rest day").font(AuraFont.jakarta(13)).foregroundColor(.aura.text2)
                                 }
                                 Spacer()
-                                if !isSel { Image(systemName: "chevron.right").font(.system(size: 14)).foregroundColor(.aura.text3) }
+                                if !isSel { Image(systemName: "chevron.right").font(AuraFont.jakarta(14)).foregroundColor(.aura.text3) }
                             }
                             .padding(.horizontal, 16).padding(.vertical, 11)
                             .opacity(isSel ? 0.45 : 1)
@@ -390,19 +434,18 @@ struct LogSheetsView: View {
     private var editSheet: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: AuraSpacing.s3) {
-                grabber().frame(maxWidth: .infinity)
                 sheetHeader("Edit Workout", sub: "Changes apply to today only")
                 VStack(spacing: 9) {
                     ForEach(Array(editExercises.enumerated()), id: \.element.id) { i, e in
                         HStack(spacing: 12) {
                             VStack(alignment: .leading, spacing: 2) {
-                                Text(e.name).font(.system(size: 14.5, weight: .bold)).foregroundColor(.aura.text)
-                                Text("\(e.repRange) reps").font(.system(size: 12)).foregroundColor(.aura.text2)
+                                Text(e.name).font(AuraFont.jakarta(14.5, .bold)).foregroundColor(.aura.text)
+                                Text("\(e.repRange) reps").font(AuraFont.jakarta(12)).foregroundColor(.aura.text2)
                             }
                             Spacer()
                             HStack(spacing: 8) {
                                 stepBtn("minus") { if editExercises[i].plannedSets > 1 { editExercises[i].plannedSets -= 1 } }
-                                Text("\(e.plannedSets)").font(.system(size: 15, weight: .heavy)).foregroundColor(.aura.text)
+                                Text("\(e.plannedSets)").font(AuraFont.jakarta(15, .heavy)).foregroundColor(.aura.text)
                                     .frame(minWidth: 20)
                                 stepBtn("plus", accent: true) { editExercises[i].plannedSets += 1 }
                                 stepBtn("trash", danger: true) { editExercises.remove(at: i) }
@@ -436,7 +479,7 @@ struct LogSheetsView: View {
     private func stepBtn(_ icon: String, accent: Bool = false, danger: Bool = false, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             Image(systemName: icon)
-                .font(.system(size: 14, weight: .semibold))
+                .font(AuraFont.jakarta(14, .semibold))
                 .foregroundColor(danger ? .aura.red : (accent ? .aura.accent : .aura.text))
                 .frame(width: 30, height: 30)
                 .background(accent ? Color.aura.accentSoft : Color.aura.fill.opacity(danger ? 0 : 0.5))
@@ -447,22 +490,25 @@ struct LogSheetsView: View {
 
     // MARK: Add sheet
 
-    private var addSheet: some View {
+    private func addSheet(mode: LogSheet.PickMode, date: String) -> some View {
         ScrollView {
             VStack(alignment: .leading, spacing: AuraSpacing.s3) {
-                grabber().frame(maxWidth: .infinity)
-                sheetHeader("Add a Workout")
+                sheetHeader(mode == .logpast ? "Log a Workout" : "Add a Workout") { parentSheet = nil }
                 Text("Where should this workout come from?")
-                    .font(.system(size: 12)).foregroundColor(.aura.text2)
+                    .font(AuraFont.jakarta(12)).foregroundColor(.aura.text2)
                     .padding(.horizontal, AuraSpacing.screenPad)
                 VStack(spacing: 12) {
                     srcCard(icon: "sparkles", bg: .aura.accentSoft, color: .aura.accent,
-                            title: "From your programs", sub: "Your active PPL plan & saved programs") {
-                        parentSheet = .pick(mode: .add, date: info.iso)
+                            title: "From your programs", sub: programSourceSub) {
+                        parentSheet = .pick(mode: mode, date: date)
                     }
+                    // The bundled workout library — 46 ready-made sessions.
+                    // This used to open the EXERCISE library, which is a
+                    // different thing: that builds a workout one movement at a
+                    // time, which is what "Empty Workout" below is for.
                     srcCard(icon: "magnifyingglass", bg: .aura.green.opacity(0.16), color: .aura.green,
-                            title: "From Workout Library", sub: "Pick exercises from scratch") {
-                        parentSheet = .buildFromLibrary(mode: .add, date: info.iso)
+                            title: "From Workout Library", sub: "Browse every ready-made workout") {
+                        parentSheet = .workoutLibrary(mode: mode, date: date)
                     }
                     srcCard(icon: "plus", bg: .aura.fill, color: .aura.text2,
                             title: "Empty Workout", sub: "Start blank, add as you go") {
@@ -477,6 +523,13 @@ struct LogSheetsView: View {
         .background(Color.aura.bg)
     }
 
+    /// Names the plan the "From your programs" route will actually show, so
+    /// the row isn't advertising content the user hasn't got.
+    private var programSourceSub: String {
+        if let plan = appState.defaultPlan { return "\(plan.name) & saved programs" }
+        return programWorkouts.isEmpty ? "No programs yet" : "Your saved programs"
+    }
+
     // MARK: Log-past sheet
 
     private func logPastSheet(date: String, showToday: Bool) -> some View {
@@ -484,10 +537,9 @@ struct LogSheetsView: View {
         let twoAgo = cal.date(byAdding: .day, value: -2, to: cal.startOfDay(for: Date()))!
         return ScrollView {
             VStack(alignment: .leading, spacing: AuraSpacing.s3) {
-                grabber().frame(maxWidth: .infinity)
                 sheetHeader("Log a Past Workout")
                 Text("WHEN DID YOU TRAIN?")
-                    .font(.system(size: 11, weight: .bold)).foregroundColor(.aura.text2)
+                    .font(AuraFont.jakarta(11, .bold)).foregroundColor(.aura.text2)
                     .tracking(1).padding(.horizontal, AuraSpacing.screenPad)
 
                 VStack(spacing: 0) {
@@ -512,7 +564,7 @@ struct LogSheetsView: View {
                 .padding(.horizontal, AuraSpacing.screenPad)
 
                 Text("WHICH WORKOUT?")
-                    .font(.system(size: 11, weight: .bold)).foregroundColor(.aura.text2)
+                    .font(AuraFont.jakarta(11, .bold)).foregroundColor(.aura.text2)
                     .tracking(1).padding(.horizontal, AuraSpacing.screenPad).padding(.top, AuraSpacing.s2)
                 VStack(spacing: 10) {
                     srcCard(icon: "sparkles", bg: .aura.accentSoft, color: .aura.accent,
@@ -541,15 +593,15 @@ struct LogSheetsView: View {
         return Button { parentSheet = .logPast(date: iso, showToday: false) } label: {
             HStack {
                 VStack(alignment: .leading, spacing: 1) {
-                    Text(label).font(.system(size: 16, weight: .medium)).foregroundColor(.aura.text)
+                    Text(label).font(AuraFont.jakarta(16, .medium)).foregroundColor(.aura.text)
                     Text("\(dowFull[cal.component(.weekday, from: date) - 1].prefix(3)), \(monShort[cal.component(.month, from: date) - 1]) \(cal.component(.day, from: date))")
-                        .font(.system(size: 13)).foregroundColor(.aura.text2)
+                        .font(AuraFont.jakarta(13)).foregroundColor(.aura.text2)
                 }
                 Spacer()
                 ZStack {
                     Circle().fill(on ? Color.aura.accent : Color.clear).frame(width: 20, height: 20)
                     Circle().stroke(on ? Color.clear : Color.aura.separator, lineWidth: 1.5).frame(width: 20, height: 20)
-                    if on { Image(systemName: "checkmark").font(.system(size: 11, weight: .bold)).foregroundColor(.white) }
+                    if on { Image(systemName: "checkmark").font(AuraFont.jakarta(11, .bold)).foregroundColor(.white) }
                 }
             }
             .padding(.horizontal, 16).padding(.vertical, 13)
@@ -561,16 +613,16 @@ struct LogSheetsView: View {
             if accent {
                 ZStack {
                     RoundedRectangle(cornerRadius: AuraRadius.xs).fill(Color.aura.accentSoft).frame(width: 30, height: 30)
-                    Image(systemName: "bolt.fill").foregroundColor(.aura.accent).font(.system(size: 15))
+                    Image(systemName: "bolt.fill").foregroundColor(.aura.accent).font(AuraFont.jakarta(15))
                 }
             }
             VStack(alignment: .leading, spacing: 1) {
-                Text(title).font(.system(size: 16, weight: accent ? .bold : .medium)).foregroundColor(accent ? .aura.accent : .aura.text)
-                if let sub { Text(sub).font(.system(size: 13)).foregroundColor(.aura.text2) }
+                Text(title).font(AuraFont.jakarta(16, accent ? .bold : .medium)).foregroundColor(accent ? .aura.accent : .aura.text)
+                if let sub { Text(sub).font(AuraFont.jakarta(13)).foregroundColor(.aura.text2) }
             }
             Spacer()
             if accent || chevron {
-                Image(systemName: "chevron.right").font(.system(size: 14)).foregroundColor(accent ? .aura.accent : .aura.text3)
+                Image(systemName: "chevron.right").font(AuraFont.jakarta(14)).foregroundColor(accent ? .aura.accent : .aura.text3)
             }
         }
         .padding(.horizontal, 16).padding(.vertical, 13)
@@ -586,7 +638,6 @@ struct LogSheetsView: View {
 
     private func buildFromLibrarySheet(mode: LogSheet.PickMode, date: String) -> some View {
         VStack(spacing: 0) {
-            grabber().frame(maxWidth: .infinity).padding(.top, AuraSpacing.s2)
             sheetHeader("Build a Workout", sub: "Select exercises, then confirm")
                 .padding(.horizontal, AuraSpacing.screenPad)
 
@@ -639,11 +690,11 @@ struct LogSheetsView: View {
         } label: {
             HStack(spacing: 12) {
                 Image(systemName: isOn ? "checkmark.circle.fill" : "circle")
-                    .font(.system(size: 20))
+                    .font(AuraFont.jakarta(20))
                     .foregroundColor(isOn ? .aura.accent : .aura.text3)
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(entry.name).font(.system(size: 15, weight: .bold)).foregroundColor(.aura.text)
-                    Text("\(entry.category) · \(entry.equipment)").font(.system(size: 12)).foregroundColor(.aura.text2)
+                    Text(entry.name).font(AuraFont.jakarta(15, .bold)).foregroundColor(.aura.text)
+                    Text("\(entry.category) · \(entry.equipment)").font(AuraFont.jakarta(12)).foregroundColor(.aura.text2)
                 }
                 Spacer()
             }
@@ -694,7 +745,6 @@ struct LogSheetsView: View {
     private func pickSheet(mode: LogSheet.PickMode, date: String) -> some View {
         ScrollView {
             VStack(alignment: .leading, spacing: AuraSpacing.s3) {
-                grabber().frame(maxWidth: .infinity)
                 sheetHeader("Pick a Workout", sub: pickSub(mode: mode, date: date))
                 VStack(spacing: 10) {
                     ForEach(programWorkouts) { w in
@@ -716,6 +766,67 @@ struct LogSheetsView: View {
         return "Added to \(isToday ? "today" : dowFull[cal.component(.weekday, from: selected) - 1])"
     }
 
+    // MARK: Workout library sheet
+
+    /// Every workout the app ships, across every program, searchable — the
+    /// "From Workout Library" destination. `pickSheet` above is deliberately
+    /// narrower: it shows only the user's own program, which is the point of
+    /// the "From your programs" route.
+    private func workoutLibrarySheet(mode: LogSheet.PickMode, date: String) -> some View {
+        let all = ProgramDatabase.shared.allWorkouts
+        let q = wkLibQuery.trimmingCharacters(in: .whitespaces)
+        let matches = q.isEmpty ? all : all.filter {
+            $0.name.localizedCaseInsensitiveContains(q)
+            || $0.primaryMuscles.localizedCaseInsensitiveContains(q)
+        }
+
+        return VStack(alignment: .leading, spacing: AuraSpacing.s3) {
+            sheetHeader("Workout Library", sub: pickSub(mode: mode, date: date)) { parentSheet = nil }
+
+            HStack(spacing: AuraSpacing.s2) {
+                Image(systemName: "magnifyingglass").foregroundColor(.aura.text3)
+                TextField("Search workouts", text: $wkLibQuery)
+                    .font(AuraFont.body())
+                    .autocorrectionDisabled()
+                if !wkLibQuery.isEmpty {
+                    Button { wkLibQuery = "" } label: {
+                        Image(systemName: "xmark.circle.fill").foregroundColor(.aura.text3)
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+            .padding(AuraSpacing.s3)
+            .background(Color.aura.fill)
+            .clipShape(RoundedRectangle(cornerRadius: AuraRadius.md))
+            .padding(.horizontal, AuraSpacing.screenPad)
+
+            if matches.isEmpty {
+                // Distinguishes "your search matched nothing" from "there is no
+                // library", which are different problems with different fixes.
+                Text(all.isEmpty
+                     ? "No workouts in the library yet."
+                     : "No workouts match “\(q)”.")
+                    .font(AuraFont.secondary())
+                    .foregroundColor(.aura.text2)
+                    .frame(maxWidth: .infinity, alignment: .center)
+                    .padding(.top, AuraSpacing.s6)
+                Spacer()
+            } else {
+                ScrollView {
+                    VStack(spacing: 10) {
+                        ForEach(matches) { w in
+                            workoutRow(w) { assign(w.id, mode: mode, dateIso: date) }
+                        }
+                    }
+                    .padding(.horizontal, AuraSpacing.screenPad)
+                    .padding(.bottom, AuraSpacing.s6)
+                }
+            }
+        }
+        .padding(.top, AuraSpacing.s3)
+        .background(Color.aura.bg)
+    }
+
     // MARK: Calendar sheet
 
     @State private var calMonth = Date()
@@ -734,7 +845,6 @@ struct LogSheetsView: View {
 
         return ScrollView {
             VStack(spacing: AuraSpacing.s3) {
-                grabber()
                 HStack {
                     Text("\(monFull[cal.component(.month, from: calMonth) - 1]) \(cal.component(.year, from: calMonth))")
                         .font(AuraFont.navTitle()).foregroundColor(.aura.text)
@@ -751,8 +861,8 @@ struct LogSheetsView: View {
                 .padding(.horizontal, AuraSpacing.screenPad)
 
                 HStack(spacing: 0) {
-                    ForEach(["S","M","T","W","T","F","S"], id: \.self) { d in
-                        Text(d).font(.system(size: 12, weight: .bold)).foregroundColor(.aura.text3).frame(maxWidth: .infinity)
+                    ForEach(Array(["S","M","T","W","T","F","S"].enumerated()), id: \.offset) { _, d in
+                        Text(d).font(AuraFont.jakarta(12, .bold)).foregroundColor(.aura.text3).frame(maxWidth: .infinity)
                     }
                 }.padding(.horizontal, AuraSpacing.screenPad)
 
@@ -766,7 +876,7 @@ struct LogSheetsView: View {
                     legend(.aura.green, "Completed")
                     legend(.aura.accent, "Planned")
                     legend(.aura.text3, "Rest")
-                }.font(.system(size: 12)).padding(.top, AuraSpacing.s2)
+                }.font(AuraFont.jakarta(12)).padding(.top, AuraSpacing.s2)
 
                 if !forLogPast {
                     AuraPrimaryButton(label: "Go to Today") {
@@ -794,7 +904,7 @@ struct LogSheetsView: View {
             } label: {
                 VStack(spacing: 2) {
                     Text("\(cal.component(.day, from: d))")
-                        .font(.system(size: 15, weight: .semibold))
+                        .font(AuraFont.jakarta(15, .semibold))
                         .foregroundColor(isToday ? .white : .aura.text)
                     Circle().fill(calDot(di.state)).frame(width: 5, height: 5)
                         .opacity(isFuture ? 0 : 1)
@@ -824,7 +934,7 @@ struct LogSheetsView: View {
 
     private func calNavBtn(_ icon: String, enabled: Bool, action: @escaping () -> Void) -> some View {
         Button(action: action) {
-            Image(systemName: icon).font(.system(size: 16)).foregroundColor(.aura.text)
+            Image(systemName: icon).font(AuraFont.jakarta(16)).foregroundColor(.aura.text)
                 .frame(width: 34, height: 34).background(Color.aura.fill.opacity(0.5)).clipShape(Circle())
                 .opacity(enabled ? 1 : 0.28)
         }.buttonStyle(.plain).disabled(!enabled)
@@ -846,7 +956,6 @@ struct LogSheetsView: View {
         }
         return ScrollView {
             VStack(alignment: .leading, spacing: AuraSpacing.s3) {
-                grabber().frame(maxWidth: .infinity)
                 sheetHeader("Workout Log", sub: (info.workout?.name ?? "")
                     + (log != nil ? "  ·  \(log!.time)" : "")
                     + (log.map { $0.durationMinutes > 0 ? "  ·  \($0.durationMinutes) min" : "" } ?? ""))
@@ -868,21 +977,21 @@ struct LogSheetsView: View {
     private func logExerciseCard(_ ex: QuickLogExercise, editable: Bool) -> some View {
         AuraCard {
             VStack(alignment: .leading, spacing: 0) {
-                Text(ex.name).font(.system(size: 14.5, weight: .bold)).foregroundColor(.aura.text)
+                Text(ex.name).font(AuraFont.jakarta(14.5, .bold)).foregroundColor(.aura.text)
                     .padding(.bottom, 10)
                 HStack {
                     Text("SET").frame(width: 28, alignment: .leading)
                     Text("WEIGHT").frame(maxWidth: .infinity, alignment: .leading)
                     Text("REPS").frame(maxWidth: .infinity, alignment: .leading)
                 }
-                .font(.system(size: 11, weight: .bold)).foregroundColor(.aura.text3).tracking(0.5)
+                .font(AuraFont.jakarta(11, .bold)).foregroundColor(.aura.text3).tracking(0.5)
                 ForEach(Array(ex.sets.enumerated()), id: \.element.id) { j, s in
                     HStack {
-                        Text("\(j + 1)").font(.system(size: 13, weight: .bold)).foregroundColor(.aura.text3).frame(width: 28, alignment: .leading)
+                        Text("\(j + 1)").font(AuraFont.jakarta(13, .bold)).foregroundColor(.aura.text3).frame(width: 28, alignment: .leading)
                         Text(s.weight.isEmpty ? "—" : s.weight).frame(maxWidth: .infinity, alignment: .leading)
                         Text(s.reps.isEmpty ? "—" : s.reps).frame(maxWidth: .infinity, alignment: .leading)
                     }
-                    .font(.system(size: 15, weight: .semibold)).foregroundColor(.aura.text)
+                    .font(AuraFont.jakarta(15, .semibold)).foregroundColor(.aura.text)
                     .padding(.vertical, 7)
                     .overlay(Divider(), alignment: .top)
                 }
@@ -897,7 +1006,6 @@ struct LogSheetsView: View {
         let workout = info.workout
         return ScrollView {
             VStack(alignment: .leading, spacing: AuraSpacing.s3) {
-                grabber().frame(maxWidth: .infinity)
                 sheetHeader(workout?.name ?? "Workout", sub: "Planned · read-only")
                 VStack(spacing: 12) {
                     ForEach(workout?.exercises ?? []) { ex in
@@ -913,9 +1021,9 @@ struct LogSheetsView: View {
     private func plannedExerciseCard(_ ex: Exercise) -> some View {
         AuraCard {
             VStack(alignment: .leading, spacing: 4) {
-                Text(ex.name).font(.system(size: 14.5, weight: .bold)).foregroundColor(.aura.text)
+                Text(ex.name).font(AuraFont.jakarta(14.5, .bold)).foregroundColor(.aura.text)
                 Text("\(ex.plannedSets) sets")
-                    .font(.system(size: 13, weight: .semibold))
+                    .font(AuraFont.jakarta(13, .semibold))
                     .foregroundColor(.aura.text3)
             }
             .padding(.horizontal, 14).padding(.vertical, 12)
@@ -940,22 +1048,21 @@ struct LogSheetsView: View {
     private func quickLogForm(title: String, sub: String, showTime: Bool, iso: String, saveLabel: String) -> some View {
         ScrollView {
             VStack(alignment: .leading, spacing: AuraSpacing.s4) {
-                grabber().frame(maxWidth: .infinity)
                 sheetHeader(title, sub: sub)
                 if showTime {
                     HStack(spacing: 14) {
                         ZStack {
                             Circle().fill(Color.aura.accentSoft).frame(width: 36, height: 36)
-                            Image(systemName: "clock").foregroundColor(.aura.accent).font(.system(size: 18))
+                            Image(systemName: "clock").foregroundColor(.aura.accent).font(AuraFont.jakarta(18))
                         }
                         VStack(alignment: .leading, spacing: 2) {
-                            Text("WORKOUT TIME").font(.system(size: 11, weight: .bold)).foregroundColor(.aura.text3).tracking(0.5)
-                            Text("When did you train?").font(.system(size: 13)).foregroundColor(.aura.text2)
+                            Text("WORKOUT TIME").font(AuraFont.jakarta(11, .bold)).foregroundColor(.aura.text3).tracking(0.5)
+                            Text("When did you train?").font(AuraFont.jakarta(13)).foregroundColor(.aura.text2)
                         }
                         Spacer()
                         TextField("HH:mm", text: $formTime)
                             .multilineTextAlignment(.center).frame(width: 70)
-                            .font(.system(size: 16, weight: .bold)).foregroundColor(.aura.text)
+                            .font(AuraFont.jakarta(16, .bold)).foregroundColor(.aura.text)
                             .padding(.horizontal, 12).padding(.vertical, 8)
                             .background(Color.aura.fill.opacity(0.5)).clipShape(RoundedRectangle(cornerRadius: 10))
                     }
@@ -966,20 +1073,20 @@ struct LogSheetsView: View {
                 HStack(spacing: 14) {
                     ZStack {
                         Circle().fill(Color.aura.accentSoft).frame(width: 36, height: 36)
-                        Image(systemName: "stopwatch").foregroundColor(.aura.accent).font(.system(size: 18))
+                        Image(systemName: "stopwatch").foregroundColor(.aura.accent).font(AuraFont.jakarta(18))
                     }
                     VStack(alignment: .leading, spacing: 2) {
-                        Text("DURATION").font(.system(size: 11, weight: .bold)).foregroundColor(.aura.text3).tracking(0.5)
-                        Text("How long did it take?").font(.system(size: 13)).foregroundColor(.aura.text2)
+                        Text("DURATION").font(AuraFont.jakarta(11, .bold)).foregroundColor(.aura.text3).tracking(0.5)
+                        Text("How long did it take?").font(AuraFont.jakarta(13)).foregroundColor(.aura.text2)
                     }
                     Spacer()
                     TextField("min", value: $formDurationMinutes, format: .number)
                         .keyboardType(.numberPad)
                         .multilineTextAlignment(.center).frame(width: 60)
-                        .font(.system(size: 16, weight: .bold)).foregroundColor(.aura.text)
+                        .font(AuraFont.jakarta(16, .bold)).foregroundColor(.aura.text)
                         .padding(.horizontal, 12).padding(.vertical, 8)
                         .background(Color.aura.fill.opacity(0.5)).clipShape(RoundedRectangle(cornerRadius: 10))
-                    Text("min").font(.system(size: 13, weight: .semibold)).foregroundColor(.aura.text3)
+                    Text("min").font(AuraFont.jakarta(13, .semibold)).foregroundColor(.aura.text3)
                 }
                 .padding(13).background(Color.aura.surface).clipShape(RoundedRectangle(cornerRadius: AuraRadius.lg))
                 .overlay(RoundedRectangle(cornerRadius: AuraRadius.lg).stroke(Color.aura.separator.opacity(0.5), lineWidth: 1))
@@ -1002,27 +1109,27 @@ struct LogSheetsView: View {
     private func editableLogCard(i: Int, ex: QuickLogExercise) -> some View {
         AuraCard {
             VStack(alignment: .leading, spacing: 0) {
-                Text(ex.name).font(.system(size: 14.5, weight: .bold)).foregroundColor(.aura.text).padding(.bottom, 10)
+                Text(ex.name).font(AuraFont.jakarta(14.5, .bold)).foregroundColor(.aura.text).padding(.bottom, 10)
                 HStack {
                     Text("SET").frame(width: 28, alignment: .leading)
                     Text("WEIGHT").frame(maxWidth: .infinity)
                     Text("REPS").frame(maxWidth: .infinity)
                     Spacer().frame(width: 28)
-                }.font(.system(size: 11, weight: .bold)).foregroundColor(.aura.text3).tracking(0.5)
+                }.font(AuraFont.jakarta(11, .bold)).foregroundColor(.aura.text3).tracking(0.5)
                 ForEach(Array(ex.sets.enumerated()), id: \.element.id) { j, _ in
                     HStack(spacing: 8) {
-                        Text("\(j + 1)").font(.system(size: 12, weight: .bold)).foregroundColor(.aura.text3).frame(width: 28, alignment: .leading)
+                        Text("\(j + 1)").font(AuraFont.jakarta(12, .bold)).foregroundColor(.aura.text3).frame(width: 28, alignment: .leading)
                         TextField(appState.weightUnit, text: bindingWeight(i, j)).logFieldStyle()
                         TextField("reps", text: bindingReps(i, j)).logFieldStyle()
                         Button { formExercises[i].sets.remove(at: j) } label: {
-                            Image(systemName: "minus.circle.fill").foregroundColor(.aura.red).font(.system(size: 15))
+                            Image(systemName: "minus.circle.fill").foregroundColor(.aura.red).font(AuraFont.jakarta(15))
                         }.buttonStyle(.plain).frame(width: 28)
                     }
                     .padding(.vertical, 5).overlay(Divider(), alignment: .top)
                 }
                 Button { formExercises[i].sets.append(QuickLogSet()) } label: {
                     HStack(spacing: 5) { Image(systemName: "plus"); Text("Add Set") }
-                        .font(.system(size: 13, weight: .bold)).foregroundColor(.aura.accent)
+                        .font(AuraFont.jakarta(13, .bold)).foregroundColor(.aura.accent)
                         .padding(.horizontal, 12).padding(.vertical, 7)
                         .background(Color.aura.accentSoft).clipShape(RoundedRectangle(cornerRadius: 8))
                 }.buttonStyle(.plain).padding(.top, 10)
@@ -1067,7 +1174,7 @@ struct LogSheetsView: View {
 private extension View {
     func logFieldStyle() -> some View {
         self.multilineTextAlignment(.center)
-            .font(.system(size: 15, weight: .bold))
+            .font(AuraFont.jakarta(15, .bold))
             .foregroundColor(.aura.text)
             .keyboardType(.numbersAndPunctuation)
             .padding(.horizontal, 10).padding(.vertical, 7)

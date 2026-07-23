@@ -86,8 +86,8 @@ struct PlanExerciseDetailView: View {
             HStack {
                 Button(action: onBack) {
                     HStack(spacing: 2) {
-                        Image(systemName: "chevron.left").font(.system(size: 20, weight: .semibold))
-                        Text("Back").font(.system(size: 17))
+                        Image(systemName: "chevron.left").font(AuraFont.jakarta(20, .semibold))
+                        Text("Back").font(AuraFont.jakarta(17))
                     }
                     .foregroundColor(.aura.accent)
                 }
@@ -97,7 +97,7 @@ struct PlanExerciseDetailView: View {
             .padding(.horizontal, 14).padding(.top, AuraSpacing.s1).padding(.bottom, 4)
 
             Text(exercise.name)
-                .font(.system(size: 20, weight: .heavy)).tracking(-0.4)
+                .font(AuraFont.jakarta(20, .heavy)).tracking(-0.4)
                 .foregroundColor(.aura.text)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.horizontal, 14).padding(.bottom, 8)
@@ -106,7 +106,7 @@ struct PlanExerciseDetailView: View {
                 ForEach(tabs, id: \.self) { t in
                     Button { tab = t } label: {
                         Text(tabLabel(t))
-                            .font(.system(size: 14, weight: .bold))
+                            .font(AuraFont.jakarta(14, .bold))
                             .foregroundColor(tab == t ? .aura.text : .aura.text2)
                             .frame(maxWidth: .infinity).frame(height: 36)
                             .background(
@@ -134,7 +134,7 @@ struct PlanExerciseDetailView: View {
                 ForEach(names, id: \.0) { key, ex in
                     Button { ssSubTab = key } label: {
                         Text((ssSubTab == key ? "● " : "") + (ex.map { $0.name.split(separator: " ").prefix(2).joined(separator: " ") } ?? "Exercise"))
-                            .font(.system(size: 12, weight: .bold))
+                            .font(AuraFont.jakarta(12, .bold))
                             .foregroundColor(ssSubTab == key ? .white : .aura.accent)
                             .lineLimit(1)
                             .frame(maxWidth: .infinity).frame(height: 30)
@@ -168,7 +168,7 @@ struct PlanExerciseDetailView: View {
         case .pickWorkout:
             PlanSheet(title: "Add to which workout?", onClose: { addSheet = nil }) {
                 Text("From your active plan · Push Pull Legs")
-                    .font(.system(size: 12)).foregroundColor(.aura.text2)
+                    .font(AuraFont.jakarta(12)).foregroundColor(.aura.text2)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(.horizontal, 4).padding(.bottom, 12)
                 PlanList {
@@ -176,15 +176,15 @@ struct PlanExerciseDetailView: View {
                         Button { addSheet = .targetWorkout(w) } label: {
                             HStack(spacing: AuraSpacing.s3) {
                                 Text(String(w.name.prefix(1)))
-                                    .font(.system(size: 13, weight: .bold)).foregroundColor(.aura.accent)
+                                    .font(AuraFont.jakarta(13, .bold)).foregroundColor(.aura.accent)
                                     .frame(width: 30, height: 30).background(Color.aura.accentSoft)
                                     .clipShape(RoundedRectangle(cornerRadius: 9))
                                 VStack(alignment: .leading, spacing: 2) {
-                                    Text(w.name).font(.system(size: 16, weight: .medium)).foregroundColor(.aura.text)
+                                    Text(w.name).font(AuraFont.jakarta(16, .medium)).foregroundColor(.aura.text)
                                     Text("\(w.exCount) exercises").font(AuraFont.secondary()).foregroundColor(.aura.text2)
                                 }
                                 Spacer()
-                                Image(systemName: "chevron.right").font(.system(size: 14, weight: .semibold)).foregroundColor(.aura.text3)
+                                Image(systemName: "chevron.right").font(AuraFont.jakarta(14, .semibold)).foregroundColor(.aura.text3)
                             }
                             .padding(.vertical, 11).padding(.horizontal, 14).frame(maxWidth: .infinity)
                         }
@@ -202,13 +202,13 @@ struct PlanExerciseDetailView: View {
                     ForEach(PlanData.exercises.filter { $0.muscle == exercise.muscle && $0.name != exercise.name }.prefix(4)) { e in
                         HStack {
                             VStack(alignment: .leading, spacing: 2) {
-                                Text(e.name).font(.system(size: 15, weight: .bold)).foregroundColor(.aura.text)
-                                Text("3 sets · 8–12 reps").font(.system(size: 13)).foregroundColor(.aura.text2)
+                                Text(e.name).font(AuraFont.jakarta(15, .bold)).foregroundColor(.aura.text)
+                                Text("3 sets · 8–12 reps").font(AuraFont.jakarta(13)).foregroundColor(.aura.text2)
                             }
                             Spacer()
                             Button { addSheet = nil } label: {
                                 HStack(spacing: 5) {
-                                    Image(systemName: "arrow.left.arrow.right").font(.system(size: 13))
+                                    Image(systemName: "arrow.left.arrow.right").font(AuraFont.jakarta(13))
                                     Text("Replace").font(AuraFont.badge())
                                 }
                                 .foregroundColor(.aura.text2)
@@ -251,26 +251,26 @@ private struct PlanWorkoutTab: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             videoPlaceholder.padding(.horizontal, 14).padding(.bottom, 14)
-            Text(exercise.name).font(.system(size: 22, weight: .heavy)).tracking(-0.44)
+            Text(exercise.name).font(AuraFont.jakarta(22, .heavy)).tracking(-0.44)
                 .foregroundColor(.aura.text).padding(.horizontal, 14).padding(.bottom, 16)
             VStack(spacing: 10) {
                 card {
                     HStack {
-                        Text("Sets").font(.system(size: 14, weight: .semibold)).foregroundColor(.aura.text)
+                        Text("Sets").font(AuraFont.jakarta(14, .semibold)).foregroundColor(.aura.text)
                         Spacer()
                         HStack(spacing: 10) {
                             stepBtn("minus", accent: false) { sets = max(1, sets - 1) }
-                            Text("\(sets)").font(.system(size: 17, weight: .heavy)).frame(minWidth: 24).foregroundColor(.aura.text)
+                            Text("\(sets)").font(AuraFont.jakarta(17, .heavy)).frame(minWidth: 24).foregroundColor(.aura.text)
                             stepBtn("plus", accent: true) { sets += 1 }
                         }
                     }
                 }
                 card {
                     HStack {
-                        Text("Rep range").font(.system(size: 14, weight: .semibold)).foregroundColor(.aura.text)
+                        Text("Rep range").font(AuraFont.jakarta(14, .semibold)).foregroundColor(.aura.text)
                         Spacer()
                         TextField("", text: $reps)
-                            .multilineTextAlignment(.center).font(.system(size: 15, weight: .bold)).foregroundColor(.aura.text)
+                            .multilineTextAlignment(.center).font(AuraFont.jakarta(15, .bold)).foregroundColor(.aura.text)
                             .frame(width: 80, height: 34).background(Color.aura.fill)
                             .clipShape(RoundedRectangle(cornerRadius: AuraRadius.xs))
                             .overlay(RoundedRectangle(cornerRadius: AuraRadius.xs).stroke(Color.aura.separator2, lineWidth: 1))
@@ -278,12 +278,12 @@ private struct PlanWorkoutTab: View {
                 }
                 card {
                     VStack(spacing: 10) {
-                        Text("REST BETWEEN SETS").font(.system(size: 11, weight: .bold)).tracking(0.55)
+                        Text("REST BETWEEN SETS").font(AuraFont.jakarta(11, .bold)).tracking(0.55)
                             .foregroundColor(.aura.text2).frame(maxWidth: .infinity, alignment: .leading)
                         HStack(spacing: 8) {
                             stepBtn("minus", accent: false) { if ri > 0 { rest = steps[ri - 1] } }
                             Text(RestPicker.fmt(rest))
-                                .font(.system(size: 26, weight: .heavy).monospacedDigit()).tracking(-0.78)
+                                .font(AuraFont.jakarta(26, .heavy).monospacedDigit()).tracking(-0.78)
                                 .foregroundColor(.aura.accent).frame(maxWidth: .infinity)
                             stepBtn("plus", accent: true) { if ri < steps.count - 1 { rest = steps[ri + 1] } }
                         }
@@ -308,14 +308,14 @@ private struct PlanWorkoutTab: View {
         ZStack {
             RoundedRectangle(cornerRadius: AuraRadius.lg).fill(Color.aura.fill).aspectRatio(16.0/10.0, contentMode: .fit)
             Circle().fill(Color.white).frame(width: 48, height: 48)
-                .overlay(Image(systemName: "play.fill").font(.system(size: 20)).foregroundColor(.aura.text))
+                .overlay(Image(systemName: "play.fill").font(AuraFont.jakarta(20)).foregroundColor(.aura.text))
                 .shadow(color: .black.opacity(0.25), radius: 8, y: 4)
         }
     }
 
     private func stepBtn(_ icon: String, accent: Bool, action: @escaping () -> Void) -> some View {
         Button(action: action) {
-            Image(systemName: icon).font(.system(size: 16, weight: .semibold))
+            Image(systemName: icon).font(AuraFont.jakarta(16, .semibold))
                 .foregroundColor(accent ? .aura.accent : .aura.text)
                 .frame(width: 34, height: 34)
                 .background(accent ? Color.aura.accentSoft : Color.aura.fill.opacity(0.5)).clipShape(Circle())
@@ -359,19 +359,19 @@ private struct PlanOverviewTab<SS: View>: View {
             ZStack {
                 RoundedRectangle(cornerRadius: AuraRadius.lg).fill(Color.aura.fill).aspectRatio(16.0/10.0, contentMode: .fit)
                 Circle().fill(Color.white).frame(width: 48, height: 48)
-                    .overlay(Image(systemName: "play.fill").font(.system(size: 20)).foregroundColor(.aura.text))
+                    .overlay(Image(systemName: "play.fill").font(AuraFont.jakarta(20)).foregroundColor(.aura.text))
                     .shadow(color: .black.opacity(0.25), radius: 8, y: 4)
             }
             .padding(.horizontal, 14).padding(.bottom, 18)
 
-            Text(info.desc).font(.system(size: 14)).foregroundColor(.aura.text2).lineSpacing(4)
+            Text(info.desc).font(AuraFont.jakarta(14)).foregroundColor(.aura.text2).lineSpacing(4)
                 .padding(.horizontal, 14).padding(.bottom, 18)
 
             // Pro tip
             HStack(alignment: .top, spacing: 11) {
-                Image(systemName: "lightbulb.fill").font(.system(size: 18)).foregroundColor(.aura.accent).padding(.top, 1)
+                Image(systemName: "lightbulb.fill").font(AuraFont.jakarta(18)).foregroundColor(.aura.accent).padding(.top, 1)
                 VStack(alignment: .leading, spacing: 3) {
-                    Text("Pro tip").font(.system(size: 13, weight: .bold)).foregroundColor(.aura.accent)
+                    Text("Pro tip").font(AuraFont.jakarta(13, .bold)).foregroundColor(.aura.accent)
                     Text(info.tips.first ?? "").font(AuraFont.secondary()).foregroundColor(.aura.text2)
                 }
             }
@@ -394,9 +394,9 @@ private struct PlanOverviewTab<SS: View>: View {
                         let isPrimary = info.primary.contains { a.muscle == $0 || a.muscle.contains($0) }
                         VStack(spacing: 3) {
                             HStack {
-                                Text(a.muscle).font(.system(size: 12, weight: .bold)).foregroundColor(.aura.text)
+                                Text(a.muscle).font(AuraFont.jakarta(12, .bold)).foregroundColor(.aura.text)
                                 Spacer()
-                                Text("\(a.p)%").font(.system(size: 12, weight: .bold)).foregroundColor(.aura.text2)
+                                Text("\(a.p)%").font(AuraFont.jakarta(12, .bold)).foregroundColor(.aura.text2)
                             }
                             GeometryReader { geo in
                                 ZStack(alignment: .leading) {
@@ -422,10 +422,10 @@ private struct PlanOverviewTab<SS: View>: View {
             VStack(spacing: 8) {
                 ForEach(Array(info.tips.enumerated()), id: \.offset) { i, tip in
                     HStack(alignment: .top, spacing: 10) {
-                        Text("\(i + 1)").font(.system(size: 10, weight: .black)).foregroundColor(.aura.accent)
+                        Text("\(i + 1)").font(AuraFont.jakarta(10, .black)).foregroundColor(.aura.accent)
                             .frame(width: 20, height: 20).background(Color.aura.accentSoft)
                             .clipShape(RoundedRectangle(cornerRadius: 6)).padding(.top, 1)
-                        Text(tip).font(.system(size: 13)).foregroundColor(.aura.text).lineSpacing(3)
+                        Text(tip).font(AuraFont.jakarta(13)).foregroundColor(.aura.text).lineSpacing(3)
                         Spacer(minLength: 0)
                     }
                     .padding(.horizontal, 13).padding(.vertical, 11)
@@ -440,8 +440,8 @@ private struct PlanOverviewTab<SS: View>: View {
 
     private func statCell(_ label: String, _ value: String) -> some View {
         VStack(spacing: 2) {
-            Text(label).font(.system(size: 12, weight: .bold)).foregroundColor(.aura.text2)
-            Text(value).font(.system(size: 14, weight: .bold)).foregroundColor(.aura.text)
+            Text(label).font(AuraFont.jakarta(12, .bold)).foregroundColor(.aura.text2)
+            Text(value).font(AuraFont.jakarta(14, .bold)).foregroundColor(.aura.text)
         }
         .frame(maxWidth: .infinity).padding(.vertical, 11).padding(.horizontal, 8)
     }
@@ -449,7 +449,7 @@ private struct PlanOverviewTab<SS: View>: View {
     private func legendDot(_ color: Color, _ label: String) -> some View {
         HStack(spacing: 5) {
             RoundedRectangle(cornerRadius: 3).fill(color).frame(width: 10, height: 10)
-            Text(label).font(.system(size: 11, weight: .bold)).foregroundColor(color)
+            Text(label).font(AuraFont.jakarta(11, .bold)).foregroundColor(color)
         }
     }
 }
@@ -493,13 +493,13 @@ private struct PlanHistoryTab<SS: View>: View {
     private var emptyState: some View {
         VStack(spacing: AuraSpacing.s2) {
             Image(systemName: "chart.bar")
-                .font(.system(size: 32))
+                .font(AuraFont.jakarta(32))
                 .foregroundColor(.aura.text3)
             Text("No history yet")
-                .font(.system(size: 15, weight: .bold))
+                .font(AuraFont.jakarta(15, .bold))
                 .foregroundColor(.aura.text2)
             Text("Log this exercise in a workout to see your personal bests and session history here.")
-                .font(.system(size: 13))
+                .font(AuraFont.jakarta(13))
                 .foregroundColor(.aura.text3)
                 .multilineTextAlignment(.center)
                 .frame(maxWidth: 260)
@@ -512,9 +512,9 @@ private struct PlanHistoryTab<SS: View>: View {
 
     private func pbCard(_ label: String, _ value: String, _ sub: String) -> some View {
         VStack(alignment: .leading, spacing: 0) {
-            Text(label).font(.system(size: 11, weight: .bold)).tracking(0.3).foregroundColor(.aura.text2).padding(.bottom, 5)
-            Text(value).font(.system(size: 22, weight: .heavy).monospacedDigit()).tracking(-0.44).foregroundColor(.aura.accent)
-            Text(sub).font(.system(size: 11)).foregroundColor(.aura.text3).padding(.top, 2)
+            Text(label).font(AuraFont.jakarta(11, .bold)).tracking(0.3).foregroundColor(.aura.text2).padding(.bottom, 5)
+            Text(value).font(AuraFont.jakarta(22, .heavy).monospacedDigit()).tracking(-0.44).foregroundColor(.aura.accent)
+            Text(sub).font(AuraFont.jakarta(11)).foregroundColor(.aura.text3).padding(.top, 2)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.horizontal, 13).padding(.vertical, 12)
@@ -529,13 +529,13 @@ private struct PlanHistoryTab<SS: View>: View {
             Button { open = (open == i) ? nil : i } label: {
                 HStack {
                     VStack(alignment: .leading, spacing: 2) {
-                        Text(s.date).font(.system(size: 14, weight: .bold)).foregroundColor(.aura.text)
+                        Text(s.date).font(AuraFont.jakarta(14, .bold)).foregroundColor(.aura.text)
                         Text("\(s.sets.count) sets · " + (s.sets[0].weight > 0 ? "top \(UnitFormatter.weight(s.sets[0].weight, unit: appState.weightUnit))" : "bodyweight"))
-                            .font(.system(size: 12)).foregroundColor(.aura.text2)
+                            .font(AuraFont.jakarta(12)).foregroundColor(.aura.text2)
                     }
                     Spacer()
                     Image(systemName: open == i ? "chevron.up" : "chevron.right")
-                        .font(.system(size: 14, weight: .semibold)).foregroundColor(.aura.text3)
+                        .font(AuraFont.jakarta(14, .semibold)).foregroundColor(.aura.text3)
                 }
                 .padding(.horizontal, 14).padding(.vertical, 11)
             }
@@ -570,11 +570,11 @@ private struct PlanHistoryTab<SS: View>: View {
     }
 
     private func colHead(_ t: String, flex: CGFloat = 1) -> some View {
-        Text(t).font(.system(size: 11, weight: .bold)).foregroundColor(.aura.text3)
+        Text(t).font(AuraFont.jakarta(11, .bold)).foregroundColor(.aura.text3)
             .frame(maxWidth: .infinity, alignment: .leading).layoutPriority(Double(flex))
     }
     private func cell(_ t: String, flex: CGFloat = 1, color: Color = .aura.text, weight: Font.Weight = .regular) -> some View {
-        Text(t).font(.system(size: 13, weight: weight)).foregroundColor(color)
+        Text(t).font(AuraFont.jakarta(13, weight)).foregroundColor(color)
             .frame(maxWidth: .infinity, alignment: .leading).layoutPriority(Double(flex))
     }
 }

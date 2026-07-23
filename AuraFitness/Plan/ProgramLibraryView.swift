@@ -1,6 +1,9 @@
 import SwiftUI
 
 struct ProgramLibraryView: View {
+    /// True when hosted as the Plan tab's Programs subtab (no Done button,
+    /// list clears the floating tab bar). False when presented as a sheet.
+    var embedded: Bool = false
     @EnvironmentObject var appState: AppState
     @StateObject private var programDB = ProgramDatabase.shared
     @StateObject private var planDB = UserPlanDatabase.shared
@@ -50,13 +53,22 @@ struct ProgramLibraryView: View {
                         .listRowBackground(Color.aura.surface)
                 }
                 .listStyle(.insetGrouped)
+                .safeAreaInset(edge: .bottom) {
+                    if embedded {
+                        // Hosted under the floating tab bar, which contributes
+                        // no layout height — reserve the full bar depth.
+                        Color.clear.frame(height: AuraSpacing.tabBarClearance)
+                    }
+                }
             }
             .background(Color.aura.bgGrouped)
             .navigationTitle("Program Library")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("Done") { dismiss() }
+                if !embedded {
+                    ToolbarItem(placement: .cancellationAction) {
+                        Button("Done") { dismiss() }
+                    }
                 }
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button { showCreateProgram = true } label: {
@@ -83,13 +95,13 @@ struct ProgramLibraryView: View {
                     .fill(levelColor(program.level).opacity(0.15))
                     .frame(width: 44, height: 44)
                 Image(systemName: "dumbbell.fill")
-                    .font(.system(size: 18))
+                    .font(AuraFont.jakarta(18))
                     .foregroundColor(levelColor(program.level))
             }
             VStack(alignment: .leading, spacing: 4) {
                 HStack {
                     Text(program.name)
-                        .font(.system(size: 15, weight: .bold))
+                        .font(AuraFont.jakarta(15, .bold))
                         .foregroundColor(.aura.text)
                     if isAdded { AuraBadge(label: "Added", color: .aura.green) }
                     if !program.isPredefined { AuraBadge(label: "Custom", color: .aura.purple) }
@@ -106,7 +118,7 @@ struct ProgramLibraryView: View {
             }
             Spacer()
             Image(systemName: "chevron.right")
-                .font(.system(size: 13))
+                .font(AuraFont.jakarta(13))
                 .foregroundColor(.aura.text3)
         }
         .padding(.vertical, 4)

@@ -4,9 +4,19 @@ import Foundation
 struct ProgressPhoto: Identifiable, Codable {
     var id = UUID()
     var date: Date
-    var imageData: Data
+    /// LEGACY inline JPEG bytes. Non-nil only while the photo has not reached
+    /// Supabase Storage yet — a photo just taken, a guest-mode photo, or a row
+    /// written by a client predating phase3-01. `ProgressPhotoStorage` clears
+    /// it the moment the upload succeeds, so a migrated row carries metadata
+    /// only and the bytes come from the bucket (or the local file cache).
+    /// Optional purely so those legacy rows keep decoding.
+    var imageData: Data?
     var weight: Double?
     var note: String = ""
+    /// Bucket-relative object path — `{user_id}/{photo_uuid}.jpg` inside
+    /// `progress-photos` (see 0006_progress_photos_storage.sql). Non-nil means
+    /// the bytes are durable server-side and `imageData` is expected to be nil.
+    var storagePath: String? = nil
 }
 
 // MARK: - WorkoutLog
@@ -57,12 +67,17 @@ enum NutritionConstants {
 
     /// MACRO_SPLIT — percentage [Protein, Carbs, Fats] per macro preset.
     static let macroSplits: [(label: String, pct: [Int])] = [
-        ("Balanced", [30, 40, 30]), ("High carb", [25, 55, 20]),
-        ("High protein", [40, 35, 25]), ("Keto", [30, 8, 62]),
+        ("Balanced", [30, 40, 30]), ("High carb", [25, 50, 25]),
+        ("High protein", [40, 30, 30]), ("Keto", [30, 10, 60]),
     ]
     static func macroSplit(_ key: String) -> [Int] {
         macroSplits.first { $0.label == key }?.pct ?? [30, 40, 30]
     }
+
+    /// Input bounds for the details editor. Canonical units: cm and kg.
+    static let ageRange: ClosedRange<Int> = 13...100
+    static let heightRangeCm: ClosedRange<Double> = 100...250
+    static let weightRangeKg: ClosedRange<Double> = 30...300
 }
 
 // MARK: - Daily macro targets (grams)
@@ -74,18 +89,33 @@ struct MacroTargets {
 }
 
 // MARK: - BodyStats
+//
+// Measurements default to 0 = "not entered yet", which is what
+// `hasCompleteDetails` below tests for; every derived figure (BMI/BMR/TDEE/
+// macros) stays hidden until the user supplies real numbers. They previously
+// shipped as a filled-in 178 cm / 78.4 kg / 28 y example, which read as the
+// user's own data on a brand-new account.
+//
+// `sex`, `activityLevel`, `goalType` and `macroSplit` keep their defaults on
+// purpose: they are keys into `NutritionConstants.ACT` / `GOAL_ADJ` /
+// `MACRO_SPLIT`, and an empty string is not a member of any of those.
 struct BodyStats: Codable {
-    var height: Double = 178       // cm
-    var weight: Double = 78.4      // kg
-    var age: Int = 28
+    var height: Double = 0         // cm — 0 = unset
+    var weight: Double = 0         // kg — 0 = unset
+    var age: Int = 0               // 0 = unset
     var sex: String = "Male"       // "Male" | "Female"
     var activityLevel: String = "Moderate"  // key into NutritionConstants.ACT
-    var targetWeight: Double = 80          // kg
+    var targetWeight: Double = 0            // kg — 0 = unset
     var goalType: String = "Lean gain"      // key into GOAL_ADJ
     var macroSplit: String = "Balanced"     // key into MACRO_SPLIT
 
-    /// BMI = wt / (h/100)²
+    /// True once height and weight are both set — every derived figure
+    /// (BMI/BMR/TDEE/targets) is meaningless until then.
+    var hasCompleteDetails: Bool { height > 0 && weight > 0 }
+
+    /// BMI = wt / (h/100)² — 0 when height is unset (never divide by zero).
     var bmi: Double {
+        guard hasCompleteDetails else { return 0 }
         let hm = height / 100
         return weight / (hm * hm)
     }
@@ -119,17 +149,24 @@ struct BodyStats: Codable {
 }
 
 // MARK: - UserProfile
+/// Every field starts empty. The name/location fields used to ship as
+/// "Alex Jordan · Austin, TX, United States", which showed up on a brand-new
+/// account as if the user had entered it.
+///
+/// `birthday` has no empty representation (non-optional `Date`, and the editor
+/// binds a `DatePicker` straight to it), so it keeps a neutral 25-years-ago
+/// starting point rather than a made-up birth date.
 struct UserProfile: Codable {
-    var firstName: String = "Alex"
-    var lastName: String = "Jordan"
+    var firstName: String = ""
+    var lastName: String = ""
     var email: String = ""
     var phone: String = ""
     var birthday: Date = Calendar.current.date(byAdding: .year, value: -25, to: Date()) ?? Date()
-    var gender: String = "Male"
+    var gender: String = ""
     var location: String = ""
-    var country: String = "United States"
-    var city: String = "Austin"
-    var state: String = "TX"
+    var country: String = ""
+    var city: String = ""
+    var state: String = ""
     var photoURL: String? = nil
 }
 

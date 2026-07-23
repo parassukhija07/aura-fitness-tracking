@@ -1,143 +1,77 @@
 # TEST EXECUTION REPORT
 
 ## 📊 STATUS
-PASS (static verification only — see BLOCKERS/CAVEATS for what could not be verified)
+PASS
 
 ## 🧪 TESTS IMPLEMENTED
-No automated test files were written or executed. This is a Windows dev machine with no Apple
-toolchain (`xcodebuild` unavailable, no Swift compiler for this project's SPM/Xcode target
-confirmed reachable), so H7 was verified via static code review instead of a real build/run,
-per instructions. The following static checks were performed in place of executable tests:
+No Xcode toolchain is available on this machine (`xcodebuild`/`swift build` cannot run), per the task constraints. Verification was performed as static, adversarial symbol-resolution and structural analysis — reading every touched/added file in full and cross-referencing every external symbol against its real definition. This is the equivalent of a manual "type-check by hand" pass. Specific checks performed:
 
-- Read `AuraFitness/Models/UnitFormatter.swift` in full and hand-verified conversion math
-  against the spec constants (`kgPerLb = 0.45359237`, `cmPerInch = 2.54`) and rounding rule
-  (`%.1f` then strip trailing `.0`).
-- Grepped every file/line listed in `.pipeline/spec.md` "FILES TO MODIFY" to confirm each
-  hardcoded `kg`/`cm` literal was actually replaced with a `UnitFormatter` call or
-  `appState.weightUnit`/`appState.lengthUnit`, and that no such literals remain in those files.
-- Confirmed `@EnvironmentObject var appState: AppState` is present in every view the spec
-  flagged as possibly missing it (`SetRowView`, `SupersetView`'s `SupersetSetRow`,
-  `ExerciseLoggingView`, `WorkoutSummaryView`, `WeeklyVolumeView`, `StatsView`,
-  `PersonalRecordsView`, `PlanExerciseDetailView`'s `PlanHistoryTab`).
-- Traced `SetHistory.weight` construction (`AppState.swift:346-350`,
-  `let wStr = s.weight.map { String($0) } ?? "0"`) to confirm the R2 assumption that it is
-  always a bare numeric string, and checked every display site (`SetRowView.swift:77`,
-  `SupersetView.swift:363`, `ExerciseLoggingView.swift:350`) uses the crash-safe
-  `Double(h.weight) ?? 0` guard before calling `UnitFormatter.weight`.
-- Traced `QuickLogSet.weight` usage in `LogSheetsView.swift` (`bindingWeight`, seed sites at
-  lines 725/847/871) to confirm it remains a pure pass-through `Binding<String>` with zero
-  numeric parsing — only the `TextField` placeholder at line 839 changed to
-  `appState.weightUnit`.
-- Grepped the whole `AuraFitness/` tree for `TODO(H7)` markers (none found) and for any
-  `UnitFormatter...!` or `Double(...)!` force-unwrap patterns introduced by this change
-  (none found).
-- Confirmed `parseWeightToKg`/`parseLengthToCm` return `nil` (not `0`) on empty/invalid text
-  via the `guard let value = Double(text) else { return nil }` pattern, satisfying the
-  "do not coerce empty to 0" edge case in the spec.
+- `AuraFitness/Plan/SaveEditScopeSheet.swift`:
+  - Confirmed initializer `SaveEditScopeSheet(onJustToday: (() -> Void)?, onPermanently: @escaping () -> Void)` exactly matches the real call site read directly from `AuraFitness/Plan/WorkoutEditorView.swift:96-103` (`SaveEditScopeSheet(onJustToday: nil, onPermanently: { saveWorkout() })`, chained with `.presentationDetents`/`.presentationDragIndicator` on the `.sheet` modifier, not on the view itself — correct, since the spec required a bare `VStack`, not a `NavigationStack`).
+  - Confirmed `if let onJustToday` conditionally renders the "Just for Today" `AuraTintedButton`; `AuraPrimaryButton("Save Permanently", icon: "checkmark")` and `AuraGrayButton("Cancel")` always render; all three dismiss via `@Environment(\.dismiss)` after firing their closures.
+  - Verified every symbol used resolves with matching signatures by grepping their real definitions: `AuraPrimaryButton(label:icon:action:)`, `AuraTintedButton(label:action:)`, `AuraGrayButton(label:action:)` in `AuraFitness/DesignSystem/AuraComponents.swift`; `AuraFont.cardTitle()`, `AuraFont.secondary()` in `AuraFitness/DesignSystem/AuraTypography.swift`; `AuraSpacing.s3`, `AuraSpacing.screenPad` in `AuraFitness/DesignSystem/AuraSpacing.swift`; `Color.aura.text`, `.text2`, `.bgGrouped` in `AuraFitness/DesignSystem/AuraColors.swift`.
+  - Brace balance of the file: 7 open / 7 close.
+
+- `AuraFitness/Plan/PlanTabView.swift`:
+  - Read in full (59 lines). Confirmed it contains only: import, struct, `appState`, `Subtab` enum, `subtab` state, `body`, `navbar` — matching the spec's post-edit shape exactly.
+  - Confirmed the `body` switch mounts `MyPlansView()` and `ProgramLibraryView()` bare, and `WorkoutLibraryView()`/`ExerciseLibraryTabView()` each wrapped in their own `NavigationStack` — verified this is the *correct* choice by reading all four target files: `MyPlansView.swift` and `ProgramLibraryView.swift` do NOT use push navigation at their root (`MyPlansView`'s body is a bare `ScrollView` using only `.sheet`s, each of which independently wraps its own sheet content in `NavigationStack`; `ProgramLibraryView`'s body itself opens with `NavigationStack { ... }` and owns a `.toolbar`), while `WorkoutLibraryView.swift` and `ExerciseLibraryView.swift` (defining `ExerciseLibraryTabView`) use `.toolbar`/`.navigationDestination(item:)` with no `NavigationStack` of their own — so they require the wrapper `PlanTabView` provides, or the toolbar `+` and push navigation would silently no-op. Confirmed via grep for `NavigationStack` in each of the four files individually.
+  - Confirmed via grep that none of the deleted `@State` identifiers (`modal`, `schedule`, `workouts`, `editingWk`, `viewingProg`, `editingProg`, `viewingEx`, `calStartSun`, `PlanIconButton`) remain anywhere in the file — the sole remaining hit was a stray line-7 comment (`viewingEx → editingWk → editingProg → viewingProg → (sub-tab shell)`) describing the old architecture; this is dead documentation only, not code, and has zero compile impact.
+  - Confirmed all four mounted struct names (`MyPlansView`, `ProgramLibraryView`, `WorkoutLibraryView`, `ExerciseLibraryTabView`) match the real `struct` declarations in their respective files exactly (grepped each).
+  - Confirmed `PlanFilterChip(label:active:action:)` used by `navbar` matches its real definition in `AuraFitness/Plan/PlanComponents.swift:251` (a mock file remaining in the build target, as intended).
+  - Confirmed `Color.aura.bg`, `AuraFont.largeTitleStyle()`, `AuraFont.largeTitleTracking` all resolve.
+  - Brace/paren balance: 17/17 braces, 24/24 parens.
+  - Confirmed the navbar `+` button removal (deviation from spec, coordinator-approved) leaves valid, balanced Swift — the `HStack` still closes correctly with only `Text` + `Spacer()`.
+
+- `AuraFitness.xcodeproj/project.pbxproj`:
+  - Confirmed via `git diff --stat` against HEAD: exactly `+40 insertions, 0 deletions` — purely additive, matching the changes.md claim precisely.
+  - Located and read all 4 touched regions directly (not trusting line numbers from the spec blindly — re-grepped current positions): PBXBuildFile block at lines 65-74, PBXFileReference block at lines 150-159, Plan-group children at lines 300-309, Sources-phase files list at lines 507-516.
+  - Verified UUID fan-out by direct count: `grep -c` for `CA01000000000000000A00` → 30 total occurrences (10 unique IDs × 3: FileReference def + group child + `fileRef=` inside its PBXBuildFile twin); `grep -c` for `CB01000000000000000A00` → 20 total occurrences (10 unique IDs × 2: PBXBuildFile def + Sources-phase entry). Both match the expected multiplicities exactly, with no orphaned or duplicated IDs.
+  - Verified each PBXBuildFile's `fileRef =` value points to the correct matching `CA...` id/filename pair (all 10 lines read directly, e.g. `CB...0007 ... fileRef = CA...0007 /* ExerciseLibraryView.swift */`).
+  - Verified comment text uses real filenames, not struct names (e.g. `CA01000000000000000A0007 /* ExerciseLibraryView.swift */`, not `ExerciseLibraryTabView`; `CA01000000000000000A0008 /* ExerciseDetailView.swift */`, not `ExerciseEntryDetailView`).
+  - Verified zero collision with pre-existing UUIDs: extracted the HEAD (pre-change) version of the pbxproj via `git show HEAD:...` and grepped it for the same 20 new UUID patterns — 0 matches, confirming they are genuinely new.
+  - Verified overall file structural integrity: whole-file brace count 200 open / 200 close (baseline HEAD version: 180/180 — the +20 delta is exactly the 20 new `{...}` dictionary pairs from the 10 new PBXBuildFile + 10 new PBXFileReference entries, as expected); confirmed the `Plan` PBXGroup's closing `);` / `path = Plan;` / `sourceTree` block is intact immediately after the 10 inserted children, and the Sources-phase list continues uninterrupted into subsequent pre-existing entries (`ProgressTabView.swift in Sources`, etc.) with nothing truncated. File ends correctly with a properly closed root dictionary and `rootObject` reference.
+
+- Spot-check of the other 8 orphan files now entering the build target (verifying the spec's claim that ONLY `SaveEditScopeSheet` was missing, rather than trusting it):
+  - `ProgramDetailView.swift`: `planDB.addPlan(from:startDay:)` resolves to `UserPlanDatabase.addPlan(from:name:startDay:)` (confirmed this method lives in `UserPlanDatabase`, not `ProgramDatabase`, despite both classes living in the same `ProgramDatabase.swift` file); `program.sourceProgramID`, `appState.calendarStartDay` all resolve.
+  - `ProgramEditorView.swift`: `Mode.create`/`.edit(Program)`, `programDB.addProgram/updateProgram/deleteProgram`, `Workout: Identifiable` (confirmed, required for `.sheet(item: $editingWorkout)`) all resolve.
+  - `WorkoutLibraryView.swift`: `programDB.allWorkouts`, `Workout: Identifiable` (required for `.navigationDestination(item:)`), all `Aura*`/`Color.aura.*` tokens resolve.
+  - `ExerciseDetailView.swift` (defines `ExerciseEntryDetailView` + `ExerciseDetailView`): every `ExerciseEntry` field used (`category`, `equipment`, `musclesTargeted`, `type`, `difficulty`, `repRange`, `youtubeURL`, `proTips`, `warmupProtocol`, `isCable`, `pulley`, `isCustom`, `notes`, `isFavorite`) confirmed present on the real `ExerciseEntry` struct in `AuraFitness/Models/ExerciseDatabase.swift`; `WarmupStep`/`ExerciseWarmupProtocol` confirmed defined there too; `db.entry(id:)`, `db.entry(named:)`, `db.toggleFavorite(id:)` all resolve; legacy `Exercise` fields (`equipment`, `primaryMuscle`, `difficulty`, `hint`, `muscleGroups`) confirmed on `AuraFitness/Models/WorkoutModels.swift`'s `Exercise` struct; `AuraFont.sectionLabel()`/`.sectionLabelStyle()` confirmed in `AuraTypography.swift`.
+  - `CreateExerciseView.swift`: `ExerciseEntry` memberwise init call matches struct field list/order requirements (labeled args, so order-independent); `db.add(_:)` confirmed on `ExerciseDatabase`.
+  - `ExerciseLibraryView.swift` (defines `ExerciseLibraryTabView`): `db.filtered(category:equipment:query:)` confirmed on `ExerciseDatabase` with matching parameter labels/defaults.
+  - `MyPlansView.swift` (defines `MyPlansView`, `CreatePlanView`, `PlanScheduleEditorView`): `UserPlan.weekSchedule: [Int: UUID?]` confirmed, and all double-optional (`UUID??`) unwrap patterns in the file are consistent with that declared type; `AuraListRow(iconName:iconColor:title:action:)`, `AuraBadge(label:color:)`, `Color.aura.separator`/`.accentSoft`/`.fill` all confirmed.
+  - No additional missing types or symbol mismatches found beyond the one the spec already identified (`SaveEditScopeSheet`).
+
+- `AuraFitness/ContentView.swift:50` — confirmed `case .plan: PlanTabView()` is untouched, is the only reference to `PlanTabView()` in the codebase, and correctly matches `PlanTabView`'s zero-argument initializer (implicit memberwise/default init, since `PlanTabView` has no stored non-default properties besides the `@EnvironmentObject`).
 
 ## 📝 EXECUTION LOG
-
-### 1. UnitFormatter math (manual trace, `AuraFitness/Models/UnitFormatter.swift`)
 ```
-weightValue(kg, unit):        unit == "lb" ? kg / 0.45359237 : kg        ✅ matches spec
-weightNumber(kg, unit):       formatTrimmed(weightValue(...))            ✅ 1dp, trims ".0"
-weight(kg, unit):             "\(weightNumber) \(unit)"                  ✅ matches spec e.g.
-parseWeightToKg(text, unit):  Double(text) == nil -> nil;
-                               else unit == "lb" ? v * 0.45359237 : v     ✅ matches spec, nil-safe
-lengthValue/lengthNumber/length/parseLengthToCm: mirror weight logic
-                               with cmPerInch = 2.54, "in" branch         ✅ matches spec
-formatTrimmed: String(format:"%.1f", v), strip trailing ".0"             ✅ matches spec
-  Spot checks: 100.0 -> "100.0" -> "100"      (matches spec example)
-               100.5 -> "100.5" (no strip)    (matches spec example)
-               220.46226... (100kg->lb) -> "220.5"  (rounds correctly)
-```
+$ git diff --stat HEAD -- AuraFitness.xcodeproj/project.pbxproj
+ AuraFitness.xcodeproj/project.pbxproj | 40 +++++++++++++++++++++++++++++++++++
+ 1 file changed, 40 insertions(+)
 
-### 2. Call-site coverage grep (all files from spec §FILES TO MODIFY)
-```
-NutritionView.swift:49,53,58,95,97           -> UnitFormatter.weightNumber/.weight/.length ✅
-WorkoutSessionState.swift:230-232            -> appState?.weightUnit ?? "kg" + UnitFormatter.weight ✅
-SetRowView.swift:37,38,77,93,147             -> label/parse/history/onAppear/toggleDone all wired ✅
-SupersetView.swift:166,171,339,340,363,371   -> label/parse/history/onAppear/PR-target strip wired ✅
-ExerciseLoggingView.swift:188,193,350        -> UnitFormatter.weight w/ Double(h.weight) ?? 0 ✅
-WorkoutSummaryView.swift:84                  -> UnitFormatter.weight(vol, ...) ✅
-WeeklyVolumeView.swift:97,150                -> appState.weightUnit label + UnitFormatter.weight ✅
-ProgressPhotosView.swift:214-215,256,293     -> weightValue delta + parseWeightToKg on save ✅
-StatsView.swift:125,128                      -> weightNumber + weightUnit suffix ✅
-PersonalRecordsView.swift:110,121,129        -> weight/weightNumber for 1RM + pr.weight ✅
-MeasurementsView.swift:59,99,102,118,159,262-264,290
-                                              -> measurementUnits static array removed,
-                                                 replaced with computed unit lookup;
-                                                 weight/circumference/leanMass all converted ✅
-LogMeasurementSheet.swift:76,78-84           -> parseWeightToKg + parseLengthToCm x6 on save() ✅
-ProfileTabView.swift:46-47,50                -> UnitFormatter.length/.weight in identitySubtitle ✅
-LogSheetsView.swift:839                      -> placeholder only = appState.weightUnit;
-                                                 bindingWeight untouched (free-text passthrough) ✅
-PlanExerciseDetailView.swift:476,489,511,531,533
-                                              -> UnitFormatter.weight replaces "...kg" interpolation,
-                                                 "BW" bodyweight branch preserved ✅
-```
+$ grep -c "CA01000000000000000A00" AuraFitness.xcodeproj/project.pbxproj
+30
+$ grep -c "CB01000000000000000A00" AuraFitness.xcodeproj/project.pbxproj
+20
 
-### 3. Leftover-literal scan (should be empty for all H7-touched files)
-```bash
-$ grep -rn '" kg"\|"kg"\|" cm"\|"cm"' <all 12 modified display files>
-(no output — zero hardcoded unit literals remain)
+$ (brace/paren balance, PlanTabView.swift)      open=17 close=17 | parens open=24 close=24
+$ (brace balance, SaveEditScopeSheet.swift)     open=7  close=7
+$ (brace/paren balance, project.pbxproj, HEAD)  open=180 close=180
+$ (brace/paren balance, project.pbxproj, working tree) open=200 close=200 | parens open=37 close=37
 
-$ grep -rn "TODO(H7)" AuraFitness/
-(no output — no deferred markers)
+$ grep -n "NavigationStack" MyPlansView.swift       → lines 221, 269 (inside .sheet content only, not body root)
+$ grep -n "NavigationStack" ProgramLibraryView.swift → line 23 (wraps body root)
+$ grep -n "NavigationStack" WorkoutLibraryView.swift → no matches
+$ grep -n "NavigationStack" ExerciseLibraryView.swift → no matches
 
-$ grep -rn "UnitFormatter\.[a-zA-Z]+\([^)]*\)!" AuraFitness/
-(no output — no force-unwrapped UnitFormatter calls)
-
-$ grep -rn "Double(h\.weight)!|Double(weightText)!" AuraFitness/
-(no output — no force-unwrapped Double parses on history/input strings)
-```
-
-### 4. SetHistory vs QuickLogSet handling (crash-risk focus area)
-```
-AppState.swift:346-350   let wStr = s.weight.map { String($0) } ?? "0"
-                          -> confirms SetHistory.weight is always a bare numeric String,
-                             never a unit-suffixed or locale-formatted string.
-
-SetRowView.swift:77       Text(UnitFormatter.weight(Double(h.weight) ?? 0, unit: appState.weightUnit))
-SupersetView.swift:363    Text(UnitFormatter.weight(Double(h.weight) ?? 0, unit: appState.weightUnit))
-ExerciseLoggingView.swift:350
-                           "...: \(UnitFormatter.weight(Double(h.weight) ?? 0, unit: appState.weightUnit)) x ..."
-                          -> all three use the `?? 0` guard; a malformed SetHistory.weight
-                             string degrades to displaying "0 kg"/"0 lb" instead of crashing.
-
-LogSheetsView.swift:725,847,858-860,871
-                          QuickLogSet(weight: "-", reps: "")   (seed sentinel)
-                          QuickLogSet()                        (default "")
-                          bindingWeight(i,j): Binding(get: {...}, set: { $0 })
-                          -> pure String passthrough, zero Double()/UnitFormatter parsing calls
-                             anywhere on this binding. Only TextField(appState.weightUnit, ...)
-                             placeholder changed. Confirms free-text values ("-", "", "100abc")
-                             cannot crash or be silently corrupted by this change.
+$ grep -n "PlanTabView\(\)" AuraFitness/**/*.swift
+AuraFitness/ContentView.swift:50:        case .plan:     PlanTabView()
 ```
 
 ## 🛑 BLOCKERS (If Failed)
-N/A — status is PASS under static review. However, the following could NOT be verified and
-are explicitly flagged as unverified rather than claimed:
+N/A — no blocking defects found.
 
-- **No compilation was performed.** There is no Apple toolchain / `xcodebuild` / Swift
-  compiler available on this Windows machine, so it is NOT confirmed that this code actually
-  compiles (e.g. correct `AppState`/`WorkoutSessionState` member types, correct optional
-  chaining, correct SwiftUI view-builder syntax at each edited call site, no naming/type
-  mismatches with `String(format:)` results feeding into `Text(_:)` initializers that expect
-  `LocalizedStringKey` vs `String`, etc.).
-- **No runtime/UI test was executed.** Behavior such as "PR celebration message renders
-  correctly," "measurement round-trip through the sheet displays unchanged canonical values,"
-  and "toggling weightUnit live-updates all open views" was reasoned about from the code but
-  not observed running.
-- **`AuraFitnessTests/PersistenceRoundTripTests.swift`** (referenced in the spec at R2 as
-  using `QuickLogSet(weight: "100", ...)`) was not re-run; no test runner is available in
-  this environment to execute the existing XCTest suite.
-- Numeric spot-checks of `formatTrimmed`/`weightValue`/`parseWeightToKg` were done by hand
-  (not by executing Swift), so subtle floating-point formatting edge cases (e.g. values that
-  round to `X.05` at the `%.1f` boundary) were reasoned about but not empirically exercised.
-
-None of the above indicate a defect — they are disclosed as verification-method limitations
-per the task instructions (no Apple toolchain available). Every code-level check that was
-possible (spec-to-diff mapping, conversion-math correctness, crash-safety of string parsing
-on `SetHistory`/`QuickLogSet`, absence of force-unwraps, absence of leftover hardcoded unit
-literals, presence of required `@EnvironmentObject` injections) passed.
+### Notes (non-blocking, informational only)
+- `PlanTabView.swift` line 7 retains a stale doc-comment describing the old "5 pieces of state act like a tiny router" mock-routing architecture (`viewingEx → editingWk → editingProg → viewingProg`). All of those identifiers are gone from the actual code — this is dead documentation, not a compile hazard, but should be cleaned up in a follow-up for clarity.
+- The spec's line 76/97 assertion that "`MyPlansView` and `ProgramLibraryView` already contain their own `NavigationStack`" is only precisely true for `ProgramLibraryView` (whose body root opens with `NavigationStack {`). `MyPlansView`'s body root is a bare `ScrollView` with no top-level `NavigationStack` — it only uses `.sheet` presentations, each of which independently supplies its own `NavigationStack` for the sheet's content. This distinction doesn't matter functionally here because `MyPlansView` never performs push navigation (no `NavigationLink`/`.navigationDestination` at its root), so mounting it bare (as done) is still correct and produces no double-nav-bar or dead-toolbar issue. Flagging only because the spec's stated reasoning was imprecise, not because the implementation is wrong.
+- No functional/behavioral (UI-level) test execution was possible since there is no local Xcode/Simulator toolchain on this machine; this report is a static, symbol-level verification only, as scoped by the task.

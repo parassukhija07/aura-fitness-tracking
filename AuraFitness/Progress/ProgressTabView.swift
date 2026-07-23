@@ -8,9 +8,21 @@ struct ProgressTabView: View {
     var body: some View {
         NavigationStack {
             VStack(spacing: 0) {
+                // Custom large-title navbar (nav-title-lg · 30/800), matching Log/Plan.
+                HStack {
+                    Text("Progress")
+                        .font(AuraFont.largeTitleStyle())
+                        .tracking(AuraFont.largeTitleTracking)
+                        .foregroundColor(.aura.text)
+                    Spacer()
+                }
+                .padding(.horizontal, 14)
+                .padding(.top, AuraSpacing.s1)
+                .padding(.bottom, AuraSpacing.s2)
+
                 AuraSegmentedPicker(options: ["Stats","Body"], selection: $topTab)
                     .padding(.horizontal, AuraSpacing.screenPad)
-                    .padding(.vertical, AuraSpacing.s2)
+                    .padding(.bottom, AuraSpacing.s2)
 
                 if topTab == "Stats" {
                     StatsView()
@@ -29,10 +41,11 @@ struct ProgressTabView: View {
                 }
             }
             .background(Color.aura.bgGrouped)
-            .navigationTitle("Progress")
-            .navigationBarTitleDisplayMode(.large)
+            .toolbar(.hidden, for: .navigationBar)
             .safeAreaInset(edge: .bottom) {
-                Color.clear.frame(height: AuraSpacing.tabBarClearance - 34)
+                // The tab bar floats over the content and contributes no layout
+                // height, so the full bar depth has to be reserved here.
+                Color.clear.frame(height: AuraSpacing.tabBarClearance)
             }
             // FAB deep links (Log Measurements / Progress Photo) open the Body
             // tab; MeasurementsView then raises the matching sheet.

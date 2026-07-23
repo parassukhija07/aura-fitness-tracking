@@ -51,13 +51,13 @@ struct EmptyOverviewView: View {
             }
             Spacer()
             VStack(spacing: 1) {
-                Text(session.workout.name).font(.system(size: 12, weight: .bold)).foregroundColor(.aura.text2)
+                Text(session.workout.name).font(AuraFont.jakarta(12, .bold)).foregroundColor(.aura.text2)
                 Text(session.elapsedFormatted)
                     .font(AuraFont.statNum(size: 19)).foregroundColor(.aura.accent).monospacedDigit()
             }
             Spacer()
             Button { appState.minimizeWorkout() } label: {
-                Image(systemName: "minus").font(.system(size: 22, weight: .medium)).foregroundColor(.aura.text)
+                Image(systemName: "minus").font(AuraFont.jakarta(22, .medium)).foregroundColor(.aura.text)
             }
         }
         .padding(.horizontal, AuraSpacing.screenPad)
@@ -69,12 +69,12 @@ struct EmptyOverviewView: View {
         VStack(spacing: 6) {
             ZStack {
                 Circle().fill(Color.aura.accentSoft).frame(width: 72, height: 72)
-                Image(systemName: "dumbbell.fill").font(.system(size: 30)).foregroundColor(.aura.accent)
+                Image(systemName: "dumbbell.fill").font(AuraFont.jakarta(30)).foregroundColor(.aura.accent)
             }
             .padding(.bottom, 8)
-            Text("Build your workout").font(.system(size: 22, weight: .heavy)).foregroundColor(.aura.text)
+            Text("Build your workout").font(AuraFont.jakarta(22, .heavy)).foregroundColor(.aura.text)
             Text("Add exercises as you go — everything is saved automatically.")
-                .font(.system(size: 14)).foregroundColor(.aura.text2)
+                .font(AuraFont.jakarta(14)).foregroundColor(.aura.text2)
                 .multilineTextAlignment(.center).frame(maxWidth: 250)
         }
         .frame(maxWidth: .infinity)
@@ -84,8 +84,8 @@ struct EmptyOverviewView: View {
     private var searchBar: some View {
         Button { onAdd() } label: {
             HStack(spacing: 10) {
-                Image(systemName: "magnifyingglass").font(.system(size: 16)).foregroundColor(.aura.text3)
-                Text("Search exercise library…").font(.system(size: 15)).foregroundColor(.aura.text3)
+                Image(systemName: "magnifyingglass").font(AuraFont.jakarta(16)).foregroundColor(.aura.text3)
+                Text("Search exercise library…").font(AuraFont.jakarta(15)).foregroundColor(.aura.text3)
                 Spacer()
             }
             .padding(.horizontal, 14).padding(.vertical, 12)
@@ -105,7 +105,7 @@ struct EmptyOverviewView: View {
                             Circle()
                                 .fill(on ? Color.white.opacity(0.6) : mg.color)
                                 .frame(width: 7, height: 7)
-                            Text(mg.label).font(.system(size: 13, weight: .bold))
+                            Text(mg.label).font(AuraFont.jakarta(13, .bold))
                         }
                         .foregroundColor(on ? .white : .aura.text)
                         .padding(.horizontal, 14).padding(.vertical, 8)
@@ -125,7 +125,7 @@ struct EmptyOverviewView: View {
                 ForEach(ActiveWorkoutData.equipmentFilters, id: \.self) { eq in
                     let on = activeEquip == eq
                     Button { activeEquip = on ? "All" : eq } label: {
-                        Text(eq).font(.system(size: 13, weight: .bold))
+                        Text(eq).font(AuraFont.jakarta(13, .bold))
                             .foregroundColor(on ? .aura.bg : .aura.text)
                             .padding(.horizontal, 14).padding(.vertical, 7)
                             .background(on ? Color.aura.text : Color.aura.fill)
@@ -146,7 +146,7 @@ struct EmptyOverviewView: View {
                 AuraSectionLabel(title: g.label)
                 if filteredGroupExercises.isEmpty {
                     Text("No \(g.label) exercises for this equipment.")
-                        .font(.system(size: 13)).foregroundColor(.aura.text3)
+                        .font(AuraFont.jakarta(13)).foregroundColor(.aura.text3)
                         .padding(.vertical, 12)
                 } else {
                     LazyVGrid(columns: cols, spacing: 10) {
@@ -167,20 +167,25 @@ struct EmptyOverviewView: View {
     }
 
     private func catCard(_ opt: WorkoutExerciseOption) -> some View {
-        Button { addAndStart(opt) } label: {
+        let mc = ActiveWorkoutData.muscleColor(opt.muscle)
+        return Button { addAndStart(opt) } label: {
             VStack(alignment: .leading, spacing: 7) {
                 RoundedRectangle(cornerRadius: AuraRadius.sm)
-                    .fill(ActiveWorkoutData.muscleColor(opt.muscle).opacity(0.18))
+                    // Design THUMB: soft diagonal two-stop gradient per muscle
+                    // (linear-gradient(145deg, lighter, darker)).
+                    .fill(LinearGradient(
+                        colors: [mc.opacity(0.14), mc.opacity(0.28)],
+                        startPoint: .topLeading, endPoint: .bottomTrailing))
                     .aspectRatio(4.0/3.0, contentMode: .fit)
                     .overlay(
                         Text(opt.muscle.uppercased())
-                            .font(.system(size: 11, weight: .heavy))
+                            .font(AuraFont.jakarta(11, .heavy))
                             .tracking(1)
-                            .foregroundColor(ActiveWorkoutData.muscleColor(opt.muscle))
+                            .foregroundColor(mc)
                     )
-                Text(opt.name).font(.system(size: 13, weight: .bold)).foregroundColor(.aura.text)
+                Text(opt.name).font(AuraFont.jakarta(13, .bold)).foregroundColor(.aura.text)
                     .lineLimit(1)
-                Text("\(opt.muscle) · \(opt.equipment)").font(.system(size: 11)).foregroundColor(.aura.text3)
+                Text("\(opt.muscle) · \(opt.equipment)").font(AuraFont.jakarta(11)).foregroundColor(.aura.text3)
                     .lineLimit(1)
             }
             .padding(10)

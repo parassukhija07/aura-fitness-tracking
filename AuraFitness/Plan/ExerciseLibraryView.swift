@@ -66,7 +66,7 @@ struct ExerciseLibraryTabView: View {
 
             Divider()
 
-            ScrollView {
+            AuraScreenScroll {
                 LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: AuraSpacing.s3) {
                     ForEach(filtered) { entry in
                         Button { selectedEntry = entry } label: { exerciseCell(entry) }
@@ -102,23 +102,23 @@ struct ExerciseLibraryTabView: View {
                     .frame(height: 80)
                 VStack(spacing: 4) {
                     Text(entry.category.prefix(2).uppercased())
-                        .font(.system(size: 22, weight: .heavy))
+                        .font(AuraFont.jakarta(22, .heavy))
                         .foregroundColor(categoryColor(entry.category).opacity(0.5))
                     if entry.isFavorite {
                         Image(systemName: "heart.fill")
-                            .font(.system(size: 10))
+                            .font(AuraFont.jakarta(10))
                             .foregroundColor(.aura.red.opacity(0.7))
                     }
                 }
             }
 
             Text(entry.name)
-                .font(.system(size: 13, weight: .bold))
+                .font(AuraFont.jakarta(13, .bold))
                 .foregroundColor(.aura.text)
                 .lineLimit(2)
 
             Text("\(entry.category) · \(entry.equipment)")
-                .font(.system(size: 11, weight: .medium))
+                .font(AuraFont.jakarta(11, .medium))
                 .foregroundColor(.aura.text2)
 
             if entry.isCustom {

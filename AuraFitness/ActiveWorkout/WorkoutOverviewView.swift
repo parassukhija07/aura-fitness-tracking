@@ -7,10 +7,19 @@ struct WorkoutOverviewView: View {
 
     @State private var exerciseMenu: Int? = nil
     @State private var modal: WorkoutModal? = nil
+    /// Read-only exercise detail pushed when the card's *name* is tapped
+    /// (design: `setExDetail(lookupWkEx(e))` — distinct from tapping the
+    /// card body, which opens the logger).
+    @State private var detailName: String? = nil
 
     var body: some View {
         Group {
-            if session.workout.exercises.isEmpty {
+            if let name = detailName {
+                PlanExerciseDetailView(
+                    exercise: PlanData.libExercise(named: name),
+                    onBack: { detailName = nil }
+                )
+            } else if session.workout.exercises.isEmpty {
                 EmptyOverviewView(showEndSheet: $showEndSheet,
                                   onAdd: { modal = .addExercise(forSupersetExIdx: nil) })
             } else {
@@ -82,13 +91,13 @@ struct WorkoutOverviewView: View {
             }
             Spacer()
             VStack(spacing: 1) {
-                Text(session.workout.name).font(.system(size: 12, weight: .bold)).foregroundColor(.aura.text2).lineLimit(1)
+                Text(session.workout.name).font(AuraFont.jakarta(12, .bold)).foregroundColor(.aura.text2).lineLimit(1)
                 Text(session.elapsedFormatted)
                     .font(AuraFont.statNum(size: 19)).foregroundColor(.aura.accent).monospacedDigit()
             }
             Spacer()
             Button { appState.minimizeWorkout() } label: {
-                Image(systemName: "minus").font(.system(size: 22, weight: .medium)).foregroundColor(.aura.text)
+                Image(systemName: "minus").font(AuraFont.jakarta(22, .medium)).foregroundColor(.aura.text)
             }
         }
         .padding(.horizontal, AuraSpacing.screenPad)
@@ -100,7 +109,7 @@ struct WorkoutOverviewView: View {
         VStack(spacing: 6) {
             HStack {
                 Text("\(session.doneSets)/\(session.totalSets) sets")
-                    .font(.system(size: 15, weight: .heavy)).foregroundColor(.aura.text)
+                    .font(AuraFont.jakarta(15, .heavy)).foregroundColor(.aura.text)
                 Spacer()
                 Text(session.workout.program ?? "").font(AuraFont.secondary()).foregroundColor(.aura.text2)
             }
@@ -124,16 +133,17 @@ struct WorkoutOverviewView: View {
 
             HStack(spacing: AuraSpacing.s3) {
                 Image(systemName: "line.3.horizontal")
-                    .font(.system(size: 18)).foregroundColor(.aura.text3)
+                    .font(AuraFont.jakarta(18)).foregroundColor(.aura.text3)
 
                 VStack(alignment: .leading, spacing: 4) {
                     HStack {
-                        // Tapping the name opens the exercise (design opens detail)
+                        // Tapping the name opens the read-only exercise detail
+                        // (design: setExDetail); the card body opens the logger.
                         Button {
-                            openExercise(index: index, isSSFirst: isSSFirst, isSSSecond: isSSSecond)
+                            detailName = exercise.name
                         } label: {
                             Text(exercise.name)
-                                .font(.system(size: 16, weight: .bold))
+                                .font(AuraFont.jakarta(16, .bold))
                                 .foregroundColor(.aura.text)
                                 .multilineTextAlignment(.leading)
                         }
@@ -141,7 +151,7 @@ struct WorkoutOverviewView: View {
                         Spacer()
                         if allDone {
                             Image(systemName: "checkmark.circle.fill")
-                                .foregroundColor(.aura.green).font(.system(size: 20))
+                                .foregroundColor(.aura.green).font(AuraFont.jakarta(20))
                         }
                     }
 
@@ -150,8 +160,8 @@ struct WorkoutOverviewView: View {
                             .font(AuraFont.secondary()).foregroundColor(.aura.text2)
                         if isSSFirst {
                             HStack(spacing: 3) {
-                                Image(systemName: "bolt.fill").font(.system(size: 9))
-                                Text("SS").font(.system(size: 10, weight: .heavy))
+                                Image(systemName: "bolt.fill").font(AuraFont.jakarta(9))
+                                Text("SS").font(AuraFont.jakarta(10, .heavy))
                             }
                             .foregroundColor(.aura.accent)
                             .padding(.horizontal, 7).padding(.vertical, 2)
@@ -166,7 +176,7 @@ struct WorkoutOverviewView: View {
 
                 Button { exerciseMenu = index } label: {
                     Image(systemName: "ellipsis")
-                        .font(.system(size: 20)).foregroundColor(.aura.text2)
+                        .font(AuraFont.jakarta(20)).foregroundColor(.aura.text2)
                         .frame(width: 34, height: 34)
                 }
                 .buttonStyle(.plain)
@@ -199,8 +209,8 @@ struct WorkoutOverviewView: View {
         HStack(spacing: 8) {
             Rectangle().fill(Color.aura.accentSoft).frame(height: 2)
             HStack(spacing: 3) {
-                Image(systemName: "bolt.fill").font(.system(size: 11))
-                Text("SUPERSET").font(.system(size: 10, weight: .heavy)).tracking(0.5)
+                Image(systemName: "bolt.fill").font(AuraFont.jakarta(11))
+                Text("SUPERSET").font(AuraFont.jakarta(10, .heavy)).tracking(0.5)
             }
             .foregroundColor(.aura.accent)
             .padding(.horizontal, 9).padding(.vertical, 3)
@@ -247,14 +257,11 @@ struct ExerciseMenuSheet: View {
         exercise?.supersetGroupID != nil
     }
 
-    @State private var showNote = false
-
     var body: some View {
         VStack(spacing: 0) {
-            SheetGrabber()
             if let ex = exercise {
                 VStack(spacing: 2) {
-                    Text(ex.name).font(.system(size: 15, weight: .bold)).foregroundColor(.aura.text)
+                    Text(ex.name).font(AuraFont.jakarta(15, .bold)).foregroundColor(.aura.text)
                     Text("Exercise \(exerciseIndex + 1) of \(session.workout.exercises.count)")
                         .font(AuraFont.secondary()).foregroundColor(.aura.text2)
                 }
@@ -277,34 +284,9 @@ struct ExerciseMenuSheet: View {
                 menuRow(icon: "plus.circle.fill", color: .aura.green, title: "Add Exercise After") {
                     triggerModal(.addExercise(forSupersetExIdx: nil))
                 }
-                Divider().padding(.leading, 56)
-                menuRow(icon: "note.text", color: .aura.text2, title: "Add Note") {
-                    withAnimation { showNote.toggle() }
-                }
-
-                if showNote, let _ = exercise {
-                    HStack(spacing: AuraSpacing.s2) {
-                        Image(systemName: "note.text")
-                            .font(.system(size: 13))
-                            .foregroundColor(.aura.text3)
-                            .frame(width: 36)
-                        TextField("Note for this exercise…",
-                                  text: Binding(
-                                    get: { session.workout.exercises[exerciseIndex].note },
-                                    set: { session.workout.exercises[exerciseIndex].note = $0 }
-                                  ))
-                        .font(AuraFont.secondary())
-                        .foregroundColor(.aura.text)
-                        .submitLabel(.done)
-                    }
-                    .padding(.horizontal, AuraSpacing.s4)
-                    .padding(.vertical, 12)
-                    .transition(.opacity.combined(with: .move(edge: .top)))
-                }
             }
             .background(Color.aura.surface).clipShape(RoundedRectangle(cornerRadius: AuraRadius.md))
             .padding(.horizontal, AuraSpacing.screenPad)
-            .animation(.easeInOut(duration: 0.18), value: showNote)
 
             // Danger zone
             VStack(spacing: 0) {
@@ -344,7 +326,7 @@ struct ExerciseMenuSheet: View {
             HStack(spacing: AuraSpacing.s3) {
                 ZStack {
                     RoundedRectangle(cornerRadius: 8).fill(color.opacity(0.15)).frame(width: 36, height: 36)
-                    Image(systemName: icon).font(.system(size: 16, weight: .semibold)).foregroundColor(color)
+                    Image(systemName: icon).font(AuraFont.jakarta(16, .semibold)).foregroundColor(color)
                 }
                 Text(title).font(AuraFont.body()).foregroundColor(textColor)
                 Spacer()

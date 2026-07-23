@@ -37,7 +37,6 @@ struct WorkoutModalsView: View {
         .background(Color.aura.bg)
     }
 
-    private func grabber() -> some View { SheetGrabber().frame(maxWidth: .infinity) }
 
     // MARK: Substitute
 
@@ -45,10 +44,9 @@ struct WorkoutModalsView: View {
         let cur = session.workout.exercises.indices.contains(ei) ? session.workout.exercises[ei] : nil
         return ScrollView {
             VStack(spacing: AuraSpacing.s3) {
-                grabber()
                 VStack(spacing: 3) {
-                    Text("Substitute Exercise").font(.system(size: 15, weight: .bold)).foregroundColor(.aura.text)
-                    Text("Replacing: \(cur?.name ?? "")").font(.system(size: 12)).foregroundColor(.aura.text2)
+                    Text("Substitute Exercise").font(AuraFont.jakarta(15, .bold)).foregroundColor(.aura.text)
+                    Text("Replacing: \(cur?.name ?? "")").font(AuraFont.jakarta(12)).foregroundColor(.aura.text2)
                 }
                 .padding(.vertical, 4)
                 VStack(spacing: 0) {
@@ -68,6 +66,7 @@ struct WorkoutModalsView: View {
             .padding(.bottom, AuraSpacing.s6)
         }
         .presentationDetents([.medium, .large])
+        .presentationDragIndicator(.visible)
     }
 
     // MARK: Create superset (ss-pick)
@@ -77,7 +76,6 @@ struct WorkoutModalsView: View {
         let others = Array(session.workout.exercises.enumerated()).filter { $0.offset != ei }
         return ScrollView {
             VStack(alignment: .leading, spacing: AuraSpacing.s3) {
-                grabber()
                 HStack {
                     Text("Create Superset").font(AuraFont.navTitle()).foregroundColor(.aura.text)
                     Spacer()
@@ -85,17 +83,17 @@ struct WorkoutModalsView: View {
 
                 // A chip
                 HStack(spacing: 10) {
-                    Text("A").font(.system(size: 11, weight: .heavy)).foregroundColor(.white)
+                    Text("A").font(AuraFont.jakarta(11, .heavy)).foregroundColor(.white)
                         .frame(width: 26, height: 26).background(Color.aura.accent)
                         .clipShape(RoundedRectangle(cornerRadius: 6))
-                    Text(src?.name ?? "").font(.system(size: 14, weight: .bold)).foregroundColor(.aura.text)
+                    Text(src?.name ?? "").font(AuraFont.jakarta(14, .bold)).foregroundColor(.aura.text)
                     Spacer()
                 }
                 .padding(.horizontal, 12).padding(.vertical, 10)
                 .background(Color.aura.accentSoft).clipShape(RoundedRectangle(cornerRadius: AuraRadius.md))
                 .padding(.horizontal, AuraSpacing.screenPad)
 
-                Text("PAIR WITH (B)").font(.system(size: 11, weight: .bold)).foregroundColor(.aura.text2)
+                Text("PAIR WITH (B)").font(AuraFont.jakarta(11, .bold)).foregroundColor(.aura.text2)
                     .tracking(0.5).padding(.horizontal, AuraSpacing.screenPad)
 
                 VStack(spacing: 0) {
@@ -107,15 +105,15 @@ struct WorkoutModalsView: View {
                             presented = nil
                         } label: {
                             HStack(spacing: 12) {
-                                Text("B").font(.system(size: 11, weight: .heavy)).foregroundColor(.white)
+                                Text("B").font(AuraFont.jakarta(11, .heavy)).foregroundColor(.white)
                                     .frame(width: 26, height: 26).background(Color.aura.blue)
                                     .clipShape(RoundedRectangle(cornerRadius: 6))
                                 VStack(alignment: .leading, spacing: 1) {
-                                    Text(e.name).font(.system(size: 16, weight: .medium)).foregroundColor(.aura.text)
-                                    Text("\(e.equipment) · \(e.repRange) reps").font(.system(size: 13)).foregroundColor(.aura.text2)
+                                    Text(e.name).font(AuraFont.jakarta(16, .medium)).foregroundColor(.aura.text)
+                                    Text("\(e.equipment) · \(e.repRange) reps").font(AuraFont.jakarta(13)).foregroundColor(.aura.text2)
                                 }
                                 Spacer()
-                                Image(systemName: "chevron.right").font(.system(size: 14)).foregroundColor(.aura.text3)
+                                Image(systemName: "chevron.right").font(AuraFont.jakarta(14)).foregroundColor(.aura.text3)
                             }
                             .padding(.horizontal, 16).padding(.vertical, 13)
                         }
@@ -126,20 +124,20 @@ struct WorkoutModalsView: View {
                 .background(Color.aura.surface).clipShape(RoundedRectangle(cornerRadius: AuraRadius.md))
                 .padding(.horizontal, AuraSpacing.screenPad)
 
-                Text("OR ADD NEW").font(.system(size: 11, weight: .bold)).foregroundColor(.aura.text2)
+                Text("OR ADD NEW").font(AuraFont.jakarta(11, .bold)).foregroundColor(.aura.text2)
                     .tracking(0.5).padding(.horizontal, AuraSpacing.screenPad)
                 Button { presented = .addExercise(forSupersetExIdx: ei) } label: {
                     HStack(spacing: 12) {
                         ZStack {
                             RoundedRectangle(cornerRadius: AuraRadius.xs).fill(Color.aura.green).frame(width: 30, height: 30)
-                            Image(systemName: "plus.circle.fill").foregroundColor(.white).font(.system(size: 16))
+                            Image(systemName: "plus.circle.fill").foregroundColor(.white).font(AuraFont.jakarta(16))
                         }
                         VStack(alignment: .leading, spacing: 1) {
-                            Text("Add new exercise").font(.system(size: 16, weight: .medium)).foregroundColor(.aura.text)
-                            Text("Position in list sets A/B order").font(.system(size: 13)).foregroundColor(.aura.text2)
+                            Text("Add new exercise").font(AuraFont.jakarta(16, .medium)).foregroundColor(.aura.text)
+                            Text("Position in list sets A/B order").font(AuraFont.jakarta(13)).foregroundColor(.aura.text2)
                         }
                         Spacer()
-                        Image(systemName: "chevron.right").font(.system(size: 14)).foregroundColor(.aura.text3)
+                        Image(systemName: "chevron.right").font(AuraFont.jakarta(14)).foregroundColor(.aura.text3)
                     }
                     .padding(.horizontal, 16).padding(.vertical, 13)
                     .background(Color.aura.surface).clipShape(RoundedRectangle(cornerRadius: AuraRadius.md))
@@ -153,6 +151,7 @@ struct WorkoutModalsView: View {
             .padding(.bottom, AuraSpacing.s6)
         }
         .presentationDetents([.large])
+        .presentationDragIndicator(.visible)
     }
 
     // MARK: Remove superset confirmation
@@ -162,15 +161,14 @@ struct WorkoutModalsView: View {
         let b = session.workout.exercises.indices.contains(ei + 1) ? session.workout.exercises[ei + 1] : nil
         return ScrollView {
             VStack(spacing: AuraSpacing.s3) {
-                grabber()
                 VStack(spacing: 6) {
                     ZStack {
                         Circle().fill(Color.aura.red.opacity(0.12)).frame(width: 48, height: 48)
-                        Image(systemName: "bolt.fill").foregroundColor(.aura.red).font(.system(size: 22))
+                        Image(systemName: "bolt.fill").foregroundColor(.aura.red).font(AuraFont.jakarta(22))
                     }
-                    Text("Remove Superset?").font(.system(size: 17, weight: .heavy)).foregroundColor(.aura.text)
+                    Text("Remove Superset?").font(AuraFont.jakarta(17, .heavy)).foregroundColor(.aura.text)
                     Text("This will split the pair into two individual exercises. All logged sets and weights are kept.")
-                        .font(.system(size: 12)).foregroundColor(.aura.text2)
+                        .font(AuraFont.jakarta(12)).foregroundColor(.aura.text2)
                         .multilineTextAlignment(.center).frame(maxWidth: 260)
                 }
                 .padding(.bottom, 4)
@@ -197,16 +195,17 @@ struct WorkoutModalsView: View {
             .padding(.bottom, AuraSpacing.s6)
         }
         .presentationDetents([.medium])
+        .presentationDragIndicator(.visible)
     }
 
     private func ssSummaryRow(_ letter: String, _ ex: Exercise, color: Color) -> some View {
         HStack(spacing: 7) {
-            Text(letter).font(.system(size: 9, weight: .heavy)).foregroundColor(.white)
+            Text(letter).font(AuraFont.jakarta(9, .heavy)).foregroundColor(.white)
                 .frame(width: 18, height: 18).background(color).clipShape(RoundedRectangle(cornerRadius: 4))
-            Text(ex.name).font(.system(size: 13, weight: .semibold)).foregroundColor(.aura.text).lineLimit(1)
+            Text(ex.name).font(AuraFont.jakarta(13, .semibold)).foregroundColor(.aura.text).lineLimit(1)
             Spacer()
             Text("\(ex.sets.filter { $0.done }.count)/\(ex.sets.count) sets logged")
-                .font(.system(size: 11, weight: .bold)).foregroundColor(.aura.green)
+                .font(AuraFont.jakarta(11, .bold)).foregroundColor(.aura.green)
                 .padding(.horizontal, 8).padding(.vertical, 3)
                 .background(Color.aura.green.opacity(0.12)).clipShape(Capsule())
         }
@@ -217,25 +216,24 @@ struct WorkoutModalsView: View {
     private func addExerciseSheet(forSS: Int?) -> some View {
         ScrollView {
             VStack(alignment: .leading, spacing: AuraSpacing.s3) {
-                grabber()
                 VStack(spacing: 3) {
                     Text(forSS != nil ? "Add Exercise to Superset" : "Add Exercise")
-                        .font(.system(size: 15, weight: .bold)).foregroundColor(.aura.text)
+                        .font(AuraFont.jakarta(15, .bold)).foregroundColor(.aura.text)
                     Text(forSS != nil ? "Position in list determines A/B order" : "Added to end of workout")
-                        .font(.system(size: 12)).foregroundColor(.aura.text2)
+                        .font(AuraFont.jakarta(12)).foregroundColor(.aura.text2)
                 }
                 .frame(maxWidth: .infinity)
 
                 HStack(spacing: 8) {
-                    Image(systemName: "magnifyingglass").foregroundColor(.aura.text3).font(.system(size: 16))
+                    Image(systemName: "magnifyingglass").foregroundColor(.aura.text3).font(AuraFont.jakarta(16))
                     TextField("Search exercise library…", text: $search)
-                        .font(.system(size: 15)).foregroundColor(.aura.text)
+                        .font(AuraFont.jakarta(15)).foregroundColor(.aura.text)
                 }
                 .padding(.horizontal, 13).padding(.vertical, 11)
                 .background(Color.aura.fill.opacity(0.5)).clipShape(RoundedRectangle(cornerRadius: AuraRadius.sm))
                 .padding(.horizontal, AuraSpacing.screenPad)
 
-                Text("SUGGESTED").font(.system(size: 11, weight: .bold)).foregroundColor(.aura.text2)
+                Text("SUGGESTED").font(AuraFont.jakarta(11, .bold)).foregroundColor(.aura.text2)
                     .tracking(0.5).padding(.horizontal, AuraSpacing.screenPad)
 
                 VStack(spacing: 0) {
@@ -262,6 +260,7 @@ struct WorkoutModalsView: View {
             .padding(.bottom, AuraSpacing.s6)
         }
         .presentationDetents([.large])
+        .presentationDragIndicator(.visible)
     }
 
     private var filteredAddOptions: [WorkoutExerciseOption] {
@@ -276,17 +275,17 @@ struct WorkoutModalsView: View {
         Button(action: action) {
             HStack(spacing: 12) {
                 Text(ActiveWorkoutData.muscleInitial(o.muscle))
-                    .font(.system(size: 10, weight: .heavy)).foregroundColor(.white)
+                    .font(AuraFont.jakarta(10, .heavy)).foregroundColor(.white)
                     .frame(width: 30, height: 30)
                     .background(ActiveWorkoutData.muscleColor(o.muscle))
                     .clipShape(RoundedRectangle(cornerRadius: AuraRadius.xs))
                 VStack(alignment: .leading, spacing: 1) {
-                    Text(o.name).font(.system(size: 16, weight: .medium)).foregroundColor(.aura.text)
-                    Text("\(o.muscle) · \(o.equipment)").font(.system(size: 13)).foregroundColor(.aura.text2)
+                    Text(o.name).font(AuraFont.jakarta(16, .medium)).foregroundColor(.aura.text)
+                    Text("\(o.muscle) · \(o.equipment)").font(AuraFont.jakarta(13)).foregroundColor(.aura.text2)
                 }
                 Spacer()
                 Image(systemName: trailing == "plus" ? "plus.circle.fill" : "chevron.right")
-                    .font(.system(size: trailing == "plus" ? 20 : 14))
+                    .font(AuraFont.jakarta(trailing == "plus" ? 20 : 14))
                     .foregroundColor(trailing == "plus" ? .aura.accent : .aura.text3)
             }
             .padding(.horizontal, 16).padding(.vertical, 13)

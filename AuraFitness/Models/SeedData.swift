@@ -1,4 +1,57 @@
 import Foundation
+import CryptoKit
+
+// MARK: - Stable seed identifiers
+//
+// Seeded programs and workouts used to get a fresh `UUID()` on every install.
+// That is fine locally — the ids are persisted on first launch and stay put —
+// but it breaks the moment anything CROSSES devices: `UserPlan.weekSchedule`
+// and `DayOverride.workoutId` reference workouts BY ID, and plans/overrides
+// sync. A plan pulled onto a second device pointed at workout ids that device
+// had never generated, so the whole week resolved to empty.
+//
+// Deriving the ids from the content name instead means every install on every
+// device computes the same id for "Push Day A", and those references resolve
+// anywhere. Existing installs are migrated by `SeedIDMigration` (see
+// ProgramDatabase.swift), which rewrites the old random ids and every
+// reference to them.
+enum StableID {
+    /// Frozen namespace. NEVER change this value — it would silently
+    /// re-issue every seed id and orphan every existing plan reference.
+    private static let namespace = UUID(uuidString: "6B1D4E9A-3F27-4C58-9A0E-2D8C7B5F1A34")!
+
+    static func program(_ name: String) -> UUID { v5("program:" + name) }
+    static func workout(_ name: String) -> UUID { v5("workout:" + name) }
+
+    /// Library exercise ids. Load-bearing for a second reason beyond the
+    /// cross-device one above: the global catalog table seeded by
+    /// `supabase/seed/generate_seed.py` computes these SAME ids server-side,
+    /// which is what lets a pulled catalog row REPLACE its bundled
+    /// counterpart instead of landing beside it as a duplicate.
+    static func exercise(_ name: String) -> UUID { v5("exercise:" + name) }
+
+    /// Warm-up steps are `Identifiable` and rendered in id-keyed lists, so a
+    /// refreshed catalog entry must not hand them new ids on every pull.
+    /// Keyed by POSITION, not by the step's own `set` number — a malformed
+    /// record can repeat a set number, and two steps sharing an id collapse
+    /// in the list. Mirrored by `warmup_step_id` in the seed generator.
+    static func warmupStep(exercise: String, index: Int) -> UUID {
+        v5("warmupstep:\(exercise)#\(index)")
+    }
+
+    /// RFC 4122 §4.3 name-based UUID, SHA-1 flavour (version 5): hash the
+    /// namespace bytes followed by the name, then stamp the version and
+    /// variant bits into the first 16 bytes of the digest.
+    private static func v5(_ name: String) -> UUID {
+        var input = withUnsafeBytes(of: namespace.uuid) { Array($0) }
+        input.append(contentsOf: Array(name.utf8))
+        var b = Array(Insecure.SHA1.hash(data: Data(input)).prefix(16))
+        b[6] = (b[6] & 0x0F) | 0x50   // version 5
+        b[8] = (b[8] & 0x3F) | 0x80   // RFC 4122 variant
+        return UUID(uuid: (b[0], b[1], b[2],  b[3],  b[4],  b[5],  b[6],  b[7],
+                           b[8], b[9], b[10], b[11], b[12], b[13], b[14], b[15]))
+    }
+}
 
 // MARK: - Exercise Library (80+ exercises)
 enum ExerciseLibrary {
@@ -329,228 +382,29 @@ enum ExerciseLibrary {
     }
 }
 
-// MARK: - Seed Programs
+// MARK: - SeedData
+//
+// Ships NO prefilled USER data. Every install — signed in, or guest — opens
+// with an empty My Plans, an empty Log and an empty Progress tab. Nothing here
+// adopts a plan, schedules a day or writes a body profile on the user's behalf;
+// the app's own five bundled programs and the "My PPL Plan" adopted from them
+// were removed for exactly that reason, and `SeedPurgeMigration` still clears
+// them from devices that already hold them.
+//
+// What it DOES ship is reference data — the material the user picks FROM:
+//
+//  - `ExerciseLibrary` above, which feeds `ExerciseDatabase.legacyEntries()`.
+//  - `ProgramLibrary` below: the workout and program libraries behind the Plan
+//    tab's Workouts and Programs subtabs. Browsable, never auto-adopted; a
+//    program enters My Plans only when the user taps "Add to My Plans".
+//
+// The distinction is the whole policy. Reference data is what makes the empty
+// tabs fillable; prefilled user data is someone else's training week.
 enum SeedData {
-    // MARK: PPL
-    private static func pplPushA() -> Workout {
-        var w = Workout(id: UUID(), name: "Push Day A", primaryMuscles: "Chest · Shoulders · Triceps",
-                        estimatedMinutes: 60, exercises: [])
-        let lib = ExerciseLibrary.all
-        func find(_ name: String) -> Exercise { lib.first { $0.name == name } ?? ExerciseLibrary.chest[0] }
-        w.exercises = [
-            find("Barbell Bench Press"),
-            find("Incline Dumbbell Press"),
-            find("Cable Fly"),
-            find("Dumbbell Bench Press"),
-            find("Seated Shoulder Press"),
-            find("Cable Lateral Raise"),
-            find("Triceps Rope Pushdown"),
-            find("Skull Crushers")
-        ]
-        return w
-    }
-    private static func pplPullA() -> Workout {
-        var w = Workout(id: UUID(), name: "Pull Day A", primaryMuscles: "Back · Biceps",
-                        estimatedMinutes: 55, exercises: [])
-        let lib = ExerciseLibrary.all
-        func find(_ name: String) -> Exercise { lib.first { $0.name == name } ?? ExerciseLibrary.back[0] }
-        w.exercises = [
-            find("Barbell Row"),
-            find("Pull-Ups"),
-            find("Seated Cable Row"),
-            find("Lat Pulldown"),
-            find("Face Pulls"),
-            find("Barbell Curl"),
-            find("Hammer Curl"),
-            find("Cable Curl")
-        ]
-        return w
-    }
-    private static func pplLegsA() -> Workout {
-        var w = Workout(id: UUID(), name: "Leg Day A", primaryMuscles: "Quads · Hamstrings · Calves",
-                        estimatedMinutes: 65, exercises: [])
-        let lib = ExerciseLibrary.all
-        func find(_ name: String) -> Exercise { lib.first { $0.name == name } ?? ExerciseLibrary.legs[0] }
-        w.exercises = [
-            find("Barbell Squat"),
-            find("Romanian Deadlift"),
-            find("Leg Press"),
-            find("Leg Curl"),
-            find("Leg Extension"),
-            find("Hip Thrust"),
-            find("Calf Raises"),
-            find("Hanging Leg Raise")
-        ]
-        return w
-    }
-    private static func pplPushB() -> Workout {
-        var w = Workout(id: UUID(), name: "Push Day B", primaryMuscles: "Shoulders · Chest · Triceps",
-                        estimatedMinutes: 58, exercises: [])
-        let lib = ExerciseLibrary.all
-        func find(_ name: String) -> Exercise { lib.first { $0.name == name } ?? ExerciseLibrary.shoulders[0] }
-        w.exercises = [
-            find("Overhead Press"),
-            find("Dumbbell Lateral Raise"),
-            find("Incline Dumbbell Press"),
-            find("Cable Lateral Raise"),
-            find("Arnold Press"),
-            find("Rear Delt Fly"),
-            find("Skull Crushers"),
-            find("Tricep Dips")
-        ]
-        return w
-    }
-    private static func pplPullB() -> Workout {
-        var w = Workout(id: UUID(), name: "Pull Day B", primaryMuscles: "Back · Biceps",
-                        estimatedMinutes: 60, exercises: [])
-        let lib = ExerciseLibrary.all
-        func find(_ name: String) -> Exercise { lib.first { $0.name == name } ?? ExerciseLibrary.back[0] }
-        w.exercises = [
-            find("Deadlift"),
-            find("Weighted Pull-Ups"),
-            find("Seated Cable Row"),
-            find("T-Bar Row"),
-            find("Face Pulls"),
-            find("Hammer Curl"),
-            find("Concentration Curl"),
-            find("Reverse Curl")
-        ]
-        return w
-    }
-    private static func pplLegsB() -> Workout {
-        var w = Workout(id: UUID(), name: "Leg Day B", primaryMuscles: "Glutes · Quads · Hamstrings",
-                        estimatedMinutes: 65, exercises: [])
-        let lib = ExerciseLibrary.all
-        func find(_ name: String) -> Exercise { lib.first { $0.name == name } ?? ExerciseLibrary.legs[0] }
-        w.exercises = [
-            find("Front Squat"),
-            find("Sumo Deadlift"),
-            find("Walking Lunges"),
-            find("Leg Press"),
-            find("Leg Curl"),
-            find("Bulgarian Split Squat"),
-            find("Seated Calf Raise"),
-            find("Ab Wheel")
-        ]
-        return w
-    }
-
-    // MARK: StrongLifts 5×5
-    private static func sl5x5WorkoutA() -> Workout {
-        let lib = ExerciseLibrary.all
-        func find(_ name: String) -> Exercise {
-            var e = lib.first { $0.name == name } ?? ExerciseLibrary.chest[0]
-            e.plannedSets = 5
-            e.sets = (0..<5).map { _ in WorkoutSet() }
-            e.repRange = "5"
-            return e
-        }
-        return Workout(id: UUID(), name: "Workout A", primaryMuscles: "Full Body", estimatedMinutes: 45,
-                       exercises: [find("Barbell Squat"), find("Barbell Bench Press"), find("Barbell Row")])
-    }
-    private static func sl5x5WorkoutB() -> Workout {
-        let lib = ExerciseLibrary.all
-        func find(_ name: String) -> Exercise {
-            var e = lib.first { $0.name == name } ?? ExerciseLibrary.chest[0]
-            e.plannedSets = 5
-            e.sets = (0..<5).map { _ in WorkoutSet() }
-            e.repRange = "5"
-            return e
-        }
-        return Workout(id: UUID(), name: "Workout B", primaryMuscles: "Full Body", estimatedMinutes: 45,
-                       exercises: [find("Barbell Squat"), find("Overhead Press"), find("Deadlift")])
-    }
-
-    // MARK: Upper/Lower
-    private static func ulUpper() -> Workout {
-        let lib = ExerciseLibrary.all
-        func find(_ name: String) -> Exercise { lib.first { $0.name == name } ?? ExerciseLibrary.chest[0] }
-        return Workout(id: UUID(), name: "Upper Body", primaryMuscles: "Chest · Back · Shoulders · Arms", estimatedMinutes: 60,
-                       exercises: [find("Barbell Bench Press"), find("Barbell Row"), find("Overhead Press"),
-                                   find("Lat Pulldown"), find("Dumbbell Lateral Raise"), find("Barbell Curl"), find("Skull Crushers")])
-    }
-    private static func ulLower() -> Workout {
-        let lib = ExerciseLibrary.all
-        func find(_ name: String) -> Exercise { lib.first { $0.name == name } ?? ExerciseLibrary.legs[0] }
-        return Workout(id: UUID(), name: "Lower Body", primaryMuscles: "Quads · Hamstrings · Glutes", estimatedMinutes: 55,
-                       exercises: [find("Barbell Squat"), find("Romanian Deadlift"), find("Leg Press"),
-                                   find("Leg Curl"), find("Calf Raises"), find("Hip Thrust")])
-    }
-
-    // MARK: Full Body
-    private static func fullBodyWorkout() -> Workout {
-        let lib = ExerciseLibrary.all
-        func find(_ name: String) -> Exercise { lib.first { $0.name == name } ?? ExerciseLibrary.chest[0] }
-        return Workout(id: UUID(), name: "Full Body", primaryMuscles: "Full Body", estimatedMinutes: 50,
-                       exercises: [find("Barbell Squat"), find("Barbell Bench Press"), find("Barbell Row"),
-                                   find("Overhead Press"), find("Romanian Deadlift"), find("Barbell Curl"), find("Triceps Rope Pushdown")])
-    }
-
-    // MARK: HIIT
-    private static func hiitWorkout() -> Workout {
-        let lib = ExerciseLibrary.all
-        func find(_ name: String) -> Exercise { lib.first { $0.name == name } ?? ExerciseLibrary.cardio[0] }
-        return Workout(id: UUID(), name: "HIIT Circuit", primaryMuscles: "Cardio · Full Body", estimatedMinutes: 30,
-                       exercises: [find("Burpees"), find("Box Jump"), find("Jump Rope"),
-                                   find("Cycling"), find("Hanging Leg Raise")])
-    }
-
-    // MARK: - Programs
-    static let programs: [Program] = [
-        Program(
-            name: "Push · Pull · Legs",
-            daysPerWeek: 6, level: "Intermediate", style: "Hypertrophy",
-            description: "The classic PPL split targets each muscle group twice per week with dedicated push, pull, and leg sessions. Ideal for intermediate lifters looking to build size and strength simultaneously.",
-            workouts: [pplPushA(), pplPullA(), pplLegsA(), pplPushB(), pplPullB(), pplLegsB()]
-        ),
-        Program(
-            name: "StrongLifts 5×5",
-            daysPerWeek: 3, level: "Beginner", style: "Strength",
-            description: "A proven strength program built around 5 compound lifts. Alternate Workout A and B three times a week with a rest day between each. Add 2.5 kg per session.",
-            workouts: [sl5x5WorkoutA(), sl5x5WorkoutB()]
-        ),
-        Program(
-            name: "Upper / Lower",
-            daysPerWeek: 4, level: "Intermediate", style: "Strength + Hypertrophy",
-            description: "Alternate upper and lower body days four times per week. Balances frequency with volume — great transition from full-body to more advanced splits.",
-            workouts: [ulUpper(), ulLower()]
-        ),
-        Program(
-            name: "Full Body 3×",
-            daysPerWeek: 3, level: "Beginner", style: "Strength",
-            description: "Hit every major muscle group three times a week. Perfect for beginners who want to build a foundation of strength and movement patterns.",
-            workouts: [fullBodyWorkout()]
-        ),
-        Program(
-            name: "HIIT Cardio",
-            daysPerWeek: 3, level: "All Levels", style: "Cardio",
-            description: "High-intensity interval training to maximize calorie burn and improve cardiovascular fitness. Short sessions with maximal effort intervals.",
-            workouts: [hiitWorkout()]
-        )
-    ]
-
-    // MARK: - Default user plan
-    static func makeDefaultPlan() -> UserPlan {
-        let ppl = programs[0]
-        let workouts = ppl.workouts
-        // Classic 6-day PPL: Mon Push A, Tue Pull A, Wed Legs A, Thu rest, Fri Push B, Sat Pull B, Sun Legs B
-        var schedule: [Int: UUID?] = [:]
-        schedule[0] = workouts[5].id   // Sun = Legs B
-        schedule[1] = workouts[0].id   // Mon = Push A
-        schedule[2] = workouts[1].id   // Tue = Pull A
-        schedule[3] = workouts[2].id   // Wed = Legs A
-        schedule[4] = .some(nil)          // Thu = rest (explicit)
-        schedule[5] = workouts[3].id   // Fri = Push B
-        schedule[6] = workouts[4].id   // Sat = Pull B
-
-        return UserPlan(
-            name: "My PPL Plan",
-            isDefault: true,
-            sourceProgramID: ppl.id,
-            weekSchedule: schedule,
-            customWorkouts: []
-        )
-    }
+    /// The bundled program library. Reference content, not user data — see the
+    /// note above and `ProgramLibrary`.
+    @MainActor
+    static var programs: [Program] { ProgramLibrary.programs }
 
     // MARK: - Empty workout (FAB quick-action "Start Workout" with no plan)
     static func emptyWorkout() -> Workout {
@@ -561,5 +415,146 @@ enum SeedData {
             exercises: [],
             program: nil
         )
+    }
+}
+
+// MARK: - ProgramLibrary
+//
+// Builds the bundled workout + program libraries from
+// `Resources/program_library.json`, which is generated from
+// comprehensive_workout_library-v3.csv and comprehensive_program_library-v3.csv.
+// The data lives in the resource rather than in this file, so refreshing the
+// library is a data change instead of a source change.
+//
+// Exercises resolve through `ExerciseDatabase` BY NAME so a library workout
+// carries the same record the user would get picking that exercise themselves:
+// same id, same warm-up protocol, same coaching cue, same tutorial link, and
+// the same over-the-air catalog updates. The generator records which entry to
+// use in `catalog`. A minority of movements (Turkish Get-Up, Bird Dog, the
+// olympic lifts…) have no catalog equivalent; those ship the minimum needed to
+// render, from the record's own `equipment` / `primaryMuscle` fields.
+//
+// A missing or unreadable resource yields an empty library — the state the app
+// shipped in before this existed, and one every screen already handles.
+@MainActor
+enum ProgramLibrary {
+    /// Built once per launch. `Exercise` ids are sourced from the catalog, so
+    /// rebuilding this after `ExerciseDatabase` has changed mid-session could
+    /// hand two evaluations different ids for the same library workout.
+    static let programs: [Program] = build()
+
+    // MARK: Resource shape
+    private struct Payload: Decodable {
+        let programs: [ProgramJSON]
+        let workouts: [WorkoutJSON]
+    }
+
+    private struct ProgramJSON: Decodable {
+        let name: String
+        let level: String
+        let style: String
+        let description: String
+        /// 7 entries, day 1 first. `nil` = rest day.
+        let week: [String?]
+    }
+
+    private struct WorkoutJSON: Decodable {
+        let name: String
+        let primaryMuscles: String
+        let estimatedMinutes: Int
+        let exercises: [ExerciseJSON]
+    }
+
+    private struct ExerciseJSON: Decodable {
+        let name: String
+        let sets: Int
+        let reps: String
+        /// Catalog entry to source this exercise from. Absent when the catalog
+        /// has no usable equivalent, in which case the fields below stand in.
+        let catalog: String?
+        let equipment: String?
+        let primaryMuscle: String?
+        let muscleGroups: [String]?
+    }
+
+    // MARK: Build
+    private static func build() -> [Program] {
+        guard let url = Bundle.main.url(forResource: "program_library", withExtension: "json"),
+              let data = try? Data(contentsOf: url) else {
+            print("⚠️ ProgramLibrary: program_library.json not found in the app bundle — shipping no program library. Check the Resources build phase.")
+            return []
+        }
+        guard let payload = try? JSONDecoder().decode(Payload.self, from: data) else {
+            print("⚠️ ProgramLibrary: program_library.json could not be decoded — shipping no program library.")
+            return []
+        }
+
+        let byName = Dictionary(payload.workouts.map { ($0.name, workout($0)) },
+                                uniquingKeysWith: { first, _ in first })
+
+        return payload.programs.map { p in
+            // `weekPattern` keeps the program's own day order; `workouts` is
+            // the DISTINCT sessions in the order they first come up, because a
+            // week can run the same session twice — Court Athlete trains
+            // Explosive Power on days 1 and 5 — and listing it twice would
+            // show the user a duplicate.
+            let week = p.week.map { $0.flatMap { byName[$0] } }
+            var seen = Set<UUID>()
+            let distinct = week.compactMap { $0 }.filter { seen.insert($0.id).inserted }
+
+            return Program(
+                id: StableID.program(p.name),
+                name: p.name,
+                daysPerWeek: week.compactMap { $0 }.count,
+                level: p.level,
+                style: p.style,
+                description: p.description,
+                workouts: distinct,
+                isPredefined: true,
+                weekPattern: week.map { $0?.id }
+            )
+        }
+    }
+
+    private static func workout(_ w: WorkoutJSON) -> Workout {
+        Workout(
+            id: StableID.workout(w.name),
+            name: w.name,
+            primaryMuscles: w.primaryMuscles,
+            estimatedMinutes: w.estimatedMinutes,
+            exercises: w.exercises.map { exercise($0, in: w.name) },
+            program: nil
+        )
+    }
+
+    private static func exercise(_ e: ExerciseJSON, in workoutName: String) -> Exercise {
+        // The library's sets and reps override the catalog's defaults: the
+        // whole point of a program is that IT prescribes the volume.
+        if let catalog = e.catalog, let entry = ExerciseDatabase.shared.entry(named: catalog) {
+            var ex = ExerciseDatabase.shared.toExercise(entry, sets: e.sets)
+            ex.repRange = e.reps
+            return ex
+        }
+        if let catalog = e.catalog {
+            print("⚠️ ProgramLibrary: \(workoutName) asks for catalog entry '\(catalog)' (as '\(e.name)'), which is not in the library — falling back to a bare record.")
+        }
+
+        let groups = e.muscleGroups ?? []
+        var ex = Exercise(
+            // Keyed like every other catalog record, so if one of these
+            // movements is ever added to the catalog the two land on the same
+            // id instead of appearing twice.
+            id: StableID.exercise(e.name),
+            name: e.name,
+            primaryMuscle: e.primaryMuscle ?? groups.first ?? "Full Body",
+            muscleGroups: groups,
+            equipment: e.equipment ?? "Bodyweight",
+            difficulty: "Intermediate",
+            isCable: false,
+            repRange: e.reps,
+            plannedSets: e.sets
+        )
+        ex.sets = (0..<e.sets).map { _ in WorkoutSet() }
+        return ex
     }
 }

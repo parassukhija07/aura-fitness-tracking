@@ -81,8 +81,11 @@ struct Exercise: Identifiable, Codable, Hashable {
     var difficulty: String
     var isCable: Bool
     var pulley: String = "single"   // "single" | "double"
-    var repRange: String = "8–12"
-    var plannedSets: Int = 3
+    // No defaults: sets/reps must be resolved explicitly at every creation
+    // site — either from the catalog entry, the user's Workout Settings, or
+    // `Exercise.fallback*` — so a generic 3×8–12 can never be stamped silently.
+    var repRange: String
+    var plannedSets: Int
     var lastPR: PRRecord? = nil
     var target: TargetRecord? = nil
     var history: [SetHistory] = []   // last session's per-set values (design `history`)
@@ -105,6 +108,12 @@ struct Exercise: Identifiable, Codable, Hashable {
             acc + (s.weight ?? 0) * Double(s.reps ?? 0)
         }
     }
+
+    /// Neutral fallbacks for contexts where the user's Workout Settings must
+    /// NOT apply — imported history, decoded archives, tests — and as the last
+    /// resort when `AppStateBridge.shared` is unavailable during creation.
+    static let fallbackRepRange = "8–12"
+    static let fallbackSets = 3
 }
 
 // MARK: - Workout
@@ -129,6 +138,18 @@ struct Program: Identifiable, Codable {
     var description: String
     var workouts: [Workout]
     var isPredefined: Bool = true
+
+    /// The week the program actually prescribes: 7 entries, day 1 first,
+    /// `nil` = rest. Rest placement is part of the program — three lower-body
+    /// days on Tue/Thu/Sat is a different program from the same three stacked
+    /// Mon/Tue/Wed — and a day may repeat a workout, which `workouts` (the set
+    /// of distinct sessions) cannot express on its own.
+    ///
+    /// Empty means "no pattern given" and `UserPlanDatabase.addPlan(from:)`
+    /// falls back to filling weekdays sequentially. Custom programs built in
+    /// the editor leave it empty, as do programs persisted before this field
+    /// existed — hence the default, which keeps those rows decodable.
+    var weekPattern: [UUID?] = []
 }
 
 // MARK: - UserPlan
@@ -140,6 +161,16 @@ struct UserPlan: Identifiable, Codable {
     /// day of week (0=Sun … 6=Sat) → workout id (nil = rest day)
     var weekSchedule: [Int: UUID?] = [:]
     var customWorkouts: [Workout] = []
+
+    /// The calendar day (start-of-day) this plan's schedule begins applying
+    /// from. Days *before* it resolve to whichever plan was active earlier (or
+    /// stay empty), so making a plan default never rewrites the past.
+    ///
+    /// `nil` = a legacy plan that never recorded an activation; treated as
+    /// active from the distant past so existing installs keep showing their
+    /// week unchanged. Added after initial ship, so old persisted rows decode
+    /// to `nil` (Optional → `decodeIfPresent`).
+    var activationDate: Date? = nil
 
     func workout(for dayIndex: Int, programs: [Program]) -> Workout? {
         guard let entry = weekSchedule[dayIndex], let wid = entry else { return nil }

@@ -83,7 +83,7 @@ struct WeeklyVolumeView: View {
     // MARK: - Body
 
     var body: some View {
-        ScrollView {
+        AuraScreenScroll {
             VStack(spacing: AuraSpacing.s4) {
                 // Stat + toggle row
                 HStack(alignment: .top) {
@@ -100,7 +100,7 @@ struct WeeklyVolumeView: View {
                             if let pct = weekOverWeekPct {
                                 let up = pct >= 0
                                 Text("\(up ? "▲" : "▼") \(String(format: "%.0f", abs(pct)))%")
-                                    .font(.system(size: 11, weight: .bold))
+                                    .font(AuraFont.jakarta(11, .bold))
                                     .foregroundColor(up ? .aura.green : .aura.red)
                             }
                         }
@@ -121,7 +121,7 @@ struct WeeklyVolumeView: View {
                         HStack {
                             ForEach(pts) { pt in
                                 Text(pt.label)
-                                    .font(.system(size: 10))
+                                    .font(AuraFont.jakarta(10))
                                     .foregroundColor(.aura.text3)
                                     .frame(maxWidth: .infinity)
                             }
@@ -140,12 +140,12 @@ struct WeeklyVolumeView: View {
                                     .fill(Color.aura.accent)
                                     .frame(width: 44, height: 44)
                                 Image(systemName: "target")
-                                    .font(.system(size: 20, weight: .semibold))
+                                    .font(AuraFont.jakarta(20, .semibold))
                                     .foregroundColor(.white)
                             }
                             VStack(alignment: .leading, spacing: 3) {
                                 Text(top.name)
-                                    .font(.system(size: 16, weight: .bold))
+                                    .font(AuraFont.jakarta(16, .bold))
                                     .foregroundColor(.aura.text)
                                 Text("\(top.sets) sets · \(UnitFormatter.weight(top.volume, unit: appState.weightUnit))")
                                     .font(AuraFont.secondary())

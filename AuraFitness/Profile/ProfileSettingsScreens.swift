@@ -1,14 +1,38 @@
 import SwiftUI
+import UIKit
+import UniformTypeIdentifiers
+import UserNotifications
 
 // MARK: - General
 
 struct GeneralSettingsView: View {
     @EnvironmentObject var appState: AppState
 
-    /// Dark Mode toggle maps to the on/off ends of the 3-way preference.
+    /// The scheme actually on screen. With the preference on `.auto` — the
+    /// default until the user picks a side — `preferredColorScheme` is nil and
+    /// the app follows the system, so this is the only thing that knows whether
+    /// the app is currently rendering dark.
+    @Environment(\.colorScheme) private var colorScheme
+
+    /// Dark Mode is a 2-way toggle over a 3-way preference, so `.auto` has to
+    /// resolve to whichever side it is currently rendering as. Reading
+    /// `== .on` instead made a fresh install on a dark phone show a dark app
+    /// with the switch off, and the first tap then appeared to do nothing —
+    /// it moved `.auto` → `.on`, which looks identical. Only the second tap,
+    /// to `.off`, visibly changed anything.
+    ///
+    /// Writing always commits an explicit `.on`/`.off`: once the user has
+    /// touched the switch the choice is theirs, and it should stop tracking
+    /// the system.
     private var darkOn: Binding<Bool> {
         Binding(
-            get: { appState.darkModePreference == .on },
+            get: {
+                switch appState.darkModePreference {
+                case .on:   return true
+                case .off:  return false
+                case .auto: return colorScheme == .dark
+                }
+            },
             set: { appState.darkModePreference = $0 ? .on : .off }
         )
     }
@@ -76,8 +100,38 @@ struct GeneralSettingsView: View {
 struct NotificationsSettingsView: View {
     @EnvironmentObject var appState: AppState
     @StateObject private var toast = ToastCenter()
+    @State private var showPermissionAlert = false
 
     private let sounds = ["Ding", "Alarm clock"]
+
+    /// Enabling the toggle is only honoured if the OS actually grants (or has
+    /// already granted) permission. On `.denied` — or a fresh prompt the user
+    /// refuses — the toggle snaps back off and we point them at iOS Settings,
+    /// since the app cannot re-prompt once permission is denied.
+    private func handleNotificationsToggle(_ enabled: Bool) {
+        guard enabled else { return }
+        // Declared before the closures that capture it — a local function used
+        // ahead of its declaration does not compile.
+        let revokeToggle = {
+            DispatchQueue.main.async {
+                appState.notificationsEnabled = false
+                showPermissionAlert = true
+            }
+        }
+        let center = UNUserNotificationCenter.current()
+        center.getNotificationSettings { settings in
+            switch settings.authorizationStatus {
+            case .notDetermined:
+                center.requestAuthorization(options: [.alert, .sound]) { granted, _ in
+                    if !granted { revokeToggle() }
+                }
+            case .denied:
+                revokeToggle()
+            default:
+                break   // .authorized / .provisional / .ephemeral — keep it on.
+            }
+        }
+    }
 
     var body: some View {
         SettingsScreenScaffold(title: "Notifications", toast: toast) {
@@ -87,7 +141,7 @@ struct NotificationsSettingsView: View {
                                    subtitle: "Reminders, streaks and updates") {
                     AuraToggle(isOn: $appState.notificationsEnabled)
                         .onChange(of: appState.notificationsEnabled) { _, enabled in
-                            if enabled { NotificationScheduler.requestAuthorizationIfNeeded() }
+                            handleNotificationsToggle(enabled)
                         }
                 }
             }
@@ -105,7 +159,7 @@ struct NotificationsSettingsView: View {
                                     .fill(Color.aura.blue)
                                     .frame(width: 32, height: 32)
                                 Image(systemName: "timer")
-                                    .font(.system(size: 14, weight: .semibold))
+                                    .font(AuraFont.jakarta(14, .semibold))
                                     .foregroundColor(.white)
                             }
                             Text(sound)
@@ -114,7 +168,7 @@ struct NotificationsSettingsView: View {
                             Spacer()
                             if appState.restSound == sound {
                                 Image(systemName: "checkmark")
-                                    .font(.system(size: 15, weight: .bold))
+                                    .font(AuraFont.jakarta(15, .bold))
                                     .foregroundColor(.aura.accent)
                             }
                         }
@@ -127,9 +181,21 @@ struct NotificationsSettingsView: View {
                     if idx < sounds.count - 1 { Divider().padding(.leading, 64) }
                 }
             }
-            // Dim + disable the whole sound list when notifications are off.
+            // Dim + disable the whole sound list when notifications are off
+            // (shown, never hidden). `.disabled` over `.allowsHitTesting` so
+            // assistive tech reports the rows as unavailable too.
             .opacity(appState.notificationsEnabled ? 1 : 0.45)
-            .allowsHitTesting(appState.notificationsEnabled)
+            .disabled(!appState.notificationsEnabled)
+        }
+        .alert("Notifications are turned off", isPresented: $showPermissionAlert) {
+            Button("Open Settings") {
+                if let url = URL(string: UIApplication.openSettingsURLString) {
+                    UIApplication.shared.open(url)
+                }
+            }
+            Button("Not Now", role: .cancel) {}
+        } message: {
+            Text("Allow notifications for Aura in iOS Settings to get rest-timer alerts.")
         }
     }
 }
@@ -201,9 +267,9 @@ struct ConnectedAppsView: View {
 
             HStack(alignment: .top, spacing: AuraSpacing.s2) {
                 Image(systemName: "info.circle")
-                    .font(.system(size: 16))
+                    .font(AuraFont.jakarta(16))
                     .foregroundColor(.aura.text2)
-                Text("Aura syncs workouts and body weight both ways with your connected health app.")
+                Text("Aura syncs workouts and body weight two-way with Apple Health.")
                     .font(AuraFont.secondary())
                     .foregroundColor(.aura.text2)
                     .fixedSize(horizontal: false, vertical: true)
@@ -222,6 +288,11 @@ struct ConnectedAppsView: View {
 struct SupportView: View {
     @StateObject private var toast = ToastCenter()
 
+    /// Real marketing version from the bundle — never hardcode the number.
+    private var appVersion: String {
+        Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "1.0"
+    }
+
     var body: some View {
         SettingsScreenScaffold(title: "Support", toast: toast) {
             SettingsSectionLabel(title: "Get help")
@@ -233,7 +304,7 @@ struct SupportView: View {
                 supportRow("sparkles", .aura.purple, "Feature Request", "Opening request form…")
             }
 
-            Text("Aura Fitness · v2.4.0")
+            Text("Aura Fitness · v\(appVersion)")
                 .font(AuraFont.secondary())
                 .foregroundColor(.aura.text3)
                 .frame(maxWidth: .infinity)
@@ -292,18 +363,22 @@ struct ProfileConfirmSheet: View {
     @EnvironmentObject var authService: AuthService
 
     @State private var exportURL: URL? = nil
+    @State private var csvExportURL: URL? = nil
     @State private var busy = false
+    @State private var csvBusy = false
     @State private var showFullResetConfirm = false
+    @State private var showWorkoutResetConfirm = false
+    @State private var showFileImporter = false
+    @State private var importBusy = false
 
     var body: some View {
         VStack(spacing: 0) {
-            SheetGrabber()
             content
                 .padding(.horizontal, AuraSpacing.s4)
                 .padding(.bottom, AuraSpacing.s5)
         }
         .presentationDetents([.height(detentHeight)])
-        .presentationDragIndicator(.hidden)
+        .presentationDragIndicator(.visible)
         .background(Color.aura.surface)
         .alert("Reset everything?", isPresented: $showFullResetConfirm) {
             Button("Cancel", role: .cancel) {}
@@ -314,24 +389,35 @@ struct ProfileConfirmSheet: View {
         } message: {
             Text("This clears your profile, settings, and all workout data on this device and in the cloud. This cannot be undone.")
         }
+        .alert("Reset workout data?", isPresented: $showWorkoutResetConfirm) {
+            Button("Cancel", role: .cancel) {}
+            Button("Reset Workouts", role: .destructive) {
+                DataResetService.resetAll(workoutOnly: true, appState: appState, alsoRemote: true)
+                dismiss(); flash("Workout data reset")
+            }
+        } message: {
+            Text("This clears all logged workouts on this device and in the cloud. Your profile and settings are kept. This cannot be undone.")
+        }
     }
 
     private var detentHeight: CGFloat {
         switch kind {
-        case .export: return 320
-        case .reset:  return 360
-        case .delete: return 340
-        case .logout: return 320
+        case .export:     return 320
+        case .reset:      return 360
+        case .delete:     return 340
+        case .logout:     return 320
+        case .importData: return 360
         }
     }
 
     @ViewBuilder
     private var content: some View {
         switch kind {
-        case .export:  exportSheet
-        case .reset:   resetSheet
-        case .delete:  destructiveSheet(delete: true)
-        case .logout:  destructiveSheet(delete: false)
+        case .export:     exportSheet
+        case .reset:      resetSheet
+        case .delete:     destructiveSheet(delete: true)
+        case .logout:     destructiveSheet(delete: false)
+        case .importData: importSheet
         }
     }
 
@@ -339,10 +425,10 @@ struct ProfileConfirmSheet: View {
     private var exportSheet: some View {
         VStack(spacing: AuraSpacing.s3) {
             Text("Export Data")
-                .font(.system(size: 17, weight: .bold))
+                .font(AuraFont.jakarta(17, .bold))
                 .foregroundColor(.aura.text)
                 .padding(.bottom, AuraSpacing.s2)
-            Text("Download a full copy of your workouts, measurements and settings as a JSON archive.")
+            Text("CSV + JSON archive of all your data.")
                 .font(AuraFont.secondary())
                 .foregroundColor(.aura.text2)
                 .multilineTextAlignment(.center)
@@ -351,7 +437,7 @@ struct ProfileConfirmSheet: View {
                 ShareLink(item: exportURL) {
                     HStack(spacing: AuraSpacing.s2) {
                         Image(systemName: "square.and.arrow.up")
-                            .font(.system(size: 16, weight: .semibold))
+                            .font(AuraFont.jakarta(16, .semibold))
                         Text("Export Archive")
                             .font(AuraFont.body())
                     }
@@ -367,6 +453,26 @@ struct ProfileConfirmSheet: View {
                     .disabled(true)
                     .opacity(0.6)
             }
+            if let csvExportURL {
+                ShareLink(item: csvExportURL) {
+                    HStack(spacing: AuraSpacing.s2) {
+                        Image(systemName: "tablecells")
+                            .font(AuraFont.jakarta(16, .semibold))
+                        Text("Export as CSV")
+                            .font(AuraFont.body())
+                    }
+                    .foregroundColor(.aura.text)
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 52)
+                    .background(Color.aura.fill)
+                    .clipShape(RoundedRectangle(cornerRadius: AuraRadius.md))
+                }
+                .simultaneousGesture(TapGesture().onEnded { flash("CSV export ready") })
+            } else {
+                AuraGrayButton(label: csvBusy ? "Preparing…" : "Export as CSV") {}
+                    .disabled(true)
+                    .opacity(0.6)
+            }
             AuraGrayButton(label: "Cancel") { dismiss() }
         }
         .task {
@@ -375,19 +481,65 @@ struct ProfileConfirmSheet: View {
             exportURL = await DataArchiveBuilder.writeTempFile(appState)
             busy = false
         }
+        .task {
+            guard csvExportURL == nil else { return }
+            csvBusy = true
+            csvExportURL = await CSVArchiveBuilder.writeTempZip(appState)
+            csvBusy = false
+        }
+    }
+
+    // Import
+    private var importSheet: some View {
+        VStack(spacing: AuraSpacing.s3) {
+            Text("Import Data")
+                .font(AuraFont.jakarta(17, .bold))
+                .foregroundColor(.aura.text)
+                .padding(.bottom, AuraSpacing.s2)
+            Text("Import a JSON archive or CSV files exported from Aura.")
+                .font(AuraFont.secondary())
+                .foregroundColor(.aura.text2)
+                .multilineTextAlignment(.center)
+                .padding(.bottom, AuraSpacing.s2)
+            AuraPrimaryButton(label: importBusy ? "Importing…" : "Choose File", isLoading: importBusy) {
+                showFileImporter = true
+            }
+            .disabled(importBusy)
+            .opacity(importBusy ? 0.6 : 1)
+            AuraGrayButton(label: "Cancel") { dismiss() }
+        }
+        .fileImporter(
+            isPresented: $showFileImporter,
+            allowedContentTypes: [.json, .commaSeparatedText, .zip],
+            allowsMultipleSelection: false
+        ) { result in
+            switch result {
+            case .success(let urls):
+                guard let url = urls.first else { return }
+                importBusy = true
+                Task {
+                    let summary = await DataImportService.importFile(at: url, appState: appState)
+                    importBusy = false
+                    dismiss()
+                    flash(summary)
+                }
+            case .failure:
+                flash("Couldn't read that file")
+            }
+        }
     }
 
     // Reset (two options)
     private var resetSheet: some View {
         VStack(spacing: AuraSpacing.s3) {
             Text("Reset Data")
-                .font(.system(size: 17, weight: .bold))
+                .font(AuraFont.jakarta(17, .bold))
                 .foregroundColor(.aura.text)
                 .padding(.bottom, AuraSpacing.s2)
             SettingsGroup {
                 Button {
-                    DataResetService.resetAll(workoutOnly: true, appState: appState, alsoRemote: true)
-                    dismiss(); flash("Workout data reset")
+                    // Confirm before executing, same as the full-wipe option.
+                    showWorkoutResetConfirm = true
                 } label: {
                     SettingsRowLabel(icon: "dumbbell.fill", iconColor: .aura.text2,
                                      title: "Reset workout data only",
@@ -407,7 +559,7 @@ struct ProfileConfirmSheet: View {
                                 .fill(Color.aura.red)
                                 .frame(width: 32, height: 32)
                             Image(systemName: "trash.fill")
-                                .font(.system(size: 14, weight: .semibold))
+                                .font(AuraFont.jakarta(14, .semibold))
                                 .foregroundColor(.white)
                         }
                         Text("Reset everything")
@@ -435,16 +587,16 @@ struct ProfileConfirmSheet: View {
                     .fill(Color.aura.red.opacity(0.12))
                     .frame(width: 52, height: 52)
                 Image(systemName: delete ? "trash.fill" : "person.fill")
-                    .font(.system(size: 22, weight: .semibold))
+                    .font(AuraFont.jakarta(22, .semibold))
                     .foregroundColor(.aura.red)
             }
             .padding(.top, AuraSpacing.s2)
             Text(delete ? "Delete account?" : "Log out?")
-                .font(.system(size: 18, weight: .bold))
+                .font(AuraFont.jakarta(18, .bold))
                 .foregroundColor(.aura.text)
             Text(delete
                  ? "This permanently erases your account and all synced + local data. This cannot be undone."
-                 : "You can log back in anytime with your email.")
+                 : "You can log back in anytime.")
                 .font(AuraFont.secondary())
                 .foregroundColor(.aura.text2)
                 .multilineTextAlignment(.center)

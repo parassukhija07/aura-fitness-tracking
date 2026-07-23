@@ -14,15 +14,37 @@ struct NutritionView: View {
     private var cal: Double { stats.targetCalories }
     private var macros: MacroTargets { stats.macros }
 
-    private var weightChartData: [Double] {
+    /// Every derived figure is meaningless until height + weight are set.
+    private var hasDetails: Bool { stats.hasCompleteDetails }
+
+    // MARK: Weight series (canonical kg → display unit)
+    private var weightEntries: [(date: Date, kg: Double)] {
         appState.measurements
             .sorted { $0.date < $1.date }
-            .compactMap { $0.weight }
-            .map { UnitFormatter.weightValue($0, unit: appState.weightUnit) }
+            .compactMap { m -> (date: Date, kg: Double)? in
+                guard let kg = m.weight else { return nil }
+                return (date: m.date, kg: kg)
+            }
+    }
+
+    private var weightChartData: [Double] {
+        weightEntries.map { UnitFormatter.weightValue($0.kg, unit: appState.weightUnit) }
+    }
+
+    /// At most 4 evenly spaced date labels so the axis never crowds.
+    private var weightChartLabels: [String] {
+        // Key paths do not apply to tuple members — use an explicit closure.
+        let dates = weightEntries.map { $0.date }
+        guard !dates.isEmpty else { return [] }
+        let fmt = DateFormatter()
+        fmt.dateFormat = "d MMM"
+        guard dates.count > 4 else { return dates.map { fmt.string(from: $0) } }
+        let step = Double(dates.count - 1) / 3
+        return (0..<4).map { fmt.string(from: dates[Int((Double($0) * step).rounded())]) }
     }
 
     var body: some View {
-        ScrollView {
+        AuraScreenScroll(bottomClearance: 0) {
             VStack(spacing: AuraSpacing.s4) {
                 bodyWeightCard
                 detailsHeader
@@ -30,7 +52,7 @@ struct NutritionView: View {
                 statTiles
                 goalSection
                 macroSection
-                dailyTargetsSection
+                dailyTargetCard
                 Spacer().frame(height: 40)
             }
             .padding(.horizontal, AuraSpacing.screenPad)
@@ -44,7 +66,7 @@ struct NutritionView: View {
         }
     }
 
-    // MARK: Body weight card
+    // MARK: 1 — Weight trend + target badge
     private var bodyWeightCard: some View {
         AuraCard {
             VStack(alignment: .leading, spacing: AuraSpacing.s3) {
@@ -63,7 +85,7 @@ struct NutritionView: View {
                     }
                     Spacer()
                     Text("Target \(UnitFormatter.weight(stats.targetWeight, unit: appState.weightUnit))")
-                        .font(.system(size: 12, weight: .semibold))
+                        .font(AuraFont.jakarta(12, .semibold))
                         .foregroundColor(.white)
                         .padding(.horizontal, 8)
                         .padding(.vertical, 4)
@@ -71,7 +93,14 @@ struct NutritionView: View {
                         .clipShape(Capsule())
                 }
                 if weightChartData.count >= 2 {
-                    AuraLineChart(data: weightChartData, height: 110, showArea: true, showDot: true)
+                    AuraAxisChart(
+                        points: weightChartData,
+                        xLabels: weightChartLabels,
+                        // Points are already in the display unit — axis ticks
+                        // only need rounding, not a second conversion.
+                        valueFormatter: { String(format: "%.0f", $0) },
+                        height: 140
+                    )
                 } else {
                     RoundedRectangle(cornerRadius: AuraRadius.sm)
                         .fill(Color.aura.fill)
@@ -87,13 +116,14 @@ struct NutritionView: View {
         }
     }
 
+    // MARK: 2 — Your details
     private var detailsHeader: some View {
         HStack {
             Text("Your Details").sectionLabelStyle()
             Spacer()
             Button { showDetailsEdit = true } label: {
                 Text("Edit")
-                    .font(.system(size: 13, weight: .semibold))
+                    .font(AuraFont.jakarta(13, .semibold))
                     .foregroundColor(.aura.accent)
             }
         }
@@ -102,14 +132,22 @@ struct NutritionView: View {
 
     private var detailsGrid: some View {
         AuraCard {
-            HStack(spacing: AuraSpacing.s4) {
-                detailCol("Height", UnitFormatter.length(stats.height, unit: appState.lengthUnit))
+            VStack(spacing: AuraSpacing.s3) {
+                HStack(spacing: AuraSpacing.s4) {
+                    detailCol("Height", UnitFormatter.length(stats.height, unit: appState.lengthUnit))
+                    Divider()
+                    detailCol("Weight", UnitFormatter.weight(stats.weight, unit: appState.weightUnit))
+                    Divider()
+                    detailCol("Age", "\(stats.age)")
+                }
                 Divider()
-                detailCol("Weight", UnitFormatter.weight(stats.weight, unit: appState.weightUnit))
-                Divider()
-                detailCol("Age", "\(stats.age)")
-                Divider()
-                detailCol("Sex", stats.sex)
+                HStack(spacing: AuraSpacing.s4) {
+                    detailCol("Sex", stats.sex)
+                    Divider()
+                    detailCol("Activity", stats.activityLevel)
+                    Divider()
+                    detailCol("Target", UnitFormatter.weight(stats.targetWeight, unit: appState.weightUnit))
+                }
             }
             .padding(AuraSpacing.s4)
         }
@@ -121,21 +159,39 @@ struct NutritionView: View {
                 .font(AuraFont.sectionLabel())
                 .foregroundColor(.aura.text3)
             Text(value)
-                .font(.system(size: 15, weight: .bold))
+                .font(AuraFont.jakarta(15, .bold))
                 .foregroundColor(.aura.text)
+                .lineLimit(1)
+                .minimumScaleFactor(0.8)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
     }
 
-    // MARK: BMI & TDEE
+    // MARK: 3 — BMI & TDEE
     private var statTiles: some View {
-        HStack(spacing: AuraSpacing.s3) {
-            StatTile(value: String(format: "%.1f", stats.bmi), label: bmiLabel, color: bmiColor)
-            StatTile(value: "\(Int(stats.tdee))", label: "TDEE (kcal)", color: .aura.accent)
+        VStack(spacing: AuraSpacing.s2) {
+            HStack(spacing: AuraSpacing.s3) {
+                StatTile(
+                    value: hasDetails ? String(format: "%.1f", stats.bmi) : "—",
+                    label: hasDetails ? bmiLabel : "BMI",
+                    color: hasDetails ? bmiColor : .aura.text3
+                )
+                StatTile(
+                    value: hasDetails ? "\(Int(stats.tdee))" : "—",
+                    label: "TDEE (kcal)",
+                    color: hasDetails ? .aura.accent : .aura.text3
+                )
+            }
+            if !hasDetails {
+                Text("Complete your details to calculate targets")
+                    .font(AuraFont.secondary())
+                    .foregroundColor(.aura.text3)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            }
         }
     }
 
-    // MARK: Goal chips
+    // MARK: 4 — Goal chips
     private var goalSection: some View {
         VStack(alignment: .leading, spacing: AuraSpacing.s2) {
             AuraSectionLabel(title: "Goal")
@@ -151,7 +207,7 @@ struct NutritionView: View {
         }
     }
 
-    // MARK: Macro split chips
+    // MARK: 5 — Macro split chips
     private var macroSection: some View {
         VStack(alignment: .leading, spacing: AuraSpacing.s2) {
             AuraSectionLabel(title: "Macro Split")
@@ -167,29 +223,84 @@ struct NutritionView: View {
         }
     }
 
-    // MARK: Daily targets
-    private var dailyTargetsSection: some View {
+    // MARK: 6 — Daily target card
+    private let proteinColor = Color.aura.red
+    private let carbColor    = Color.aura.blue
+    private let fatColor     = Color.aura.purple
+
+    /// Share of `targetCalories` each macro contributes — protein/carbs 4 kcal/g,
+    /// fats 9 kcal/g. Zero when there is nothing to calculate.
+    private var macroFractions: (protein: Double, carbs: Double, fats: Double) {
+        let p = Double(macros.protein) * 4
+        let c = Double(macros.carbs) * 4
+        let f = Double(macros.fats) * 9
+        let total = p + c + f
+        guard total > 0 else { return (0, 0, 0) }
+        return (p / total, c / total, f / total)
+    }
+
+    private var dailyTargetCard: some View {
         VStack(alignment: .leading, spacing: AuraSpacing.s2) {
             AuraSectionLabel(title: "Daily Targets")
-            AuraCard {
-                VStack(spacing: AuraSpacing.s3) {
-                    macroRow("Calories", value: "\(Int(cal)) kcal", color: .aura.accent, fraction: 1.0)
-                    Divider()
-                    macroRow("Protein", value: "\(macros.protein) g", color: .aura.red,
-                             fraction: calorieFraction(grams: macros.protein, perGram: 4))
-                    Divider()
-                    macroRow("Carbs", value: "\(macros.carbs) g", color: .aura.accent,
-                             fraction: calorieFraction(grams: macros.carbs, perGram: 4))
-                    Divider()
-                    macroRow("Fats", value: "\(macros.fats) g", color: .aura.blue,
-                             fraction: calorieFraction(grams: macros.fats, perGram: 9))
-                    Divider()
-                    macroRow("Fiber", value: "\(macros.fiber) g", color: .aura.green,
-                             fraction: min(1, Double(macros.fiber) / 50))
+            VStack(alignment: .leading, spacing: AuraSpacing.s3) {
+                HStack(alignment: .firstTextBaseline, spacing: 6) {
+                    Text(hasDetails ? "\(Int(cal))" : "—")
+                        .font(AuraFont.statNum(size: 34))
+                        .foregroundColor(.aura.text)
+                    Text("kcal")
+                        .font(AuraFont.body())
+                        .foregroundColor(.aura.text2)
+                    Spacer()
                 }
-                .padding(AuraSpacing.s4)
+
+                if hasDetails {
+                    macroBar
+                    HStack(spacing: AuraSpacing.s3) {
+                        macroValue("Protein", grams: macros.protein, color: proteinColor)
+                        macroValue("Carbs", grams: macros.carbs, color: carbColor)
+                        macroValue("Fats", grams: macros.fats, color: fatColor)
+                        macroValue("Fiber", grams: macros.fiber, color: .aura.green)
+                    }
+                } else {
+                    Text("Complete your details to calculate targets")
+                        .font(AuraFont.secondary())
+                        .foregroundColor(.aura.text3)
+                }
+            }
+            .padding(AuraSpacing.s4)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(Color.aura.accentSoft)
+            .clipShape(RoundedRectangle(cornerRadius: AuraRadius.lg))
+        }
+    }
+
+    /// One bar, three proportional segments (protein · carbs · fats).
+    private var macroBar: some View {
+        let f = macroFractions
+        return GeometryReader { geo in
+            HStack(spacing: 0) {
+                Rectangle().fill(proteinColor).frame(width: geo.size.width * f.protein)
+                Rectangle().fill(carbColor).frame(width: geo.size.width * f.carbs)
+                Rectangle().fill(fatColor).frame(width: geo.size.width * f.fats)
             }
         }
+        .frame(height: 10)
+        .clipShape(Capsule())
+    }
+
+    private func macroValue(_ label: String, grams: Int, color: Color) -> some View {
+        VStack(alignment: .leading, spacing: 3) {
+            HStack(spacing: 5) {
+                Circle().fill(color).frame(width: 7, height: 7)
+                Text(label)
+                    .font(AuraFont.sectionLabel())
+                    .foregroundColor(.aura.text3)
+            }
+            Text("\(grams) g")
+                .font(AuraFont.jakarta(16, .bold))
+                .foregroundColor(.aura.text)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     // MARK: Edit sheet
@@ -198,12 +309,12 @@ struct NutritionView: View {
         VStack(spacing: 0) {
             HStack {
                 Text("Your Details")
-                    .font(.system(size: 17, weight: .bold))
+                    .font(AuraFont.jakarta(17, .bold))
                     .foregroundColor(.aura.text)
                 Spacer()
                 Button { showDetailsEdit = false } label: {
                     Image(systemName: "xmark")
-                        .font(.system(size: 16, weight: .semibold))
+                        .font(AuraFont.jakarta(16, .semibold))
                         .foregroundColor(.aura.text3)
                 }
             }
@@ -212,13 +323,14 @@ struct NutritionView: View {
 
             ScrollView {
                 VStack(spacing: AuraSpacing.s4) {
-                    // Editable numeric fields
                     VStack(spacing: AuraSpacing.s3) {
-                        editRow("Height (cm)", value: $appState.bodyStats.height, decimals: false)
-                        editRow("Weight (kg)", value: $appState.bodyStats.weight, decimals: true)
-                        editIntRow("Age", value: $appState.bodyStats.age)
-                            .onChange(of: appState.bodyStats.age) { _, _ in appState.syncProfileFromBodyStats() }
-                        editRow("Target Weight (kg)", value: $appState.bodyStats.targetWeight, decimals: true)
+                        lengthStepper("Height", value: $appState.bodyStats.height)
+                        Divider()
+                        weightStepper("Weight", value: $appState.bodyStats.weight)
+                        Divider()
+                        ageStepper
+                        Divider()
+                        weightStepper("Target Weight", value: $appState.bodyStats.targetWeight)
                     }
                     .padding(AuraSpacing.s4)
                     .background(Color.aura.surface)
@@ -232,7 +344,7 @@ struct NutritionView: View {
                                 appState.syncProfileFromBodyStats()
                             } label: {
                                 Text(sex)
-                                    .font(.system(size: 14, weight: .bold))
+                                    .font(AuraFont.jakarta(14, .bold))
                                     .foregroundColor(stats.sex == sex ? .white : .aura.text2)
                                     .frame(maxWidth: .infinity)
                                     .padding(.vertical, 10)
@@ -250,12 +362,12 @@ struct NutritionView: View {
                             } label: {
                                 HStack {
                                     Text(level)
-                                        .font(.system(size: 14, weight: .semibold))
+                                        .font(AuraFont.jakarta(14, .semibold))
                                         .foregroundColor(stats.activityLevel == level ? .aura.accent : .aura.text)
                                     Spacer()
                                     if stats.activityLevel == level {
                                         Image(systemName: "checkmark")
-                                            .font(.system(size: 14, weight: .bold))
+                                            .font(AuraFont.jakarta(14, .bold))
                                             .foregroundColor(.aura.accent)
                                     }
                                 }
@@ -275,30 +387,90 @@ struct NutritionView: View {
         .background(Color.aura.bgGrouped)
     }
 
-    private func editRow(_ label: String, value: Binding<Double>, decimals: Bool) -> some View {
+    // MARK: Steppers — display in the user's unit, store canonical cm/kg.
+
+    /// Steps by 1 in the *display* unit; clamped against the canonical kg range.
+    private func weightStepper(_ label: String, value: Binding<Double>) -> some View {
+        let unit = appState.weightUnit
+        let stepKg = unit == "lb" ? UnitFormatter.kgPerLb : 1
+        let range = NutritionConstants.weightRangeKg
+        return stepperRow(
+            label: label,
+            display: UnitFormatter.weight(value.wrappedValue, unit: unit),
+            canDecrement: value.wrappedValue > range.lowerBound,
+            canIncrement: value.wrappedValue < range.upperBound,
+            onStep: { delta in
+                value.wrappedValue = clamp(value.wrappedValue + delta * stepKg, to: range)
+            }
+        )
+    }
+
+    private func lengthStepper(_ label: String, value: Binding<Double>) -> some View {
+        let unit = appState.lengthUnit
+        let stepCm = unit == "in" ? UnitFormatter.cmPerInch : 1
+        let range = NutritionConstants.heightRangeCm
+        return stepperRow(
+            label: label,
+            display: UnitFormatter.length(value.wrappedValue, unit: unit),
+            canDecrement: value.wrappedValue > range.lowerBound,
+            canIncrement: value.wrappedValue < range.upperBound,
+            onStep: { delta in
+                value.wrappedValue = clamp(value.wrappedValue + delta * stepCm, to: range)
+            }
+        )
+    }
+
+    /// Age round-trips to Profile's birthday via the existing sync function.
+    private var ageStepper: some View {
+        let range = NutritionConstants.ageRange
+        return stepperRow(
+            label: "Age",
+            display: "\(stats.age)",
+            canDecrement: stats.age > range.lowerBound,
+            canIncrement: stats.age < range.upperBound,
+            onStep: { delta in
+                appState.bodyStats.age = min(max(stats.age + Int(delta), range.lowerBound), range.upperBound)
+                appState.syncProfileFromBodyStats()
+            }
+        )
+    }
+
+    private func stepperRow(
+        label: String,
+        display: String,
+        canDecrement: Bool,
+        canIncrement: Bool,
+        onStep: @escaping (Double) -> Void
+    ) -> some View {
         HStack {
             Text(label).font(AuraFont.body()).foregroundColor(.aura.text)
             Spacer()
-            TextField(label, value: value, format: decimals ? .number.precision(.fractionLength(1)) : .number.precision(.fractionLength(0)))
-                .keyboardType(.decimalPad)
-                .multilineTextAlignment(.trailing)
-                .font(.system(size: 15, weight: .bold))
+            Text(display)
+                .font(AuraFont.jakarta(15, .bold))
                 .foregroundColor(.aura.accent)
-                .frame(width: 90)
+                .frame(minWidth: 74, alignment: .trailing)
+            HStack(spacing: 6) {
+                stepButton("minus", enabled: canDecrement) { onStep(-1) }
+                stepButton("plus", enabled: canIncrement) { onStep(1) }
+            }
+            .padding(.leading, AuraSpacing.s2)
         }
     }
 
-    private func editIntRow(_ label: String, value: Binding<Int>) -> some View {
-        HStack {
-            Text(label).font(AuraFont.body()).foregroundColor(.aura.text)
-            Spacer()
-            TextField(label, value: value, format: .number)
-                .keyboardType(.numberPad)
-                .multilineTextAlignment(.trailing)
-                .font(.system(size: 15, weight: .bold))
-                .foregroundColor(.aura.accent)
-                .frame(width: 90)
+    private func stepButton(_ symbol: String, enabled: Bool, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            Image(systemName: symbol)
+                .font(AuraFont.jakarta(13, .bold))
+                .foregroundColor(enabled ? .aura.text : .aura.text3)
+                .frame(width: 30, height: 30)
+                .background(Color.aura.fill)
+                .clipShape(RoundedRectangle(cornerRadius: AuraRadius.sm))
         }
+        .disabled(!enabled)
+    }
+
+    private func clamp(_ value: Double, to range: ClosedRange<Double>) -> Double {
+        min(max(value, range.lowerBound), range.upperBound)
     }
 
     // MARK: BMI helpers (<18.5/<25/<30/else)
@@ -315,27 +487,5 @@ struct NutritionView: View {
         if b < 25   { return .aura.green }
         if b < 30   { return .aura.accent }
         return .aura.red
-    }
-
-    private func calorieFraction(grams: Int, perGram: Double) -> Double {
-        guard cal > 0 else { return 0 }
-        return min(1, (Double(grams) * perGram) / cal)
-    }
-
-    @ViewBuilder
-    private func macroRow(_ label: String, value: String, color: Color, fraction: Double) -> some View {
-        VStack(spacing: 6) {
-            HStack {
-                HStack(spacing: AuraSpacing.s2) {
-                    Circle().fill(color).frame(width: 8, height: 8)
-                    Text(label).font(AuraFont.body()).foregroundColor(.aura.text)
-                }
-                Spacer()
-                Text(value)
-                    .font(.system(size: 15, weight: .bold))
-                    .foregroundColor(color)
-            }
-            AuraProgressBar(value: fraction, color: color, height: 5)
-        }
     }
 }

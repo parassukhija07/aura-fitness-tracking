@@ -1,0 +1,127 @@
+program_id,program_name,day_number,workout_id,day_type
+PROG_BRO_5,5-Day Bro Split,1,BRO_CHEST,Training
+PROG_BRO_5,5-Day Bro Split,2,BRO_BACK,Training
+PROG_BRO_5,5-Day Bro Split,3,BRO_LEGS,Training
+PROG_BRO_5,5-Day Bro Split,4,BRO_SHOULDERS,Training
+PROG_BRO_5,5-Day Bro Split,5,BRO_ARMS,Training
+PROG_BRO_5,5-Day Bro Split,6,REST,Recovery
+PROG_BRO_5,5-Day Bro Split,7,REST,Recovery
+PROG_CALI,Calisthenics Mastery,1,CALI_PUSH,Training
+PROG_CALI,Calisthenics Mastery,2,CALI_PULL,Training
+PROG_CALI,Calisthenics Mastery,3,CALI_LEGS,Training
+PROG_CALI,Calisthenics Mastery,4,REST,Recovery
+PROG_CALI,Calisthenics Mastery,5,REST,Recovery
+PROG_CALI,Calisthenics Mastery,6,REST,Recovery
+PROG_CALI,Calisthenics Mastery,7,REST,Recovery
+PROG_COURT,Court Athlete,1,ATH_POWER,Training
+PROG_COURT,Court Athlete,2,REST,Recovery
+PROG_COURT,Court Athlete,3,ATH_ENDURANCE,Training
+PROG_COURT,Court Athlete,4,REST,Recovery
+PROG_COURT,Court Athlete,5,ATH_POWER,Training
+PROG_COURT,Court Athlete,6,REST,Recovery
+PROG_COURT,Court Athlete,7,REST,Recovery
+PROG_FATLOSS,Metabolic Fat Loss Circuit,1,FAT_CIRCUIT_1,Training
+PROG_FATLOSS,Metabolic Fat Loss Circuit,2,REST,Recovery
+PROG_FATLOSS,Metabolic Fat Loss Circuit,3,FAT_CIRCUIT_2,Training
+PROG_FATLOSS,Metabolic Fat Loss Circuit,4,REST,Recovery
+PROG_FATLOSS,Metabolic Fat Loss Circuit,5,FAT_CIRCUIT_1,Training
+PROG_FATLOSS,Metabolic Fat Loss Circuit,6,REST,Recovery
+PROG_FATLOSS,Metabolic Fat Loss Circuit,7,REST,Recovery
+PROG_FB_3,3-Day Full Body,1,FB_A,Training
+PROG_FB_3,3-Day Full Body,2,REST,Recovery
+PROG_FB_3,3-Day Full Body,3,FB_B,Training
+PROG_FB_3,3-Day Full Body,4,REST,Recovery
+PROG_FB_3,3-Day Full Body,5,FB_C,Training
+PROG_FB_3,3-Day Full Body,6,REST,Recovery
+PROG_FB_3,3-Day Full Body,7,REST,Recovery
+PROG_GLUTE,Glute & Lower Body Focus,1,REST,Recovery
+PROG_GLUTE,Glute & Lower Body Focus,2,GLUTE_BUILDER_A,Training
+PROG_GLUTE,Glute & Lower Body Focus,3,REST,Recovery
+PROG_GLUTE,Glute & Lower Body Focus,4,GLUTE_BUILDER_B,Training
+PROG_GLUTE,Glute & Lower Body Focus,5,REST,Recovery
+PROG_GLUTE,Glute & Lower Body Focus,6,GLUTE_BUILDER_A,Training
+PROG_GLUTE,Glute & Lower Body Focus,7,REST,Recovery
+PROG_HIIT,HIIT & Core Burner,1,HIIT_CARDIO,Training
+PROG_HIIT,HIIT & Core Burner,2,HIIT_CORE,Training
+PROG_HIIT,HIIT & Core Burner,3,REST,Recovery
+PROG_HIIT,HIIT & Core Burner,4,HIIT_CARDIO,Training
+PROG_HIIT,HIIT & Core Burner,5,REST,Recovery
+PROG_HIIT,HIIT & Core Burner,6,REST,Recovery
+PROG_HIIT,HIIT & Core Burner,7,REST,Recovery
+PROG_HOTEL,Hotel Minimalist Bodyweight,1,HOTEL_BODYWEIGHT,Training
+PROG_HOTEL,Hotel Minimalist Bodyweight,2,REST,Recovery
+PROG_HOTEL,Hotel Minimalist Bodyweight,3,HOTEL_BODYWEIGHT,Training
+PROG_HOTEL,Hotel Minimalist Bodyweight,4,REST,Recovery
+PROG_HOTEL,Hotel Minimalist Bodyweight,5,HOTEL_BODYWEIGHT,Training
+PROG_HOTEL,Hotel Minimalist Bodyweight,6,REST,Recovery
+PROG_HOTEL,Hotel Minimalist Bodyweight,7,REST,Recovery
+PROG_KB,Kettlebell Functional,1,KB_SWING,Training
+PROG_KB,Kettlebell Functional,2,REST,Recovery
+PROG_KB,Kettlebell Functional,3,KB_PRESS,Training
+PROG_KB,Kettlebell Functional,4,REST,Recovery
+PROG_KB,Kettlebell Functional,5,KB_SWING,Training
+PROG_KB,Kettlebell Functional,6,REST,Recovery
+PROG_KB,Kettlebell Functional,7,REST,Recovery
+PROG_LONGEVITY,Senior Longevity & Balance,1,REST,Recovery
+PROG_LONGEVITY,Senior Longevity & Balance,2,SENIOR_STRENGTH,Training
+PROG_LONGEVITY,Senior Longevity & Balance,3,REST,Recovery
+PROG_LONGEVITY,Senior Longevity & Balance,4,SENIOR_BALANCE,Training
+PROG_LONGEVITY,Senior Longevity & Balance,5,REST,Recovery
+PROG_LONGEVITY,Senior Longevity & Balance,6,REST,Recovery
+PROG_LONGEVITY,Senior Longevity & Balance,7,REST,Recovery
+PROG_MOBILITY,Posture Correction,1,MOB_SPINE,Recovery
+PROG_MOBILITY,Posture Correction,2,MOB_HIPS,Recovery
+PROG_MOBILITY,Posture Correction,3,REST,Recovery
+PROG_MOBILITY,Posture Correction,4,MOB_SPINE,Recovery
+PROG_MOBILITY,Posture Correction,5,MOB_HIPS,Recovery
+PROG_MOBILITY,Posture Correction,6,REST,Recovery
+PROG_MOBILITY,Posture Correction,7,REST,Recovery
+PROG_OLY,Olympic Weightlifting,1,OLY_SNATCH,Training
+PROG_OLY,Olympic Weightlifting,2,REST,Recovery
+PROG_OLY,Olympic Weightlifting,3,OLY_CLEAN,Training
+PROG_OLY,Olympic Weightlifting,4,REST,Recovery
+PROG_OLY,Olympic Weightlifting,5,OLY_SNATCH,Training
+PROG_OLY,Olympic Weightlifting,6,REST,Recovery
+PROG_OLY,Olympic Weightlifting,7,REST,Recovery
+PROG_PL_5x5,Powerlifting 5x5,1,PL_SQUAT,Training
+PROG_PL_5x5,Powerlifting 5x5,2,REST,Recovery
+PROG_PL_5x5,Powerlifting 5x5,3,PL_BENCH,Training
+PROG_PL_5x5,Powerlifting 5x5,4,REST,Recovery
+PROG_PL_5x5,Powerlifting 5x5,5,PL_DEADLIFT,Training
+PROG_PL_5x5,Powerlifting 5x5,6,REST,Recovery
+PROG_PL_5x5,Powerlifting 5x5,7,REST,Recovery
+PROG_POWERBUILD,Powerbuilding Hybrid,1,PB_POWER_UPPER,Training
+PROG_POWERBUILD,Powerbuilding Hybrid,2,PB_POWER_LOWER,Training
+PROG_POWERBUILD,Powerbuilding Hybrid,3,REST,Recovery
+PROG_POWERBUILD,Powerbuilding Hybrid,4,PB_POWER_UPPER,Training
+PROG_POWERBUILD,Powerbuilding Hybrid,5,PB_POWER_LOWER,Training
+PROG_POWERBUILD,Powerbuilding Hybrid,6,REST,Recovery
+PROG_POWERBUILD,Powerbuilding Hybrid,7,REST,Recovery
+PROG_PPL_6DAY,Classic 6-Day PPL,1,PPL_PUSH_A,Training
+PROG_PPL_6DAY,Classic 6-Day PPL,2,PPL_PULL_A,Training
+PROG_PPL_6DAY,Classic 6-Day PPL,3,PPL_LEGS_A,Training
+PROG_PPL_6DAY,Classic 6-Day PPL,4,PPL_PUSH_B,Training
+PROG_PPL_6DAY,Classic 6-Day PPL,5,PPL_PULL_B,Training
+PROG_PPL_6DAY,Classic 6-Day PPL,6,PPL_LEGS_B,Training
+PROG_PPL_6DAY,Classic 6-Day PPL,7,REST,Recovery
+PROG_RUNNER,Runner Strength & Stability,1,REST,Recovery
+PROG_RUNNER,Runner Strength & Stability,2,RUN_STRENGTH_1,Training
+PROG_RUNNER,Runner Strength & Stability,3,REST,Recovery
+PROG_RUNNER,Runner Strength & Stability,4,REST,Recovery
+PROG_RUNNER,Runner Strength & Stability,5,RUN_STRENGTH_2,Training
+PROG_RUNNER,Runner Strength & Stability,6,REST,Recovery
+PROG_RUNNER,Runner Strength & Stability,7,REST,Recovery
+PROG_STRONGMAN,Strongman Work Capacity,1,REST,Recovery
+PROG_STRONGMAN,Strongman Work Capacity,2,STRONGMAN_COND,Training
+PROG_STRONGMAN,Strongman Work Capacity,3,REST,Recovery
+PROG_STRONGMAN,Strongman Work Capacity,4,REST,Recovery
+PROG_STRONGMAN,Strongman Work Capacity,5,STRONGMAN_COND,Training
+PROG_STRONGMAN,Strongman Work Capacity,6,REST,Recovery
+PROG_STRONGMAN,Strongman Work Capacity,7,REST,Recovery
+PROG_UL_4,4-Day Upper/Lower,1,UL_UP_A,Training
+PROG_UL_4,4-Day Upper/Lower,2,UL_LOW_A,Training
+PROG_UL_4,4-Day Upper/Lower,3,REST,Recovery
+PROG_UL_4,4-Day Upper/Lower,4,UL_UP_B,Training
+PROG_UL_4,4-Day Upper/Lower,5,UL_LOW_B,Training
+PROG_UL_4,4-Day Upper/Lower,6,REST,Recovery
+PROG_UL_4,4-Day Upper/Lower,7,REST,Recovery

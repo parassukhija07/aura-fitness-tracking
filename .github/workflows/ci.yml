@@ -8,16 +8,39 @@ on:
   workflow_dispatch: {}
 
 jobs:
+  # Verifies that pull_changes(since) cannot leak one user's rows to another.
+  #
+  # Deliberately workflow_dispatch-only: it signs up two real users in the
+  # linked Supabase project and, having only the anon key, cannot delete them
+  # afterwards — so each run leaves two throwaway users in auth.users. That is
+  # not something to do on every push or pull request.
+  #
+  # Requires email confirmation to be OFF for the duration of the run, or
+  # signup returns no session and the script fails with an explanation. See
+  # the header of scripts/rls_isolation_test.sh.
+  rls-isolation:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run RLS isolation test against pull_changes
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+        run: bash scripts/rls_isolation_test.sh
+
   build:
     runs-on: macos-15
 
     steps:
       - uses: actions/checkout@v4
 
-      - name: Select Xcode 16
+      - name: Select latest stable Xcode 16
         uses: maxim-lobanov/setup-xcode@v1
         with:
-          xcode-version: '16.1'
+          xcode-version: latest-stable
 
       - name: List available Xcode/platform versions
         run: |
@@ -26,9 +49,12 @@ jobs:
 
       - name: Ensure iOS platform SDK is installed
         run: |
-          # Runner images vary: some macos-15 image builds ship Xcode 16.1
-          # without the iOS 18.1 device platform. Download it explicitly so
-          # 'generic/platform=iOS' destinations always resolve.
+          # Pinning to a specific old Xcode (e.g. 16.1) can outlive that
+          # version's bundled iOS platform on the runner image once GitHub
+          # deprecates its simulator/device runtimes (see
+          # actions/runner-images#13392), so we now float to
+          # 'latest-stable' above. This step is a safety net for the rare
+          # case the selected Xcode still lacks the iOS device platform.
           if ! xcodebuild -showsdks | grep -q iphoneos; then
             sudo xcodebuild -downloadPlatform iOS
           fi
@@ -36,6 +62,34 @@ jobs:
 
       - name: Install xcpretty
         run: gem install xcpretty --no-document || true
+      
+      - name: Generate Secrets.xcconfig
+        run: |
+          echo "SUPABASE_URL = ${{ secrets.SUPABASE_URL }}" > AuraFitness/Secrets.xcconfig
+          echo "SUPABASE_ANON_KEY = ${{ secrets.SUPABASE_ANON_KEY }}" >> AuraFitness/Secrets.xcconfig
+
+      # NOTE: two steps used to sit here that rewrote AuraFitness.xcodeproj
+      # with the Xcodeproj gem on every run — one linking the repo-root
+      # gym_exercise_library.json, one "fixing missing Swift files and
+      # duplicates". Both are removed, because both caused the failures they
+      # claimed to prevent:
+      #
+      #   - The JSON step added a SECOND producer of
+      #     AuraFitness.app/gym_exercise_library.json (the file is committed to
+      #     the project at AuraFitness/Resources/), so Xcode failed the build
+      #     with "Multiple commands produce" during planning — before compiling
+      #     any Swift, making every run red regardless of the code in it.
+      #   - The "fix" step hunted for WeekStripView.swift / YouTubePlayerView.swift
+      #     / ExerciseVideoView.swift, none of which exist under those names
+      #     (they are WeekStrip.swift and AuraVideoPlayer.swift), and its
+      #     de-duplication branch could remove a real build file. Its rewrite is
+      #     also the likeliest source of the "member of multiple groups (Plan
+      #     and Plan)" warning and the resulting "cannot find 'WeekStripView' /
+      #     'SaveEditScopeSheet' in scope" errors — both files ARE correctly in
+      #     the committed project.
+      #
+      # CI builds the repository as committed. If a file is missing from the
+      # target, fix project.pbxproj in a commit — do not patch it on the runner.
 
       - name: Verify scheme
         run: xcodebuild -list -project AuraFitness.xcodeproj

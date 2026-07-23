@@ -6,6 +6,14 @@ struct AccountDetailsView: View {
     @StateObject private var toast = ToastCenter()
     @State private var sheet: ProfileSheet? = nil
 
+    /// Observed (not an `@EnvironmentObject`) so this screen keeps working
+    /// wherever it is pushed from — it already reached for the singleton to
+    /// feed `ProfileConfirmSheet` below.
+    @ObservedObject private var authService = AuthService.shared
+    @State private var showEmailChangeConfirm = false
+    @State private var pendingLoginEmail = ""
+    @State private var emailBusy = false
+
     private var p: Binding<UserProfile> { $appState.userProfile }
     private var initials: String {
         "\(appState.userProfile.firstName.prefix(1))\(appState.userProfile.lastName.prefix(1))"
@@ -18,7 +26,7 @@ struct AccountDetailsView: View {
                 VStack(spacing: AuraSpacing.s2) {
                     AvatarCircle(initials: initials, size: 78, fontSize: 28)
                     Button("Change photo") { toast.flash("Photo picker") }
-                        .font(.system(size: 14, weight: .bold))
+                        .font(AuraFont.jakarta(14, .bold))
                         .foregroundColor(.aura.accent)
                 }
                 .frame(maxWidth: .infinity)
@@ -67,6 +75,16 @@ struct AccountDetailsView: View {
                     }
                     .buttonStyle(.plain)
                     Divider().padding(.leading, 64)
+                    // Visible + functional for guest users too — guest data is
+                    // local and fully exportable/importable; no gating on
+                    // authService.userID here.
+                    Button { sheet = .importData } label: {
+                        SettingsRowLabel(icon: "arrow.down", iconColor: .aura.green,
+                                         title: "Import Data",
+                                         subtitle: "Restore from a JSON or CSV export")
+                    }
+                    .buttonStyle(.plain)
+                    Divider().padding(.leading, 64)
                     Button { sheet = .reset } label: {
                         SettingsRowLabel(icon: "arrow.left.arrow.right", iconColor: .aura.text2,
                                          title: "Reset Data",
@@ -83,7 +101,7 @@ struct AccountDetailsView: View {
                                     .fill(Color.aura.red)
                                     .frame(width: 32, height: 32)
                                 Image(systemName: "trash.fill")
-                                    .font(.system(size: 14, weight: .semibold))
+                                    .font(AuraFont.jakarta(14, .semibold))
                                     .foregroundColor(.white)
                             }
                             Text("Delete Account")
@@ -100,11 +118,9 @@ struct AccountDetailsView: View {
                 }
                 .padding(.top, AuraSpacing.s3)
 
-                AuraPrimaryButton(label: "Save Changes") {
-                    dismiss()
-                    appState.profileSaveFlash = "Account saved"
-                }
+                AuraPrimaryButton(label: "Save Changes", isLoading: emailBusy) { save() }
                 .padding(.top, AuraSpacing.s4)
+                .disabled(emailBusy)
             }
             .padding(.horizontal, AuraSpacing.s4)
             .padding(.bottom, AuraSpacing.tabBarClearance)
@@ -117,7 +133,80 @@ struct AccountDetailsView: View {
                 .environmentObject(appState)
                 .environmentObject(AuthService.shared)
         }
+        .alert("Change your login email?", isPresented: $showEmailChangeConfirm) {
+            Button("Cancel", role: .cancel) { revertEmailToSession() }
+            Button("Send confirmation") { requestEmailChange() }
+        } message: {
+            Text("We'll send a confirmation link to \(pendingLoginEmail). Your login email changes only once you confirm it — and Supabase may also ask you to confirm from your current address.")
+        }
+        .onAppear {
+            // For a signed-in user this field IS the login email, so seed it
+            // from the session rather than leaving it blank.
+            if let current = authService.sessionEmail, appState.userProfile.email.isEmpty {
+                appState.userProfile.email = current
+            }
+        }
+        .onChange(of: authService.sessionEmail) { _, current in
+            // Fires once a pending change has actually been confirmed and
+            // `AuthService.refreshSession()` picked the new address up.
+            if let current, !current.isEmpty { appState.userProfile.email = current }
+        }
         .auraToast(toast)
+    }
+
+    // MARK: Save / login-email change
+
+    private func save() {
+        let email = appState.userProfile.email.trimmingCharacters(in: .whitespaces)
+        // Non-blocking for the other fields (they bind live to appState
+        // already) — only gate the save on a malformed email. Empty is
+        // allowed; it's an optional field.
+        guard email.isEmpty || isValidEmail(email) else {
+            toast.flash("Enter a valid email")
+            return
+        }
+        // Signed-in and the address actually moved: this is a login-email
+        // change, which is a server round trip plus a mailbox confirmation —
+        // never a silent local edit. Guests have no session email, so they
+        // fall through to the plain local save.
+        if let current = authService.sessionEmail, !email.isEmpty,
+           email.caseInsensitiveCompare(current) != .orderedSame {
+            pendingLoginEmail = email
+            showEmailChangeConfirm = true
+            return
+        }
+        dismiss()
+        appState.profileSaveFlash = "Account saved"
+    }
+
+    private func requestEmailChange() {
+        emailBusy = true
+        Task {
+            let ok = await authService.requestEmailChange(to: pendingLoginEmail)
+            emailBusy = false
+            // Either way the session still authenticates with the OLD address
+            // until the link is clicked, so the field goes back to showing it.
+            // `onChange(of: authService.sessionEmail)` swaps in the new one
+            // when the change actually lands.
+            revertEmailToSession()
+            if ok {
+                toast.flash("Confirm the change from the link sent to your new address.")
+            } else {
+                toast.flash(authService.lastError ?? "Couldn't start the email change.")
+            }
+        }
+    }
+
+    private func revertEmailToSession() {
+        appState.userProfile.email = authService.sessionEmail ?? appState.userProfile.email
+    }
+
+    // MARK: Validation
+
+    /// Basic `local@domain.tld` shape check — enough to catch typos before
+    /// save without rejecting valid addresses.
+    private func isValidEmail(_ s: String) -> Bool {
+        s.range(of: #"^[^\s@]+@[^\s@]+\.[^\s@]+$"#, options: .regularExpression) != nil
     }
 
     // MARK: Field builders
@@ -125,7 +214,7 @@ struct AccountDetailsView: View {
     private func field(_ label: String, text: Binding<String>, keyboard: UIKeyboardType = .default) -> some View {
         VStack(alignment: .leading, spacing: 6) {
             Text(label)
-                .font(.system(size: 12, weight: .semibold))
+                .font(AuraFont.jakarta(12, .semibold))
                 .foregroundColor(.aura.text2)
             TextField(label, text: text)
                 .font(AuraFont.body())
@@ -141,7 +230,7 @@ struct AccountDetailsView: View {
     private func numberField(_ label: String, value: Binding<Double>) -> some View {
         VStack(alignment: .leading, spacing: 6) {
             Text(label)
-                .font(.system(size: 12, weight: .semibold))
+                .font(AuraFont.jakarta(12, .semibold))
                 .foregroundColor(.aura.text2)
             TextField(label, value: value, format: .number)
                 .font(AuraFont.body())
@@ -157,7 +246,7 @@ struct AccountDetailsView: View {
     private func dateField(_ label: String, date: Binding<Date>) -> some View {
         VStack(alignment: .leading, spacing: 6) {
             Text(label)
-                .font(.system(size: 12, weight: .semibold))
+                .font(AuraFont.jakarta(12, .semibold))
                 .foregroundColor(.aura.text2)
             DatePicker("", selection: date, displayedComponents: .date)
                 .labelsHidden()
@@ -173,7 +262,7 @@ struct AccountDetailsView: View {
     private func selectField(_ label: String, selection: Binding<String>, options: [String]) -> some View {
         VStack(alignment: .leading, spacing: 6) {
             Text(label)
-                .font(.system(size: 12, weight: .semibold))
+                .font(AuraFont.jakarta(12, .semibold))
                 .foregroundColor(.aura.text2)
             Menu {
                 Picker(label, selection: selection) {
@@ -186,7 +275,7 @@ struct AccountDetailsView: View {
                         .foregroundColor(.aura.text)
                     Spacer()
                     Image(systemName: "chevron.up.chevron.down")
-                        .font(.system(size: 12, weight: .semibold))
+                        .font(AuraFont.jakarta(12, .semibold))
                         .foregroundColor(.aura.text3)
                 }
                 .padding(.horizontal, AuraSpacing.s3)

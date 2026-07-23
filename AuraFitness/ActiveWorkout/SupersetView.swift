@@ -46,11 +46,11 @@ struct SupersetView: View {
                     // Progress header
                     HStack {
                         Text("\(totalDone)/\(totalSets) sets")
-                            .font(.system(size: 15, weight: .heavy)).foregroundColor(.aura.text)
+                            .font(AuraFont.jakarta(15, .heavy)).foregroundColor(.aura.text)
                         Spacer()
                         HStack(spacing: 4) {
-                            Image(systemName: "bolt.fill").font(.system(size: 12))
-                            Text("\(rounds) rounds").font(.system(size: 12, weight: .bold))
+                            Image(systemName: "bolt.fill").font(AuraFont.jakarta(12))
+                            Text("\(rounds) rounds").font(AuraFont.jakarta(12, .bold))
                         }
                         .foregroundColor(.aura.accent)
                         .padding(.horizontal, 9).padding(.vertical, 3)
@@ -75,8 +75,8 @@ struct SupersetView: View {
                     // Add round
                     Button { addRound() } label: {
                         HStack(spacing: 6) {
-                            Image(systemName: "plus").font(.system(size: 15, weight: .semibold))
-                            Text("Add Round").font(.system(size: 15, weight: .bold))
+                            Image(systemName: "plus").font(AuraFont.jakarta(15, .semibold))
+                            Text("Add Round").font(AuraFont.jakarta(15, .bold))
                         }
                         .foregroundColor(.aura.accent)
                         .frame(maxWidth: .infinity).frame(height: 44)
@@ -124,19 +124,19 @@ struct SupersetView: View {
         HStack {
             Button { session.activeView = .overview } label: {
                 Image(systemName: "chevron.left")
-                    .font(.system(size: 20, weight: .semibold))
+                    .font(AuraFont.jakarta(20, .semibold))
                     .foregroundColor(.aura.accent)
             }
             Spacer()
             HStack(spacing: 5) {
-                Image(systemName: "bolt.fill").font(.system(size: 15))
-                Text("Superset").font(.system(size: 16, weight: .heavy))
+                Image(systemName: "bolt.fill").font(AuraFont.jakarta(15))
+                Text("Superset").font(AuraFont.jakarta(16, .heavy))
             }
             .foregroundColor(.aura.accent)
             Spacer()
             Button { showMenu = true } label: {
                 Image(systemName: "ellipsis")
-                    .font(.system(size: 20))
+                    .font(AuraFont.jakarta(20))
                     .foregroundColor(.aura.text)
                     .frame(width: 34, height: 34)
                     .background(Color.aura.fill.opacity(0.5))
@@ -154,19 +154,22 @@ struct SupersetView: View {
         VStack(alignment: .leading, spacing: 7) {
             HStack(spacing: 5) {
                 Text(letter)
-                    .font(.system(size: 8, weight: .heavy)).foregroundColor(.white)
+                    .font(AuraFont.jakarta(8, .heavy)).foregroundColor(.white)
                     .frame(width: 15, height: 15).background(color)
                     .clipShape(RoundedRectangle(cornerRadius: 4))
                 Text(ex.name)
-                    .font(.system(size: 12, weight: .bold)).foregroundColor(.aura.text)
+                    .font(AuraFont.jakarta(12, .bold)).foregroundColor(.aura.text)
                     .lineLimit(1)
             }
             HStack(spacing: 0) {
-                metaCell(label: "🏆 PR",
-                         value: ex.lastPR.map { "\(UnitFormatter.weight($0.weight, unit: appState.weightUnit)) × \($0.reps)" } ?? "—",
-                         sub: ex.lastPR?.date ?? "—",
-                         tint: false)
-                    .overlay(Divider(), alignment: .trailing)
+                // Suppressed when "Show PRs during workout" is off.
+                if appState.showPRsDuringWorkout {
+                    metaCell(label: "🏆 PR",
+                             value: ex.lastPR.map { "\(UnitFormatter.weight($0.weight, unit: appState.weightUnit)) × \($0.reps)" } ?? "—",
+                             sub: ex.lastPR?.date ?? "—",
+                             tint: false)
+                        .overlay(Divider(), alignment: .trailing)
+                }
                 metaCell(label: "🎯 Target",
                          value: ex.target.map { "\(UnitFormatter.weight($0.weight, unit: appState.weightUnit)) × \($0.reps)" } ?? "—",
                          sub: ex.target?.note ?? "",
@@ -186,15 +189,15 @@ struct SupersetView: View {
     private func metaCell(label: String, value: String, sub: String, tint: Bool) -> some View {
         VStack(alignment: .leading, spacing: 2) {
             Text(label)
-                .font(.system(size: 9, weight: .bold))
+                .font(AuraFont.jakarta(9, .bold))
                 .foregroundColor(tint ? .aura.accent : .aura.text3)
                 .textCase(.uppercase)
             Text(value)
-                .font(.system(size: 12, weight: .heavy))
+                .font(AuraFont.jakarta(12, .heavy))
                 .foregroundColor(tint ? .aura.accent : .aura.text)
                 .lineLimit(1)
             Text(sub)
-                .font(.system(size: 9))
+                .font(AuraFont.jakarta(9))
                 .foregroundColor(tint ? .aura.accent.opacity(0.7) : .aura.text3)
                 .lineLimit(1)
         }
@@ -214,12 +217,12 @@ struct SupersetView: View {
         return VStack(spacing: 0) {
             // Header
             HStack {
-                Text("Round \(r + 1)").font(.system(size: 13, weight: .bold)).foregroundColor(.aura.text)
+                Text("Round \(r + 1)").font(AuraFont.jakarta(13, .bold)).foregroundColor(.aura.text)
                 Spacer()
                 if roundDone {
-                    Image(systemName: "checkmark.circle.fill").foregroundColor(.aura.green).font(.system(size: 18))
+                    Image(systemName: "checkmark.circle.fill").foregroundColor(.aura.green).font(AuraFont.jakarta(18))
                 } else {
-                    Text("\(progress)/2 done").font(.system(size: 11, weight: .semibold)).foregroundColor(.aura.text3)
+                    Text("\(progress)/2 done").font(AuraFont.jakarta(11, .semibold)).foregroundColor(.aura.text3)
                 }
             }
             .padding(.horizontal, 14).padding(.vertical, 9)
@@ -248,10 +251,10 @@ struct SupersetView: View {
         VStack(alignment: .leading, spacing: 8) {
             HStack(spacing: 5) {
                 Text(letter)
-                    .font(.system(size: 9, weight: .heavy)).foregroundColor(.white)
+                    .font(AuraFont.jakarta(9, .heavy)).foregroundColor(.white)
                     .frame(width: 16, height: 16).background(color)
                     .clipShape(RoundedRectangle(cornerRadius: 4))
-                Text(name).font(.system(size: 12, weight: .bold)).foregroundColor(.aura.text).lineLimit(1)
+                Text(name).font(AuraFont.jakarta(12, .bold)).foregroundColor(.aura.text).lineLimit(1)
             }
             SupersetSetRow(
                 exerciseIndex: exerciseIndex,
@@ -274,7 +277,7 @@ struct SupersetView: View {
             get: { session.workout.exercises[index].note },
             set: { session.workout.exercises[index].note = $0 }
         ), axis: .vertical)
-            .font(.system(size: 14))
+            .font(AuraFont.jakarta(14))
             .foregroundColor(.aura.text)
             .lineLimit(2, reservesSpace: true)
             .padding(13)
@@ -333,7 +336,7 @@ struct SupersetSetRow: View {
         VStack(spacing: 2) {
             HStack(spacing: 9) {
                 Text("\(setIndex + 1)")
-                    .font(.system(size: 14, weight: .bold)).foregroundColor(.aura.text2)
+                    .font(AuraFont.jakarta(14, .bold)).foregroundColor(.aura.text2)
                     .frame(width: 40, height: 48)
                     .background(Color.aura.fill).clipShape(RoundedRectangle(cornerRadius: AuraRadius.sm))
                 input($weightText, placeholder: history?.weight ?? "–", label: appState.weightUnit) {
@@ -343,7 +346,7 @@ struct SupersetSetRow: View {
                     set.reps = Int(repsText); finish()
                 }
                 Button { toggle() } label: {
-                    Image(systemName: "checkmark").font(.system(size: 16, weight: .bold))
+                    Image(systemName: "checkmark").font(AuraFont.jakarta(16, .bold))
                         .foregroundColor(set.done ? .white : .aura.text3)
                         .frame(width: 48, height: 48)
                         .background(set.done ? Color.aura.green : Color.aura.fill)
@@ -352,7 +355,7 @@ struct SupersetSetRow: View {
                 Button {
                     session.onDeleteSet(exerciseIndex: exerciseIndex, setIndex: setIndex)
                 } label: {
-                    Image(systemName: "trash").font(.system(size: 16)).foregroundColor(.aura.red)
+                    Image(systemName: "trash").font(AuraFont.jakarta(16)).foregroundColor(.aura.red)
                         .frame(width: 48, height: 48)
                         .background(Color.aura.red.opacity(0.12)).clipShape(RoundedRectangle(cornerRadius: AuraRadius.sm))
                 }.buttonStyle(.plain)
@@ -360,8 +363,8 @@ struct SupersetSetRow: View {
             if let h = history {
                 HStack(spacing: 9) {
                     Color.clear.frame(width: 40)
-                    Text(UnitFormatter.weight(Double(h.weight) ?? 0, unit: appState.weightUnit)).font(.system(size: 11, weight: .bold)).foregroundColor(.aura.text3).frame(maxWidth: .infinity)
-                    Text("\(h.reps) reps").font(.system(size: 11, weight: .bold)).foregroundColor(.aura.text3).frame(maxWidth: .infinity)
+                    Text(UnitFormatter.weight(Double(h.weight) ?? 0, unit: appState.weightUnit)).font(AuraFont.jakarta(11, .bold)).foregroundColor(.aura.text3).frame(maxWidth: .infinity)
+                    Text("\(h.reps) reps").font(AuraFont.jakarta(11, .bold)).foregroundColor(.aura.text3).frame(maxWidth: .infinity)
                     Color.clear.frame(width: 48)
                     Color.clear.frame(width: 48)
                 }
@@ -377,9 +380,9 @@ struct SupersetSetRow: View {
         VStack(spacing: -2) {
             TextField(placeholder, text: text)
                 .keyboardType(.decimalPad).multilineTextAlignment(.center)
-                .font(.system(size: 18, weight: .heavy)).foregroundColor(.aura.text)
+                .font(AuraFont.jakarta(18, .heavy)).foregroundColor(.aura.text)
                 .onChange(of: text.wrappedValue) { _, _ in onChange() }
-            Text(label).font(.system(size: 9, weight: .bold)).foregroundColor(.aura.text3).textCase(.uppercase)
+            Text(label).font(AuraFont.jakarta(9, .bold)).foregroundColor(.aura.text3).textCase(.uppercase)
         }
         .frame(maxWidth: .infinity).frame(height: 48)
         .background(set.done ? Color.aura.green.opacity(0.09) : Color.aura.surface2)
